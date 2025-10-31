@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Missione Odessa Adventure</title>
+  <style>
+    body { font-family: sans-serif; background: #f7f7f7; margin: 0; padding: 2em; }
+    #output { background: #222; color: #eee; padding: 1em; min-height: 10em; border-radius: 6px; margin-bottom: 1em; white-space: pre-line; }
+    #inputArea { display: flex; gap: 0.5em; }
+    #userInput { flex: 1; font-size: 1.1em; padding: 0.5em; }
+    button { font-size: 1.1em; padding: 0.5em 1em; }
+  </style>
+</head>
+<body>
+  <h1>Missione Odessa - Adventure</h1>
+  <div id="linguaScelta" style="font-weight:bold; margin-bottom:1em; color:#0a4; font-size:1.1em;"></div>
+  <div id="output">Caricamento...</div>
+  <form id="inputArea" autocomplete="off">
+    <input id="userInput" type="text" placeholder="Dove vuoi andare? (Nord, Est, Sud, Ovest, Su, Giu)" autofocus />
+    <button type="submit">Invia</button>
+  </form>
+  <script>
+    // Mostra la lingua scelta (descrizione) sopra il box
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '0';
+    let descrizione = localStorage.getItem('linguaDescrizione') || '';
+    if (!descrizione && idLingua && idLingua !== '0') {
+      // Fallback: fetch descrizione dal backend se non presente
+      fetch('/api/lingue')
+        .then(res => res.json())
+        .then(data => {
+          const lingua = data.find(l => String(l.IDLingua || l.ID || l.id || l.Id || l.idlingua) === idLingua);
+          if (lingua) {
+            descrizione = lingua.Descrizione;
+            document.getElementById('linguaScelta').textContent = 'Lingua selezionata: ' + descrizione;
+          }
+        });
+    } else if (descrizione) {
+      document.getElementById('linguaScelta').textContent = 'Lingua selezionata: ' + descrizione;
+    }
+  </script>
+  <script src="odessa1.js?v=20251030_1" type="module"></script>
+</body>
+</html>

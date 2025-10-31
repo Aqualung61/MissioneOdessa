@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Seleziona lingua - Missione Odessa</title>
+  <style>
+    body { font-family: sans-serif; background: #f7f7f7; margin: 0; padding: 2em; }
+    #container { background: #fff; border-radius: 8px; max-width: 400px; margin: 3em auto; padding: 2em; box-shadow: 0 2px 8px #0001; }
+    label { font-weight: bold; }
+    select, button { font-size: 1.1em; margin-top: 1em; width: 100%; padding: 0.5em; }
+    .error { color: #b00; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <form id="linguaForm">
+      <label for="linguaSelect">Seleziona la lingua:</label><br>
+      <select id="linguaSelect" required>
+        <option value="0">-- scegli una lingua --</option>
+      </select>
+      <button type="submit" disabled>Continua</button>
+      <div class="error" id="errorMsg"></div>
+    </form>
+  </div>
+  <script>
+    const select = document.getElementById('linguaSelect');
+    const btn = document.querySelector('button');
+    const errorMsg = document.getElementById('errorMsg');
+    let lingueData = [];
+
+    // Carica lingue dal backend
+    fetch('/api/lingue')
+      .then(res => res.json())
+      .then(data => {
+        lingueData = data;
+        data.forEach(l => {
+          const opt = document.createElement('option');
+          opt.value = l.IDLingua || l.ID || l.id || l.Id || l.idlingua; // fallback
+          opt.textContent = l.Descrizione;
+          select.appendChild(opt);
+        });
+      })
+      .catch(err => {
+        errorMsg.textContent = 'Errore nel caricamento lingue: ' + err;
+      });
+
+    select.addEventListener('change', () => {
+      btn.disabled = !select.value || select.value === '0';
+      errorMsg.textContent = '';
+    });
+
+    document.getElementById('linguaForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const idLingua = select.value;
+      if (!idLingua || idLingua === '0') {
+        errorMsg.textContent = 'Seleziona una lingua per continuare.';
+        return;
+      }
+      // Salva anche la descrizione per uso futuro
+      const linguaObj = lingueData.find(l => String(l.IDLingua || l.ID || l.id || l.Id || l.idlingua) === idLingua);
+      if (linguaObj) {
+        localStorage.setItem('linguaDescrizione', linguaObj.Descrizione);
+      }
+      localStorage.setItem('linguaSelezionata', idLingua);
+  window.location.href = 'web/odessa1.html?idLingua=' + encodeURIComponent(idLingua);
+    });
+  </script>
+</body>
+</html>
