@@ -1,7 +1,19 @@
 import express from 'express';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { runE2ETests } from '../tests/runE2E.js';
+
 const router = express.Router();
+
+// POST /api/run-tests - esegue la suite e2e Playwright e restituisce il report
+router.post('/run-tests', async (req, res) => {
+  try {
+    const result = await runE2ETests();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // GET /api/luoghi - restituisce tutti i luoghi
 router.get('/luoghi', async (req, res) => {

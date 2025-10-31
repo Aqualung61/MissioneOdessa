@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "npx node src/server.js",
+    "dev": "npx node src/server.js",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -21,6 +21,7 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.9.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

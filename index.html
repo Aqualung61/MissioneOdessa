@@ -21,8 +21,179 @@
       <button type="submit" disabled>Continua</button>
       <div class="error" id="errorMsg"></div>
     </form>
+    <hr style="margin:2em 0;">
+    <button id="runTestBtn" type="button" style="width:100%;padding:0.7em;font-size:1.1em;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;" onclick="runTestSuite()">Esegui test applicazione</button>
   </div>
   <script>
+    // --- TEST POPUP LOGIC ---
+    function runTestSuite() {
+      createTestPopup();
+      runBackendTests();
+    }
+
+    async function runBackendTests() {
+  // Inizializza nLuoghi per evitare ReferenceError
+  let nLuoghi = 'N/D';
+      const el = document.getElementById('testResults');
+      // Lancia entrambi i primi due test Playwright (verifica versione e accesso tabella luoghi)
+  if (el) el.innerHTML = '<b>Test 1: Verifica del numero di versione</b><br><b>Test 2: Verifica accesso tabella lingue</b><br><b>Test 3: Verifica accesso tabella luoghi</b><br><b>Test 4: Verifica servizio frontend</b>';
+      try {
+        // Avvia lampeggio "Running..."
+        // Chiedi al backend di eseguire TUTTI i test (così puoi estrarre i primi due)
+        const res = await fetch('/api/run-tests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        // --- Test 1: versione ---
+        let versione = 'N/D';
+        let esito1 = 'KO';
+        let msg1 = '';
+        const firstSpec = data.report?.suites?.[0]?.specs?.[0];
+  const firstTest = firstSpec?.tests?.[0];
+  const result1 = firstTest?.results?.[0];
+        if (result1?.status === 'passed') {
+          esito1 = 'OK';
+          if (result1.stdout && result1.stdout.length > 0) {
+            const matchLog = result1.stdout.join('\n').match(/version:\s*([\w\.-]+)/i);
+            if (matchLog) versione = matchLog[1];
+          }
+          if (versione === 'N/D' && result1.stdout && result1.stdout.length > 0) {
+            const matchJson = result1.stdout.join('\n').match(/\"version\"\s*:\s*\"([^\"]+)\"/);
+            if (matchJson) versione = matchJson[1];
+          }
+          if (versione === 'N/D' && data.raw) {
+            const matchRaw = data.raw.match(/version:\s*([\w\.-]+)/i);
+            if (matchRaw) versione = matchRaw[1];
+          }
+        } else if (result1?.error?.message) {
+          msg1 = result1.error.message;
+        }
+
+        // --- Test 2: accesso tabella luoghi ---
+        // --- Test 2: accesso tabella lingue ---
+        let esito2 = 'KO';
+        let msg2 = '';
+        let nLingue = 'N/D';
+        // Il secondo test è nel secondo spec della suite
+        const suites = data.report?.suites || [];
+        const secondSpec = suites[0]?.specs?.[1];
+        const secondTest = secondSpec?.tests?.[0];
+        const result2 = secondTest?.results?.[0];
+        if (result2?.stdout && result2.stdout.length > 0) {
+          let stdoutText = result2.stdout.map(x => x.text).join('\n');
+          stdoutText = stdoutText.replace(/\u001b\[[0-9;]*m/g, '');
+          const matchLog = stdoutText.match(/lingue:\s*(\d+)/i);
+          if (matchLog) {
+            nLingue = matchLog[1];
+            esito2 = 'OK';
+          } else {
+            esito2 = 'KO';
+          }
+        } else if (result2?.error?.message) {
+          msg2 = result2.error.message;
+        }
+
+        // --- Test 3: accesso tabella luoghi ---
+        // (rimosso: ora gestito sopra)
+
+        // --- Test 4: verifica frontend ---
+        let esito4 = 'KO';
+        let msg4 = '';
+        let titolo4 = 'Test 4: Verifica servizio frontend';
+        const fourthSpec = suites[0]?.specs?.[3];
+        if (fourthSpec) {
+          titolo4 = fourthSpec.title || titolo4;
+          const fourthTest = fourthSpec.tests?.[0];
+          const result4 = fourthTest?.results?.[0];
+          if (result4?.status === 'passed') {
+            esito4 = 'OK';
+          } else {
+            esito4 = 'KO';
+            if (result4?.error?.message) msg4 = result4.error.message;
+          }
+        }
+
+        // --- Test 3: verifica pagina web ---
+        let esito3 = 'KO';
+        let msg3 = '';
+        let titolo3 = 'Test 3: verifica funzionamento pagina web';
+        // Il terzo test è nel terzo spec della suite
+        const thirdSpec = suites[0]?.specs?.[2];
+        if (thirdSpec) {
+          titolo3 = thirdSpec.title || titolo3;
+          const thirdTest = thirdSpec.tests?.[0];
+          const result3 = thirdTest?.results?.[0];
+          if (result3?.status === 'passed') {
+            esito3 = 'OK';
+          } else {
+            esito3 = 'KO';
+            if (result3?.error?.message) msg3 = result3.error.message;
+          }
+        }
+        // --- Output popup con debug JSON secondo test ---
+        const boxColor1 = esito1 === 'OK' ? '#e8fbe8' : '#fbe8e8';
+        const borderColor1 = esito1 === 'OK' ? '#b6e6b6' : '#e6b6b6';
+        const textColor1 = esito1 === 'OK' ? '#155724' : '#721c24';
+        const boxColor2 = esito2 === 'OK' ? '#e8fbe8' : '#fbe8e8';
+        const borderColor2 = esito2 === 'OK' ? '#b6e6b6' : '#e6b6b6';
+        const textColor2 = esito2 === 'OK' ? '#155724' : '#721c24';
+        el.innerHTML = `
+          <div style="margin:1.2em 0 0.7em 0;padding:1.1em 1.2em;border-radius:8px;background:${boxColor1};color:${textColor1};border:1.5px solid ${borderColor1};font-size:1.08em;">
+            <b>${esito1 === 'OK' ? '✅' : '❌'} Test 1: Verifica del numero di versione</b><br>
+            <span style="font-size:0.99em;"><b>Versione:</b> <code>${versione}</code></span><br>
+            <b>Esito:</b> <span style="color:${textColor1};font-weight:bold;">${esito1}</span>
+            ${msg1 ? `<div style='margin-top:0.5em;color:#b00;'>${msg1}</div>` : ''}
+          </div>
+          <div style="margin:1.2em 0 0.7em 0;padding:1.1em 1.2em;border-radius:8px;background:${esito2 === 'OK' ? '#e8fbe8' : '#fbe8e8'};color:${esito2 === 'OK' ? '#155724' : '#721c24'};border:1.5px solid ${esito2 === 'OK' ? '#b6e6b6' : '#e6b6b6'};font-size:1.08em;">
+            <b>${esito2 === 'OK' ? '✅' : '❌'} Test 2: Verifica accesso tabella lingue</b><br>
+            <span style="font-size:0.99em;"><b>Numero lingue:</b> <code>${nLingue}</code></span><br>
+            <b>Esito:</b> <span style="color:${esito2 === 'OK' ? '#155724' : '#721c24'};font-weight:bold;">${esito2}</span>
+            ${msg2 ? `<div style='margin-top:0.5em;color:#b00;'>${msg2}</div>` : ''}
+          </div>
+          <div style="margin:1.2em 0 0.7em 0;padding:1.1em 1.2em;border-radius:8px;background:${esito3 === 'OK' ? '#e8fbe8' : '#fbe8e8'};color:${esito3 === 'OK' ? '#155724' : '#721c24'};border:1.5px solid ${esito3 === 'OK' ? '#b6e6b6' : '#e6b6b6'};font-size:1.08em;">
+            <b>${esito3 === 'OK' ? '✅' : '❌'} Test 3: Verifica accesso tabella luoghi</b><br>
+            <span style="font-size:0.99em;"><b>Numero luoghi:</b> <code>${nLuoghi}</code></span><br>
+            <b>Esito:</b> <span style="color:${esito3 === 'OK' ? '#155724' : '#721c24'};font-weight:bold;">${esito3}</span>
+            ${msg3 ? `<div style='margin-top:0.5em;color:#b00;'>${msg3}</div>` : ''}
+          </div>
+          <div style="margin:1.2em 0 0.7em 0;padding:1.1em 1.2em;border-radius:8px;background:${esito4 === 'OK' ? '#e8fbe8' : '#fbe8e8'};color:${esito4 === 'OK' ? '#155724' : '#721c24'};border:1.5px solid ${esito4 === 'OK' ? '#b6e6b6' : '#e6b6b6'};font-size:1.08em;">
+            <b>${esito4 === 'OK' ? '✅' : '❌'} ${titolo4}</b><br>
+            <b>Esito:</b> <span style="color:${esito4 === 'OK' ? '#155724' : '#721c24'};font-weight:bold;">${esito4}</span>
+            ${msg4 ? `<div style='margin-top:0.5em;color:#b00;'>${msg4}</div>` : ''}
+          </div>
+        `;
+      } catch (err) {
+        el.innerHTML = `<b>Errore nell'esecuzione dei test:</b><br><span style='color:#b00;'>${err.message}</span>`;
+      }
+    }
+
+    function createTestPopup() {
+      const existing = document.getElementById('testPopup');
+      if (existing) existing.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'testPopup';
+      overlay.style = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = `
+        <div style="background:#fff;color:#222;min-width:320px;max-width:95vw;max-width:420px;max-height:70vh;padding:1.2em 1em;border-radius:10px;box-shadow:0 4px 32px #0003;position:relative;display:flex;flex-direction:column;">
+          <h2 style="margin-top:0;font-size:1.15em;">Test integrato applicazione</h2>
+          <div id="testResults" style="margin-top:1em;min-height:2em;overflow-y:auto;max-height:45vh;"></div>
+          <button onclick="closeTestPopup()" style="margin-top:1.5em;align-self:center;padding:0.5em 2em;font-size:1em;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;">Chiudi</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    // Toggle per mostrare/nascondere dettagli
+    function toggleDetails(idx) {
+      const el = document.getElementById('testDetails' + idx);
+      if (el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+    }
+
+    function closeTestPopup() {
+      const popup = document.getElementById('testPopup');
+      if (popup) popup.remove();
+    }
     const select = document.getElementById('linguaSelect');
     const btn = document.querySelector('button');
     const errorMsg = document.getElementById('errorMsg');
