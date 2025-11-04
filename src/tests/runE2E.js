@@ -1,7 +1,6 @@
 // Script Node per lanciare Playwright e restituire un report JSON sintetico
 // Da usare nella rotta backend /api/run-tests
 
-
 import { exec } from 'child_process';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -20,7 +19,14 @@ export function runE2ETests(options = {}) {
     }
     exec(cmd, { maxBuffer: 1024 * 1024, cwd: process.cwd() }, (error, stdout, stderr) => {
       if (error) {
-        resolve({ success: false, error: error.message, stderr, testPathUsed: testDir, suiteUsed: suite, raw: stdout });
+        resolve({
+          success: false,
+          error: error.message,
+          stderr,
+          testPathUsed: testDir,
+          suiteUsed: suite,
+          raw: stdout,
+        });
         return;
       }
       try {
@@ -28,7 +34,14 @@ export function runE2ETests(options = {}) {
         const report = JSON.parse(stdout);
         resolve({ success: true, report, testPathUsed: testDir, suiteUsed: suite, raw: stdout });
       } catch (e) {
-        resolve({ success: false, error: 'Parsing error', details: e.message, raw: stdout, testPathUsed: testDir, suiteUsed: suite });
+        resolve({
+          success: false,
+          error: 'Parsing error',
+          details: e.message,
+          raw: stdout,
+          testPathUsed: testDir,
+          suiteUsed: suite,
+        });
       }
     });
   });
