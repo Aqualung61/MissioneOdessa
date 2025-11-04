@@ -28,3 +28,38 @@ Prossimi passi (opzionali):
 - Aggiungere i NOUN (sostantivi di gioco) in una 33_popola_noun_it.sql
 - Collegare le VociLessico al Software con una 34_popola_lessico_software.sql
 - Valutare indici/constraint aggiuntivi su Luoghi (es. coerenza direzioni)
+
+## Reset e ricostruzione di Lingue e Luoghi
+
+Per riallineare lo schema e i dati delle tabelle core `Lingue` e `Luoghi`:
+
+1) Drop tabelle (ATTENZIONE: cancella dati)
+- 00_drop_lingue_luoghi.sql
+
+2) Creazione e popolamento aggiornati
+- 01_create_lingue.sql
+- 10_popola_lingue.sql
+- 08_create_luoghi.sql
+- 14_popola_luoghi.sql
+
+Esecuzione automatizzata (Windows/PowerShell, richiede `sqlite3` nel PATH):
+
+```powershell
+cd "$PSScriptRoot\..\.."  # opzionale: portarsi alla radice repo
+./scripts/rebuild-lingue-luoghi.ps1 -DbPath .\db\Odessa.db
+# includere anche lo schema lessico allineato
+./scripts/rebuild-lingue-luoghi.ps1 -DbPath .\db\Odessa.db -IncludeLexiconAligned
+```
+
+Note:
+- Gli script di creazione abilitano `PRAGMA foreign_keys=ON`.
+- `Luoghi.IDLingua` ha default 1 e vincolo FK verso `Lingue(ID)`.
+
+Suggerimento: lo script PowerShell tenta automaticamente di usare `sqlite3` se disponibile; in caso contrario effettua un fallback al runner Node incluso nel progetto.
+Esecuzione diretta del runner Node (alternativa cross-platform):
+
+```powershell
+node ./scripts/rebuild-lingue-luoghi.mjs --db .\db\Odessa.db
+# includere anche lo schema lessico allineato
+node ./scripts/rebuild-lingue-luoghi.mjs --db .\db\Odessa.db --lexicon-aligned
+```

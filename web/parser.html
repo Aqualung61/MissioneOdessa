@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Missione Odessa · Parser Demo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+    h1 { font-size: 1.3rem; margin: 0 0 1rem; }
+    .row { display: flex; gap: .5rem; margin-bottom: .5rem; }
+    input[type="text"] { flex: 1; padding: .6rem .8rem; font-size: 1rem; }
+    button { padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
+    .samples { margin: .5rem 0 1rem; font-size: .95rem; }
+    .samples button { font-size: .9rem; padding: .25rem .5rem; }
+    pre { background: #1111; padding: 1rem; border-radius: .5rem; overflow: auto; }
+    footer { margin-top: 2rem; opacity: .8; font-size: .9rem; }
+    code { background: #1111; padding: .1rem .25rem; border-radius: .25rem; }
+  </style>
+</head>
+<body>
+  <h1>Missione Odessa · Parser Demo</h1>
+  <div class="row">
+    <input id="cmd" type="text" placeholder="Scrivi un comando (es. PRENDI LA LAMPADA)" autocomplete="off" />
+    <button id="run">Analizza</button>
+    <button id="exec" title="Analizza ed esegui (motore stub)">Esegui</button>
+  </div>
+  <div class="samples">
+    Esempi rapidi:
+    <button class="sample" data-cmd="PRENDI LA LAMPADA">PRENDI LA LAMPADA</button>
+    <button class="sample" data-cmd="DORMI">DORMI</button>
+    <button class="sample" data-cmd="N">N</button>
+    <button class="sample" data-cmd="PRENDI">PRENDI</button>
+    <button class="sample" data-cmd="PRENDI ZZZ">PRENDI ZZZ</button>
+    <button class="sample" data-cmd="PRENDI LAMPADA 1">PRENDI LAMPADA 1</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;">
+    <div>
+      <h2 style="font-size:1rem;margin:.2rem 0 .4rem;">Riepilogo</h2>
+      <div id="summary" style="border:1px solid #ddd;border-radius:.5rem;padding:.75rem;background:#fff;min-height:3rem;">
+        Inserisci un comando per vedere il riepilogo dei campi principali.
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+        <button id="btnState">Stato motore</button>
+        <button id="btnReset">Reset stato</button>
+      </div>
+      <div id="statePanel" style="border:1px solid #ddd;border-radius:.5rem;padding:.75rem;background:#fff;margin-top:.5rem;display:none;"></div>
+    </div>
+    <div>
+      <h2 style="font-size:1rem;margin:.2rem 0 .4rem;">JSON grezzo</h2>
+      <pre id="out" style="margin:0;">Attesa input…</pre>
+    </div>
+  </div>
+  <details style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Aiuto e regole del parser</summary>
+    <div style="margin-top:.5rem;line-height:1.5">
+      <ul>
+        <li>Articoli e parole vuote (stopword) sono ignorati: es. <code>PRENDI LA LAMPADA</code> → <code>PRENDI LAMPADA</code>.</li>
+        <li>Indice numerico opzionale: es. <code>PRENDI LAMPADA 1</code> (campo <code>NounIndex</code> nel risultato).</li>
+        <li>Niente abbreviazioni per verbi/sostantivi. Eccezioni solo per navigazione: <code>N,S,E,O,SU,GIÙ/SALI,SCENDI</code>.</li>
+        <li>Punteggiatura tollerata (escluso <code>?</code> che è un comando valido): es. <code>PRENDI, LA LAMPADA!</code>.</li>
+        <li>Accenti tollerati/normalizzati: es. <code>GIÙ</code> e <code>GIU</code> sono equivalenti.</li>
+        <li>Comandi singoli validi: NAVIGAZIONE (<code>NORD</code>, <code>N</code> …), SISTEMA (<code>INVENTARIO</code>, <code>?</code>), alcune ACTION come <code>DORMI</code>, <code>SCAPPA</code>, <code>SORRIDI</code>.</li>
+      </ul>
+      <div style="margin-top:.5rem">Endpoint: <code>POST /api/parser/parse</code> — body: <code>{"input":"PRENDI LA LAMPADA"}</code></div>
+    </div>
+  </details>
+  <footer>
+    API: <code>POST /api/parser/parse</code> — Usa il DB locale configurato (<code>ODESSA_DB_PATH</code>)
+  </footer>
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const $out = $('#out');
+    const $cmd = $('#cmd');
+    const $run = $('#run');
+  const $samples = document.querySelectorAll('.sample');
+  const $exec = document.getElementById('exec');
+  const $btnState = document.getElementById('btnState');
+  const $btnReset = document.getElementById('btnReset');
+  const $statePanel = document.getElementById('statePanel');
+
+    function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
+      ">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+
+    function renderSummary(d){
+      if(!d||typeof d!=='object') return '<em>Nessun dato</em>';
+      const ok = d.IsValid===true;
+      const badge = ok?'<span style="color:#1b6e35">✔ Valido</span>':'<span style="color:#7a1b12">✖ Non valido</span>';
+      const lines = [];
+      lines.push(`<div><b>Esito:</b> ${badge}</div>`);
+      lines.push(`<div><b>Tipo comando:</b> ${escapeHtml(String(d.CommandType||''))}</div>`);
+      if(d.CanonicalVerb){
+        const extra = [];
+        if(d.VerbTermId!=null) extra.push(`ID=${d.VerbTermId}`);
+        if(d.VerbConcept) extra.push(`Concetto=${escapeHtml(String(d.VerbConcept))}`);
+        lines.push(`<div><b>Verbo:</b> ${escapeHtml(String(d.CanonicalVerb))}${extra.length?` <small style="opacity:.8">(${extra.join(' · ')})</small>`:''}</div>`);
+      }
+      if(d.CanonicalNoun){
+        const extra = [];
+        if(d.NounTermId!=null) extra.push(`ID=${d.NounTermId}`);
+        if(d.NounConcept) extra.push(`Concetto=${escapeHtml(String(d.NounConcept))}`);
+        if(d.NounIndex!=null) extra.push(`Indice=${d.NounIndex}`);
+        lines.push(`<div><b>Sostantivo:</b> ${escapeHtml(String(d.CanonicalNoun))}${extra.length?` <small style="opacity:.8">(${extra.join(' · ')})</small>`:''}</div>`);
+      }
+      if(!ok && d.Error){
+        lines.push(`<div><b>Errore:</b> <code>${escapeHtml(String(d.Error))}</code></div>`);
+      }
+      return lines.join('');
+    }
+
+    async function callParse(input) {
+      $out.textContent = 'Chiamo /api/parser/parse…';
+      try {
+        const res = await fetch('/api/parser/parse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input })
+        });
+        const data = await res.json();
+        $out.textContent = JSON.stringify(data, null, 2);
+        const $sum = document.getElementById('summary');
+        if($sum){ $sum.innerHTML = renderSummary(data); }
+      } catch (e) {
+        $out.textContent = 'Errore: ' + (e?.message || e);
+        const $sum = document.getElementById('summary');
+        if($sum){ $sum.textContent = 'Errore: ' + (e?.message || e); }
+      }
+    }
+
+    async function callExecute(input){
+      $out.textContent = 'Chiamo /api/engine/execute…';
+      try{
+        const res = await fetch('/api/engine/execute',{
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({input})
+        });
+        const data = await res.json();
+        const $sum = document.getElementById('summary');
+        if(res.ok){
+          $out.textContent = JSON.stringify(data, null, 2);
+          if($sum){ $sum.innerHTML = renderSummary(data.parseResult) + `<div style='margin-top:.5rem'><b>Motore:</b> ${data.engine?.message||''}</div>`; }
+        } else {
+          $out.textContent = JSON.stringify(data, null, 2);
+          if($sum){ $sum.innerHTML = renderSummary(data.parseResult) + (data.userMessage? `<div style='margin-top:.5rem'><b>Messaggio:</b> ${data.userMessage}</div>`:''); }
+        }
+      }catch(e){
+        $out.textContent = 'Errore: ' + (e?.message || e);
+        const $sum = document.getElementById('summary');
+        if($sum){ $sum.textContent = 'Errore: ' + (e?.message || e); }
+      }
+    }
+
+    function renderState(state){
+      if(!state) return '<em>Nessuno stato</em>';
+      const { roomItems=[], inventory=[], openStates={} } = state;
+      const fmtList = (arr)=> arr.length? arr.join(', ') : '<em>—</em>';
+      const fmtOpen = Object.keys(openStates).length? Object.entries(openStates).map(([k,v])=>`${k}: ${v? 'aperto':'chiuso'}`).join(' · ') : '<em>—</em>';
+      return `
+        <div><b>Room items:</b> ${fmtList(roomItems)}</div>
+        <div><b>Inventario:</b> ${fmtList(inventory)}</div>
+        <div><b>Stati apertura:</b> ${fmtOpen}</div>
+      `;
+    }
+
+    async function fetchState(){
+      try{
+        const res = await fetch('/api/engine/state');
+        const data = await res.json();
+        if($statePanel){
+          $statePanel.style.display = 'block';
+          $statePanel.innerHTML = data?.state? renderState(data.state) : '<em>Nessuno stato</em>';
+        }
+      }catch(e){
+        if($statePanel){ $statePanel.style.display='block'; $statePanel.textContent = 'Errore stato: ' + (e?.message||e); }
+      }
+    }
+
+    async function resetState(){
+      try{
+        const res = await fetch('/api/engine/reset', { method:'POST' });
+        const data = await res.json();
+        if($statePanel){
+          $statePanel.style.display = 'block';
+          $statePanel.innerHTML = data?.state? renderState(data.state) : '<em>Nessuno stato</em>';
+        }
+      }catch(e){
+        if($statePanel){ $statePanel.style.display='block'; $statePanel.textContent = 'Errore reset: ' + (e?.message||e); }
+      }
+    }
+
+    $run.addEventListener('click', () => {
+      const v = $cmd.value || '';
+      callParse(v);
+    });
+    $cmd.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); $run.click(); }
+    });
+    $exec.addEventListener('click', () => {
+      const v = $cmd.value || '';
+      callExecute(v);
+    });
+    $samples.forEach(b => b.addEventListener('click', () => {
+      $cmd.value = b.dataset.cmd || '';
+      $run.click();
+    }));
+
+    $btnState?.addEventListener('click', fetchState);
+    $btnReset?.addEventListener('click', resetState);
+
+    // Autofocus
+    $cmd.focus();
+  </script>
+</body>
+</html>
