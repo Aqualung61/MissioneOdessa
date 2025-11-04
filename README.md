@@ -56,6 +56,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 - Schema e cambi strutturali gestiti con file DDL in `ddl/` nominati in modo descrittivo e documentati in `docs/`.
 - Ispezione dati: usare DBeaver o DB Browser for SQLite aprendo `db/odessa.db`.
 - Migrazione a Postgres/MySQL: possibile in futuro con script ad hoc e adattamento dell'accesso ai dati.
+ - Linee guida: vedi `docs/ddl-guidelines.md`.
 
 ## Release notes
 
