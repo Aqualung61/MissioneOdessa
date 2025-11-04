@@ -14,7 +14,6 @@ export default [
       'src/git-sync.*',
       'ddl/',
       'docs/ddl*/',
-      'prisma/migrations/',
       'coverage/',
       'test-results/',
       '*.min.js',

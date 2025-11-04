@@ -4,7 +4,6 @@ build/
 deploy/
 ddl/
 docs/ddl*/
-prisma/migrations/
 coverage/
 test-results/
 *.min.js

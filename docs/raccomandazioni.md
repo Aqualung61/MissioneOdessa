@@ -5,13 +5,13 @@ Ultimo aggiornamento: 2025-10-30
 Queste note sintetizzano le raccomandazioni operative emerse nell'avvio del progetto.
 
 ## Workflow consigliato
-- Modifica modelli in `prisma/schema.prisma`.
-- Itera velocemente con `npm run db:push`; quando il cambio è stabile, usa `npm run db:migrate` (traccia la storia) e `npm run generate`.
-- Esplora/modifica dati con `npm run studio` (Prisma Studio) o DBeaver su `prisma/dev.db`.
+- Gestisci lo schema via DDL SQL in `ddl/` e/o script applicativi (SQLite).
+- Per cambi strutturali, aggiungi file SQL descrittivi e documenta i passaggi in `docs/`.
+- Esplora/modifica dati con DBeaver o DB Browser for SQLite sul file `db/odessa.db`.
 
 ## Scelte iniziali
-- DB locale: SQLite per velocità. Quando serve, migrazione a Postgres/MySQL cambiando `datasource` e `DATABASE_URL` + nuove migration.
-- Campi di audit ovunque serva: `createdAt` (default now), `updatedAt` (@updatedAt). Già applicati a: `Utente`, `Lingua`, `Descrizione`.
+- DB locale: SQLite per velocità. Quando serve, migrazione a Postgres/MySQL tramite script/migrazioni ad hoc.
+- Campi di audit ovunque serva: `createdAt`, `updatedAt`. Già applicati a: `Utente`, `Lingua`, `Descrizione`.
 
 ## Vincoli e indici da aggiungere (proposti)
 - Unicità:
@@ -27,16 +27,16 @@ Queste note sintetizzano le raccomandazioni operative emerse nell'avvio del prog
 - Se servono descrizioni per entità diverse, considerare una tabella polimorfica (es. `LocalizedText(entityType, entityId, linguaId, testo)`) oppure tabelle per-entità con composite unique `(entityId, linguaId)`.
 
 ## Tipi/enum e campi di stato
-- `Utente.tipo`: convertire in `enum` Prisma per evitare magic numbers (es. ADMIN, EDITOR, VIEWER).
-- Stati di dominio ricorrenti: usare `enum` + validazioni a livello applicativo.
+- `Utente.tipo`: definire un set di costanti a livello applicativo per evitare magic numbers (es. ADMIN, EDITOR, VIEWER).
+- Stati di dominio ricorrenti: usare valori enumerati e validazioni a livello applicativo.
 
 ## Soft delete (opzionale)
 - Aggiungere `deletedAt DateTime?` se serve mantenere lo storico senza hard delete.
 
 ## Dati di base (seed)
 - Seed iniziale lingue (es. IT, EN, UKR). Opzioni:
-  - Script app (TypeScript) che usa Prisma Client.
-  - Oppure migration SQL con insert idempotenti.
+  - Script app (TypeScript/Node) che usa `sqlite3`.
+  - Oppure script SQL con insert idempotenti.
 
 ## Convenzioni e qualità
 - Nominare le migration in modo descrittivo (già: `core_entities`, `add_audit_fields`).

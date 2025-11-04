@@ -6,9 +6,8 @@ dist/
 .env
 .env.*
 
-# Prisma/SQLite
-prisma/*.db
-prisma/*.db-journal
+# SQLite
+# (nessun percorso Prisma necessario)
 
 # Logs
 npm-debug.log*
