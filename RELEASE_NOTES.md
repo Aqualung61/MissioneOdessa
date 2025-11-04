@@ -1,3 +1,16 @@
+## Unreleased
+
+### Novità principali
+- 
+
+### Migliorie tecniche
+- 
+
+### Note
+- 
+
+---
+
 ## v1.0.0 (31/10/2025)
 
 ### Novità principali
