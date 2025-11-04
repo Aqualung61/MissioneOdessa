@@ -1,0 +1,9 @@
+-- DDL: Tabella VociLessico
+CREATE TABLE VociLessico (
+    ID_Voce INTEGER PRIMARY KEY AUTOINCREMENT,
+    Voce TEXT NOT NULL,
+    ID_Termine INTEGER NOT NULL,
+    ID_Lingua INTEGER NOT NULL,
+    FOREIGN KEY (ID_Termine) REFERENCES TerminiLessico(ID_Termine),
+    FOREIGN KEY (ID_Lingua) REFERENCES Lingue(ID_Lingua)
+);

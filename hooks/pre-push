@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Git pre-push hook: blocca push diretti su branch protetti
+# Consenti override con ALLOW_DIRECT_PUSH=1
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+PROTECTED_PATTERN='^(main|master|freeze-.*)$'
+
+if [ "$ALLOW_DIRECT_PUSH" = "1" ]; then
+  exit 0
+fi
+
+if echo "$BRANCH" | grep -Eq "$PROTECTED_PATTERN"; then
+  echo "[pre-push] Push bloccato sul branch protetto: $BRANCH" 1>&2
+  echo "Apri una feature branch e crea una Pull Request, oppure esporta ALLOW_DIRECT_PUSH=1 per bypassare." 1>&2
+  exit 1
+fi
+
+exit 0

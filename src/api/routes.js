@@ -8,7 +8,8 @@ const router = express.Router();
 // POST /api/run-tests - esegue la suite e2e Playwright e restituisce il report
 router.post('/run-tests', async (req, res) => {
   try {
-    const result = await runE2ETests();
+    const suite = (req.query?.suite || '').toString() || 'full';
+    const result = await runE2ETests({ suite });
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

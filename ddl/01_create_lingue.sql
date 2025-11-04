@@ -1,0 +1,5 @@
+-- DDL: Tabella Lingue
+CREATE TABLE Lingue (
+    ID_Lingua INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeLingua TEXT NOT NULL UNIQUE
+);
