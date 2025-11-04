@@ -48,8 +48,9 @@
       ];
       initTestProgress(plan);
       setProgressRunning(true);
-      // Recupero rapido versione senza attendere Playwright
+      // Recupero rapido versione/contatori senza attendere Playwright
       quickFetchVersion();
+      quickFetchCounts();
       runBackendTests();
     }
 
@@ -244,7 +245,7 @@
       list.innerHTML = '';
       plan.forEach((title, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span id="status-${idx}" class="status-pill status-wait">In attesa</span><span>${title}</span>`;
+        li.innerHTML = `<span id="status-${idx}" class="status-pill status-wait">In attesa</span><span>${title}</span><span id="quick-${idx}" class="kv-tag" style="margin-left:auto;display:none;"></span>`;
         list.appendChild(li);
       });
       // imposta il primo come "in esecuzione" in modo ottimistico
@@ -281,6 +282,28 @@
           window.quickVersion = data.version;
           const tag = document.getElementById('quickVersion');
           if (tag) tag.textContent = `Versione: ${data.version}`;
+          const cell = document.getElementById('quick-0');
+          if (cell) { cell.textContent = `v ${data.version}`; cell.style.display = 'inline-block'; }
+        }
+      } catch {}
+    }
+
+    // Recupero rapido dei conteggi lingue e luoghi (senza Playwright)
+    async function quickFetchCounts(){
+      try {
+        const [lingueRes, luoghiRes] = await Promise.all([
+          fetch('/api/lingue'),
+          fetch('/api/luoghi')
+        ]);
+        if (lingueRes.ok) {
+          const lingue = await lingueRes.json();
+          const cell = document.getElementById('quick-1');
+          if (cell) { cell.textContent = `Lingue: ${Array.isArray(lingue) ? lingue.length : 'N/D'}`; cell.style.display = 'inline-block'; }
+        }
+        if (luoghiRes.ok) {
+          const luoghi = await luoghiRes.json();
+          const cell = document.getElementById('quick-2');
+          if (cell) { cell.textContent = `Luoghi: ${Array.isArray(luoghi) ? luoghi.length : 'N/D'}`; cell.style.display = 'inline-block'; }
         }
       } catch {}
     }
