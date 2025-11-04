@@ -505,8 +505,11 @@
           lingueData = data;
           data.forEach((l) => {
             const opt = document.createElement('option');
-            opt.value = l.IDLingua || l.ID || l.id || l.Id || l.idlingua; // fallback
-            opt.textContent = l.Descrizione;
+            // Passa LA CHIAVE NUMERICA primaria (SQLite: ID_Lingua)
+            const idPrimario = l.ID_Lingua ?? l.ID ?? l.id ?? l.Id; // fallback prudenziale
+            const nome = l.NomeLingua ?? l.Descrizione ?? l.nome ?? l.nomeLingua;
+            opt.value = String(idPrimario ?? '');
+            opt.textContent = nome || `Lingua ${opt.value}`;
             select.appendChild(opt);
           });
         })
@@ -527,11 +530,13 @@
           return;
         }
         // Salva anche la descrizione per uso futuro
-        const linguaObj = lingueData.find(
-          (l) => String(l.IDLingua || l.ID || l.id || l.Id || l.idlingua) === idLingua
-        );
+        const linguaObj = lingueData.find((l) => {
+          const idPrimario = l.ID_Lingua ?? l.ID ?? l.id ?? l.Id;
+          return String(idPrimario) === idLingua;
+        });
         if (linguaObj) {
-          localStorage.setItem('linguaDescrizione', linguaObj.Descrizione);
+          const nome = linguaObj.NomeLingua ?? linguaObj.Descrizione ?? linguaObj.nome ?? linguaObj.nomeLingua;
+          if (nome) localStorage.setItem('linguaDescrizione', nome);
         }
         localStorage.setItem('linguaSelezionata', idLingua);
         window.location.href = 'web/odessa1.html?idLingua=' + encodeURIComponent(idLingua);

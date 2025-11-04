@@ -28,14 +28,18 @@
     const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '0';
     let descrizione = localStorage.getItem('linguaDescrizione') || '';
     if (!descrizione && idLingua && idLingua !== '0') {
-      // Fallback: fetch descrizione dal backend se non presente
+      // Fallback: recupera nome lingua dal backend usando la CHIAVE NUMERICA (ID_Lingua)
       fetch('/api/lingue')
         .then(res => res.json())
         .then(data => {
-          const lingua = data.find(l => String(l.IDLingua || l.ID || l.id || l.Id || l.idlingua) === idLingua);
+          const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === idLingua);
           if (lingua) {
-            descrizione = lingua.Descrizione;
-            document.getElementById('linguaScelta').textContent = 'Lingua selezionata: ' + descrizione;
+            const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
+            descrizione = nome || '';
+            if (descrizione) {
+              document.getElementById('linguaScelta').textContent = 'Lingua selezionata: ' + descrizione;
+              localStorage.setItem('linguaDescrizione', descrizione);
+            }
           }
         });
     } else if (descrizione) {
