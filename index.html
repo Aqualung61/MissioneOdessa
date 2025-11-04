@@ -20,6 +20,7 @@
     .status-ok { border-color:#2ecc71; background:#e8fbe8; color:#1b6e35; }
     .status-ko { border-color:#e74c3c; background:#fbe8e8; color:#7a1b12; }
     .kv-tag { font-size:0.88em; color:#666; background:#f3f3f3; border:1px solid #e1e1e1; border-radius:999px; padding:2px 10px; }
+    .precheck-box { margin:0.8em 0 0 0; padding:0.7em 0.9em; background:#fafafa; border:1px solid #eee; border-radius:8px; font-size:0.95em; color:#444; }
   </style>
 </head>
 <body>
@@ -37,10 +38,11 @@
   </div>
   <script>
     // --- TEST POPUP LOGIC ---
-    function runTestSuite() {
+    async function runTestSuite() {
       createTestPopup();
-      // Imposta il piano dei test e mostra lo stato iniziale
+      // Piano test: includi Test 0 (Pre check) + E2E
       const plan = [
+        'Test 0: Pre check',
         'Test 1: Verifica del numero di versione',
         'Test 2: Verifica accesso tabella lingue',
         'Test 3: Verifica accesso tabella luoghi',
@@ -48,9 +50,28 @@
       ];
       initTestProgress(plan);
       setProgressRunning(true);
-      // Recupero rapido versione/contatori senza attendere Playwright
-      quickFetchVersion();
-      quickFetchCounts();
+      // Esegui pre-check in blocco
+      setTestStatus(0, 'running');
+      const pre = await runPreChecks();
+      renderPrecheckBox(pre);
+      if (!pre.ok) {
+        setTestStatus(0, 'ko');
+        // Fallimento pre-check: marca l'intera suite come KO e interrompi
+        for (let i=1;i<plan.length;i++) setTestStatus(i,'ko');
+        setProgressRunning(false);
+        const el = document.getElementById('testResults');
+        if (el) el.innerHTML = `<div style="color:#721c24;background:#fbe8e8;border:1.5px solid #e6b6b6;padding:1em;border-radius:8px;">`+
+          `<b>Pre check falliti.</b><br>`+
+          `${pre.message || 'Verifica servizi/API prima di eseguire i test E2E.'}</div>`;
+        return;
+      }
+      setTestStatus(0, 'ok');
+      // Aggiorna pill versione header, se disponibile
+      if (pre.version) {
+        const tag = document.getElementById('quickVersion');
+        if (tag) tag.textContent = `Versione: ${pre.version}`;
+      }
+      // Procedi con i test E2E Playwright (esiti aggiornati a fine esecuzione)
       runBackendTests();
     }
 
@@ -59,7 +80,7 @@
   let nLuoghi = 'N/D';
     const el = document.getElementById('testResults');
       // Lancia entrambi i primi due test Playwright (verifica versione e accesso tabella luoghi)
-    if (el) el.innerHTML = '<div style="font-size:0.95em;color:#555;">In attesa dei risultati...</div>';
+  if (el) el.innerHTML = '<div style="font-size:0.95em;color:#555;">In attesa dei risultati E2E...</div>';
       try {
         // Avvia lampeggio "Running..."
         // Chiedi al backend di eseguire TUTTI i test (così puoi estrarre i primi due)
@@ -155,10 +176,11 @@
           }
         }
   // Aggiorna la lista stato test con gli esiti
-  setTestStatus(0, esito1 === 'OK' ? 'ok' : 'ko');
-  setTestStatus(1, esito2 === 'OK' ? 'ok' : 'ko');
-  setTestStatus(2, esito3 === 'OK' ? 'ok' : 'ko');
-  setTestStatus(3, esito4 === 'OK' ? 'ok' : 'ko');
+  // Aggiorna SOLO i test E2E (1..4) a fine esecuzione
+  setTestStatus(1, esito1 === 'OK' ? 'ok' : 'ko');
+  setTestStatus(2, esito2 === 'OK' ? 'ok' : 'ko');
+  setTestStatus(3, esito3 === 'OK' ? 'ok' : 'ko');
+  setTestStatus(4, esito4 === 'OK' ? 'ok' : 'ko');
   setProgressRunning(false);
 
   // --- Output popup con pannelli riassuntivi ---
@@ -220,6 +242,7 @@
           <ul id="testList" class="test-list" aria-live="polite" aria-label="Elenco dei test">
             <!-- popolato da initTestProgress -->
           </ul>
+          <div id="precheckBox" class="precheck-box" style="display:none"></div>
           <div id="testResults" style="margin-top:1em;min-height:2em;overflow-y:auto;max-height:45vh;"></div>
           <button onclick="closeTestPopup()" style="margin-top:1.5em;align-self:center;padding:0.5em 2em;font-size:1em;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;">Chiudi</button>
         </div>
@@ -245,11 +268,10 @@
       list.innerHTML = '';
       plan.forEach((title, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span id="status-${idx}" class="status-pill status-wait">In attesa</span><span>${title}</span><span id="quick-${idx}" class="kv-tag" style="margin-left:auto;display:none;"></span>`;
+        li.innerHTML = `<span id="status-${idx}" class="status-pill status-wait">In attesa</span><span>${title}</span>`;
         list.appendChild(li);
       });
-      // imposta il primo come "in esecuzione" in modo ottimistico
-      setTestStatus(0, 'running');
+      // lo stato del Test 0 verrà impostato dal flusso runTestSuite()
     }
 
     function setTestStatus(index, state) {
@@ -282,30 +304,56 @@
           window.quickVersion = data.version;
           const tag = document.getElementById('quickVersion');
           if (tag) tag.textContent = `Versione: ${data.version}`;
-          const cell = document.getElementById('quick-0');
-          if (cell) { cell.textContent = `v ${data.version}`; cell.style.display = 'inline-block'; }
         }
       } catch {}
     }
-
-    // Recupero rapido dei conteggi lingue e luoghi (senza Playwright)
-    async function quickFetchCounts(){
+    
+    // Esegue i pre-check in blocco (versione, lingue, luoghi)
+    async function runPreChecks(){
+      const out = { ok: true, version: null, nLingue: null, nLuoghi: null, message: '', details: [] };
       try {
-        const [lingueRes, luoghiRes] = await Promise.all([
+        const [vRes, lingRes, luogoRes] = await Promise.all([
+          fetch('/api/version'),
           fetch('/api/lingue'),
           fetch('/api/luoghi')
         ]);
-        if (lingueRes.ok) {
-          const lingue = await lingueRes.json();
-          const cell = document.getElementById('quick-1');
-          if (cell) { cell.textContent = `Lingue: ${Array.isArray(lingue) ? lingue.length : 'N/D'}`; cell.style.display = 'inline-block'; }
+        if (!vRes.ok) { out.ok = false; out.details.push('API /api/version non risponde'); }
+        else {
+          const v = await vRes.json();
+          out.version = v?.version || null;
+          if (!out.version) { out.ok = false; out.details.push('Versione non disponibile'); }
         }
-        if (luoghiRes.ok) {
-          const luoghi = await luoghiRes.json();
-          const cell = document.getElementById('quick-2');
-          if (cell) { cell.textContent = `Luoghi: ${Array.isArray(luoghi) ? luoghi.length : 'N/D'}`; cell.style.display = 'inline-block'; }
+        if (!lingRes.ok) { out.ok = false; out.details.push('API /api/lingue non risponde'); }
+        else {
+          const arr = await lingRes.json();
+          out.nLingue = Array.isArray(arr) ? arr.length : 0;
+          if (!(out.nLingue > 0)) { out.ok = false; out.details.push('Nessuna lingua rilevata'); }
         }
-      } catch {}
+        if (!luogoRes.ok) { out.ok = false; out.details.push('API /api/luoghi non risponde'); }
+        else {
+          const arr2 = await luogoRes.json();
+          out.nLuoghi = Array.isArray(arr2) ? arr2.length : 0;
+          if (!(out.nLuoghi > 0)) { out.ok = false; out.details.push('Nessun luogo rilevato'); }
+        }
+      } catch (e) {
+        out.ok = false; out.details.push('Eccezione pre-check: '+ e.message);
+      }
+      if (!out.ok) out.message = 'Pre check non superati: ' + out.details.join('; ');
+      return out;
+    }
+
+    function renderPrecheckBox(pre){
+      const box = document.getElementById('precheckBox');
+      if (!box) return;
+      box.style.display = 'block';
+      const icon = (ok) => ok ? '✅' : '❌';
+      const items = [
+        `${icon(!!pre.version)} Versione: <code>${pre.version ?? 'N/D'}</code>`,
+        `${icon(pre.nLingue>0)} Lingue: <b>${pre.nLingue ?? 'N/D'}</b>`,
+        `${icon(pre.nLuoghi>0)} Luoghi: <b>${pre.nLuoghi ?? 'N/D'}</b>`
+      ];
+      box.innerHTML = `<b>Esito Test 0: Pre check</b><br><ul style="margin:0.4em 0 0 1em;">` +
+        items.map(i=>`<li>${i}</li>`).join('') + `</ul>`;
     }
     const select = document.getElementById('linguaSelect');
     const btn = document.querySelector('button');
