@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+deploy/
+ddl/
+docs/ddl*/
+prisma/migrations/
+coverage/
+test-results/
+*.min.js

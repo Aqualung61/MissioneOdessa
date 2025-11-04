@@ -3,7 +3,6 @@
 
 
 import { exec } from 'child_process';
-import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
