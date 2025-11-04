@@ -1,10 +1,11 @@
 {
   "name": "20251029---missione-odessa-app",
-  "version": "1.0.0",
+  "version": "1.0.1-dev",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npx node src/server.js",
+  "dev": "npx node src/server.js",
+  "start": "node src/server.js",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"
