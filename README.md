@@ -49,6 +49,14 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 - I file di test e script di utilità sono in `src/tests/`.
 - I backup sono in `backup/`.
 
+## Database e migrazioni
+
+- DB: SQLite senza ORM (Prisma è stato rimosso).
+- Percorso DB configurabile via variabile d'ambiente `ODESSA_DB_PATH` (default `./db/odessa.db`).
+- Schema e cambi strutturali gestiti con file DDL in `ddl/` nominati in modo descrittivo e documentati in `docs/`.
+- Ispezione dati: usare DBeaver o DB Browser for SQLite aprendo `db/odessa.db`.
+- Migrazione a Postgres/MySQL: possibile in futuro con script ad hoc e adattamento dell'accesso ai dati.
+
 ## Release notes
 
 - 2025-11-04 – freeze-20251031: vedi `docs/release-notes/2025-11-04_freeze-20251031.md`.
@@ -60,7 +68,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
    - `suite=smoke` esegue solo i controlli minimi (es. API versione) per una verifica rapida.
 
 - POST `/api/shutdown`
-   - Spegne il server in modo “graceful” (exit code 0). Utile nelle pipeline locali per evitare exit -1.
+   - Spegne il server in modo “graceful” (exit code 0). Disponibile solo quando `NODE_ENV=test`. Utile nelle pipeline locali per evitare exit -1.
 
 ## Stato
 
