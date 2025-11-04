@@ -48,3 +48,21 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 - La logica di parsing e la presentazione sono modulari e facilmente estendibili.
 - I file di test e script di utilità sono in `src/tests/`.
 - I backup sono in `backup/`.
+
+## Release notes
+
+- 2025-11-04 – freeze-20251031: vedi `docs/release-notes/2025-11-04_freeze-20251031.md`.
+
+## Endpoint utili (test e servizio)
+
+- POST `/api/run-tests?suite=smoke|full`
+   - Esegue la suite E2E Playwright dal backend e restituisce un report JSON.
+   - `suite=smoke` esegue solo i controlli minimi (es. API versione) per una verifica rapida.
+
+- POST `/api/shutdown`
+   - Spegne il server in modo “graceful” (exit code 0). Utile nelle pipeline locali per evitare exit -1.
+
+## Stato
+
+- Branch freeze: `freeze-20251031` allineato e stabile.
+- Smoke (suite=smoke) via API: ~9–10 secondi su ambiente locale.
