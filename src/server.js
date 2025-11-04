@@ -52,6 +52,19 @@ app.use((req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server unico avviato su http://localhost:${PORT}/`);
+});
+
+// Endpoint di spegnimento "graceful" per pipeline/test
+app.post('/api/shutdown', async (req, res) => {
+  try {
+    res.json({ ok: true });
+  } catch {}
+  // Chiudi il server con un piccolo delay per dare tempo alla risposta di partire
+  setTimeout(() => {
+    server.close(() => {
+      process.exit(0);
+    });
+  }, 50);
 });
