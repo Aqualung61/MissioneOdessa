@@ -11,6 +11,8 @@ import { readFileSync } from 'fs';
 import { loadLuoghi } from './data/luoghiStore.js';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
+import parserRoutes from './api/parserRoutes.js';
+import engineRoutes from './api/engineRoutes.js';
 
 // Definizione __filename e __dirname per ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +28,7 @@ console.log(`Missione Odessa - Versione: ${version}`);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.ODESSA_DB_PATH || './db/odessa.db';
+console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 
 // API: versione applicazione
 app.get('/api/version', (req, res) => {
@@ -43,6 +46,8 @@ await loadLuoghi(DB_PATH);
 // API (devono venire PRIMA dello statico!)
 app.use('/api', apiRoutes);
 app.use('/api/lingue', linguaRoutes);
+app.use('/api/parser', parserRoutes);
+app.use('/api/engine', engineRoutes);
 
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
 if (process.env.NODE_ENV === 'test') {
