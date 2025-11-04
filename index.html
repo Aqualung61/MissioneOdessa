@@ -20,7 +20,9 @@
     .status-ok { border-color:#2ecc71; background:#e8fbe8; color:#1b6e35; }
     .status-ko { border-color:#e74c3c; background:#fbe8e8; color:#7a1b12; }
     .kv-tag { font-size:0.88em; color:#666; background:#f3f3f3; border:1px solid #e1e1e1; border-radius:999px; padding:2px 10px; }
-    .precheck-box { margin:0.8em 0 0 0; padding:0.7em 0.9em; background:#fafafa; border:1px solid #eee; border-radius:8px; font-size:0.95em; color:#444; }
+    .tag-running { background:#eaf4ff; border-color:#3498db; color:#145da0; }
+    .tag-ok { background:#e8fbe8; border-color:#2ecc71; color:#1b6e35; }
+    .tag-ko { background:#fbe8e8; border-color:#e74c3c; color:#7a1b12; }
   </style>
 </head>
 <body>
@@ -53,19 +55,18 @@
       // Esegui pre-check in blocco
       setTestStatus(0, 'running');
       const pre = await runPreChecks();
-      renderPrecheckBox(pre);
+      // aggiorna tag pre-check in header (niente box dedicato)
       if (!pre.ok) {
         setTestStatus(0, 'ko');
+        setPrecheckTag('ko');
         // Fallimento pre-check: marca l'intera suite come KO e interrompi
         for (let i=1;i<plan.length;i++) setTestStatus(i,'ko');
         setProgressRunning(false);
-        const el = document.getElementById('testResults');
-        if (el) el.innerHTML = `<div style="color:#721c24;background:#fbe8e8;border:1.5px solid #e6b6b6;padding:1em;border-radius:8px;">`+
-          `<b>Pre check falliti.</b><br>`+
-          `${pre.message || 'Verifica servizi/API prima di eseguire i test E2E.'}</div>`;
+        // Non mostrare riquadro esito per Test 0: lo stato è indicato nel tag in alto
         return;
       }
       setTestStatus(0, 'ok');
+      setPrecheckTag('ok');
       // Aggiorna pill versione header, se disponibile
       if (pre.version) {
         const tag = document.getElementById('quickVersion');
@@ -237,12 +238,12 @@
           <div id="progressHeader" style="display:flex;align-items:center;gap:10px;color:#333;">
             <span class="spinner" id="spinner" aria-hidden="true"></span>
             <span id="progressText">Esecuzione test in corso...</span>
+            <span id="precheckStatus" class="kv-tag tag-running" title="Esito Pre-check">Pre-check in corso</span>
             <span id="quickVersion" class="kv-tag" style="margin-left:auto" title="Versione applicazione"></span>
           </div>
           <ul id="testList" class="test-list" aria-live="polite" aria-label="Elenco dei test">
             <!-- popolato da initTestProgress -->
           </ul>
-          <div id="precheckBox" class="precheck-box" style="display:none"></div>
           <div id="testResults" style="margin-top:1em;min-height:2em;overflow-y:auto;max-height:45vh;"></div>
           <button onclick="closeTestPopup()" style="margin-top:1.5em;align-self:center;padding:0.5em 2em;font-size:1em;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;">Chiudi</button>
         </div>
@@ -295,6 +296,16 @@
       if (txt) txt.textContent = isRunning ? 'Esecuzione test in corso...' : 'Esecuzione completata';
     }
 
+    // Aggiorna il tag di stato del Pre-check nel header
+    function setPrecheckTag(state){
+      const tag = document.getElementById('precheckStatus');
+      if (!tag) return;
+      tag.classList.remove('tag-running','tag-ok','tag-ko');
+      if (state === 'ok') { tag.classList.add('tag-ok'); tag.textContent = 'Pre-check OK'; }
+      else if (state === 'ko') { tag.classList.add('tag-ko'); tag.textContent = 'Pre-check KO'; }
+      else { tag.classList.add('tag-running'); tag.textContent = 'Pre-check in corso'; }
+    }
+
     // Recupero rapido della versione dall'API (senza attendere Playwright)
     async function quickFetchVersion(){
       try {
@@ -342,19 +353,7 @@
       return out;
     }
 
-    function renderPrecheckBox(pre){
-      const box = document.getElementById('precheckBox');
-      if (!box) return;
-      box.style.display = 'block';
-      const icon = (ok) => ok ? '✅' : '❌';
-      const items = [
-        `${icon(!!pre.version)} Versione: <code>${pre.version ?? 'N/D'}</code>`,
-        `${icon(pre.nLingue>0)} Lingue: <b>${pre.nLingue ?? 'N/D'}</b>`,
-        `${icon(pre.nLuoghi>0)} Luoghi: <b>${pre.nLuoghi ?? 'N/D'}</b>`
-      ];
-      box.innerHTML = `<b>Esito Test 0: Pre check</b><br><ul style="margin:0.4em 0 0 1em;">` +
-        items.map(i=>`<li>${i}</li>`).join('') + `</ul>`;
-    }
+    // RIMOSSO: nessun riquadro di dettaglio per il pre-check
     const select = document.getElementById('linguaSelect');
     const btn = document.querySelector('button');
     const errorMsg = document.getElementById('errorMsg');
