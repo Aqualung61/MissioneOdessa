@@ -44,6 +44,21 @@ await loadLuoghi(DB_PATH);
 app.use('/api', apiRoutes);
 app.use('/api/lingue', linguaRoutes);
 
+// Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
+if (process.env.NODE_ENV === 'test') {
+  app.post('/api/shutdown', async (req, res) => {
+    try {
+      res.json({ ok: true });
+    } catch {}
+    // Chiudi il server con un piccolo delay per dare tempo alla risposta di partire
+    setTimeout(() => {
+      server.close(() => {
+        process.exit(0);
+      });
+    }, 50);
+  });
+}
+
 // Statico dopo le API
 app.use(express.static(ROOT));
 
@@ -54,17 +69,4 @@ app.use((req, res) => {
 
 const server = app.listen(PORT, () => {
   console.log(`Server unico avviato su http://localhost:${PORT}/`);
-});
-
-// Endpoint di spegnimento "graceful" per pipeline/test
-app.post('/api/shutdown', async (req, res) => {
-  try {
-    res.json({ ok: true });
-  } catch {}
-  // Chiudi il server con un piccolo delay per dare tempo alla risposta di partire
-  setTimeout(() => {
-    server.close(() => {
-      process.exit(0);
-    });
-  }, 50);
 });
