@@ -74,5 +74,5 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 
 ## Stato
 
-- Branch freeze: `freeze-20251031` allineato e stabile.
+- Branch freeze: `freeze-20251104` (v1.1.0) allineato e stabile.
 - Smoke (suite=smoke) via API: ~9–10 secondi su ambiente locale.
