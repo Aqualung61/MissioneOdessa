@@ -59,8 +59,8 @@
       if (!pre.ok) {
         setTestStatus(0, 'ko');
         setPrecheckTag('ko');
-        // Fallimento pre-check: marca l'intera suite come KO e interrompi
-        for (let i=1;i<plan.length;i++) setTestStatus(i,'ko');
+  // Fallimento pre-check: marca l'intera suite come KO e interrompi
+  for (let i = 1; i < plan.length; i++) setTestStatus(i, 'ko');
         setProgressRunning(false);
         // Non mostrare riquadro esito per Test 0: lo stato è indicato nel tag in alto
         return;
@@ -289,7 +289,7 @@
       pill.textContent = text;
     }
 
-    function setProgressRunning(isRunning){
+    function setProgressRunning(isRunning) {
       const spinner = document.getElementById('spinner');
       const txt = document.getElementById('progressText');
       if (spinner) spinner.style.visibility = isRunning ? 'visible' : 'hidden';
@@ -297,7 +297,7 @@
     }
 
     // Aggiorna il tag di stato del Pre-check nel header
-    function setPrecheckTag(state){
+    function setPrecheckTag(state) {
       const tag = document.getElementById('precheckStatus');
       if (!tag) return;
       tag.classList.remove('tag-running','tag-ok','tag-ko');
@@ -305,22 +305,9 @@
       else if (state === 'ko') { tag.classList.add('tag-ko'); tag.textContent = 'Pre-check KO'; }
       else { tag.classList.add('tag-running'); tag.textContent = 'Pre-check in corso'; }
     }
-
-    // Recupero rapido della versione dall'API (senza attendere Playwright)
-    async function quickFetchVersion(){
-      try {
-        const res = await fetch('/api/version');
-        const data = await res.json();
-        if (data?.version) {
-          window.quickVersion = data.version;
-          const tag = document.getElementById('quickVersion');
-          if (tag) tag.textContent = `Versione: ${data.version}`;
-        }
-      } catch {}
-    }
     
     // Esegue i pre-check in blocco (versione, lingue, luoghi)
-    async function runPreChecks(){
+    async function runPreChecks() {
       const out = { ok: true, version: null, nLingue: null, nLuoghi: null, message: '', details: [] };
       try {
         const [vRes, lingRes, luogoRes] = await Promise.all([
