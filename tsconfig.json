@@ -3,8 +3,11 @@
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "dist",
-    "rootDir": "src",
+  "outDir": "dist",
+  // Permettiamo a TS Server di includere anche i test senza errori TS6059
+  // (la build vera usa tsconfig.build.json che esclude i test).
+  "rootDir": ".",
+  "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
