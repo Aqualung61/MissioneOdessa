@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "npx node src/server.js",
-  "dev:watch": "npx node --watch src/server.js",
+    "dev": "node src/server.js",
+    "dev:watch": "node --watch src/server.js",
     "start": "node src/server.js",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
