@@ -15,7 +15,9 @@ function Set-RepoLabel {
     gh label create $Name --color $Color --description $Description --repo $Repo | Out-Null
     Write-Host "Label created: $Name"
   } else {
-    Write-Host "Label exists: $Name"
+    # Aggiorna color/description per garantire idempotenza completa
+    gh label edit $Name --color $Color --description $Description --repo $Repo | Out-Null
+    Write-Host "Label updated: $Name"
   }
 }
 

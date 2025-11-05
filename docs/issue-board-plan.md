@@ -20,9 +20,10 @@ Questo documento definisce struttura, etichette e flusso del board (GitHub Proje
 - Unreleased (attività correnti non ancora pianificate in una release)
 
 ## Regole rapide
-- Ogni issue ha accettazione chiara; link a PR quando aperta.
-- Quando si apre una PR, spostare l'issue in “In review”.
-- Chiudere l’issue solo quando la PR è mergiata su main (Done).
+- Ogni issue deve avere criteri di accettazione chiari ("Definition of Done").
+- Quando apri una PR, collega la PR all'issue (usa il campo "Linked issues" o la keyword "Fixes #<id>" nella descrizione) e aggiungi il link nell'issue.
+- Alla creazione della PR, sposta la card dell'issue su “In review”.
+- Chiudi l’issue solo quando la PR è stata mergiata su main (collega l'auto-close con "Fixes #<id>").
 
 ## Backlog iniziale (proposta)
 1. feat: Persistenza stato di gioco (snapshot per sessione) [area:engine, priority:P1]
