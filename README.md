@@ -60,6 +60,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 
 ## Release notes
 
+- Unreleased: vedi `docs/release-notes/Unreleased.md`.
 - 2025-11-04 – v1.1.0 (freeze-20251104): vedi `docs/release-notes/2025-11-04_v1.1.0_freeze-20251104.md`.
 - 2025-11-04 – freeze-20251031: vedi `docs/release-notes/2025-11-04_freeze-20251031.md`.
 
