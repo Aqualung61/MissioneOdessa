@@ -17,6 +17,7 @@ export default [
       'coverage/',
       'test-results/',
       '*.min.js',
+      'types/**/*.d.ts',
     ],
   },
   js.configs.recommended,
