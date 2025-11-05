@@ -47,7 +47,7 @@ export async function ensureVocabulary(dbPath) {
        JOIN VociLessico vl ON vl.TermineID = tl.ID
        WHERE vl.LinguaID = 1`
     );
-  const tokenMap = new Map();
+    const tokenMap = new Map();
     const canonicalByTerm = new Map();
 
     function mapTipoToCommandType(tipo) {
@@ -164,8 +164,8 @@ export async function parseCommand(dbPath, input) {
 
   // Caso 1 token
   if (filteredTokens.length === 1) {
-  const { token, info } = filteredTokens[0];
-  if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
+    const { token, info } = filteredTokens[0];
+    if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
     if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
       return {
         ...base,
@@ -201,7 +201,7 @@ export async function parseCommand(dbPath, input) {
     const extra = filteredTokens.length === 3 && idx === null;
     if (extra) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 
-  if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+    if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 
     if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
       // Non devono avere oggetto

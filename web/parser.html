@@ -69,15 +69,14 @@
     API: <code>POST /api/parser/parse</code> — Usa il DB locale configurato (<code>ODESSA_DB_PATH</code>)
   </footer>
   <script>
-    const $ = (sel) => document.querySelector(sel);
-    const $out = $('#out');
-    const $cmd = $('#cmd');
-    const $run = $('#run');
-  const $samples = document.querySelectorAll('.sample');
-  const $exec = document.getElementById('exec');
-  const $btnState = document.getElementById('btnState');
-  const $btnReset = document.getElementById('btnReset');
-  const $statePanel = document.getElementById('statePanel');
+    const $out = document.getElementById('out');
+    const $cmd = document.getElementById('cmd');
+    const $run = document.getElementById('run');
+    const $samples = document.querySelectorAll('.sample');
+    const $exec = document.getElementById('exec');
+    const $btnState = document.getElementById('btnState');
+    const $btnReset = document.getElementById('btnReset');
+    const $statePanel = document.getElementById('statePanel');
 
     function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
       ">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
