@@ -109,7 +109,9 @@ export async function ensureVocabulary(dbPath) {
 function normalizeInput(input) {
   const withoutPunct = input
     // sostituisci punteggiatura comune con spazio, ma NON rimuovere '?' che è un comando valido
-    // Nota lint: non è necessario escapare "[" dentro una classe di caratteri; manteniamo l'escape solo per "]"
+    // Nota: in una character class JS, ']' chiude la classe. Per includerlo va escapato (\]) oppure
+    // posizionato come primo carattere della classe; qui manteniamo l'escape per chiarezza.
+    // '[' invece non necessita di escape all'interno della classe.
     .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
   const noAcc = withoutPunct.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return noAcc.trim().toUpperCase().replace(/\s+/g, ' ');
