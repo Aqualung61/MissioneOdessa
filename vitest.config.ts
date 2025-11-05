@@ -2,7 +2,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    // Escludi test E2E Playwright dalla run di Vitest
+    include: [
+      'tests/**/*.test.ts',
+      'src/tests/**/*.test.ts',
+    ],
+    // Escludi test E2E Playwright dalla run di Vitest e altre cartelle di build
     exclude: [
       'node_modules',
       'dist',
@@ -11,5 +15,5 @@ export default defineConfig({
       '**/e2e/**',
       '**/*.e2e.*'
     ]
-  }
+  },
 });
