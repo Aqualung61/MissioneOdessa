@@ -112,7 +112,9 @@ function normalizeInput(input) {
     // Nota: in una character class JS, ']' chiude la classe. Per includerlo va escapato (\]) oppure
     // posizionato come primo carattere della classe; qui manteniamo l'escape per chiarezza.
     // '[' invece non necessita di escape all'interno della classe.
-    .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
+  // Manteniamo qui l'escape esplicito di ']' (\]) per massima leggibilità; '[' resta
+  // non escapato perché non necessario all'interno della classe.
+  .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
   const noAcc = withoutPunct.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return noAcc.trim().toUpperCase().replace(/\s+/g, ' ');
 }
