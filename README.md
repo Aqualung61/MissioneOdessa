@@ -1,6 +1,8 @@
 
 # Missione Odessa App
 
+[![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
+
 Applicazione adventure testuale con backend Node.js/Express, frontend statico e API REST su SQLite.
 
 ## Avvio rapido
