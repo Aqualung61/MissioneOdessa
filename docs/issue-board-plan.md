@@ -16,7 +16,7 @@ Questo documento definisce struttura, etichette e flusso del board (GitHub Proje
 - triage (nuove issue da classificare)
 
 ## Milestone
-- v1.3.0 (prossima iterazione significativa)
+- Next release (prossima iterazione significativa)
 - Unreleased (attività correnti non ancora pianificate in una release)
 
 ## Regole rapide

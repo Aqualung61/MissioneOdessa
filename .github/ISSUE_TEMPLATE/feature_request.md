@@ -13,7 +13,7 @@ Descrivi il problema o l'opportunità che questa feature risolve.
 Spiega il comportamento desiderato, con esempi.
 
 ## Accettazione
-- [ ] Test unitari/integrazione aggiornati
+- [ ] Test unitari/di integrazione aggiornati
 - [ ] Documentazione aggiornata (README/docs)
 - [ ] Impatto su API/DB valutato
 

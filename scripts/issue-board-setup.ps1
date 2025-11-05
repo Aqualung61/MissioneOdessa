@@ -3,13 +3,14 @@ Param(
 )
 
 # Richiede GitHub CLI (gh) autenticato.
-# Crea etichette standard se mancanti. Idempotente.
+# Crea etichette standard se mancanti. idempotente.
 
 $ErrorActionPreference = 'Stop'
 
 function Set-RepoLabel {
   param([string]$Name, [string]$Color, [string]$Description)
-  $exists = gh label list --repo $Repo --search $Name | Select-String -Pattern "^$Name\b" -Quiet
+  $escapedName = [regex]::Escape($Name)
+  $exists = gh label list --repo $Repo --search $Name | Select-String -Pattern "^$escapedName\b" -Quiet
   if (-not $exists) {
     gh label create $Name --color $Color --description $Description --repo $Repo | Out-Null
     Write-Host "Label created: $Name"
