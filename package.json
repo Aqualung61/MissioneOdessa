@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "build": "tsc -p tsconfig.build.json",
   "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "hooks:use": "git config core.hooksPath hooks",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --ext .js,.ts",

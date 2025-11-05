@@ -1,0 +1,2 @@
+# Enforce LF for Git hooks to avoid sh shebang issues on Windows
+hooks/* text eol=lf
