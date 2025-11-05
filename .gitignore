@@ -16,3 +16,7 @@ yarn-error.log*
 
 # Ignora tutto ciò che è in deploy/
 deploy/
+
+# Test artifacts
+tests/**/*.js
+src/tests/**/*.js
