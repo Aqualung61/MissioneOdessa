@@ -12,6 +12,8 @@ export default defineConfig({
       'dist',
       'build',
       'deploy/**',
+      // Escludi in modo esplicito eventuali e2e sotto src/tests
+      'src/tests/e2e/**',
       '**/e2e/**',
       '**/*.e2e.*'
     ]
