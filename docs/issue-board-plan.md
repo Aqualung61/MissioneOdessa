@@ -20,8 +20,8 @@ Questo documento definisce struttura, etichette e flusso del board (GitHub Proje
 - Unreleased (attività correnti non ancora pianificate in una release)
 
 ## Regole rapide
-- Ogni issue deve avere criteri di accettazione chiari ("Definition of Done").
-- Quando apri una PR, collega la PR all'issue (usa il campo "Linked issues" o la keyword "Fixes #<id>" nella descrizione) e aggiungi il link nell'issue.
+- Ogni issue deve avere criteri di accettazione chiari ("Definizione di Completamento").
+- Quando apri una PR, collega la PR all'issue (usa il campo “Linked issues” o la keyword "Fixes #<id>" nella descrizione) e aggiungi il link nell'issue.
 - Alla creazione della PR, sposta la card dell'issue su “In review”.
 - Chiudi l’issue solo quando la PR è stata mergiata su main (collega l'auto-close con "Fixes #<id>").
 
