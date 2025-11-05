@@ -4,7 +4,7 @@ Data: TBA
 Branch: main
 
 ## Sintesi
-Piccole rifiniture alla configurazione di build e test, idempotenza completa dello script etichette e chiarimenti di workflow per il board.
+Miglioramenti significativi alla configurazione di build (separazione build/test, risoluzione TS6059), configurazione esplicita dei test, idempotenza completa per la gestione etichette e chiarimenti sui workflow del board.
 
 ## Modifiche
 - Build/TypeScript
@@ -17,7 +17,7 @@ Piccole rifiniture alla configurazione di build e test, idempotenza completa del
   - `scripts/issue-board-setup.ps1`: aggiornamento etichette esistenti con `gh label edit` (idempotenza completa di colore/descrizione).
   - `package.json`: rimozione prefisso `npx` dai dev scripts dove non necessario.
 - Documentazione
-  - `docs/issue-board-plan.md`: chiarito il linking PR ↔ issue (campo “Linked issues” / keyword "Fixes #<id>") e tradotto "Definition of Done" → "Definizione di Completamento".
+  - `docs/issue-board-plan.md`: chiarito il linking PR ↔ issue (campo “Linked issues” / keyword "Fixes #<id>") e introdotta la dicitura italiana "Definizione di Completamento" come chiarimento terminologico per "Definition of Done" nel workflow.
 
 ## Quality gates
 - Build: PASS
