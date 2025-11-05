@@ -8,6 +8,7 @@
     "dev:watch": "node --watch src/server.js",
     "start": "node src/server.js",
     "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --ext .js,.ts",
