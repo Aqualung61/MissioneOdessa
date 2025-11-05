@@ -1,5 +1,4 @@
 name: CI
-
 on:
   push:
     branches:
@@ -9,7 +8,7 @@ on:
       - main
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
