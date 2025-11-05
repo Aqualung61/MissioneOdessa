@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "include": ["src/**/*.ts", "types/**/*.d.ts"],
-  "exclude": ["tests/**/*.ts", "src/tests/**/*.ts", "node_modules", "dist"]
+  // Escludiamo intere directory di test (sia root che sotto src)
+  "exclude": ["tests", "src/tests", "node_modules", "dist"]
 }
