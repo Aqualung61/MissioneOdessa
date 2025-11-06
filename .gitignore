@@ -8,6 +8,20 @@ dist/
 
 # SQLite
 # (nessun percorso Prisma necessario)
+db/Odessa.db
+
+# Fogli di calcolo / documenti binari di lavoro (non versionati)
+docs/miscellaneous/*.xlsx
+docs/miscellaneous/*.xls
+docs/miscellaneous/*.docx
+docs/miscellaneous/*OLD.xlsx
+docs/miscellaneous/*.bmp
+
+# Esportazioni CSV storiche che non sono fonte autoritativa (mantieni solo quelle necessarie)
+docs/miscellaneous/Luoghi - v3.csv
+
+# PDF generati / materiali di riferimento pesanti (ignora, tieni nel drive se servono)
+docs/miscellaneous/*.pdf
 
 # Logs
 npm-debug.log*
