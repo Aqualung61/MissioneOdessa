@@ -2,7 +2,7 @@
 const url = 'http://localhost:3001/api/version';
 
 (async () => {
-  try{
+  try {
     const res = await fetch(url);
     const data = await res.json();
     console.log('status', res.status, 'body', data);

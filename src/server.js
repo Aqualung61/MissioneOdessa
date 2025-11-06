@@ -27,7 +27,7 @@ console.log(`Missione Odessa - Versione: ${version}`);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const DB_PATH = process.env.ODESSA_DB_PATH || './db/odessa.db';
+const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 
 // API: versione applicazione
@@ -54,7 +54,10 @@ if (process.env.NODE_ENV === 'test') {
   app.post('/api/shutdown', async (req, res) => {
     try {
       res.json({ ok: true });
-    } catch {}
+    } catch {
+      // In contesto test può fallire l'invio risposta: prosegui comunque allo shutdown
+      ;
+    }
     // Chiudi il server con un piccolo delay per dare tempo alla risposta di partire
     setTimeout(() => {
       server.close(() => {
