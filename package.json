@@ -1,6 +1,6 @@
 {
   "name": "20251029---missione-odessa-app",
-  "version": "1.2.1-dev",
+  "version": "1.2.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,8 @@
     "hooks:use": "git config core.hooksPath hooks",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:nav": "node scripts/check-nav-voci.js",
+    "db:apply-indices": "node scripts/apply-indices.js",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write .",

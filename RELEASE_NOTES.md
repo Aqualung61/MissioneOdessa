@@ -11,6 +11,26 @@
 
 ---
 
+## v1.2.2 (06/11/2025)
+
+### Novità principali
+- Nuova pagina principale: `web/odessa_main.html` promossa a entrypoint dell'app.
+- `index.html` aggiornato: redirect alla nuova pagina principale con selezione lingua.
+- Pannello stella/UI direzioni: click-to-move su lettere N/E/S/O e controlli Su/Giù; tooltip dinamici e stati attivo/disabilitato.
+- Comportamento input: i click su lettere/Su/Giù non inseriscono testo nell'input.
+
+### Migliorie tecniche
+- Micro-ottimizzazioni performance: cache DOM centralizzata, riduzione query ripetute.
+- `applyDirectionStates(cur)` per centralizzare tooltip e classi UI; separazione `showCurrent()`/`updateLayoutPanels()`.
+- Micro-profilazione: `window.__odPerf` con log periodici via `performance.now()`.
+- CSS: background stella via `image-set`, rimozione preload non necessario; `content-visibility` sul feed descrizioni.
+- Fix sintassi/robustezza: bilanciamento parentesi e cleanup duplicazioni legacy.
+
+### Note
+- Pulizia sandbox: rimossi file obsoleti `web/odessa_main2.html` e `web/css/odessa_main2.css`.
+
+---
+
 ## v1.0.0 (31/10/2025)
 
 ### Novità principali
