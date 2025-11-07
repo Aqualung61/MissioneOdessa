@@ -1,4 +1,5 @@
 // Nessuna logica click/hover: solo visualizzazione direzioni
+// Modifica 20251107: aggiunta logica click sulle direzioni abilitate
 function updateDirectionUI(cur) {
   // ...existing code...
   // Se luogo terminale, tutte le direzioni sono disabilitate
@@ -22,6 +23,13 @@ function updateDirectionUI(cur) {
         }
         el.classList.toggle('active', enabled);
         el.classList.toggle('disabled', !enabled);
+        // Logica click: solo se abilitato
+        el.style.cursor = enabled ? 'pointer' : 'default';
+        el.onclick = enabled ? function(e) {
+          e.preventDefault();
+          // Esegui comando direzione come input
+          handleDirectionClick(it);
+        } : null;
       }
     });
   });
@@ -43,14 +51,86 @@ function updateDirectionUI(cur) {
         if (dot) {
           dot.classList.toggle('active', enabled);
           dot.classList.toggle('disabled', !enabled);
+          dot.style.cursor = enabled ? 'pointer' : 'default';
+          dot.onclick = enabled ? function(e) {
+            e.preventDefault();
+            handleDirectionClick(it);
+          } : null;
         }
         lbl.classList.toggle('active', enabled);
         lbl.classList.toggle('disabled', !enabled);
+        lbl.style.cursor = enabled ? 'pointer' : 'default';
+        lbl.onclick = enabled ? function(e) {
+          e.preventDefault();
+          handleDirectionClick(it);
+        } : null;
         item.classList.toggle('active', enabled);
         item.classList.toggle('disabled', !enabled);
       }
     });
   });
+}
+
+// Funzione di gestione click direzione
+function handleDirectionClick(dir) {
+  if (awaitingRestart) return;
+  let field = null;
+  if (dir.length === 1) {
+    // Se S, può essere Sud o Su
+    if (dir.toUpperCase() === 'S') {
+      if (current['Sud'] && current['Sud'] !== 0) {
+        field = 'Sud';
+      } else if (current['Su'] && current['Su'] !== 0) {
+        field = 'Su';
+      }
+    } else {
+      field = DIRECTIONS.find(d => d[0].toUpperCase() === dir[0].toUpperCase());
+    }
+  } else if (dir.toUpperCase() === 'SUD') {
+    field = 'Sud';
+  } else if (dir.toUpperCase() === 'SU') {
+    field = 'Su';
+  } else {
+    field = DIRECTIONS.find(d => d.toUpperCase() === dir.toUpperCase());
+  }
+  if (!field || !DIRECTIONS.includes(field)) {
+    // Messaggio di errore in placeFeed
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = 'Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O.';
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
+    return;
+  }
+  const nextId = current[field];
+  if (!nextId || nextId === 0) {
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = `Comando: ${dir} → muro (0)\nNon puoi andare in quella direzione.`;
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
+    return;
+  }
+  const next = luoghi.find(l => l.ID === nextId);
+  if (!next) {
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = `Luogo con ID=${nextId} non trovato!`;
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
+    return;
+  }
+  current = next;
+  showCurrent();
 }
 
 
