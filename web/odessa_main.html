@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Missione Odessa - Gioco (v2 semplificata)</title>
+  <script>
+    // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
+    // Reindirizza automaticamente al server locale mantenendo i parametri query.
+    (function(){
+      try{
+        if (location.protocol === 'file:'){
+          var target = 'http://localhost:3001/web/odessa_main.html' + (location.search||'');
+          location.replace(target);
+        }
+      }catch(e){}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/odessa_main.css" />
+</head>
+<body>
+  <div class="layout">
+    <section class="left" aria-label="Immagine di Missione Odessa">
+      <img src="../images/Missione Odessa Adventure - main.png" alt="Missione Odessa" />
+    </section>
+
+    <section class="right">
+      <div id="outputWrapper">
+        <h2 id="outputTitle" aria-hidden="true">Gioco</h2>
+        <div id="output" style="display:none"></div>
+        <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
+        <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
+      </div>
+
+      <div id="inputBar">
+        <form id="inputArea" autocomplete="off">
+          <input id="userInput" type="text" placeholder="Dove vuoi andare? (Nord, Est, Sud, Ovest, Su, Giu | iniziali: N/E/S/O)" />
+          <button id="sendBtn" type="submit">Invia</button>
+        </form>
+      </div>
+
+      <div id="linguaScelta">Lingua selezionata:</div>
+      <aside id="squarePanel" aria-hidden="true">
+        <div class="vg-letters" aria-hidden="true">
+          <span class="vlet N">N</span>
+          <span class="vlet E">E</span>
+          <span class="vlet S">S</span>
+          <span class="vlet O">O</span>
+        </div>
+        <div class="vg-controls" aria-hidden="true">
+          <div class="vg-item"><span class="vg-dot"></span><span class="vg-label">Su</span></div>
+          <div class="vg-item"><span class="vg-dot"></span><span class="vg-label">Giu</span></div>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    // Mostra la lingua scelta (descrizione) sotto la barra input
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '0';
+    let descrizione = localStorage.getItem('linguaDescrizione') || '';
+    function setLingua(text) {
+      const el = document.getElementById('linguaScelta');
+      if (el) el.textContent = text ? ('Lingua selezionata: ' + text) : '';
+    }
+    if (!descrizione && idLingua && idLingua !== '0') {
+      fetch('/api/lingue')
+        .then(res => res.json())
+        .then(data => {
+          const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === idLingua);
+          if (lingua) {
+            const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
+            descrizione = nome || '';
+            if (descrizione) {
+              setLingua(descrizione);
+              localStorage.setItem('linguaDescrizione', descrizione);
+            }
+          }
+        })
+        .catch(() => {});
+    } else if (descrizione) {
+      setLingua(descrizione);
+    }
+  </script>
+  <!-- cache-bust -->
+  <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
+  <script src="odessa1.js?v=20251106_12" type="module"></script>
+</body>
+</html>
