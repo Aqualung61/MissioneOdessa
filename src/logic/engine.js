@@ -1,3 +1,13 @@
+// Stub: esecuzione comando asincrona (da implementare secondo logica app)
+export async function executeCommandAsync(parseResult) {
+  // Puoi aggiungere logica custom async qui se serve
+  return executeCommand(parseResult);
+}
+// Stub: conferma riavvio (da implementare secondo logica app)
+export function confirmRestart() {
+  // Puoi aggiungere logica custom qui se serve
+  return true;
+}
 // Engine: mapping ParseResult -> Command DTO ed esecuzione (stub con stato minimale)
 
 // Stato di gioco minimale (singleton in memoria)

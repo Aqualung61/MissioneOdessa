@@ -70,12 +70,26 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 #outputTitle { margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333; }
 #output { flex: 1 1 auto; overflow-y: auto; white-space: pre-line; font-size: 16px; line-height: 1.35; }
 
 /* Feed descrizioni + messaggi in un unico scroller */
-#placeFeed { font-size: 16px; line-height: 1.4; content-visibility: auto; contain-intrinsic-size: 220px; }
+#placeFeed {
+  font-size: 16px;
+  line-height: 1.4;
+  content-visibility: auto;
+  contain-intrinsic-size: 220px;
+  flex: none;
+  box-sizing: border-box;
+  padding-right: 0;
+  width: 100%;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
 #placeFeed .entry { padding: 8px 0 6px 0; }
 #placeFeed .entry-name { font-weight: 600; margin-bottom: 2px; }
 #placeFeed .entry-desc { white-space: pre-line; }

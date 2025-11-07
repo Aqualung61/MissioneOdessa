@@ -1,4 +1,3 @@
--- DDL: Tabella LessicoSoftware (Bridge M:N)
 CREATE TABLE LessicoSoftware (
     ID_Software INTEGER NOT NULL,
     ID_Voce INTEGER NOT NULL,

@@ -1,3 +1,57 @@
+// Nessuna logica click/hover: solo visualizzazione direzioni
+function updateDirectionUI(cur) {
+  // ...existing code...
+  // Se luogo terminale, tutte le direzioni sono disabilitate
+  const isTerminal = cur && cur.Terminale === -1;
+  const dirMap = { 'Nord': 'N', 'Est': 'E', 'Sud': 'S', 'Ovest': 'O' };
+  Object.entries(dirMap).forEach(([it, letter]) => {
+    const vlets = document.querySelectorAll('#squarePanel .vlet');
+    vlets.forEach(el => {
+      if (el.textContent.trim() === letter) {
+        let enabled;
+        if (isTerminal) {
+          enabled = false;
+        } else {
+          // Sud: abilitato se cur['Sud'] > 0
+          if (it === 'Sud') {
+            enabled = cur && cur['Sud'] && cur['Sud'] > 0;
+          } else {
+            const val = cur ? cur[it] : undefined;
+            enabled = val && val !== 0;
+          }
+        }
+        el.classList.toggle('active', enabled);
+        el.classList.toggle('disabled', !enabled);
+      }
+    });
+  });
+  // Bottoni verticali Su/Giu
+  const vertMap = { 'Su': 'Su', 'Giu': 'Giu' };
+  Object.entries(vertMap).forEach(([it, label]) => {
+    const items = document.querySelectorAll('#squarePanel .vg-item');
+    items.forEach(item => {
+      const lbl = item.querySelector('.vg-label');
+      if (lbl && lbl.textContent.trim() === label) {
+        const dot = item.querySelector('.vg-dot');
+        let enabled;
+        if (isTerminal) {
+          enabled = false;
+        } else {
+          const val = cur ? cur[it] : undefined;
+          enabled = val && val !== 0;
+        }
+        if (dot) {
+          dot.classList.toggle('active', enabled);
+          dot.classList.toggle('disabled', !enabled);
+        }
+        lbl.classList.toggle('active', enabled);
+        lbl.classList.toggle('disabled', !enabled);
+        item.classList.toggle('active', enabled);
+        item.classList.toggle('disabled', !enabled);
+      }
+    });
+  });
+}
 
 
 // odessa1.js - Adventure game client-side (usa dati reali via API)
@@ -19,6 +73,7 @@ const userInput = document.getElementById('userInput');
 
 let luoghi = [];
 let current = null;
+let awaitingRestart = false;
 
 function print(msg) {
   output.textContent += (output.textContent ? '\n' : '') + msg;
@@ -26,53 +81,126 @@ function print(msg) {
 }
 
 function showCurrent() {
+  // ...existing code...
+  // Visualizza descrizione luogo
   if (!current) {
     output.textContent = 'Nessun luogo selezionato.';
+    updateDirectionUI(null);
     return;
   }
-  output.textContent =
-    `ID: ${current.ID}\n` +
-    `Description: ${current.Description}\n` +
-    `North: ${current.North}\n` +
-    `East: ${current.East}\n` +
-    `South: ${current.South}\n` +
-    `West: ${current.West}\n` +
-    `Up: ${current.Up}\n` +
-    `Down: ${current.Down}`;
+  output.textContent = '';
+  updateDirectionUI(current);
+  const placeFeed = document.getElementById('placeFeed');
+  if (placeFeed) {
+    const entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.innerHTML = `<div class='entry-name'>${current.Nome}</div><div class='entry-desc'>${current.Descrizione}</div>`;
+    placeFeed.appendChild(entry);
+    placeFeed.scrollTop = placeFeed.scrollHeight;
+    // Se luogo terminale, mostra messaggio di fine gioco subito dopo la descrizione
+    if (current.Terminale === -1) {
+      const endMsg = document.createElement('div');
+      endMsg.className = 'feed-msg system';
+      endMsg.textContent = 'Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)';
+      placeFeed.appendChild(endMsg);
+      placeFeed.scrollTop = placeFeed.scrollHeight;
+      awaitingRestart = true;
+    }
+  }
 }
-
-
 inputForm.addEventListener('submit', function(e) {
   e.preventDefault();
-  const val = userInput.value.trim();
-  userInput.value = '';
-  if (!DIRECTIONS.includes(val)) {
-    print('Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu.');
+  // Se in attesa di conferma riavvio
+  if (awaitingRestart) {
+    const risposta = userInput.value.trim().toUpperCase();
+    // Accetta S, SI, SÌ, Sì, s, sì, etc.
+    if (/^S(I|Ì)?$/.test(risposta)) {
+      // Reset feed e riparti dal luogo iniziale
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        feed.innerHTML = '';
+      }
+      userInput.value = '';
+      current = luoghi.find(l => l.ID === 1) || luoghi[0];
+      awaitingRestart = false;
+      showCurrent();
+      return;
+    }
+    // Se risposta non valida, ignora qualsiasi input e rimane sulla descrizione terminale
+    userInput.value = '';
+    e.preventDefault();
     return;
   }
-  const field = DIRECTION_TO_FIELD[val];
+  // Gestione input direzione
+  const val = userInput.value.trim();
+  userInput.value = '';
+  let dir = val;
+  let field = null;
+  if (dir.length === 1) {
+    // Se S, può essere Sud o Su
+    if (dir.toUpperCase() === 'S') {
+      if (current['Sud'] && current['Sud'] !== 0) {
+        field = 'Sud';
+      } else if (current['Su'] && current['Su'] !== 0) {
+        field = 'Su';
+      }
+    } else {
+      field = DIRECTIONS.find(d => d[0].toUpperCase() === dir[0].toUpperCase());
+    }
+  } else if (dir.toUpperCase() === 'SUD') {
+    field = 'Sud';
+  } else if (dir.toUpperCase() === 'SU') {
+    field = 'Su';
+  } else {
+    field = DIRECTIONS.find(d => d.toUpperCase() === dir.toUpperCase());
+  }
+  if (!field || !DIRECTIONS.includes(field)) {
+    // Messaggio di errore in placeFeed
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = 'Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O.';
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
+    return;
+  }
   const nextId = current[field];
   if (!nextId || nextId === 0) {
-    print(`Comando: ${val} → muro (0)`);
-    print('Non puoi andare in quella direzione.');
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = `Comando: ${dir} → muro (0)\nNon puoi andare in quella direzione.`;
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
     return;
   }
   const next = luoghi.find(l => l.ID === nextId);
   if (!next) {
-    print(`Luogo con ID=${nextId} non trovato!`);
+    const feed = document.getElementById('placeFeed');
+    if (feed) {
+      const err = document.createElement('div');
+      err.className = 'feed-msg error';
+      err.textContent = `Luogo con ID=${nextId} non trovato!`;
+      feed.appendChild(err);
+      feed.scrollTop = feed.scrollHeight;
+    }
     return;
   }
   current = next;
   showCurrent();
 });
-
-// Carica i dati reali via API
 fetch('/api/luoghi')
   .then(res => res.json())
   .then(data => {
-    luoghi = data;
-    current = luoghi.find(l => l.ID === 8) || luoghi[0];
+  luoghi = data;
+  if (!current) {
+    current = luoghi.find(l => l.ID === 1) || luoghi[0];
     showCurrent();
+  }
   })
   .catch(err => {
     output.textContent = 'Errore nel caricamento dati: ' + err;
