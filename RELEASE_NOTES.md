@@ -31,6 +31,15 @@
 
 ---
 
+## v1.2.3-dev
+
+### Novità
+- Le direzioni nel pannello stella (N/E/S/O/Su/Giu) sono ora cliccabili: il click esegue il comando di movimento corrispondente, senza modificare l’input testuale.
+- Nessuna regressione nota, logica di abilitazione/disabilitazione invariata.
+- Modifica tracciata e reversibile.
+
+---
+
 ## v1.0.0 (31/10/2025)
 
 ### Novità principali
