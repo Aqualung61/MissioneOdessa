@@ -164,27 +164,60 @@ function showCurrent() {
   // ...existing code...
   // Visualizza descrizione luogo
   if (!current) {
-    output.textContent = 'Nessun luogo selezionato.';
+    output.textContent = '';
     updateDirectionUI(null);
+    const placeFeed = document.getElementById('placeFeed');
+    if (placeFeed) {
+      // Scritta "Gioco" con stile personalizzato
+      const gameTitle = document.createElement('div');
+      gameTitle.className = 'game-title-custom';
+      gameTitle.textContent = 'Gioco';
+      gameTitle.style.background = '#d60000'; // rosso vivo
+      gameTitle.style.color = '#fff';
+      gameTitle.style.fontWeight = 'bold';
+      gameTitle.style.fontSize = '1.3em';
+      gameTitle.style.padding = '8px 0';
+      gameTitle.style.textAlign = 'center';
+      gameTitle.style.width = '100%';
+      gameTitle.style.borderRadius = '6px';
+      gameTitle.style.marginBottom = '8px';
+      placeFeed.innerHTML = '';
+      placeFeed.appendChild(gameTitle);
+    }
     return;
   }
   output.textContent = '';
   updateDirectionUI(current);
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
+    // MODIFICA TEMPORANEA: visualizza immagine prima del testo di ogni luogo
     const entry = document.createElement('div');
     entry.className = 'entry';
-    entry.innerHTML = `<div class='entry-name'>${current.Nome}</div><div class='entry-desc'>${current.Descrizione}</div>`;
+    // MODIFICA TEMPORANEA: immagine a sinistra, descrizione a destra
+    // Mostra la linea di separazione solo se non è la prima descrizione
+    const isFirstEntry = placeFeed.childElementCount === 0;
+    entry.innerHTML = `
+      ${isFirstEntry ? '' : `<hr class='temp-separator' style="border:none;border-top:2px solid #3a6e8c;margin:16px 0 8px 0;">`} 
+      <div class='temp-flex-row' style="display:flex;align-items:flex-start;gap:16px;">
+        <div class='temp-img-wrapper' style="flex:0 0 25%;max-width:25%;">
+          <img src='../images/Grosso scalone.jpg' alt='Grosso scalone' style='width:100%;height:auto;display:block;border-radius:8px;' />
+        </div>
+        <div class='temp-desc-wrapper' style="flex:1 1 0;max-width:75%;">
+          <div class='entry-name'>${current.Nome}</div>
+          <div class='entry-desc'>${current.Descrizione}</div>
+        </div>
+      </div>
+    `;
     placeFeed.appendChild(entry);
     placeFeed.scrollTop = placeFeed.scrollHeight;
     // Se luogo terminale, mostra messaggio di fine gioco subito dopo la descrizione
     if (current.Terminale === -1) {
-  const endMsg = document.createElement('div');
-  endMsg.className = 'feed-msg system';
-  endMsg.innerHTML = '<b>Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)</b>';
-  placeFeed.appendChild(endMsg);
-  placeFeed.scrollTop = placeFeed.scrollHeight;
-  awaitingRestart = true;
+      const endMsg = document.createElement('div');
+      endMsg.className = 'feed-msg system';
+      endMsg.innerHTML = '<b>Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)</b>';
+      placeFeed.appendChild(endMsg);
+      placeFeed.scrollTop = feed.scrollHeight;
+      awaitingRestart = true;
     }
   }
 }
