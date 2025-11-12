@@ -22,28 +22,48 @@
 </head>
 <body>
   <div class="layout">
-    <section class="left" aria-label="Immagine di Missione Odessa">
-      <img src="../images/Missione Odessa Adventure - main.png" alt="Missione Odessa" />
+    <section class="left" aria-label="Introduzione Missione Odessa">
+  <div class="odessa-img-wrapper">
+    <img src="../images/MissioneOdessa-Mainimage.jpg" alt="Missione Odessa" class="odessa-img" />
+  </div>
+  <div id="introduzione"></div>
     </section>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Carica e mostra il testo markdown della presentazione nella colonna sinistra
+    fetch('/api/introduzione')
+      .then(res => res.json())
+      .then(data => {
+        // Sostituisci tutte le occorrenze di '\n' (stringa) con newline reale
+        const testo = (data.testo || '').replace(/\\n/g, '\n');
+        document.getElementById('introduzione').innerHTML = marked.parse(testo);
+      });
+  </script>
 
     <section class="right">
-      <div id="outputWrapper">
+  <div id="outputWrapper">
     <h2 id="outputTitle" aria-hidden="true">Gioco</h2>
-    <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
-    <div id="output"></div>
-    <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
+  <!-- Riquadro descrizioni e feed del gioco -->
+  <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
+  <!-- Output principale del gioco (descrizione luogo attuale) -->
+  <div id="output"></div>
+  <!-- Messaggi di sistema, azioni, feedback -->
+  <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
-
       <div id="inputBar">
+        <!-- Area di input per i comandi dell'utente -->
         <form id="inputArea" autocomplete="off">
           <input id="userInput" type="text" placeholder="Dove vuoi andare? (Nord, Est, Sud, Ovest, Su, Giu | iniziali: N/E/S/O)" />
           <button id="sendBtn" type="submit">Invia</button>
         </form>
       </div>
-
       <div id="linguaScelta">Lingua selezionata:</div>
+  <!-- Lingua selezionata dall'utente -->
+  <div id="linguaScelta">Lingua selezionata:</div>
+  <!-- Versione attuale dell'app -->
   <div id="versioneRunning" style="font-size:0.9em;color:#666;margin-top:2px;"></div>
-  <aside id="squarePanel" aria-hidden="true">
+      <aside id="squarePanel" aria-hidden="true">
+        <!-- Pannello direzioni di movimento -->
         <div class="vg-letters" aria-hidden="true">
           <span class="vlet N disabled" title="Nord">N</span>
           <span class="vlet E disabled" title="Est">E</span>

@@ -179,12 +179,12 @@ function showCurrent() {
     placeFeed.scrollTop = placeFeed.scrollHeight;
     // Se luogo terminale, mostra messaggio di fine gioco subito dopo la descrizione
     if (current.Terminale === -1) {
-      const endMsg = document.createElement('div');
-      endMsg.className = 'feed-msg system';
-      endMsg.textContent = 'Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)';
-      placeFeed.appendChild(endMsg);
-      placeFeed.scrollTop = placeFeed.scrollHeight;
-      awaitingRestart = true;
+  const endMsg = document.createElement('div');
+  endMsg.className = 'feed-msg system';
+  endMsg.innerHTML = '<b>Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)</b>';
+  placeFeed.appendChild(endMsg);
+  placeFeed.scrollTop = placeFeed.scrollHeight;
+  awaitingRestart = true;
     }
   }
 }
