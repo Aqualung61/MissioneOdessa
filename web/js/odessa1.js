@@ -216,7 +216,7 @@ function showCurrent() {
       endMsg.className = 'feed-msg system';
       endMsg.innerHTML = '<b>Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)</b>';
       placeFeed.appendChild(endMsg);
-      placeFeed.scrollTop = feed.scrollHeight;
+      placeFeed.scrollTop = placeFeed.scrollHeight;
       awaitingRestart = true;
     }
   }
@@ -309,11 +309,19 @@ inputForm.addEventListener('submit', function(e) {
 fetch('/api/luoghi')
   .then(res => res.json())
   .then(data => {
-  luoghi = data;
-  if (!current) {
+    luoghi = Array.isArray(data) ? data : [];
+    console.log('Luoghi caricati:', luoghi);
+    if (!luoghi.length) {
+      output.textContent = 'Nessun luogo disponibile. Controlla il database.';
+      return;
+    }
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
+    if (!current) {
+      output.textContent = 'Errore: nessun luogo selezionato.';
+      return;
+    }
+    console.log('Current:', current);
     showCurrent();
-  }
   })
   .catch(err => {
     output.textContent = 'Errore nel caricamento dati: ' + err;
