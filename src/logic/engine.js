@@ -1,12 +1,34 @@
+// Stub: entra in luogo terminale (da implementare secondo logica app)
+export async function enterLocation(dbPath, locationId) {
+  // Logica: entra in luogo terminale, imposta stato di riavvio
+  gameState.awaitingRestart = true;
+  gameState.currentLocationId = locationId;
+  console.log('[DEBUG enterLocation] gameState:', JSON.stringify(gameState));
+  return { accepted: true, resultType: 'TERMINAL', locationId };
+}
 // Stub: esecuzione comando asincrona (da implementare secondo logica app)
 export async function executeCommandAsync(parseResult) {
   // Puoi aggiungere logica custom async qui se serve
   return executeCommand(parseResult);
 }
 // Stub: conferma riavvio (da implementare secondo logica app)
-export function confirmRestart() {
-  // Puoi aggiungere logica custom qui se serve
-  return true;
+export function confirmRestart(dbPath, risposta) {
+  // Normalizza risposta
+  const r = (risposta || '').toUpperCase();
+  if (r === 'S' || r === 'SI' || r === 'SÌ') {
+    // Riavvia: torna in location 1, non più in attesa
+    gameState.awaitingRestart = false;
+    gameState.currentLocationId = 1;
+    return { accepted: true, resultType: 'OK' };
+  }
+  if (r === 'NO') {
+    // Termina partita
+    gameState.awaitingRestart = false;
+    gameState.ended = true;
+    return { accepted: true, resultType: 'ENDED' };
+  }
+  // Risposta non riconosciuta: rimane in attesa
+  return { accepted: false, resultType: 'ERROR' };
 }
 // Engine: mapping ParseResult -> Command DTO ed esecuzione (stub con stato minimale)
 
@@ -21,22 +43,41 @@ let gameState = {
   roomItems: [...DEFAULT_STATE.roomItems],
   inventory: [...DEFAULT_STATE.inventory],
   openStates: { ...DEFAULT_STATE.openStates },
+  awaitingRestart: false,
+  currentLocationId: 1,
+  ended: false
 };
-
+// Funzione per resettare lo stato di gioco
 export function resetGameState() {
   gameState = {
     roomItems: [...DEFAULT_STATE.roomItems],
     inventory: [...DEFAULT_STATE.inventory],
     openStates: { ...DEFAULT_STATE.openStates },
+    awaitingRestart: false,
+    currentLocationId: 1,
+    ended: false
   };
 }
-
+  gameState = {
+    roomItems: [...DEFAULT_STATE.roomItems],
+    inventory: [...DEFAULT_STATE.inventory],
+    openStates: { ...DEFAULT_STATE.openStates },
+    awaitingRestart: false,
+    currentLocationId: 1,
+    ended: false
+  };
+// ...nessuna graffa qui
 export function getGameStateSnapshot() {
-  return {
+  const snapshot = {
     roomItems: [...gameState.roomItems],
     inventory: [...gameState.inventory],
     openStates: { ...gameState.openStates },
+    awaitingRestart: gameState.awaitingRestart,
+    currentLocationId: gameState.currentLocationId,
+    ended: gameState.ended,
   };
+  console.log('[DEBUG getGameStateSnapshot] snapshot:', JSON.stringify(snapshot));
+  return snapshot;
 }
 
 function removeFirstMatch(arr, name, index /* optional 1-based */) {

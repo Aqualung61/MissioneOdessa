@@ -11,9 +11,9 @@ async function getNavVoices(): Promise<Array<{ Concetto: string; Voce: string }>
     const rows = await db.all(
       `SELECT tl.Concetto AS Concetto, vl.Voce AS Voce
        FROM TipiLessico t
-       JOIN TerminiLessico tl ON tl.TipoID = t.ID
-       JOIN VociLessico vl ON vl.TermineID = tl.ID
-       WHERE t.NomeTipo = 'NAVIGAZIONE' AND vl.LinguaID = 1`
+       JOIN TerminiLessico tl ON tl.ID_TipoLessico = t.ID_TipoLessico
+       JOIN VociLessico vl ON vl.ID_Termine = tl.ID_Termine
+       WHERE t.NomeTipo = 'NAVIGAZIONE' AND vl.ID_Lingua = 1`
     );
     return rows as Array<{ Concetto: string; Voce: string }>;
   } finally {

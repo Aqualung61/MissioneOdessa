@@ -1,8 +1,8 @@
 # Test DDL e INSERT su nuovo DB odessatest.db
 # Esegue tutti i DDL di creazione e gli script di insert su un DB vuoto
 
-$ddlDir = "../ddl"
-$dbPath = "../test-results/odessatest.db"
+$ddlDir = "$(Resolve-Path "$PSScriptRoot/../ddl")"
+$dbPath = "$(Resolve-Path "$PSScriptRoot/../test-results/odessatest.db")"
 
 # Rimuovi il DB di test se esiste
 if (Test-Path $dbPath) { Remove-Item $dbPath }
