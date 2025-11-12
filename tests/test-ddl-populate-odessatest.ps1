@@ -43,6 +43,10 @@ Get-ChildItem -Path $ddlDir -Filter "08_create_*.sql" | Sort-Object Name | ForEa
     Write-Host "Eseguo DDL: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
 }
+Get-ChildItem -Path $ddlDir -Filter "14_create_*.sql" | Sort-Object Name | ForEach-Object {
+    Write-Host "Eseguo DDL: $($_.Name)"
+    Get-Content $_.FullName | sqlite3 $dbPath
+}
 
 # Esegui tutti gli script di insert (ordinati)
 Get-ChildItem -Path $ddlDir -Filter "11_insert_*.sql" | Sort-Object Name | ForEach-Object {
