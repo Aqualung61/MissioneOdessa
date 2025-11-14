@@ -105,7 +105,9 @@ body {
 		margin: 0 0 8px 0;
 		font-size: 16px;
 		font-weight: 600;
-		color: #333;
+		color: white; /* Imposta il colore del testo in bianco */
+		font-weight: bold;
+		background-color: red; /* Mantieni il colore di sfondo in rosso */
 }
 #output { flex: 1 1 auto; overflow-y: auto; white-space: pre-line; font-size: 16px; line-height: 1.35; }
 

@@ -196,6 +196,7 @@ function showCurrent() {
 
     // Recupera il path dell'immagine
     const imagePath = current.Immagine ? `../images/${current.Immagine}` : './images/dummy.png';
+
     entry.innerHTML = `
       <div class='temp-flex-row' style="display:flex;align-items:flex-start;gap:16px;">
         <div class='temp-img-wrapper' style="flex:0 0 25%;max-width:25%;">
@@ -207,7 +208,13 @@ function showCurrent() {
         </div>
       </div>
     `;
+
+    // Aggiungi una riga di spaziatura tra le descrizioni
+    const spacer = document.createElement('div');
+    spacer.style.height = '16px';
+
     placeFeed.appendChild(entry);
+    placeFeed.appendChild(spacer);
     placeFeed.scrollTop = placeFeed.scrollHeight;
     // Se luogo terminale, mostra messaggio di fine gioco subito dopo la descrizione
     if (current.Terminale === -1) {

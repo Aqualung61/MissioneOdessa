@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Missione Odessa - Gioco (v2 semplificata)</title>
+  <title>Missione Odessa - Adventure Game</title>
   <script>
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
@@ -42,7 +42,14 @@
 
     <section class="right">
   <div id="outputWrapper">
-    <h2 id="outputTitle" aria-hidden="true">Gioco</h2>
+    <pre id="outputTitle" aria-hidden="true"> Gioco</pre>
+    <script>
+      // Aggiungi 80 spazi al testo di #outputTitle
+      const outputTitle = document.getElementById('outputTitle');
+      if (outputTitle) {
+        outputTitle.textContent += ' '.repeat(77);
+      }
+    </script>
   <!-- Riquadro descrizioni e feed del gioco -->
   <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
   <!-- Output principale del gioco (descrizione luogo attuale) -->
