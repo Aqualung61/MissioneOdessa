@@ -1,4 +1,3 @@
-
 import express from 'express';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
@@ -29,7 +28,11 @@ router.post('/run-tests', async (req, res) => {
 router.get('/luoghi', async (req, res) => {
   const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
   const db = await open({ filename: dbPath, driver: sqlite3.Database });
-  const luoghi = await db.all('SELECT * FROM Luoghi');
+  const luoghi = await db.all(`
+    SELECT Luoghi.*, Luoghi_immagine.Immagine, Luoghi.Terminale
+    FROM Luoghi
+    LEFT JOIN Luoghi_immagine ON Luoghi.ID = Luoghi_immagine.ID_Luoghi
+  `);
   await db.close();
   res.json(luoghi);
 });

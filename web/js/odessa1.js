@@ -161,7 +161,6 @@ function print(msg) {
 }
 
 function showCurrent() {
-  // ...existing code...
   // Visualizza descrizione luogo
   if (!current) {
     output.textContent = '';
@@ -186,21 +185,21 @@ function showCurrent() {
     }
     return;
   }
+
   output.textContent = '';
   updateDirectionUI(current);
+
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
-    // MODIFICA TEMPORANEA: visualizza immagine prima del testo di ogni luogo
     const entry = document.createElement('div');
-    entry.className = 'entry';
-    // MODIFICA TEMPORANEA: immagine a sinistra, descrizione a destra
-    // Mostra la linea di separazione solo se non è la prima descrizione
-    const isFirstEntry = placeFeed.childElementCount === 0;
+    entry.className = 'place-entry';
+
+    // Recupera il path dell'immagine
+    const imagePath = current.Immagine ? `../images/${current.Immagine}` : './images/dummy.png';
     entry.innerHTML = `
-      ${isFirstEntry ? '' : `<hr class='temp-separator' style="border:none;border-top:2px solid #3a6e8c;margin:16px 0 8px 0;">`} 
       <div class='temp-flex-row' style="display:flex;align-items:flex-start;gap:16px;">
         <div class='temp-img-wrapper' style="flex:0 0 25%;max-width:25%;">
-          <img src='../images/Grosso scalone.jpg' alt='Grosso scalone' style='width:100%;height:auto;display:block;border-radius:8px;' />
+          <img src='${imagePath}' alt='${current.Nome}' style='width:100%;height:auto;display:block;border-radius:8px;' />
         </div>
         <div class='temp-desc-wrapper' style="flex:1 1 0;max-width:75%;">
           <div class='entry-name'>${current.Nome}</div>
@@ -310,19 +309,14 @@ fetch('/api/luoghi')
   .then(res => res.json())
   .then(data => {
     luoghi = Array.isArray(data) ? data : [];
-    console.log('Luoghi caricati:', luoghi);
     if (!luoghi.length) {
-      output.textContent = 'Nessun luogo disponibile. Controlla il database.';
+      console.error('Nessun luogo trovato!');
       return;
     }
+
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
-    if (!current) {
-      output.textContent = 'Errore: nessun luogo selezionato.';
-      return;
-    }
-    console.log('Current:', current);
     showCurrent();
   })
   .catch(err => {
-    output.textContent = 'Errore nel caricamento dati: ' + err;
+    console.error('Errore nel caricamento dei luoghi:', err);
   });
