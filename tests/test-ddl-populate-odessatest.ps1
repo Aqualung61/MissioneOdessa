@@ -43,6 +43,12 @@ Get-ChildItem -Path $ddlDir -Filter "08_create_*.sql" | Sort-Object Name | ForEa
     Write-Host "Eseguo DDL: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
 }
+# Esegui il DDL per Luoghi_immagine (09)
+$luoghiImg = Join-Path $ddlDir "09_create_Luoghi_immagine.sql"
+if (Test-Path $luoghiImg) {
+    Write-Host "Eseguo DDL: 09_create_Luoghi_immagine.sql"
+    Get-Content $luoghiImg | sqlite3 $dbPath
+}
 Get-ChildItem -Path $ddlDir -Filter "14_create_*.sql" | Sort-Object Name | ForEach-Object {
     Write-Host "Eseguo DDL: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
@@ -78,6 +84,12 @@ Get-ChildItem -Path $ddlDir -Filter "17_insert_*.sql" | Sort-Object Name | ForEa
     Get-Content $_.FullName | sqlite3 $dbPath
 }
 Get-ChildItem -Path $ddlDir -Filter "18_insert_*.sql" | Sort-Object Name | ForEach-Object {
+    Write-Host "Eseguo INSERT: $($_.Name)"
+    Get-Content $_.FullName | sqlite3 $dbPath
+}
+
+# Esegui anche gli script 19_insert_*.sql (es. Luoghi_immagine)
+Get-ChildItem -Path $ddlDir -Filter "19_insert_*.sql" | Sort-Object Name | ForEach-Object {
     Write-Host "Eseguo INSERT: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
 }
