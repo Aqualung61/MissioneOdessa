@@ -1,6 +1,6 @@
 {
   "name": "20251029---missione-odessa-app",
-  "version": "1.2.4-dev",
+  "version": "1.2.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "dev:watch": "node --watch src/server.js",
     "start": "node src/server.js",
     "build": "tsc -p tsconfig.build.json",
-  "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "hooks:use": "git config core.hooksPath hooks",
     "test": "vitest run",
     "test:watch": "vitest",
