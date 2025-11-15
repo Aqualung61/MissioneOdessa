@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Missione Odessa - Adventure Game</title>
+  <script>
+    // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
+    // Reindirizza automaticamente al server locale mantenendo i parametri query.
+    (function(){
+      try{
+        if (location.protocol === 'file:'){
+          var target = 'http://localhost:3001/web/odessa_intro.html' + (location.search||'');
+          location.replace(target);
+        }
+      }catch(e){}
+    })();
+  </script>
+  <script>
+    // Log dei parametri ricevuti da index.html
+    console.log('Parametri ricevuti:', location.search);
+  </script>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/odessa_main.css" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: var(--page-bg); /* Usa lo sfondo principale definito in odessa_main.css */
+    }
+
+    #mainImage {
+      width: 100%;
+      max-width: 1200px;
+      height: auto;
+    }
+
+    html, body {
+      overflow: auto !important; /* Override per rendere la pagina scrollabile */
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #introduzione {
+      flex: 1;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="mainImage" src="../images/MissioneOdessa-Mainimage.jpg" alt="Missione Odessa" style="cursor: pointer;" />
+    <div id="introduzione" style="display: none; margin-top: 20px;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    document.getElementById('mainImage').addEventListener('click', function() {
+      const mainImage = document.getElementById('mainImage');
+      const introduzioneDiv = document.getElementById('introduzione');
+
+      // Nascondi l'immagine e mostra il testo di introduzione
+      mainImage.style.display = 'none';
+      fetch('/api/introduzione')
+        .then(res => res.json())
+        .then(data => {
+          const testo = (data.testo || '').replace(/\\n/g, '\n');
+          // Cambia il background dell'ultima riga di introduzione in rosso e il carattere in bianco
+          const lines = testo.split('\n');
+          lines[lines.length - 1] = `<a href='odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
+          introduzioneDiv.innerHTML = marked.parse(lines.join('\n'));
+          introduzioneDiv.style.display = 'block';
+        })
+        .catch(err => {
+          console.error('Errore nel caricamento dell\'introduzione:', err);
+        });
+    });
+  </script>
+  <!-- cache-bust -->
+  <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
+  <script src="js/odessa1.js?v=20251106_12" type="module"></script>
+</body>
+</html>
