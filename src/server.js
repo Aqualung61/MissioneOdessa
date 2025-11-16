@@ -13,6 +13,7 @@ import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
+// import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
 const __filename = fileURLToPath(import.meta.url);
