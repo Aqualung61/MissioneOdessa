@@ -23,23 +23,10 @@
 <body>
   <div class="layout">
     <section class="left" aria-label="Introduzione Missione Odessa">
-  <div class="odessa-img-wrapper">
-    <img src="../images/MissioneOdessa-Mainimage.jpg" alt="Missione Odessa" class="odessa-img" />
-  </div>
-  <div id="introduzione"></div>
+      <div class="odessa-img-wrapper">
+        <img src="../images/MissioneOdessa-Mainimage.png" alt="Missione Odessa" class="odessa-img" />
+      </div>
     </section>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    // Carica e mostra il testo markdown della presentazione nella colonna sinistra
-    fetch('/api/introduzione')
-      .then(res => res.json())
-      .then(data => {
-        // Sostituisci tutte le occorrenze di '\n' (stringa) con newline reale
-        const testo = (data.testo || '').replace(/\\n/g, '\n');
-        document.getElementById('introduzione').innerHTML = marked.parse(testo);
-      });
-  </script>
-
     <section class="right">
   <div id="outputWrapper">
     <pre id="outputTitle" aria-hidden="true"> Gioco</pre>
