@@ -19,30 +19,36 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
+  <style>
+    /* Modifica per mostrare la barra di scorrimento verticale solo se necessario */
+    body {
+      overflow-y: auto;
+    }
+    /* Aggiunta barra di scorrimento orizzontale per l'intera finestra del browser */
+    body {
+      overflow-x: auto;
+    }
+    /* Cambiato il colore dell'ombra in bianco per l'immagine dinamica */
+    #dynamicPlaceImage {
+      box-shadow: 0px 8px 16px rgba(255, 255, 255, 0.5);
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
-    <section class="left" aria-label="Introduzione Missione Odessa">
-      <div class="odessa-img-wrapper">
-        <img src="../images/MissioneOdessa-Mainimage.png" alt="Missione Odessa" class="odessa-img" />
+    <section class="left" aria-label="Luoghi Missione Odessa">
+      <div class="temp-img-wrapper" style="text-align:center; margin-bottom:16px;">
+        <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" style="max-width:100%; height:auto; border-radius:8px; display:none;" />
       </div>
     </section>
     <section class="right">
-  <div id="outputWrapper">
-    <pre id="outputTitle" aria-hidden="true"> Gioco</pre>
-    <script>
-      // Aggiungi 80 spazi al testo di #outputTitle
-      const outputTitle = document.getElementById('outputTitle');
-      if (outputTitle) {
-        outputTitle.textContent += ' '.repeat(77);
-      }
-    </script>
-  <!-- Riquadro descrizioni e feed del gioco -->
-  <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
-  <!-- Output principale del gioco (descrizione luogo attuale) -->
-  <div id="output"></div>
-  <!-- Messaggi di sistema, azioni, feedback -->
-  <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
+      <div id="outputWrapper">
+        <!-- Riquadro descrizioni e feed del gioco -->
+        <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
+        <!-- Output principale del gioco (descrizione luogo attuale) -->
+        <div id="output"></div>
+        <!-- Messaggi di sistema, azioni, feedback -->
+        <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
       <div id="inputBar">
         <!-- Area di input per i comandi dell'utente -->

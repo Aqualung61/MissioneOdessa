@@ -160,6 +160,17 @@ function print(msg) {
   output.scrollTop = output.scrollHeight;
 }
 
+function updateDynamicPlaceImage() {
+  const dynamicImage = document.getElementById('dynamicPlaceImage');
+  if (dynamicImage && current) {
+    const imagePath = current.Immagine ? `../images/${current.Immagine}` : './images/dummy.png';
+    dynamicImage.src = imagePath;
+    dynamicImage.alt = current.Nome || 'Immagine del luogo';
+    dynamicImage.title = current.Nome || 'Immagine del luogo'; // Testo al mouse over
+    dynamicImage.style.display = 'block';
+  }
+}
+
 function showCurrent() {
   // Visualizza descrizione luogo
   if (!current) {
@@ -188,35 +199,30 @@ function showCurrent() {
 
   output.textContent = '';
   updateDirectionUI(current);
+  updateDynamicPlaceImage();
 
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
     const entry = document.createElement('div');
     entry.className = 'place-entry';
 
-    // Recupera il path dell'immagine
-    const imagePath = current.Immagine ? `../images/${current.Immagine}` : './images/dummy.png';
-
+    // Rimuovi la visualizzazione dell'immagine dalla colonna di destra
     entry.innerHTML = `
       <div class='temp-flex-row' style="display:flex;align-items:flex-start;gap:16px;">
-        <div class='temp-img-wrapper' style="flex:0 0 25%;max-width:25%;">
-          <img src='${imagePath}' alt='${current.Nome}' style='width:100%;height:auto;display:block;border-radius:8px;' />
-        </div>
-        <div class='temp-desc-wrapper' style="flex:1 1 0;max-width:75%;">
+        <div class='temp-desc-wrapper' style="flex:1 1 0;max-width:100%;">
           <div class='entry-name'>${current.Nome}</div>
           <div class='entry-desc'>${current.Descrizione}</div>
         </div>
       </div>
     `;
 
-    // Aggiungi una riga di spaziatura tra le descrizioni
     const spacer = document.createElement('div');
     spacer.style.height = '16px';
 
     placeFeed.appendChild(entry);
     placeFeed.appendChild(spacer);
     placeFeed.scrollTop = placeFeed.scrollHeight;
-    // Se luogo terminale, mostra messaggio di fine gioco subito dopo la descrizione
+
     if (current.Terminale === -1) {
       const endMsg = document.createElement('div');
       endMsg.className = 'feed-msg system';

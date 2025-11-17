@@ -71,7 +71,7 @@
 
       // Nascondi l'immagine e mostra il testo di introduzione
       mainImage.style.display = 'none';
-      fetch('/api/introduzione')
+      fetch('/api/introduzione?id=1')
         .then(res => res.json())
         .then(data => {
           const testo = (data.testo || '').replace(/\\n/g, '\n');

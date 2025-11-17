@@ -9,9 +9,21 @@ const router = express.Router();
 router.get('/introduzione', async (req, res) => {
   const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
   const db = await open({ filename: dbPath, driver: sqlite3.Database });
-  const row = await db.get('SELECT Testo FROM Introduzione WHERE ID = 1 AND IDLingua = 1');
-  await db.close();
-  res.json({ testo: row?.Testo || '' });
+
+  // Recupera il parametro `id` dalla query string, usa 1 come valore predefinito
+  const id = parseInt(req.query.id, 10) || 1;
+
+  try {
+    const row = await db.get(
+      'SELECT Testo FROM Introduzione WHERE ID = ? AND IDLingua = 1',
+      id
+    );
+    res.json({ testo: row?.Testo || '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore durante il recupero dell\'introduzione' });
+  } finally {
+    await db.close();
+  }
 });
 
 // POST /api/run-tests - esegue la suite e2e Playwright e restituisce il report
