@@ -84,7 +84,7 @@
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
     }
-    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '0';
+    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
     let descrizione = localStorage.getItem('linguaDescrizione') || '';
     function setLingua(text) {
       const el = document.getElementById('linguaScelta');
