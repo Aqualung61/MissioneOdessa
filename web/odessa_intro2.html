@@ -16,21 +16,18 @@
       }catch(e){}
     })();
   </script>
-  <script>
-    // Log dei parametri ricevuti da index.html
-    console.log('Parametri ricevuti:', location.search);
-  </script>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
   <style>
     html, body {
-      overflow: auto; /* Permette lo scroll solo se necessario */
+      overflow: auto; /* Permette scroll sulla pagina se necessario */
       margin: 0; /* Rimuove margini predefiniti */
       padding: 0; /* Rimuove padding predefiniti */
     }
 
     body {
+      justify-content: center;
       align-items: center;
       margin: 0;
       background: var(--page-bg);
@@ -40,9 +37,8 @@
     }
 
     #mainImage {
+      height: 45%; /* Imposta l'altezza al 45% */
       width: auto; /* Mantiene la proporzione dell'immagine */
-      max-width: 75%; /* Limita la larghezza al 75% della viewport per non superare il div introduzione */
-      max-height: 75vh; /* Limita l'altezza al 75% della viewport height */
       margin-top: 10px; /* Distanza di 10px dal bordo superiore */
       display: block; /* Assicura che l'immagine sia un elemento a blocco */
       margin-left: auto; /* Centra orizzontalmente */
@@ -69,56 +65,35 @@
       margin: 0 0 10px; /* Riduce i margini tra i paragrafi */
     }
   </style>
-</head>
-<body>
-
-    <img id="mainImage" src="../images/MissioneOdessa-Mainimage.png" alt="Missione Odessa" />
-    <div id="introduzione"></div>
-
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const introduzioneDiv = document.getElementById('introduzione');
 
-      // Fetch e mostra il testo di introduzione ID=1
-      loadIntroduzione(1);
-
-      function loadIntroduzione(id) {
-        fetch('/api/introduzione?id=' + id)
-          .then(res => res.json())
-          .then(data => {
-            const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
-            const lines = testo.split('\n');
-            if (id === 1) {
-              lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
-            } else {
-              lines[lines.length - 1] = `<a href='odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
-            }
-            const parsedHTML = marked.parse(lines.join('\n'));
-            // Nascondi il div, scrolla in cima, poi aggiorna e mostra
-            introduzioneDiv.style.display = 'none';
-            window.scrollTo(0, 0);
-            setTimeout(() => {
-              introduzioneDiv.innerHTML = parsedHTML;
-              introduzioneDiv.style.display = ''; // Ripristina display originale
-            }, 10);
-          })
-          .catch(err => {
-            console.error('Errore nel caricamento dell\'introduzione:', err);
-          });
-      }
-
-      window.nextStage = function() {
-        // Cambia immagine
-        document.getElementById('mainImage').src = '../images/Simon Wiesenthal.png';
-        document.getElementById('mainImage').alt = 'Simon Wiesenthal';
-        // Carica testo ID=2
-        loadIntroduzione(2);
-      };
+      // Fetch e mostra il testo di introduzione
+      fetch('/api/introduzione?id=2')
+        .then(res => res.json())
+        .then(data => {
+          const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
+          const lines = testo.split('\n');
+          lines[lines.length - 1] = `<a href='odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
+          const parsedHTML = marked.parse(lines.join('\n'));
+          introduzioneDiv.innerHTML = parsedHTML;
+        })
+        .catch(err => {
+          console.error('Errore nel caricamento dell\'introduzione:', err);
+        });
     });
   </script>
+<head>
+<body>
+
+    <img id="mainImage" src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" />
+    <div id="introduzione"></div>
+
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
   <script src="js/odessa1.js?v=20251106_12" type="module"></script>
+
 </body>
 </html>
