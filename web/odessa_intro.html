@@ -84,7 +84,7 @@
       loadIntroduzione(1);
 
       function loadIntroduzione(id) {
-        fetch('/api/introduzione?id=' + id)
+        fetch('/api/introduzione?id=' + id + '&lingua=1')
           .then(res => res.json())
           .then(data => {
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe

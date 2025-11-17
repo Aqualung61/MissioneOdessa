@@ -12,11 +12,13 @@ router.get('/introduzione', async (req, res) => {
 
   // Recupera il parametro `id` dalla query string, usa 1 come valore predefinito
   const id = parseInt(req.query.id, 10) || 1;
+  // Recupera il parametro `lingua` dalla query string, usa 1 come valore predefinito
+  const lingua = parseInt(req.query.lingua, 10) || 1;
 
   try {
     const row = await db.get(
-      'SELECT Testo FROM Introduzione WHERE ID = ? AND IDLingua = 1',
-      id
+      'SELECT Testo FROM Introduzione WHERE ID = ? AND IDLingua = ?',
+      [id, lingua]
     );
     res.json({ testo: row?.Testo || '' });
   } catch (err) {
