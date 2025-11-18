@@ -1,0 +1,24 @@
+ID Lingua Oggetto
+11 1      Bastone di comando
+14 1      Grande tavolo
+14 1      Sedie
+18 1      Badile arruginito
+20 1      Arazzo in pessime condizioni
+21 1      Lista di servizio
+21 1      Scrivania
+22 1      Statuetta
+22 1      Trofei alle pareti
+25 1      Fermacarte
+25 1      Scrivania
+25 1      Scaffali vuoti
+27 1      Nicchia vuota
+33 1      Letto
+42 1      Sedile
+43 1      Fascicolo
+43 1      Tavolo
+44 1      Bottone
+44 1      Porta
+49 1      Tavolo
+50 1      Peso
+57 1      Banco degli attrezzi
+57 1      Pesa
