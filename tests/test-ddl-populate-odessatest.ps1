@@ -1,7 +1,7 @@
 # Test DDL e INSERT su nuovo DB odessatest.db
 # Esegue tutti i DDL di creazione e gli script di insert su un DB vuoto
 
-$ddlDir = "$(Resolve-Path "$PSScriptRoot/../ddl")"
+$ddlDir = "$(Resolve-Path "$PSScriptRoot/../db/ddl")"
 $dbPath = "$(Resolve-Path "$PSScriptRoot/../test-results/odessatest.db")"
 
 # Rimuovi il DB di test se esiste
@@ -55,6 +55,18 @@ if (Test-Path $azioniCreate) {
     Write-Host "Eseguo DDL: 20_create_Azioni.sql"
     Get-Content $azioniCreate | sqlite3 $dbPath
 }
+# Esegui il DDL per Oggetti (21)
+$oggettiCreate = Join-Path $ddlDir "21_create_Oggetti.sql"
+if (Test-Path $oggettiCreate) {
+    Write-Host "Eseguo DDL: 21_create_Oggetti.sql"
+    Get-Content $oggettiCreate | sqlite3 $dbPath
+}
+# Esegui il DDL per Luoghi_oggetto (23)
+$luoghiOggettoCreate = Join-Path $ddlDir "23_create_Luoghi_oggetto.sql"
+if (Test-Path $luoghiOggettoCreate) {
+    Write-Host "Eseguo DDL: 23_create_Luoghi_oggetto.sql"
+    Get-Content $luoghiOggettoCreate | sqlite3 $dbPath
+}
 Get-ChildItem -Path $ddlDir -Filter "14_create_*.sql" | Sort-Object Name | ForEach-Object {
     Write-Host "Eseguo DDL: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
@@ -104,6 +116,16 @@ Get-ChildItem -Path $ddlDir -Filter "19_insert_*.sql" | Sort-Object Name | ForEa
         Write-Host "Eseguo INSERT: $($_.Name)"
         Get-Content $_.FullName | sqlite3 $dbPath
     }
+}
+# Esegui gli script 22_insert_*.sql (Oggetti)
+Get-ChildItem -Path $ddlDir -Filter "22_insert_*.sql" | Sort-Object Name | ForEach-Object {
+    Write-Host "Eseguo INSERT: $($_.Name)"
+    Get-Content $_.FullName | sqlite3 $dbPath
+}
+# Esegui gli script 24_insert_*.sql (Luoghi_oggetto)
+Get-ChildItem -Path $ddlDir -Filter "24_insert_*.sql" | Sort-Object Name | ForEach-Object {
+    Write-Host "Eseguo INSERT: $($_.Name)"
+    Get-Content $_.FullName | sqlite3 $dbPath
 }
 
 Write-Host "Test completato. Verifica il DB in test-results/odessatest.db"
