@@ -31,7 +31,7 @@
 
 ---
 
-## v1.2.3 (18/11/2025)
+## v1.2.3-beta.0 (18/11/2025)
 
 ### Novità principali
 - Le direzioni nel pannello stella (N/E/S/O/Su/Giu) sono ora cliccabili: il click esegue il comando di movimento corrispondente, senza modificare l’input testuale.
@@ -50,7 +50,7 @@
 
 ---
 
-## v1.2.4-dev
+## v1.2.3-dev
 
 ### Novità
 - 
