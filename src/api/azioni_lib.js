@@ -9,6 +9,13 @@ export async function azioni_setup(req, res) {
 
     let log = [];
 
+    console.log(`1) chiamata di azioni_setup con parametro Lingua: ${idLingua}`);
+
+    if (logEnabled) {
+        log.push('Avvio della API azioni_setup');
+        log.push(`Parametri ricevuti: idLingua=${idLingua}, log=${logEnabled}`);
+    }
+
     if (logEnabled) {
         log.push('Avvio della API azioni_setup');
         log.push(`Parametri ricevuti: idLingua=${idLingua}, log=${logEnabled}`);
@@ -36,6 +43,8 @@ export async function azioni_setup(req, res) {
         }
 
         for (const azione of azioni) {
+            console.log(`2) IDLuogo del record Azioni: ${azione.IDLuogo}, Nord: ${azione.Nord}, Est: ${azione.Est}, Sud: ${azione.Sud}, Ovest: ${azione.Ovest}, Su: ${azione.Su}, Giu: ${azione.Giu}`);
+
             if (logEnabled) {
                 log.push(`Record Azioni selezionato: ${JSON.stringify(azione)}`);
             }
@@ -47,12 +56,14 @@ export async function azioni_setup(req, res) {
                 azione.IDLingua
             );
 
+            console.log(`3) valori degli stessi campi del record trovato in Luoghi: Nord: ${luogo?.Nord}, Est: ${luogo?.Est}, Sud: ${luogo?.Sud}, Ovest: ${luogo?.Ovest}, Su: ${luogo?.Su}, Giu: ${luogo?.Giu}`);
+
             if (logEnabled) {
                 log.push(`Record Luoghi prima dell'update: ${JSON.stringify(luogo)}`);
             }
 
             // Aggiorna il record in Luoghi
-            await db.run(
+            const updateResult = await db.run(
                 `UPDATE Luoghi SET Nord = ?, Est = ?, Sud = ?, Ovest = ?, Su = ?, Giu = ?
                  WHERE ID = ? AND IDLingua = ?`,
                 azione.Nord,
@@ -64,6 +75,8 @@ export async function azioni_setup(req, res) {
                 azione.IDLuogo,
                 azione.IDLingua
             );
+
+            console.log(`4) esito dell'update di Luoghi: ${updateResult.changes} righe aggiornate`);
 
             if (logEnabled) {
                 const updatedLuogo = await db.get(
@@ -78,6 +91,8 @@ export async function azioni_setup(req, res) {
         if (logEnabled) {
             log.push('API azioni_setup completata con successo');
         }
+
+        console.log('5) fine esecuzione di azioni_setup');
 
         res.status(200).json({ status: 0, log: logEnabled ? log : undefined });
     } catch (error) {
