@@ -2,7 +2,7 @@ import express from 'express';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { runE2ETests } from '../tests/runE2E.js';
-import { azioni_setup } from './azioni_lib.js';
+import { azioni_setup, azioni_modi } from './azioni_lib.js';
 
 const router = express.Router();
 // GET /api/introduzione - restituisce il testo markdown della presentazione
@@ -54,6 +54,9 @@ router.get('/luoghi', async (req, res) => {
 
 // GET /api/azioni - gestisce azioni_setup
 router.get('/azioni', azioni_setup);
+
+// GET /api/azioni-modi - gestisce azioni_modi
+router.get('/azioni-modi', azioni_modi);
 
 // Esempio di endpoint
 router.get('/ping', (req, res) => {

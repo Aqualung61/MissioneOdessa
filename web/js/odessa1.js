@@ -163,7 +163,7 @@ function print(msg) {
 function updateDynamicPlaceImage() {
   const dynamicImage = document.getElementById('dynamicPlaceImage');
   if (dynamicImage && current) {
-    const imagePath = current.Immagine ? `../images/${current.Immagine}` : './images/dummy.png';
+    const imagePath = current.Immagine ? `../images/${current.Immagine}` : '../images/dummy.png';
     dynamicImage.src = imagePath;
     dynamicImage.alt = current.Nome || 'Immagine del luogo';
     dynamicImage.title = current.Nome || 'Immagine del luogo'; // Testo al mouse over
@@ -230,6 +230,23 @@ function showCurrent() {
       placeFeed.appendChild(endMsg);
       placeFeed.scrollTop = placeFeed.scrollHeight;
       awaitingRestart = true;
+    } else if (current.Terminale > 0) {
+      // Chiamata azioni_modi per aggiornare direzioni in luoghi speciali
+      fetch('/api/azioni-modi?idLingua=1&log=0&IDLuogo=' + current.Terminale)
+        .then(res => res.json())
+        .then(modiData => {
+          if (modiData.updatedDirections) {
+            for (const [id, directions] of Object.entries(modiData.updatedDirections)) {
+              const luogo = luoghi.find(l => l.ID == id);
+              if (luogo) {
+                Object.assign(luogo, directions);
+              }
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Errore in azioni_modi:', err);
+        });
     }
   }
 }
@@ -248,7 +265,24 @@ inputForm.addEventListener('submit', function(e) {
       userInput.value = '';
       current = luoghi.find(l => l.ID === 1) || luoghi[0];
       awaitingRestart = false;
-      showCurrent();
+      // Chiamata azioni_setup per aggiornare direzioni al restart
+      fetch('/api/azioni?idLingua=1&log=0')
+        .then(res => res.json())
+        .then(azioniData => {
+          if (azioniData.updatedDirections) {
+            for (const [id, directions] of Object.entries(azioniData.updatedDirections)) {
+              const luogo = luoghi.find(l => l.ID == id);
+              if (luogo) {
+                Object.assign(luogo, directions);
+              }
+            }
+          }
+          showCurrent();
+        })
+        .catch(err => {
+          console.error('Errore in azioni_setup al restart:', err);
+          showCurrent(); // Procedi comunque
+        });
       return;
     }
     // Se risposta non valida, ignora qualsiasi input e rimane sulla descrizione terminale
@@ -328,7 +362,24 @@ fetch('/api/luoghi')
     }
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
-    showCurrent();
+    // Chiamata azioni_setup per aggiornare direzioni
+    fetch('/api/azioni?idLingua=1&log=0')
+      .then(res => res.json())
+      .then(azioniData => {
+        if (azioniData.updatedDirections) {
+          for (const [id, directions] of Object.entries(azioniData.updatedDirections)) {
+            const luogo = luoghi.find(l => l.ID == id);
+            if (luogo) {
+              Object.assign(luogo, directions);
+            }
+          }
+        }
+        showCurrent();
+      })
+      .catch(err => {
+        console.error('Errore in azioni_setup:', err);
+        showCurrent(); // Procedi comunque
+      });
   })
   .catch(err => {
     console.error('Errore nel caricamento dei luoghi:', err);
