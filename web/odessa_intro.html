@@ -48,6 +48,7 @@
       margin-left: auto; /* Centra orizzontalmente */
       margin-right: auto; /* Centra orizzontalmente */
       flex-shrink: 0; /* Impedisce che l'immagine si riduca */
+      /* transition: opacity 0.2s ease; - rimossa definitivamente */
     }
 
     #introduzione {
@@ -68,6 +69,11 @@
     #introduzione p {
       margin: 0 0 10px; /* Riduce i margini tra i paragrafi */
     }
+
+    /* Transizione per fading rimossa definitivamente per compatibilità con scroll */
+    /* #introduzione {
+      transition: opacity 0.2s ease;
+    } */
   </style>
 </head>
 <body>
@@ -79,9 +85,12 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const introduzioneDiv = document.getElementById('introduzione');
+      let currentIntro = 1;
 
-      // Fetch e mostra il testo di introduzione ID=1
-      loadIntroduzione(1);
+      // Fetch e mostra il testo di introduzione ID=1 con leggero delay per uniformità
+      setTimeout(() => {
+        loadIntroduzione(1);
+      }, 100);
 
       function loadIntroduzione(id) {
         fetch('/api/introduzione?id=' + id + '&lingua=1')
@@ -89,18 +98,18 @@
           .then(data => {
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
             const lines = testo.split('\n');
-            if (id === 1) {
+            if (id === 1 || id === 2) {
               lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
             } else {
               lines[lines.length - 1] = `<a href='odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
             }
             const parsedHTML = marked.parse(lines.join('\n'));
-            // Nascondi il div, scrolla in cima, poi aggiorna e mostra
+            // Senza fading per compatibilità con scroll
             introduzioneDiv.style.display = 'none';
-            window.scrollTo(0, 0);
             setTimeout(() => {
               introduzioneDiv.innerHTML = parsedHTML;
-              introduzioneDiv.style.display = ''; // Ripristina display originale
+              introduzioneDiv.style.display = '';
+              window.scrollTo(0, 0);
             }, 10);
           })
           .catch(err => {
@@ -109,11 +118,21 @@
       }
 
       window.nextStage = function() {
-        // Cambia immagine
-        document.getElementById('mainImage').src = '../images/Simon Wiesenthal.png';
-        document.getElementById('mainImage').alt = 'Simon Wiesenthal';
-        // Carica testo ID=2
-        loadIntroduzione(2);
+        if (currentIntro === 1) {
+          // Cambia immagine senza fading
+          document.getElementById('mainImage').src = '../images/Simon Wiesenthal.png';
+          document.getElementById('mainImage').alt = 'Simon Wiesenthal';
+          // Carica testo ID=2
+          loadIntroduzione(2);
+          currentIntro = 2;
+        } else if (currentIntro === 2) {
+          // Cambia immagine senza fading
+          document.getElementById('mainImage').src = '../images/Ferenc.png';
+          document.getElementById('mainImage').alt = 'Ferenc';
+          // Carica testo ID=3
+          loadIntroduzione(3);
+          currentIntro = 3;
+        }
       };
     });
   </script>
