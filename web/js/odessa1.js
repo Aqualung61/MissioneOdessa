@@ -223,6 +223,19 @@ function showCurrent() {
     placeFeed.appendChild(spacer);
     placeFeed.scrollTop = placeFeed.scrollHeight;
 
+    // Carica e mostra oggetti nel luogo
+    fetch(`/api/luogo-oggetti?idLuogo=${current.ID}&idLingua=1`)
+      .then(res => res.json())
+      .then(oggetti => {
+        if (oggetti.length > 0) {
+          const oggettiDiv = document.createElement('div');
+          oggettiDiv.className = 'entry-oggetti';
+          oggettiDiv.innerHTML = '<div class="entry-oggetti-title">Oggetti presenti:</div>' + oggetti.map(o => `<div class="entry-oggetto">• ${o.descrizione}</div>`).join('');
+          entry.appendChild(oggettiDiv);
+        }
+      })
+      .catch(err => console.error('Errore nel caricamento oggetti:', err));
+
     if (current.Terminale === -1) {
       const endMsg = document.createElement('div');
       endMsg.className = 'feed-msg system';

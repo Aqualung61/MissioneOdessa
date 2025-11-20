@@ -129,6 +129,9 @@ body {
 #placeFeed .entry { padding: 8px 0 6px 0; }
 #placeFeed .entry-name { font-weight: 600; margin-bottom: 2px; }
 #placeFeed .entry-desc { white-space: pre-line; }
+#placeFeed .entry-oggetti { margin-top: 8px; }
+#placeFeed .entry-oggetti-title { font-weight: 600; margin-bottom: 4px; color: #666; }
+#placeFeed .entry-oggetto { margin-bottom: 2px; font-style: italic; }
 #placeFeed .feed-msg { white-space: pre-line; padding: 4px 0; }
 #placeFeed .feed-msg.info { color: #444; }
 #placeFeed .feed-msg.warn { color: #b26b00; }
