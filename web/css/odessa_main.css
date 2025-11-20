@@ -70,11 +70,13 @@ body {
 .right {
 	display: grid;
 	grid-template-columns: 1fr 140px; /* colonna input + colonna riquadro (larghezza fissa) */
-	grid-template-rows: minmax(0, 1fr) auto auto; /* output, input, lingua */
+	grid-template-rows: minmax(0, 1fr) auto auto auto auto; /* output, input, lingua, versione, visitati */
 	grid-template-areas:
 		"main  main"
 		"input square"
-		"lang  square";
+		"lang  square"
+		"ver   square"
+		"vis   square";
 	height: 100%;
 	border: 8px solid var(--ottanio);
 	box-sizing: border-box;
@@ -130,8 +132,8 @@ body {
 #placeFeed .entry-name { font-weight: 600; margin-bottom: 2px; }
 #placeFeed .entry-desc { white-space: pre-line; }
 #placeFeed .entry-oggetti { margin-top: 8px; }
-#placeFeed .entry-oggetti-title { font-weight: 600; margin-bottom: 4px; color: #666; }
-#placeFeed .entry-oggetto { margin-bottom: 1px; font-style: italic; line-height: 1.3; }
+#placeFeed .entry-oggetti-title { font-weight: 600; margin-bottom: 4px; color: #004080; font-style: italic; }
+#placeFeed .entry-oggetto { margin-bottom: 1px; font-style: italic; line-height: 1.3; color: #004080; }
 #placeFeed .feed-msg { white-space: pre-line; padding: 4px 0; }
 #placeFeed .feed-msg.info { color: #444; }
 #placeFeed .feed-msg.warn { color: #b26b00; }
@@ -158,6 +160,24 @@ body {
 /* Lingua selezionata sotto la barra nera */
 #linguaScelta {
 	grid-area: lang;
+	color: var(--white);
+	font-weight: 600;
+	font-size: 16px;
+	padding-left: 0;
+}
+
+/* Versione attuale dell'app */
+#versioneRunning {
+	grid-area: ver;
+	color: var(--white);
+	font-weight: 600;
+	font-size: 16px;
+	padding-left: 0;
+}
+
+/* Numero luoghi visitati */
+#visitedCount {
+	grid-area: vis;
 	color: var(--white);
 	font-weight: 600;
 	font-size: 16px;
