@@ -163,12 +163,20 @@ function print(msg) {
 
 function updateDynamicPlaceImage() {
   const dynamicImage = document.getElementById('dynamicPlaceImage');
+  const overlay = document.getElementById('placeNameOverlay');
   if (dynamicImage && current) {
     const imagePath = current.Immagine ? `../images/${current.Immagine}` : '../images/dummy.png';
     dynamicImage.src = imagePath;
     dynamicImage.alt = current.Nome || 'Immagine del luogo';
     dynamicImage.title = current.Nome || 'Immagine del luogo'; // Testo al mouse over
     dynamicImage.style.display = 'block';
+    if (overlay) {
+      overlay.textContent = current.Nome || '';
+      overlay.style.display = 'block';
+    }
+  } else {
+    if (dynamicImage) dynamicImage.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
   }
 }
 
