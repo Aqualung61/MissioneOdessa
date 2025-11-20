@@ -70,13 +70,11 @@ body {
 .right {
 	display: grid;
 	grid-template-columns: 1fr 140px; /* colonna input + colonna riquadro (larghezza fissa) */
-	grid-template-rows: minmax(0, 1fr) auto auto auto auto; /* output, input, lingua, versione, visitati */
+	grid-template-rows: minmax(0, 1fr) auto auto; /* output, input, lingua */
 	grid-template-areas:
 		"main  main"
 		"input square"
-		"lang  square"
-		"ver   square"
-		"vis   square";
+		"lang  square";
 	height: 100%;
 	border: 8px solid var(--ottanio);
 	box-sizing: border-box;
@@ -160,24 +158,6 @@ body {
 /* Lingua selezionata sotto la barra nera */
 #linguaScelta {
 	grid-area: lang;
-	color: var(--white);
-	font-weight: 600;
-	font-size: 16px;
-	padding-left: 0;
-}
-
-/* Versione attuale dell'app */
-#versioneRunning {
-	grid-area: ver;
-	color: var(--white);
-	font-weight: 600;
-	font-size: 16px;
-	padding-left: 0;
-}
-
-/* Numero luoghi visitati */
-#visitedCount {
-	grid-area: vis;
 	color: var(--white);
 	font-weight: 600;
 	font-size: 16px;
