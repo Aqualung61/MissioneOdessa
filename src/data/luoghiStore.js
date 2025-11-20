@@ -7,3 +7,10 @@ export async function loadLuoghi(dbPath) {
   await db.close();
   return luoghi;
 }
+
+export async function loadVistaLuoghiOggetti(dbPath) {
+  const db = await open({ filename: dbPath, driver: sqlite3.Database });
+  const vista = await db.all('SELECT * FROM vista_luoghi_oggetti');
+  await db.close();
+  return vista;
+}

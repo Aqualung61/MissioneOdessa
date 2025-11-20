@@ -8,7 +8,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import { loadLuoghi } from './data/luoghiStore.js';
+import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
@@ -43,12 +43,18 @@ app.use(cors());
 
 // Carica dati in memoria all'avvio
 await loadLuoghi(DB_PATH);
+let vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
 
 // API (devono venire PRIMA dello statico!)
 app.use('/api', apiRoutes);
 app.use('/api/lingue', linguaRoutes);
 app.use('/api/parser', parserRoutes);
 app.use('/api/engine', engineRoutes);
+
+// Endpoint per vista luoghi-oggetti
+app.get('/api/vista-luoghi-oggetti', (req, res) => {
+  res.json(vistaLuoghiOggetti);
+});
 
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
 if (process.env.NODE_ENV === 'test') {
