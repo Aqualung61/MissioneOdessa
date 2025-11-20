@@ -290,67 +290,103 @@ inputForm.addEventListener('submit', function(e) {
     e.preventDefault();
     return;
   }
-  // Gestione input direzione
+  // Gestione input direzione usando il parser API
   const val = userInput.value.trim();
   userInput.value = '';
-  let dir = val;
-  let field = null;
-  if (dir.length === 1) {
-    // Se S, può essere Sud o Su
-    if (dir.toUpperCase() === 'S') {
-      if (current['Sud'] && current['Sud'] !== 0) {
-        field = 'Sud';
-      } else if (current['Su'] && current['Su'] !== 0) {
-        field = 'Su';
+  if (!val) return;
+
+  // Chiama il parser API
+  fetch('/api/parser/parse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: val })
+  })
+  .then(res => res.json())
+  .then(parseResult => {
+    if (!parseResult.IsValid) {
+      // Messaggio di errore in placeFeed
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const err = document.createElement('div');
+        err.className = 'feed-msg error';
+        err.textContent = parseResult.Error === 'COMMAND_UNKNOWN' ? 'Comando sconosciuto.' : 'Input non valido.';
+        feed.appendChild(err);
+        feed.scrollTop = feed.scrollHeight;
       }
-    } else {
-      field = DIRECTIONS.find(d => d[0].toUpperCase() === dir[0].toUpperCase());
+      return;
     }
-  } else if (dir.toUpperCase() === 'SUD') {
-    field = 'Sud';
-  } else if (dir.toUpperCase() === 'SU') {
-    field = 'Su';
-  } else {
-    field = DIRECTIONS.find(d => d.toUpperCase() === dir.toUpperCase());
-  }
-  if (!field || !DIRECTIONS.includes(field)) {
-    // Messaggio di errore in placeFeed
+    if (parseResult.CommandType !== 'NAVIGATION') {
+      // Per ora, solo navigazione è supportata qui
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const err = document.createElement('div');
+        err.className = 'feed-msg error';
+        err.textContent = 'Solo comandi di navigazione sono supportati qui.';
+        feed.appendChild(err);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    }
+    // Determina il field basato su CanonicalVerb
+    let field = null;
+    const canonical = parseResult.CanonicalVerb;
+    if (canonical === 'NORD') field = 'Nord';
+    else if (canonical === 'EST') field = 'Est';
+    else if (canonical === 'SUD') field = 'Sud';
+    else if (canonical === 'OVEST') field = 'Ovest';
+    else if (canonical === 'SU') field = 'Su';
+    else if (canonical === 'GIÙ') field = 'Giu';
+
+    if (!field) {
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const err = document.createElement('div');
+        err.className = 'feed-msg error';
+        err.textContent = 'Direzione non riconosciuta.';
+        feed.appendChild(err);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    }
+
+    const nextId = current[field];
+    if (!nextId || nextId === 0) {
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const err = document.createElement('div');
+        err.className = 'feed-msg error';
+        err.textContent = `Comando: ${val} → muro (0)\nNon puoi andare in quella direzione.`;
+        feed.appendChild(err);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    }
+    const next = luoghi.find(l => l.ID === nextId);
+    if (!next) {
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const err = document.createElement('div');
+        err.className = 'feed-msg error';
+        err.textContent = `Luogo con ID=${nextId} non trovato!`;
+        feed.appendChild(err);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    }
+    current = next;
+    showCurrent();
+  })
+  .catch(err => {
+    console.error('Errore nel parser:', err);
     const feed = document.getElementById('placeFeed');
     if (feed) {
-      const err = document.createElement('div');
-      err.className = 'feed-msg error';
-      err.textContent = 'Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O.';
-      feed.appendChild(err);
+      const errMsg = document.createElement('div');
+      errMsg.className = 'feed-msg error';
+      errMsg.textContent = 'Errore interno del parser.';
+      feed.appendChild(errMsg);
       feed.scrollTop = feed.scrollHeight;
     }
-    return;
-  }
-  const nextId = current[field];
-  if (!nextId || nextId === 0) {
-    const feed = document.getElementById('placeFeed');
-    if (feed) {
-      const err = document.createElement('div');
-      err.className = 'feed-msg error';
-      err.textContent = `Comando: ${dir} → muro (0)\nNon puoi andare in quella direzione.`;
-      feed.appendChild(err);
-      feed.scrollTop = feed.scrollHeight;
-    }
-    return;
-  }
-  const next = luoghi.find(l => l.ID === nextId);
-  if (!next) {
-    const feed = document.getElementById('placeFeed');
-    if (feed) {
-      const err = document.createElement('div');
-      err.className = 'feed-msg error';
-      err.textContent = `Luogo con ID=${nextId} non trovato!`;
-      feed.appendChild(err);
-      feed.scrollTop = feed.scrollHeight;
-    }
-    return;
-  }
-  current = next;
-  showCurrent();
+  });
 });
 fetch('/api/luoghi')
   .then(res => res.json())
