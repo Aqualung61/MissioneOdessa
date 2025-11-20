@@ -56,6 +56,18 @@ app.get('/api/vista-luoghi-oggetti', (req, res) => {
   res.json(vistaLuoghiOggetti);
 });
 
+// Endpoint per oggetti in un luogo specifico
+app.get('/api/luogo-oggetti', (req, res) => {
+  const { idLuogo, idLingua } = req.query;
+  if (!idLuogo || !idLingua) {
+    return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
+  }
+  const oggetti = vistaLuoghiOggetti
+    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua)
+    .map(item => ({ descrizione: item.DescrizioneOggetto }));
+  res.json(oggetti);
+});
+
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
 if (process.env.NODE_ENV === 'test') {
   app.post('/api/shutdown', async (req, res) => {
