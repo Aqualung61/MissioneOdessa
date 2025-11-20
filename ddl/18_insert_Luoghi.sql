@@ -3,7 +3,7 @@ INSERT INTO Luoghi VALUES(1,1,'Atrio','Sei nell''atrio della casa.',0,0,2,0,59,0
 INSERT INTO Luoghi VALUES(2,1,'Reception','Sei in quella che un tempo era la reception della casa.',0,6,3,5,1,0,0,0);
 INSERT INTO Luoghi VALUES(3,1,'Grande corridoio impolverato','Sei in un grande corridoio impolverato.',0,7,4,0,2,0,0,0);
 INSERT INTO Luoghi VALUES(4,1,'Elevatore','Sei vicino ad un elevatore di vecchio tipo.',0,0,8,0,3,0,0,0);
-INSERT INTO Luoghi VALUES(5,1,'Ampio e umido corridoio','Sei in un ampio ed umido corridoio.',0,2,14,0,13,0,0,0);
+INSERT INTO Luoghi VALUES(5,1,'Ampio e umido corridoio','Sei in un ampio ed umido corridoio.',0,2,14,23,13,0,0,0);
 INSERT INTO Luoghi VALUES(6,1,'Ripostiglio','Sei in un umido ed angusto ripostiglio.',0,0,0,2,0,0,0,0);
 INSERT INTO Luoghi VALUES(7,1,'Grosso scalone','Sei ai piedi di un grosso scalone.',0,0,0,3,0,9,0,0);
 INSERT INTO Luoghi VALUES(8,1,'Dentro elevatore - Muori','Pessima idea quella di entrare nell''elevatore! L''elevatore era sostenuto solo da macerie sotto di esso, dato che i cavi sono rotti: entrandoci, il tuo peso sposta l''equilibrio precario della cabina, facendola cadere nella tromba dell''ascensore. Uno spuntone di ferro ti ferisce una gamba e inizi a sanguinare copiosamente: a quel ritmo ti ci vorrà poco a morire dissanguato....',0,-1,-1,-1,-1,-1,-1,-1);
@@ -21,7 +21,7 @@ INSERT INTO Luoghi VALUES(19,1,'Armeria','Sei in un''armeria.',0,15,0,0,20,0,0,0
 INSERT INTO Luoghi VALUES(20,1,'Studio','Sei in uno studio, probabilmente del Gauleiter. Vedo un arazzo in pessime condizioni.',0,0,19,21,23,0,0,0);
 INSERT INTO Luoghi VALUES(21,1,'Piccola saletta','Sei in una piccola saletta segreta. Vedo una lista di servizio. Vedo una scrivania.',0,20,22,0,0,0,0,0);
 INSERT INTO Luoghi VALUES(22,1,'Sala trofei','Sei nella sala trofei. Vedo una statuetta. Vedo dei trofei alle pareti.',0,0,0,0,21,0,0,0);
-INSERT INTO Luoghi VALUES(23,1,'Ampio e umido corridoio','Sei in un ampio ed umido corridoio.',0,0,20,24,25,0,0,0);
+INSERT INTO Luoghi VALUES(23,1,'Ampio e umido corridoio','Sei in un ampio ed umido corridoio.',0,5,20,24,25,0,0,0);
 INSERT INTO Luoghi VALUES(24,1,'Ex biblioteca','Sei nella sala che fu una fornita biblioteca.',0,23,0,0,0,0,0,0);
 INSERT INTO Luoghi VALUES(25,1,'Vecchio archivio','Sei in un vecchio archivio. Vedo un fermacarte. Vedo una scrivania. Vedo degli scaffali vuoti.',0,0,23,0,0,0,0,0);
 INSERT INTO Luoghi VALUES(26,1,'Pianerottolo inferiore','Sei sul pianerottolo inferiore della scala.',-1,0,27,0,0,13,0,0);

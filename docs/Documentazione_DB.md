@@ -183,16 +183,41 @@ CREATE TABLE "Luoghi" (
 | Giu | INTEGER | Sì |  | No |
 | Terminale | INTEGER | Sì |  | No |
 
+## Tabella: Oggetti
+
+### Struttura:
+
+```sql
+CREATE TABLE "Oggetti" (
+	"ID"	INTEGER NOT NULL UNIQUE,
+	"IDLingua"	INTEGER NOT NULL,
+	"Oggetto"	TEXT NOT NULL,
+	"Attivo"	NUMERIC NOT NULL DEFAULT 0,
+	PRIMARY KEY("ID" AUTOINCREMENT),
+	CONSTRAINT "IDLingua" FOREIGN KEY("IDLingua") REFERENCES ""
+)
+```
+
+### Colonne:
+
+| Nome | Tipo | Not Null | Predefinito | Chiave Primaria |
+|------|------|----------|-------------|----------------|
+| ID | INTEGER | Sì |  | Sì |
+| IDLingua | INTEGER | Sì |  | No |
+| Oggetto | TEXT | Sì |  | No |
+| Attivo | NUMERIC | Sì | 0 | No |
+
 ## Tabella: Introduzione
 
 ### Struttura:
 
 ```sql
-CREATE TABLE Introduzione (
-    ID INTEGER PRIMARY KEY NOT NULL,
-    IDLingua INTEGER NOT NULL,
-    Testo TEXT NOT NULL,
-    FOREIGN KEY (IDLingua) REFERENCES Lingue(ID)
+CREATE TABLE "Introduzione" (
+	"ID"	INTEGER NOT NULL,
+	"IDLingua"	INTEGER NOT NULL,
+	"Testo"	TEXT NOT NULL,
+	PRIMARY KEY("ID"),
+	CONSTRAINT "IDLingua" FOREIGN KEY("IDLingua") REFERENCES "Lingue"("ID")
 )
 ```
 
@@ -203,6 +228,43 @@ CREATE TABLE Introduzione (
 | ID | INTEGER | Sì |  | Sì |
 | IDLingua | INTEGER | Sì |  | No |
 | Testo | TEXT | Sì |  | No |
+
+## Tabella: Azioni
+
+### Struttura:
+
+```sql
+CREATE TABLE "Azioni" (
+	"ID"	INTEGER NOT NULL,
+	"IDLuogo"	INTEGER NOT NULL,
+	"IDLingua"	INTEGER NOT NULL,
+	"Sequenza"	NUMERIC NOT NULL,
+	"Nord"	NUMERIC NOT NULL,
+	"Est"	NUMERIC NOT NULL,
+	"Sud"	NUMERIC NOT NULL,
+	"Ovest"	NUMERIC NOT NULL,
+	"Su"	NUMERIC NOT NULL,
+	"Giu"	NUMERIC NOT NULL,
+	PRIMARY KEY("ID" AUTOINCREMENT),
+	CONSTRAINT "IDLingua" FOREIGN KEY("IDLingua") REFERENCES "Lingue"("ID"),
+	CONSTRAINT "IDLuogo" FOREIGN KEY("IDLuogo") REFERENCES "Luoghi"("ID")
+)
+```
+
+### Colonne:
+
+| Nome | Tipo | Not Null | Predefinito | Chiave Primaria |
+|------|------|----------|-------------|----------------|
+| ID | INTEGER | Sì |  | Sì |
+| IDLuogo | INTEGER | Sì |  | No |
+| IDLingua | INTEGER | Sì |  | No |
+| Sequenza | NUMERIC | Sì |  | No |
+| Nord | NUMERIC | Sì |  | No |
+| Est | NUMERIC | Sì |  | No |
+| Sud | NUMERIC | Sì |  | No |
+| Ovest | NUMERIC | Sì |  | No |
+| Su | NUMERIC | Sì |  | No |
+| Giu | NUMERIC | Sì |  | No |
 
 ## Tabella: Luoghi_immagine
 
@@ -215,7 +277,7 @@ CREATE TABLE "Luoghi_immagine" (
 	"Immagine"	TEXT NOT NULL,
 	"Buio"	INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY("ID" AUTOINCREMENT),
-	FOREIGN KEY("ID_luoghi") REFERENCES "Luoghi"("ID")
+	CONSTRAINT "ID_luoghi" FOREIGN KEY("ID_luoghi") REFERENCES "Luoghi"("ID")
 )
 ```
 
@@ -227,4 +289,28 @@ CREATE TABLE "Luoghi_immagine" (
 | ID_luoghi | INTEGER | Sì |  | No |
 | Immagine | TEXT | Sì |  | No |
 | Buio | INTEGER | Sì | 0 | No |
+
+## Tabella: Luoghi_oggetto
+
+### Struttura:
+
+```sql
+CREATE TABLE "Luoghi_oggetto" (
+	"IDOggetto"	INTEGER NOT NULL,
+	"IDLuogo"	INTEGER NOT NULL,
+	"IDLingua"	INTEGER NOT NULL,
+	PRIMARY KEY("IDOggetto","IDLuogo","IDLingua"),
+	CONSTRAINT "IDLingua" FOREIGN KEY("IDLingua") REFERENCES "Lingue"("ID"),
+	CONSTRAINT "IDLuogo" FOREIGN KEY("IDLuogo") REFERENCES "Luoghi"("ID"),
+	CONSTRAINT "IDOggetto" FOREIGN KEY("IDOggetto") REFERENCES "Oggetti"("ID")
+)
+```
+
+### Colonne:
+
+| Nome | Tipo | Not Null | Predefinito | Chiave Primaria |
+|------|------|----------|-------------|----------------|
+| IDOggetto | INTEGER | Sì |  | Sì |
+| IDLuogo | INTEGER | Sì |  | Sì |
+| IDLingua | INTEGER | Sì |  | Sì |
 
