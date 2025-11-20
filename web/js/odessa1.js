@@ -232,6 +232,7 @@ function showCurrent() {
           oggettiDiv.className = 'entry-oggetti';
           oggettiDiv.innerHTML = '<div class="entry-oggetti-title">Oggetti presenti:</div>' + oggetti.map(o => `<div class="entry-oggetto">• ${o.descrizione}</div>`).join('');
           entry.appendChild(oggettiDiv);
+          placeFeed.scrollTop = placeFeed.scrollHeight; // Scrolla dopo aver aggiunto gli oggetti
         }
       })
       .catch(err => console.error('Errore nel caricamento oggetti:', err));
