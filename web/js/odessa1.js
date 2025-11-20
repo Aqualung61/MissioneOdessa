@@ -154,6 +154,7 @@ const userInput = document.getElementById('userInput');
 let luoghi = [];
 let current = null;
 let awaitingRestart = false;
+let visitedPlaces = new Set();
 
 function print(msg) {
   output.textContent += (output.textContent ? '\n' : '') + msg;
@@ -200,6 +201,11 @@ function showCurrent() {
   output.textContent = '';
   updateDirectionUI(current);
   updateDynamicPlaceImage();
+
+  // Aggiorna luoghi visitati
+  visitedPlaces.add(current.ID);
+  const visitedEl = document.getElementById('visitedCount');
+  if (visitedEl) visitedEl.textContent = `Luoghi visitati: ${visitedPlaces.size}`;
 
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
@@ -279,6 +285,7 @@ inputForm.addEventListener('submit', function(e) {
       userInput.value = '';
       current = luoghi.find(l => l.ID === 1) || luoghi[0];
       awaitingRestart = false;
+      visitedPlaces = new Set(); // Reset luoghi visitati
       // Chiamata azioni_setup per aggiornare direzioni al restart
       fetch('/api/azioni?idLingua=1&log=0')
         .then(res => res.json())
