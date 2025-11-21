@@ -28,18 +28,18 @@ console.log(`Missione Odessa - Versione: ${version}`);
 // ...existing code...
 
 const app = express();
-// app.use(helmet({
-//   contentSecurityPolicy: {
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       fontSrc: ["'self'", "data:"],
-//       styleSrc: ["'self'", "'unsafe-inline'"],
-//       scriptSrc: ["'self'", "'unsafe-inline'"],
-//       imgSrc: ["'self'", "data:"],
-//       connectSrc: ["'self'"],
-//     },
-//   },
-// }));
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      fontSrc: ["'self'", "data:", "http://localhost:3001"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
 const BASE_PATH = process.env.BASE_PATH || '';
@@ -50,6 +50,13 @@ console.log(`Base path: ${BASE_PATH || 'root'}`);
 app.get(BASE_PATH + '/api/version', (req, res) => {
   res.json({ version });
 });
+
+// Redirect root to BASE_PATH if BASE_PATH is set
+if (BASE_PATH) {
+  app.get('/', (req, res) => {
+    res.redirect(BASE_PATH + '/');
+  });
+}
 
 
 // Serve statico dalla root del progetto
