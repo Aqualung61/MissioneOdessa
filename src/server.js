@@ -28,18 +28,18 @@ console.log(`Missione Odessa - Versione: ${version}`);
 // ...existing code...
 
 const app = express();
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      fontSrc: ["'self'", "data:"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
-    },
-  },
-}));
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       fontSrc: ["'self'", "data:"],
+//       styleSrc: ["'self'", "'unsafe-inline'"],
+//       scriptSrc: ["'self'", "'unsafe-inline'"],
+//       imgSrc: ["'self'", "data:"],
+//       connectSrc: ["'self'"],
+//     },
+//   },
+// }));
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
 const BASE_PATH = process.env.BASE_PATH || '';
@@ -57,8 +57,18 @@ const ROOT = path.resolve(__dirname, '..');
 app.use(cors());
 
 // Carica dati in memoria all'avvio
-await loadLuoghi(DB_PATH);
-let vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
+let luoghi = [];
+try {
+  luoghi = await loadLuoghi(DB_PATH);
+} catch (err) {
+  console.error('Errore nel caricamento luoghi:', err.message);
+}
+let vistaLuoghiOggetti = [];
+try {
+  vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
+} catch (err) {
+  console.error('Errore nel caricamento vista_luoghi_oggetti:', err.message);
+}
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);
