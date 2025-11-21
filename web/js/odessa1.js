@@ -152,7 +152,7 @@ const inputForm = document.getElementById('inputArea');
 const userInput = document.getElementById('userInput');
 
 // Determina base path per deployment in sottodirectory
-const basePath = window.location.pathname.split('/').filter(p => p).length > 0 ? '/' + window.location.pathname.split('/')[1] + '/' : '/';
+const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
 
 let luoghi = [];
 let current = null;
