@@ -147,7 +147,8 @@
     </div>
     <script>
       // Detect base path dynamically
-      const basePath = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
+      const pathParts = window.location.pathname.split('/').filter(p => p);
+      const basePath = pathParts.length > 0 ? '/' + pathParts[0] + '/' : '/';
 
       // --- TEST POPUP LOGIC ---
       async function runTestSuite() {
