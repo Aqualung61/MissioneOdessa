@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Missione Odessa - Gioco (v2 semplificata)</title>
+  <title>Missione Odessa - Adventure Game</title>
+  <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script>
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
@@ -19,39 +20,63 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
+  <style>
+    /* Modifica per mostrare la barra di scorrimento verticale solo se necessario */
+    body {
+      overflow-y: auto;
+    }
+    /* Aggiunta barra di scorrimento orizzontale per l'intera finestra del browser */
+    body {
+      overflow-x: auto;
+    }
+    /* Cambiato il colore dell'ombra in bianco per l'immagine dinamica */
+    #dynamicPlaceImage {
+      box-shadow: 0px 8px 16px rgba(255, 255, 255, 0.5);
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
-    <section class="left" aria-label="Immagine di Missione Odessa">
-      <img src="../images/Missione Odessa Adventure - main.png" alt="Missione Odessa" />
+    <section class="left" aria-label="Luoghi Missione Odessa">
+      <div class="temp-img-wrapper" style="text-align:center; margin-bottom:16px; margin-top:20px; position: relative;">
+        <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" style="max-width:100%; height:auto; border-radius:8px; display:none;" />
+        <div id="placeNameOverlay" style="position: absolute; bottom: 0; left: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: bold;"></div>
+      </div>
+      <!-- Numero luoghi visitati -->
+      <div id="visitedCount" style="font-size:0.9em;color:#fff;margin-top:2px;text-align:center;"></div>
     </section>
-
     <section class="right">
       <div id="outputWrapper">
-        <h2 id="outputTitle" aria-hidden="true">Gioco</h2>
-        <div id="output" style="display:none"></div>
+        <!-- Riquadro descrizioni e feed del gioco -->
         <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
+        <!-- Output principale del gioco (descrizione luogo attuale) -->
+        <div id="output"></div>
+        <!-- Messaggi di sistema, azioni, feedback -->
         <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
-
       <div id="inputBar">
+        <!-- Area di input per i comandi dell'utente -->
         <form id="inputArea" autocomplete="off">
-          <input id="userInput" type="text" placeholder="Dove vuoi andare? (Nord, Est, Sud, Ovest, Su, Giu | iniziali: N/E/S/O)" />
+          <input id="userInput" type="text" placeholder="Dove vuoi andare? (Nord/N, Est/E, Sud/S, Ovest/O, Su/Alto/Sali, Giu/Basso/Scendi)" />
           <button id="sendBtn" type="submit">Invia</button>
         </form>
       </div>
-
       <div id="linguaScelta">Lingua selezionata:</div>
+  <!-- Lingua selezionata dall'utente -->
+  <div id="linguaScelta">Lingua selezionata:</div>
+      <!-- Versione attuale dell'app -->
+      <div id="versioneRunning" style="font-size:0.9em;color:#666;margin-top:2px;"></div>
       <aside id="squarePanel" aria-hidden="true">
+        <!-- Pannello direzioni di movimento -->
         <div class="vg-letters" aria-hidden="true">
-          <span class="vlet N">N</span>
-          <span class="vlet E">E</span>
-          <span class="vlet S">S</span>
-          <span class="vlet O">O</span>
+          <span class="vlet N disabled" title="Nord">N</span>
+          <span class="vlet E disabled" title="Est">E</span>
+          <span class="vlet S disabled" title="Sud">S</span>
+          <span class="vlet O disabled" title="Ovest">O</span>
         </div>
         <div class="vg-controls" aria-hidden="true">
-          <div class="vg-item"><span class="vg-dot"></span><span class="vg-label">Su</span></div>
-          <div class="vg-item"><span class="vg-dot"></span><span class="vg-label">Giu</span></div>
+          <div class="vg-item disabled"><span class="vg-dot disabled" title="Su"></span><span class="vg-label disabled" title="Su">Su</span></div>
+          <div class="vg-item disabled"><span class="vg-dot disabled" title="Giu"></span><span class="vg-label disabled" title="Giu">Giu</span></div>
         </div>
       </aside>
     </section>
@@ -63,12 +88,27 @@
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
     }
-    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '0';
+    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
     let descrizione = localStorage.getItem('linguaDescrizione') || '';
     function setLingua(text) {
       const el = document.getElementById('linguaScelta');
       if (el) el.textContent = text ? ('Lingua selezionata: ' + text) : '';
     }
+
+    // Mostra la versione running sotto la lingua
+    function setVersioneRunning(ver) {
+      const el = document.getElementById('versioneRunning');
+      if (el) el.textContent = ver ? ('Versione: ' + ver) : '';
+    }
+
+    // Recupera la versione dall'API
+    fetch('/api/version')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.version) setVersioneRunning(data.version);
+      })
+      .catch(() => setVersioneRunning('non disponibile'));
+  // --- fine fetch versione ---
     if (!descrizione && idLingua && idLingua !== '0') {
       fetch('/api/lingue')
         .then(res => res.json())
@@ -90,6 +130,6 @@
   </script>
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
-  <script src="odessa1.js?v=20251106_12" type="module"></script>
+  <script src="js/odessa1.js?v=20251106_12" type="module"></script>
 </body>
 </html>

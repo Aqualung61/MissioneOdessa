@@ -1,0 +1,94 @@
+ID;IDLingua;Nome;Descrizione;Piano;Nord;Est;Sud;Ovest;Su;Giu;Terminale
+1;1;Atrio;Sei nell'atrio della casa.;0;0;2;0;59;0;0;0
+2;1;Reception;Sei in quella che un tempo era la reception della casa.;0;6;3;5;1;0;0;0
+3;1;Grande corridoio impolverato;Sei in un grande corridoio impolverato.;0;7;4;0;2;0;0;0
+4;1;Elevatore;Sei vicino ad un elevatore di vecchio tipo.;0;0;8;0;3;0;0;0
+5;1;Ampio e umido corridoio;Sei in un ampio ed umido corridoio.;0;2;14;0;13;0;0;0
+6;1;Ripostiglio;Sei in un umido ed angusto ripostiglio.;0;0;0;2;0;0;0;0
+7;1;Grosso scalone;Sei ai piedi di un grosso scalone.;0;0;0;3;0;9;0;0
+8;1;Dentro elevatore - Muori;"Pessima idea quella di entrare nell'elevatore!
+L'elevatore era sostenuto solo da macerie sotto di esso, dato che i cavi sono rotti: entrandoci, il tuo peso sposta l'equilibrio precario della cabina, facendola cadere nella tromba dell'ascensore. Uno spuntone di ferro ti ferisce una gamba e inizi a sanguinare copiosamente: a quel ritmo ti ci vorrà poco a morire dissanguato....";0;-1;-1;-1;-1;-1;-1;-1
+9;1;Scalone;Sei nei pressi dello scalone che scende al piano terra.;1;0;0;10;0;0;7;0
+10;1;Corridoio diroccato;Sei nel corridoio diroccato.;1;9;0;0;11;0;0;0
+11;1;Stanzetta - ufficio;"Sei in una stanzetta adibita ad ufficio.
+Vedo un bastone di comando";1;0;10;12;0;0;0;0
+12;1;Grande sala;Sei in una grande sala, anch'essa diroccata.;1;11;0;0;0;0;0;0
+13;1;Pianerottolo;Sei sul pianerottolo di una scala.;0;0;5;0;0;0;26;0
+14;1;Grande salone;"Sei in un grande salone.
+Vedo un grande tavolo e delle sedie.";0;0;15;19;5;0;0;0
+15;1;Ex sala radio;Sei in una sala che doveva essere la sala radio.;0;0;16;0;14;0;0;0
+16;1;Cortile esterno;Sei nel cortile esterno alla casa.;0;0;0;17;15;0;0;0
+17;1;Cortile;Sei nel cortile.;0;16;0;18;0;0;0;0
+18;1;Garage;"Sei nel garage della casa.
+Vedo un badile arrugginito.";0;17;0;0;0;0;0;0
+19;1;Armeria;Sei in un'armeria.;0;15;0;0;20;0;0;0
+20;1;Studio;"Sei in uno studio, probabilmente del Gauleiter.
+Vedo un arazzo in pessime condizioni.";0;0;19;21;23;0;0;0
+21;1;Piccola saletta;"Sei in una piccola saletta segreta.
+Vedo una lista di servizio.
+Vedo una scrivania.";0;20;22;0;0;0;0;0
+22;1;Sala trofei;"Sei nella sala trofei.
+Vedo una statuetta.
+Vedo dei trofei alle pareti.";0;0;0;0;21;0;0;0
+23;1;Ampio e umido corridoio;Sei in un ampio ed umido corridoio.;0;0;20;24;25;0;0;0
+24;1;Ex biblioteca;Sei nella sala che fu una fornita biblioteca.;0;23;0;0;0;0;0;0
+25;1;Vecchio archivio;"Sei in un vecchio archivio.
+Vedo un fermacarte.
+Vedo una scrivania.
+Vedo degli scaffali vuoti.";0;0;23;0;0;0;0;0
+26;1;Pianerottolo inferiore;Sei sul pianerottolo inferiore della scala.;-1;0;27;0;0;13;0;0
+27;1;Corridoio del seminterrato;"Sei nel corridoio del seminterrato.
+Vedo una nicchia vuota.";-1;28;37;38;26;0;0;0
+28;1;Atrio del bunker;Sei nell'atrio del bunker.;-1;29;0;27;0;0;0;0
+29;1;Stretto passaggio;Sei in uno stretto passaggio che prosegue ad est.;-1;0;30;28;0;0;0;0
+30;1;Stretto passaggio;Sei in uno stretto passaggio che prosegue ad est.;-1;33;32;31;0;0;0;0
+31;1;Piccola cucina;Sei in una piccola cucina.;-1;30;0;0;0;0;0;0
+32;1;Stretto passaggio;Sei in uno stretto passaggio.;-1;0;0;36;30;0;0;0
+33;1;Camera da letto;"Sei in una camera da letto.
+Vedo un letto.";-1;0;34;30;35;0;0;0
+34;1;Studio adiacente;Sei nello studio adiacente alla camera.;-1;0;0;0;33;0;0;0
+35;1;Bagno adiacente;Sei nel bagno adiacente la camera.;-1;0;30;0;0;0;0;0
+36;1;Stretto passaggio;"Appena ti lasci alle spalle il tratto di passaggio, questo crolla: sei stato fortunato a non restare sepolto dal crollo ma da quella parte ora non si può più passare.
+Sei ancora nello stretto passaggio.
+Il soffitto è crollato a nord.
+Vedo una forma circolare sul muro.";-1;0;41;39;37;0;0;0
+37;1;Sala di torture;Sei nella sala di torture.;-1;0;36;0;27;0;0;0
+38;1;Piccola saletta;Sei in una piccola e squallida saletta.;-1;27;0;0;0;0;0;0
+39;1;Pozzo;Sei nei pressi di un profondo pozzo.;-1;36;0;0;0;0;0;0
+40;1;Dentro pozzo - Muori;Molto azzardato: cadi nel pozzo scuro e profondo e ti procuri fratture e lesioni interne in numero tale da ucciderti subito....;-1;-1;-1;-1;-1;-1;-1;-1
+41;1;Passaggio Est - Ovest;Sei ancora nel passaggio, aperto ad est ed ovest.;-1;42;44;0;36;0;0;0
+42;1;Ampia sala;"Sei in una ampia sala dall'arredamento molto funzionale.
+Vedo un sedile.";-1;0;43;41;0;0;0;0
+43;1;Stanza segreta;"Sei in una stanza segreta che funge da archivio.
+Vedo un fascicolo.
+Vedo un tavolo.";-1;0;0;0;42;0;0;0
+44;1;Passaggio;"Sei nel passaggio che prosegue ad est.
+Vedo un pulsante.
+Vedo una porta.";-1;0;45;0;41;0;0;0
+45;1;Scala a chiocciola;Sei di fronte ad una scala a chiocciola.;-1;0;0;0;44;46;0;0
+46;1;Scala a chiocciola;Sei nei pressi di una scala a chiocciola.;0;0;47;0;0;0;45;0
+47;1;Atrio;Sei in un atrio.;0;48;51;49;46;0;0;0
+48;1;Stanza della domestica;Sei nella stanza della domestica.;0;0;0;47;0;0;0;0
+49;1;Tinello;"Sei in un tinello.
+Vedo un tavolo.";0;47;0;0;50;0;0;0
+50;1;Piccola cucina;"Sei all'interno di una piccola cucina.
+Vedo un peso.";0;0;49;0;0;0;0;0
+51;1;Grossa piazza;"Sei in una grossa piazza.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;52;55;53;47;0;0;0
+52;1;Filo spinato;"Sei di fronte ad un pungente filo spinato.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;0;0;51;0;0;0;0
+53;1;Posto di blocco;"Sei vicino ad un posto di blocco.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;51;0;0;0;0;0;0
+54;1;Posto di blocco - Fine;"Azione temeraria ma sciocca; credi di presentarti in una zona proibita e di farla franca?
+Le sentinelle ti immobilizzano e ti conducono al comando: ti giudicheranno come spia. La tua avventura è finita!";0;-1;-1;-1;-1;-1;-1;-1
+55;1;Strada;"Sei in una strada.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;57;56;58;51;0;0;0
+56;1;Filo spinato;"Sei di fronte ad un pungente filo spinato.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;0;0;0;55;0;0;0
+57;1;Capanno degli attrezzi;"Sei all'interno di un capanno degli attrezzi.
+Vedo una pesa.
+Vedo un banco di lavoro.";0;0;0;55;0;0;0;0
+58;1;Filo spinato;"Sei di fronte ad un pungente filo spinato.
+Restare a lungo fermi in un posto all'aperto può essere pericoloso.";0;55;0;0;0;0;0;0
+59;1;Barriera col settore americano;"Sei davanti alla barriera col settore americano.
+Vedo una guardia.";0;0;1;0;0;0;0;0

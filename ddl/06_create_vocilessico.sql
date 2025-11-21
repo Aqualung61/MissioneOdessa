@@ -1,4 +1,3 @@
--- DDL: Tabella VociLessico
 CREATE TABLE VociLessico (
     ID_Voce INTEGER PRIMARY KEY AUTOINCREMENT,
     Voce TEXT NOT NULL,

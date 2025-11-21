@@ -2,8 +2,31 @@ import express from 'express';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { runE2ETests } from '../tests/runE2E.js';
+import { azioni_setup, azioni_modi } from './azioni_lib.js';
 
 const router = express.Router();
+// GET /api/introduzione - restituisce il testo markdown della presentazione
+router.get('/introduzione', async (req, res) => {
+  const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
+  const db = await open({ filename: dbPath, driver: sqlite3.Database });
+
+  // Recupera il parametro `id` dalla query string, usa 1 come valore predefinito
+  const id = parseInt(req.query.id, 10) || 1;
+  // Recupera il parametro `lingua` dalla query string, usa 1 come valore predefinito
+  const lingua = parseInt(req.query.lingua, 10) || 1;
+
+  try {
+    const row = await db.get(
+      'SELECT Testo FROM Introduzione WHERE ID = ? AND IDLingua = ?',
+      [id, lingua]
+    );
+    res.json({ testo: row?.Testo || '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore durante il recupero dell\'introduzione' });
+  } finally {
+    await db.close();
+  }
+});
 
 // POST /api/run-tests - esegue la suite e2e Playwright e restituisce il report
 router.post('/run-tests', async (req, res) => {
@@ -20,10 +43,20 @@ router.post('/run-tests', async (req, res) => {
 router.get('/luoghi', async (req, res) => {
   const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
   const db = await open({ filename: dbPath, driver: sqlite3.Database });
-  const luoghi = await db.all('SELECT * FROM Luoghi');
+  const luoghi = await db.all(`
+    SELECT Luoghi.*, Luoghi_immagine.Immagine, Luoghi.Terminale
+    FROM Luoghi
+    LEFT JOIN Luoghi_immagine ON Luoghi.ID = Luoghi_immagine.ID_Luoghi
+  `);
   await db.close();
   res.json(luoghi);
 });
+
+// GET /api/azioni - gestisce azioni_setup
+router.get('/azioni', azioni_setup);
+
+// GET /api/azioni-modi - gestisce azioni_modi
+router.get('/azioni-modi', azioni_modi);
 
 // Esempio di endpoint
 router.get('/ping', (req, res) => {

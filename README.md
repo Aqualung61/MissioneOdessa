@@ -1,4 +1,3 @@
-
 # Missione Odessa App
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
@@ -53,11 +52,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 
 ## Database e migrazioni
 
-- DB: SQLite senza ORM (Prisma è stato rimosso).
-- Percorso DB configurabile via variabile d'ambiente `ODESSA_DB_PATH` (default `./db/odessa.db`).
-- Schema e cambi strutturali gestiti con file DDL in `ddl/` nominati in modo descrittivo e documentati in `docs/`.
-- Ispezione dati: usare DBeaver o DB Browser for SQLite aprendo `db/odessa.db`.
-- Migrazione a Postgres/MySQL: possibile in futuro con script ad hoc e adattamento dell'accesso ai dati.
+ Schema e cambi strutturali gestiti con file DDL in `ddl/` (migrazioni, creazione e popolamento) nominati in modo descrittivo e documentati in `docs/`.
  - Linee guida: vedi `docs/ddl-guidelines.md`.
 
 ## Release notes
@@ -74,6 +69,55 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 
 - POST `/api/shutdown`
    - Spegne il server in modo “graceful” (exit code 0). Disponibile solo quando `NODE_ENV=test`. Utile nelle pipeline locali per evitare exit -1.
+
+## Nuove API
+
+### API azioni_setup
+- **Endpoint**: `/api/azioni`
+- **Metodo**: GET
+- **Parametri**:
+  - `idLingua` (opzionale, default: 1): ID della lingua.
+  - `log` (opzionale, default: 0): Abilita il log dettagliato.
+- **Descrizione**: Aggiorna i record nella tabella `Luoghi` basandosi sui dati della tabella `Azioni` con `Sequenza = 1`.
+- **Esempio di utilizzo**:
+  ```
+  GET /api/azioni?idLingua=1&log=1
+  ```
+- **Log**: Mostra la query SQL eseguita e i risultati in console se `log=1`.
+
+### Campo `Terminale` nella tabella `Luoghi`
+
+- **Descrizione**: Il campo `Terminale` nella tabella `Luoghi` rappresenta uno stato o una proprietà specifica del luogo.
+- **Valori speciali**:
+  - `-1`: Indica un luogo speciale o non accessibile, che richiede una gestione particolare.
+- **Comportamento speciale**:
+  - Quando un record nella tabella `Luoghi` ha il campo `Terminale = -1`, il luogo corrispondente rappresenta la fine del gioco.
+  - In questo caso, l'utente ha la possibilità di ripartire dall'inizio del gioco.
+- **Gestione**:
+  - I luoghi con `Terminale = -1` possono essere esclusi dalle query o trattati diversamente.
+  - Esempio di query per escludere questi luoghi:
+    ```sql
+    SELECT * FROM Luoghi WHERE Terminale != -1;
+    ```
+  - È possibile aggiornare il valore di `Terminale` con una query `UPDATE`:
+    ```sql
+    UPDATE Luoghi
+    SET Terminale = 0
+    WHERE Terminale = -1;
+    ```
+- **Uso nelle API**:
+  - Le API possono includere o escludere i luoghi con `Terminale = -1` in base ai requisiti applicativi.
+
+### Quando il valore del campo `Terminale` è maggiore di 0
+
+- **Descrizione**: Il valore del campo `Terminale` maggiore di 0 identifica il record `ID` della tabella `Luoghi` che deve essere modificato.
+- **Comportamento**:
+  - La modifica segue le regole definite nella tabella `Azioni`.
+- **Esempio di utilizzo**:
+  ```
+  GET /api/azioni?idLingua=1&log=1
+  ```
+- **Log**: Mostra la query SQL eseguita e i risultati in console se `log=1`.
 
 ## Stato
 

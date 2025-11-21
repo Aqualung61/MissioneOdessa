@@ -4,15 +4,18 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "allowJs": true,
-  "outDir": "dist",
-  // Permettiamo a TS Server di includere anche i test senza errori TS6059
-  // (la build vera usa tsconfig.build.json che esclude i test).
-  "rootDir": ".",
-  "noEmit": true,
+    "outDir": "dist",
+    // Permettiamo a TS Server di includere anche i test senza errori TS6059
+    // (la build vera usa tsconfig.build.json che esclude i test).
+    "rootDir": ".",
+    "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true, // Abilita le mappe sorgente per il debugging
+    "resolveJsonModule": true, // Permette di importare file JSON
+    "types": ["node"] // Include i tipi di Node.js
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "types/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]

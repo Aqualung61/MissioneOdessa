@@ -1,0 +1,60 @@
+**Dopo Norimberga**
+
+Norimberga, 30 settembre 1946. Il tribunale speciale per i crimini di guerra condanna i maggiori esponenti della Germania nazista. La sentenza segna per la storia la fine del regime, ma non cancella gli errori di cui si è reso responsabile.
+
+
+
+Nella Germania del primo dopoguerra, un paese occupato e distrutto di cui gli Alleati stanno decidendo il futuro, un ometto insignificante, scampato miracolosamente dai campi di sterminio, inizia una ricerca che ancora oggi non considera conclusa.
+
+
+
+Il suo nome è Simon Wiesenthal, il suo scopo quello di scovare i gerarchi nazisti, i comandanti dei campi di sterminio, gli uomini della "soluzione finale". Fonda un Centro di Documentazione e crea una rete internazionale per l’individuazione dei criminali nazisti ancora latitanti, di cui è considerato il più impietoso cacciatore.
+
+
+
+**In fuga verso sud**
+
+La vicenda si svolge nel 1948. Il processo di Norimberga ha rivelato la vera natura del nazismo, i capi del regime vengono in gran parte, in molti casi fortunatamente, catturati, ma sono molti quelli che, approfittando della confusione seguita alla caduta del Reich, sono spariti dalla circolazione o addirittura sono riusciti a conquistare posti di responsabilità nelle nuove amministrazioni.
+
+
+
+Il paese è sotto controllo alleato e la divisione tra est e ovest non è ancora avvenuta. Siamo a Berlino, la ex capitale è divisa in 4 settori e l’azione si svolge in quello russo.
+
+
+
+Wiesenthal riceve informazioni su ODESSA, una organizzazione creata con lo scopo di facilitare la fuga all’estero dei criminali nazisti.
+
+
+
+A partire dal 1947 l'organizzazione aveva creato una rete di informatori e di ritrovi, passando poi alla realizzazione di complessi piani di fuga. Coperta da influenti coperture, sia in Germania, che in altri paesi europei, ODESSA poteva operare contando sulla poca accuratezza dei controlli e su una serie di itinerari sicuri verso i porti dell'Europa del Sud. Da qui i ricercati partivano per il Sud America, dove facevano perdere le tracce con la complicità dei governi locali.
+
+
+
+**L’archivio dei gerarchi**
+
+Nella sua attività Wiesenthal ha come collaboratori e informatori persone sopravvissute ai campi di sterminio, parenti delle vittime decisi ad avere giustizia e ex-nazisti che intendono riparare alle loro colpe.
+
+
+
+David Liebermann, operaio di Stoccarda, salvato dalla camera a gas dall'arrivo degli alleati, è il miglior agente di Wiesenthal. Si erano conosciuti subito dopo la liberazione e non avevano avuto difficoltà ad intendersi: quando il Centro di Documentazione iniziò la sua attività a Linz, in Austria, Liebermann venne chiamato a collaborare al lavoro d'indagine, diventando presto l’uomo più prezioso di Wiesenthal.
+
+
+
+Non è quindi un caso se una missione così delicata viene affidata a lui.
+
+
+
+I mille occhi e le mille orecchie di Wiesenthal lavorando instancabilmente alla ricerca di informazioni sulle attività di ODESSA, scovano a Berlino, in una zona devastata dai bombardamenti, un vecchio stabile in rovina appartenuto al borgomastro (Gauileiter) e diventato negli ultimi giorni del terzo Reich un centro operativo delle SS, dove i membri dell'organizzazione nazista tengono le loro riunioni per architettare nuovi piani di fuga. Nella casa del Gauleiter, secondo gli informatori, dovrebbero trovarsi i documenti riguardanti le attività del gruppo, i piani e gli archivi contenenti i nomi e i nascondigli dei gerarchi ricercati.
+
+
+
+Mettere le mani su materiali di tale importanza significa distruggere ODESSA, smascherare i suoi contatti in Germania e all'estero e, soprattutto, catturare decine di criminali di guerra.
+
+
+
+Durante la notte Liebermann viene accompagnato nella casa da un uomo di fiducia di Wiesenthal che gli dà appuntamento per il mattino seguente. L'operazione comporta diversi rischi a causa dei controlli russi nella zona e perché, nelle prime ore del giorno dopo, è prevista una riunione dell'organizzazione nazista. Il fattore tempo è importantissimo, la missione deve essere portata a termine prima che le luci del giorno possano tradire la presenza di Liebermann nella casa ed evitando un poco gradito incontro con i membri di ODESSA.
+
+
+
+Siete nell’atrio della casa diroccata, d’ora in poi tutto dipende da voi. Buona caccia!
+

@@ -31,6 +31,32 @@
 
 ---
 
+## v1.2.3-beta.0 (18/11/2025)
+
+### Novità principali
+- Le direzioni nel pannello stella (N/E/S/O/Su/Giu) sono ora cliccabili: il click esegue il comando di movimento corrispondente, senza modificare l’input testuale.
+- Nessuna regressione nota, logica di abilitazione/disabilitazione invariata.
+- Modifica tracciata e reversibile.
+
+### Migliorie tecniche
+- Refactor delle APIs `azioni_setup` e `azioni_modi`: ora aggiornano dinamicamente le direzioni nell'array luoghi in memoria invece di scrivere sul database, migliorando prestazioni e coerenza.
+- Rimozione di tutti i `console.log` dalle APIs e dal frontend per una console pulita.
+- Correzione parametri API (case sensitivity, query WHERE) e percorsi immagini (`../images/dummy.png`).
+- Validazione robusta parametri log (0/1) e IDLuogo.
+
+### Note
+- Logica di navigazione completata: direzioni dinamiche, eccezioni (muri, luoghi terminali), introduzione multilingua, immagini di contesto.
+- Prossimi passi: implementazione parser per frasi, gestione oggetti e timer.
+
+---
+
+## v1.2.4-dev
+
+### Novità
+- 
+
+---
+
 ## v1.0.0 (31/10/2025)
 
 ### Novità principali

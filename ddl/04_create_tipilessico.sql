@@ -1,4 +1,3 @@
--- DDL: Tabella TipiLessico
 CREATE TABLE TipiLessico (
     ID_TipoLessico INTEGER PRIMARY KEY AUTOINCREMENT,
     NomeTipo TEXT NOT NULL UNIQUE

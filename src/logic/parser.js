@@ -41,11 +41,11 @@ export async function ensureVocabulary(dbPath) {
   const db = await open({ filename: dbPath, driver: sqlite3.Database });
   try {
     const rows = await db.all(
-      `SELECT t.NomeTipo AS Tipo, tl.ID AS TermineID, tl.Concetto AS Concetto, vl.Voce AS Voce
+      `SELECT t.NomeTipo AS Tipo, tl.ID_Termine AS TermineID, tl.Concetto AS Concetto, vl.Voce AS Voce
        FROM TerminiLessico tl
-       JOIN TipiLessico t ON t.ID = tl.TipoID
-       JOIN VociLessico vl ON vl.TermineID = tl.ID
-       WHERE vl.LinguaID = 1`
+       JOIN TipiLessico t ON t.ID_TipoLessico = tl.ID_TipoLessico
+       JOIN VociLessico vl ON vl.ID_Termine = tl.ID_Termine
+       WHERE vl.ID_Lingua = 1`
     );
     const tokenMap = new Map();
     const canonicalByTerm = new Map();

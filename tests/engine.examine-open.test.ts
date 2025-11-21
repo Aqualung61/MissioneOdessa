@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import path from 'node:path';
-// @ts-expect-error ESM JS module
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import { executeCommand, resetGameState, getGameStateSnapshot } from '../src/logic/engine.js';
 
