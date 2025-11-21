@@ -92,7 +92,7 @@ if (process.env.NODE_ENV === 'test') {
 app.use(BASE_PATH, express.static(ROOT));
 
 // Catch-all per SPA (deve essere l'ULTIMO!)
-app.use(BASE_PATH + '/*', (req, res) => {
+app.use(BASE_PATH, (req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
 
