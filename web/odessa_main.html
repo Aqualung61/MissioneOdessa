@@ -7,7 +7,7 @@
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script>
     // Detect base path dynamically
-    const basePath = window.location.pathname.replace(/\/$/, '').replace(/\/web\/.*$/, '/') || '/';
+    const basePath = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
 
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
