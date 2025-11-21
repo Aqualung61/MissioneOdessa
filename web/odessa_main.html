@@ -106,7 +106,7 @@
     }
 
     // Recupera la versione dall'API
-    fetch('/api/version')
+    fetch(basePath + 'api/version')
       .then(res => res.json())
       .then(data => {
         if (data && data.version) setVersioneRunning(data.version);
@@ -114,7 +114,7 @@
       .catch(() => setVersioneRunning('non disponibile'));
   // --- fine fetch versione ---
     if (!descrizione && idLingua && idLingua !== '0') {
-      fetch('/api/lingue')
+      fetch(basePath + 'api/lingue')
         .then(res => res.json())
         .then(data => {
           const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === idLingua);

@@ -152,7 +152,7 @@ const inputForm = document.getElementById('inputArea');
 const userInput = document.getElementById('userInput');
 
 // Determina base path per deployment in sottodirectory
-const basePath = window.location.pathname.split('/').filter(p => p).length > 0 ? '/' + window.location.pathname.split('/')[1] : '';
+const basePath = window.location.pathname.split('/').filter(p => p).length > 0 ? '/' + window.location.pathname.split('/')[1] + '/' : '/';
 
 let luoghi = [];
 let current = null;
@@ -420,7 +420,7 @@ inputForm.addEventListener('submit', function(e) {
     }
   });
 });
-fetch('/api/luoghi')
+fetch(basePath + '/api/luoghi')
   .then(res => res.json())
   .then(data => {
     luoghi = Array.isArray(data) ? data : [];
