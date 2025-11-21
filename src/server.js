@@ -5,6 +5,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
@@ -27,6 +28,18 @@ console.log(`Missione Odessa - Versione: ${version}`);
 // ...existing code...
 
 const app = express();
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      fontSrc: ["'self'", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
 const BASE_PATH = process.env.BASE_PATH || '';

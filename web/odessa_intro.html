@@ -6,12 +6,15 @@
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script>
+    // Detect base path dynamically
+    const basePath = window.location.pathname.replace(/\/$/, '').replace(/\/web\/.*$/, '/') || '/';
+
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
     (function(){
       try{
         if (location.protocol === 'file:'){
-          var target = 'http://localhost:3001/web/odessa_intro.html' + (location.search||'');
+          var target = 'http://localhost:3001' + basePath + 'web/odessa_intro.html' + (location.search||'');
           location.replace(target);
         }
       }catch(e){}
@@ -94,7 +97,7 @@
       }, 100);
 
       function loadIntroduzione(id) {
-        fetch('/api/introduzione?id=' + id + '&lingua=1')
+        fetch(basePath + 'api/introduzione?id=' + id + '&lingua=1')
           .then(res => res.json())
           .then(data => {
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
@@ -102,7 +105,7 @@
             if (id === 1 || id === 2) {
               lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
             } else {
-              lines[lines.length - 1] = `<a href='odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
+              lines[lines.length - 1] = `<a href='${basePath}web/odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
             }
             const parsedHTML = marked.parse(lines.join('\n'));
             // Senza fading per compatibilità con scroll

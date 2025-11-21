@@ -146,6 +146,9 @@
       </button>
     </div>
     <script>
+      // Detect base path dynamically
+      const basePath = window.location.pathname.replace(/\/$/, '').replace(/\/[^\/]*$/, '/') || '/';
+
       // --- TEST POPUP LOGIC ---
       async function runTestSuite() {
         createTestPopup();
@@ -194,7 +197,7 @@
         try {
           // Avvia lampeggio "Running..."
           // Chiedi al backend di eseguire TUTTI i test (così puoi estrarre i primi due)
-          const res = await fetch('/api/run-tests', {
+          const res = await fetch(basePath + 'api/run-tests', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
           });
@@ -447,9 +450,9 @@
         };
         try {
           const [vRes, lingRes, luogoRes] = await Promise.all([
-            fetch('/api/version'),
-            fetch('/api/lingue'),
-            fetch('/api/luoghi'),
+            fetch(basePath + 'api/version'),
+            fetch(basePath + 'api/lingue'),
+            fetch(basePath + 'api/luoghi'),
           ]);
           if (!vRes.ok) {
             out.ok = false;
@@ -499,7 +502,7 @@
       let lingueData = [];
 
       // Carica lingue dal backend
-      fetch('/api/lingue')
+      fetch(basePath + 'api/lingue')
         .then((res) => res.json())
         .then((data) => {
           lingueData = data;
@@ -539,7 +542,7 @@
           if (nome) localStorage.setItem('linguaDescrizione', nome);
         }
         localStorage.setItem('linguaSelezionata', idLingua);
-  window.location.href = 'web/odessa_intro.html?idLingua=' + encodeURIComponent(idLingua);
+  window.location.href = basePath + 'web/odessa_intro.html?idLingua=' + encodeURIComponent(idLingua);
       });
     </script>
   </body>

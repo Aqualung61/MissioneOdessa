@@ -6,12 +6,15 @@
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script>
+    // Detect base path dynamically
+    const basePath = window.location.pathname.replace(/\/$/, '').replace(/\/web\/.*$/, '/') || '/';
+
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
     (function(){
       try{
         if (location.protocol === 'file:'){
-          var target = 'http://localhost:3001/web/odessa_main.html' + (location.search||'');
+          var target = 'http://localhost:3001' + basePath + 'web/odessa_main.html' + (location.search||'');
           location.replace(target);
         }
       }catch(e){}
