@@ -241,7 +241,7 @@ function showCurrent() {
     placeFeed.scrollTop = placeFeed.scrollHeight;
 
     // Carica e mostra oggetti nel luogo
-    fetch(basePath + `/api/luogo-oggetti?idLuogo=${current.ID}&idLingua=1`)
+    fetch(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=1`)
       .then(res => res.json())
       .then(oggetti => {
         if (oggetti.length > 0) {
@@ -263,7 +263,7 @@ function showCurrent() {
       awaitingRestart = true;
     } else if (current.Terminale > 0) {
       // Chiamata azioni_modi per aggiornare direzioni in luoghi speciali
-      fetch(basePath + '/api/azioni-modi?idLingua=1&log=0&IDLuogo=' + current.Terminale)
+      fetch(basePath + 'api/azioni-modi?idLingua=1&log=0&IDLuogo=' + current.Terminale)
         .then(res => res.json())
         .then(modiData => {
           if (modiData.updatedDirections) {
@@ -298,7 +298,7 @@ inputForm.addEventListener('submit', function(e) {
       awaitingRestart = false;
       visitedPlaces = new Set(); // Reset luoghi visitati
       // Chiamata azioni_setup per aggiornare direzioni al restart
-      fetch(basePath + '/api/azioni?idLingua=1&log=0')
+      fetch(basePath + 'api/azioni?idLingua=1&log=0')
         .then(res => res.json())
         .then(azioniData => {
           if (azioniData.updatedDirections) {
@@ -328,7 +328,7 @@ inputForm.addEventListener('submit', function(e) {
   if (!val) return;
 
   // Chiama il parser API
-  fetch(basePath + '/api/parser/parse', {
+  fetch(basePath + 'api/parser/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ input: val })
@@ -420,7 +420,7 @@ inputForm.addEventListener('submit', function(e) {
     }
   });
 });
-fetch(basePath + '/api/luoghi')
+fetch(basePath + 'api/luoghi')
   .then(res => res.json())
   .then(data => {
     luoghi = Array.isArray(data) ? data : [];
@@ -431,7 +431,7 @@ fetch(basePath + '/api/luoghi')
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
     // Chiamata azioni_setup per aggiornare direzioni
-    fetch(basePath + '/api/azioni?idLingua=1&log=0')
+    fetch(basePath + 'api/azioni?idLingua=1&log=0')
       .then(res => res.json())
       .then(azioniData => {
         if (azioniData.updatedDirections) {
