@@ -29,10 +29,12 @@ console.log(`Missione Odessa - Versione: ${version}`);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
+const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
+console.log(`Base path: ${BASE_PATH || 'root'}`);
 
 // API: versione applicazione
-app.get('/api/version', (req, res) => {
+app.get(BASE_PATH + '/api/version', (req, res) => {
   res.json({ version });
 });
 
@@ -46,18 +48,18 @@ await loadLuoghi(DB_PATH);
 let vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
 
 // API (devono venire PRIMA dello statico!)
-app.use('/api', apiRoutes);
-app.use('/api/lingue', linguaRoutes);
-app.use('/api/parser', parserRoutes);
-app.use('/api/engine', engineRoutes);
+app.use(BASE_PATH + '/api', apiRoutes);
+app.use(BASE_PATH + '/api/lingue', linguaRoutes);
+app.use(BASE_PATH + '/api/parser', parserRoutes);
+app.use(BASE_PATH + '/api/engine', engineRoutes);
 
 // Endpoint per vista luoghi-oggetti
-app.get('/api/vista-luoghi-oggetti', (req, res) => {
+app.get(BASE_PATH + '/api/vista-luoghi-oggetti', (req, res) => {
   res.json(vistaLuoghiOggetti);
 });
 
 // Endpoint per oggetti in un luogo specifico
-app.get('/api/luogo-oggetti', (req, res) => {
+app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   const { idLuogo, idLingua } = req.query;
   if (!idLuogo || !idLingua) {
     return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
@@ -70,7 +72,7 @@ app.get('/api/luogo-oggetti', (req, res) => {
 
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
 if (process.env.NODE_ENV === 'test') {
-  app.post('/api/shutdown', async (req, res) => {
+  app.post(BASE_PATH + '/api/shutdown', async (req, res) => {
     try {
       res.json({ ok: true });
     } catch {
@@ -87,10 +89,10 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 // Statico dopo le API
-app.use(express.static(ROOT));
+app.use(BASE_PATH, express.static(ROOT));
 
 // Catch-all per SPA (deve essere l'ULTIMO!)
-app.use((req, res) => {
+app.use(BASE_PATH + '/*', (req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
 
