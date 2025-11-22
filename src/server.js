@@ -10,7 +10,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import fs from 'fs';
-import sqlite3 from 'sqlite3';
 import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
@@ -44,52 +43,16 @@ app.use(helmet({
   },
 }));
 const PORT = process.env.PORT || 3001;
-const DB_PATH = process.env.ODESSA_DB_PATH || './db/Odessa.db';
+const DB_PATH = process.env.ODESSA_DB_PATH || './db/odessa.db';
 const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
-// Inizializza DB se non esiste o è vuoto (per Railway/altri hosting senza persistenza)
-console.log('Target DB path:', DB_PATH);
-console.log('Target DB exists:', fs.existsSync(DB_PATH));
-if (!fs.existsSync(DB_PATH)) {
-  console.log('DB non esiste, inizializzazione...');
-  await new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(DB_PATH);
-    const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
-    db.exec(initSql, (err) => {
-      if (err) {
-        console.error('Errore inizializzazione DB:', err);
-        reject(err);
-      } else {
-        console.log('DB inizializzato con successo');
-        resolve();
-      }
-      db.close();
-    });
-  });
-} else {
-  // Controlla se il DB ha le tabelle
-  console.log('DB esiste, controllo tabelle...');
-  const db = new sqlite3.Database(DB_PATH);
-  db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Luoghi'", (err, row) => {
-    if (err || !row) {
-      console.log('Tabella Luoghi non trovata, inizializzazione...');
-      const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
-      db.exec(initSql, (initErr) => {
-        if (initErr) {
-          console.error('Errore inizializzazione DB:', initErr);
-        } else {
-          console.log('DB inizializzato con successo');
-        }
-        db.close();
-      });
-    } else {
-      console.log('DB già popolato');
-      db.close();
-    }
-  });
-}
+// Copia DB se non esiste (per Railway/altri hosting senza persistenza)
+const sourceDb = path.join(__dirname, '..', 'db', 'odessa.db');
+if (!fs.existsSync(DB_PATH) && fs.existsSync(sourceDb)) {
+  fs.copyFileSync(sourceDb, DB_PATH);
+  console.log('DB copiato da', sourceDb, 'a', DB_PATH);
 }
 
 // API: versione applicazione
