@@ -49,11 +49,11 @@ const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
-// Inizializza DB se non esiste (per Railway/altri hosting senza persistenza)
+// Inizializza DB se non esiste o è vuoto (per Railway/altri hosting senza persistenza)
 console.log('Target DB path:', DB_PATH);
 console.log('Target DB exists:', fs.existsSync(DB_PATH));
 if (!fs.existsSync(DB_PATH)) {
-  console.log('Inizializzazione DB...');
+  console.log('DB non esiste, inizializzazione...');
   await new Promise((resolve, reject) => {
     const db = new sqlite3.Database(DB_PATH);
     const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
@@ -69,7 +69,26 @@ if (!fs.existsSync(DB_PATH)) {
     });
   });
 } else {
-  console.log('DB già esistente');
+  // Controlla se il DB ha le tabelle
+  console.log('DB esiste, controllo tabelle...');
+  const db = new sqlite3.Database(DB_PATH);
+  db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Luoghi'", (err, row) => {
+    if (err || !row) {
+      console.log('Tabella Luoghi non trovata, inizializzazione...');
+      const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
+      db.exec(initSql, (initErr) => {
+        if (initErr) {
+          console.error('Errore inizializzazione DB:', initErr);
+        } else {
+          console.log('DB inizializzato con successo');
+        }
+        db.close();
+      });
+    } else {
+      console.log('DB già popolato');
+      db.close();
+    }
+  });
 }
 }
 
