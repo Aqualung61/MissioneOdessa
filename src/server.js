@@ -54,15 +54,19 @@ console.log('Target DB path:', DB_PATH);
 console.log('Target DB exists:', fs.existsSync(DB_PATH));
 if (!fs.existsSync(DB_PATH)) {
   console.log('Inizializzazione DB...');
-  const db = new sqlite3.Database(DB_PATH);
-  const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
-  db.exec(initSql, (err) => {
-    if (err) {
-      console.error('Errore inizializzazione DB:', err);
-    } else {
-      console.log('DB inizializzato con successo');
-    }
-    db.close();
+  await new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(DB_PATH);
+    const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
+    db.exec(initSql, (err) => {
+      if (err) {
+        console.error('Errore inizializzazione DB:', err);
+        reject(err);
+      } else {
+        console.log('DB inizializzato con successo');
+        resolve();
+      }
+      db.close();
+    });
   });
 } else {
   console.log('DB già esistente');
