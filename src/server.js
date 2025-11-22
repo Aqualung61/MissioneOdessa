@@ -50,9 +50,15 @@ console.log(`Base path: ${BASE_PATH || 'root'}`);
 
 // Copia DB se non esiste (per Railway/altri hosting senza persistenza)
 const sourceDb = path.join(__dirname, '..', 'db', 'Odessa.db');
+console.log('Source DB path:', sourceDb);
+console.log('Source DB exists:', fs.existsSync(sourceDb));
+console.log('Target DB path:', DB_PATH);
+console.log('Target DB exists:', fs.existsSync(DB_PATH));
 if (!fs.existsSync(DB_PATH) && fs.existsSync(sourceDb)) {
   fs.copyFileSync(sourceDb, DB_PATH);
   console.log('DB copiato da', sourceDb, 'a', DB_PATH);
+} else {
+  console.log('DB non copiato: source exists?', fs.existsSync(sourceDb), 'target exists?', fs.existsSync(DB_PATH));
 }
 
 // API: versione applicazione
