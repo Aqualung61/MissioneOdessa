@@ -8,7 +8,7 @@ dist/
 
 # SQLite
 # (nessun percorso Prisma necessario)
-db/Odessa.db
+# db/Odessa.db
 
 # Fogli di calcolo / documenti binari di lavoro (non versionati)
 docs/miscellaneous/*.xlsx
