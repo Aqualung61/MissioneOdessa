@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import fs from 'fs';
+import sqlite3 from 'sqlite3';
 import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
@@ -48,17 +49,23 @@ const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
-// Copia DB se non esiste (per Railway/altri hosting senza persistenza)
-const sourceDb = path.join(__dirname, '..', 'db', 'Odessa.db');
-console.log('Source DB path:', sourceDb);
-console.log('Source DB exists:', fs.existsSync(sourceDb));
+// Inizializza DB se non esiste (per Railway/altri hosting senza persistenza)
 console.log('Target DB path:', DB_PATH);
 console.log('Target DB exists:', fs.existsSync(DB_PATH));
-if (!fs.existsSync(DB_PATH) && fs.existsSync(sourceDb)) {
-  fs.copyFileSync(sourceDb, DB_PATH);
-  console.log('DB copiato da', sourceDb, 'a', DB_PATH);
+if (!fs.existsSync(DB_PATH)) {
+  console.log('Inizializzazione DB...');
+  const db = new sqlite3.Database(DB_PATH);
+  const initSql = readFileSync(path.join(__dirname, '..', 'ddl', '10_create_and_populate_all.sql'), 'utf8');
+  db.exec(initSql, (err) => {
+    if (err) {
+      console.error('Errore inizializzazione DB:', err);
+    } else {
+      console.log('DB inizializzato con successo');
+    }
+    db.close();
+  });
 } else {
-  console.log('DB non copiato: source exists?', fs.existsSync(sourceDb), 'target exists?', fs.existsSync(DB_PATH));
+  console.log('DB già esistente');
 }
 
 // API: versione applicazione
