@@ -67,6 +67,7 @@ if (!fs.existsSync(DB_PATH)) {
 } else {
   console.log('DB già esistente');
 }
+}
 
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', (req, res) => {
