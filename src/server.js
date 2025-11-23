@@ -48,6 +48,10 @@ const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
+// Carica tutto il DB in memoria
+await initOdessa(DB_PATH);
+console.log('DB caricato in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+
 
 
 // API: versione applicazione
@@ -82,19 +86,19 @@ if (BASE_PATH) {
 const ROOT = path.resolve(__dirname, '..');
 app.use(cors());
 
-// Carica dati in memoria all'avvio
-let luoghi = [];
-try {
-  luoghi = await loadLuoghi(DB_PATH);
-} catch (err) {
-  console.error('Errore nel caricamento luoghi:', err.message);
-}
-let vistaLuoghiOggetti = [];
-try {
-  vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
-} catch (err) {
-  console.error('Errore nel caricamento vista_luoghi_oggetti:', err.message);
-}
+// Carica dati in memoria all'avvio (ora sostituito da initOdessa)
+// let luoghi = [];
+// try {
+//   luoghi = await loadLuoghi(DB_PATH);
+// } catch (err) {
+//   console.error('Errore nel caricamento luoghi:', err.message);
+// }
+// let vistaLuoghiOggetti = [];
+// try {
+//   vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
+// } catch (err) {
+//   console.error('Errore nel caricamento vista_luoghi_oggetti:', err.message);
+// }
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);
@@ -104,7 +108,7 @@ app.use(BASE_PATH + '/api/engine', engineRoutes);
 
 // Endpoint per vista luoghi-oggetti
 app.get(BASE_PATH + '/api/vista-luoghi-oggetti', (req, res) => {
-  res.json(vistaLuoghiOggetti);
+  res.json(global.odessaData.Luoghi_immagine || []);
 });
 
 // Endpoint per oggetti in un luogo specifico
@@ -113,7 +117,7 @@ app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   if (!idLuogo || !idLingua) {
     return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
   }
-  const oggetti = vistaLuoghiOggetti
+  const oggetti = (global.odessaData.Luoghi_immagine || [])
     .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua)
     .map(item => ({ descrizione: item.DescrizioneOggetto }));
   res.json(oggetti);

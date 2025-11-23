@@ -6,11 +6,7 @@ const router = express.Router();
 
 // GET /api/lingue - restituisce tutte le lingue
 router.get('/', async (req, res) => {
-  const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
-  const db = await open({ filename: dbPath, driver: sqlite3.Database });
-  const lingue = await db.all('SELECT * FROM Lingue');
-  await db.close();
-  res.json(lingue);
+  res.json(global.odessaData.Lingue || []);
 });
 
 export default router;
