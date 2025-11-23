@@ -40,7 +40,7 @@ export async function init_data(dbPath) {
               reject(err);
               return;
             }
-            const filePath = path.join(__dirname, 'data-internal', `${tableName}.json`);
+            const filePath = path.join(__dirname, '..', 'src', 'data-internal', `${tableName}.json`);
             fs.writeFileSync(filePath, JSON.stringify(rows, null, 2));
             completed++;
             if (completed === total) {
