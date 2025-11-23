@@ -138,14 +138,6 @@ function handleDirectionClick(dir) {
 // Versione aggiornata: 2025-10-30  (fetch API)
 
 const DIRECTIONS = ['Nord', 'Est', 'Sud', 'Ovest', 'Su', 'Giu'];
-const DIRECTION_TO_FIELD = {
-  'Nord': 'North',
-  'Est': 'East',
-  'Sud': 'South',
-  'Ovest': 'West',
-  'Su': 'Up',
-  'Giu': 'Down',
-};
 
 const output = document.getElementById('output');
 const inputForm = document.getElementById('inputArea');
@@ -158,11 +150,6 @@ let luoghi = [];
 let current = null;
 let awaitingRestart = false;
 let visitedPlaces = new Set();
-
-function print(msg) {
-  output.textContent += (output.textContent ? '\n' : '') + msg;
-  output.scrollTop = output.scrollHeight;
-}
 
 function updateDynamicPlaceImage() {
   const dynamicImage = document.getElementById('dynamicPlaceImage');
