@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
 // Configurazione Vitest per test unitari
+// Aggiornamento per fix lint
 
 export default defineConfig({
   test: {
