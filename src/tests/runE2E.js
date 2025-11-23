@@ -7,11 +7,11 @@ dotenv.config();
 
 export function runE2ETests(options = {}) {
   return new Promise((resolve) => {
-    // Usa variabile d'ambiente TESTPATH se definita, altrimenti fallback
-    const testDir = process.env.TESTPATH ? process.env.TESTPATH : 'src/tests/e2e';
+    // Usa variabile d'ambiente TESTPATH se definita, altrimenti usa config Playwright
+    const testDir = process.env.TESTPATH || 'src/tests/e2e';
     const suite = options.suite || process.env.TEST_SUITE || 'full';
     // Costruisci comando Playwright
-    let cmd = `npx playwright test "${testDir}" --reporter=json`;
+    let cmd = `npx playwright test --reporter=json`;
     // Suite "smoke": esegue solo i test minimi e veloci (versione API)
     if (suite === 'smoke') {
       const grep = 'API \\/api\\/version'; // pattern semplice e portabile
