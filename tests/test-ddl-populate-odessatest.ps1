@@ -10,120 +10,14 @@ if (Test-Path $dbPath) { Remove-Item $dbPath }
 # Crea il DB vuoto
 sqlite3 $dbPath ".databases"
 
-# Esegui tutti i DDL di creazione (ordinati)
-Get-ChildItem -Path $ddlDir -Filter "01_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "02_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "03_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "04_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "05_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "06_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "07_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "08_create_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo DDL: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-# Esegui il DDL per Luoghi_immagine (09)
-$luoghiImg = Join-Path $ddlDir "09_create_Luoghi_immagine.sql"
-if (Test-Path $luoghiImg) {
-    Write-Host "Eseguo DDL: 09_create_Luoghi_immagine.sql"
-    Get-Content $luoghiImg | sqlite3 $dbPath
-}
-# Esegui il DDL per Azioni (20)
-$azioniCreate = Join-Path $ddlDir "20_create_Azioni.sql"
-if (Test-Path $azioniCreate) {
-    Write-Host "Eseguo DDL: 20_create_Azioni.sql"
-    Get-Content $azioniCreate | sqlite3 $dbPath
-}
-# Esegui il DDL per Oggetti (21)
-$oggettiCreate = Join-Path $ddlDir "21_create_Oggetti.sql"
-if (Test-Path $oggettiCreate) {
-    Write-Host "Eseguo DDL: 21_create_Oggetti.sql"
-    Get-Content $oggettiCreate | sqlite3 $dbPath
-}
-# Esegui il DDL per Luoghi_oggetto (23)
-$luoghiOggettoCreate = Join-Path $ddlDir "23_create_Luoghi_oggetto.sql"
-if (Test-Path $luoghiOggettoCreate) {
-    Write-Host "Eseguo DDL: 23_create_Luoghi_oggetto.sql"
-    Get-Content $luoghiOggettoCreate | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "14_create_*.sql" | Sort-Object Name | ForEach-Object {
+# Esegui tutti i DDL di creazione (ordinati per numero)
+Get-ChildItem -Path $ddlDir -Filter "[0-9][0-9]_create_*.sql" | Sort-Object Name | ForEach-Object {
     Write-Host "Eseguo DDL: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
 }
 
-# Esegui tutti gli script di insert (ordinati)
-Get-ChildItem -Path $ddlDir -Filter "11_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "12_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "13_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "14_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "15_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "16_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "17_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-Get-ChildItem -Path $ddlDir -Filter "18_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-# Esegui anche gli script 20_insert_*.sql
-Get-ChildItem -Path $ddlDir -Filter "20_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-# Esegui anche gli script 19_insert_*.sql (es. Luoghi_immagine)
-Get-ChildItem -Path $ddlDir -Filter "19_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    if ($_.Name -ne "19_insert_Azioni.sql") {
-        Write-Host "Eseguo INSERT: $($_.Name)"
-        Get-Content $_.FullName | sqlite3 $dbPath
-    }
-}
-# Esegui gli script 22_insert_*.sql (Oggetti)
-Get-ChildItem -Path $ddlDir -Filter "22_insert_*.sql" | Sort-Object Name | ForEach-Object {
-    Write-Host "Eseguo INSERT: $($_.Name)"
-    Get-Content $_.FullName | sqlite3 $dbPath
-}
-# Esegui gli script 24_insert_*.sql (Luoghi_oggetto)
-Get-ChildItem -Path $ddlDir -Filter "24_insert_*.sql" | Sort-Object Name | ForEach-Object {
+# Esegui tutti gli script di insert (ordinati per numero)
+Get-ChildItem -Path $ddlDir -Filter "[0-9][0-9]_insert_*.sql" | Sort-Object Name | ForEach-Object {
     Write-Host "Eseguo INSERT: $($_.Name)"
     Get-Content $_.FullName | sqlite3 $dbPath
 }
