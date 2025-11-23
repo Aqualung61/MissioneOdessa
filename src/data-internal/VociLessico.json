@@ -136,5 +136,71 @@
     "Voce": "DORMI",
     "ID_Termine": 11,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 24,
+    "Voce": "ESAMINA",
+    "ID_Termine": 12,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 25,
+    "Voce": "APRI",
+    "ID_Termine": 13,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 26,
+    "Voce": "POSA",
+    "ID_Termine": 14,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 27,
+    "Voce": "SALVA",
+    "ID_Termine": 15,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 28,
+    "Voce": "SAVE",
+    "ID_Termine": 15,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 29,
+    "Voce": "CARICA",
+    "ID_Termine": 16,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 30,
+    "Voce": "LOAD",
+    "ID_Termine": 16,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 31,
+    "Voce": "SALI",
+    "ID_Termine": 9,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 32,
+    "Voce": "SCENDI",
+    "ID_Termine": 10,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 33,
+    "Voce": "BOTOLA",
+    "ID_Termine": 17,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 34,
+    "Voce": "CHIUDI",
+    "ID_Termine": 18,
+    "ID_Lingua": 1
   }
 ]

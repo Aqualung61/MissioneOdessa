@@ -41,17 +41,52 @@
   },
   {
     "ID_Termine": 9,
-    "Concetto": "SU",
+    "Concetto": "ALTO",
     "ID_TipoLessico": 2
   },
   {
     "ID_Termine": 10,
-    "Concetto": "GIÙ",
+    "Concetto": "BASSO",
     "ID_TipoLessico": 2
   },
   {
     "ID_Termine": 11,
     "Concetto": "DORMIRE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 12,
+    "Concetto": "ESAMINARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 13,
+    "Concetto": "APRIRE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 14,
+    "Concetto": "POSARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 15,
+    "Concetto": "SALVARE",
+    "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 16,
+    "Concetto": "CARICARE",
+    "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 17,
+    "Concetto": "BOTOLA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 18,
+    "Concetto": "CHIUDERE",
     "ID_TipoLessico": 1
   }
 ]
