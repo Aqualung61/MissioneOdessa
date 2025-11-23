@@ -1,7 +1,5 @@
 import express from 'express';
 import { parseCommand, ensureVocabulary, resetVocabularyCache } from '../logic/parser.js';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 
 const router = express.Router();
 
@@ -35,15 +33,20 @@ export default router;
 router.get('/stats', async (req, res) => {
   try {
     const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
-    const db = await open({ filename: dbPath, driver: sqlite3.Database });
-    const byType = await db.all(
-      `SELECT t.NomeTipo AS Tipo, COUNT(DISTINCT tl.ID_Termine) AS Termini, COUNT(vl.ID_Voce) AS Voci
-       FROM TipiLessico t
-       LEFT JOIN TerminiLessico tl ON tl.ID_TipoLessico = t.ID_TipoLessico
-       LEFT JOIN VociLessico vl ON vl.ID_Termine = tl.ID_Termine AND vl.ID_Lingua = 1
-       GROUP BY t.NomeTipo`
-    );
-    await db.close();
+    const tipiLessico = global.odessaData.TipiLessico || [];
+    const terminiLessico = global.odessaData.TerminiLessico || [];
+    const vociLessico = global.odessaData.VociLessico || [];
+    
+    const byType = tipiLessico.map(t => {
+      const termini = terminiLessico.filter(tl => tl.ID_TipoLessico === t.ID_TipoLessico);
+      const voci = vociLessico.filter(vl => termini.some(tl => tl.ID_Termine === vl.ID_Termine) && vl.ID_Lingua === 1);
+      return {
+        Tipo: t.NomeTipo,
+        Termini: new Set(termini.map(tl => tl.ID_Termine)).size,
+        Voci: voci.length
+      };
+    });
+    
     res.json({ dbPathResolved: dbPath, byType });
   } catch (err) {
     res.status(500).json({ error: err.message });

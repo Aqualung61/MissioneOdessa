@@ -1,9 +1,5 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-
 // Funzione per gestire la API azioni_setup
 export async function azioni_setup(req, res) {
-    const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
     const idLingua = req.query.idLingua ? parseInt(req.query.idLingua, 10) : 1;
     
     // Parametro log: default '0' se non specificato, accetta solo '0' o '1'
@@ -20,26 +16,15 @@ export async function azioni_setup(req, res) {
         log.push(`Parametri ricevuti: idLingua=${idLingua}, log=${logEnabled}`);
     }
 
-    if (logEnabled) {
-        log.push('Avvio della API azioni_setup');
-        log.push(`Parametri ricevuti: idLingua=${idLingua}, log=${logEnabled}`);
-    }
-
     try {
-        const db = await open({
-            filename: dbPath,
-            driver: sqlite3.Database
-        });
-
         // Seleziona i record dalla tabella Azioni
-        const azioni = await db.all(
-            'SELECT * FROM Azioni WHERE Sequenza = 1 AND IDLingua = ?',
-            idLingua
+        const azioni = (global.odessaData.Azioni || []).filter(
+            azione => azione.Sequenza === 1 && azione.IDLingua === idLingua
         );
 
         if (logEnabled) {
-            log.push(`SQL eseguito: SELECT * FROM Azioni WHERE Sequenza = 1 AND IDLingua = ${idLingua}`);
-            log.push(`Risultato SQL: ${JSON.stringify(azioni)}`);
+            log.push(`Filtro applicato: Sequenza = 1 AND IDLingua = ${idLingua}`);
+            log.push(`Risultato filtro: ${JSON.stringify(azioni)}`);
         }
 
         if (logEnabled) {
@@ -85,7 +70,6 @@ export async function azioni_setup(req, res) {
 
 // Funzione per gestire la API azioni_modi
 export async function azioni_modi(req, res) {
-    const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
     const idLingua = req.query.idLingua ? parseInt(req.query.idLingua, 10) : 1;
     
     // Parametro log: default '0' se non specificato, accetta solo '0' o '1'
@@ -109,21 +93,14 @@ export async function azioni_modi(req, res) {
     }
 
     try {
-        const db = await open({
-            filename: dbPath,
-            driver: sqlite3.Database
-        });
-
         // Seleziona il record dalla tabella Azioni per sequenza 2
-        const azione = await db.get(
-            'SELECT * FROM Azioni WHERE IDLuogo = ? AND IDLingua = ? AND Sequenza = 2',
-            idLuogo,
-            idLingua
+        const azione = (global.odessaData.Azioni || []).find(
+            a => a.IDLuogo === idLuogo && a.IDLingua === idLingua && a.Sequenza === 2
         );
 
         if (logEnabled) {
-            log.push(`SQL eseguito: SELECT * FROM Azioni WHERE IDLuogo = ${idLuogo} AND IDLingua = ${idLingua} AND Sequenza = 2`);
-            log.push(`Risultato SQL: ${JSON.stringify(azione)}`);
+            log.push(`Filtro applicato: IDLuogo = ${idLuogo} AND IDLingua = ${idLingua} AND Sequenza = 2`);
+            log.push(`Risultato filtro: ${JSON.stringify(azione)}`);
         }
 
         const updatedDirections = {};
