@@ -8,7 +8,7 @@ export async function azioni_setup(req: Request, res: Response) {
     const idLingua = req.query.idLingua ? parseInt(req.query.idLingua as string, 10) : 1;
     const logEnabled = req.query.log === '1';
 
-    let log: string[] = [];
+    const log: string[] = [];
 
     if (logEnabled) {
         log.push('Avvio della API Azioni_setup');

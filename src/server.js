@@ -85,7 +85,6 @@ if (BASE_PATH) {
   });
 }
 
-
 // Serve statico dalla root del progetto
 const ROOT = path.resolve(__dirname, '..');
 app.use(cors());

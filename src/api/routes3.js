@@ -1,6 +1,4 @@
 import express from 'express';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 import { runE2ETests } from '../tests/runE2E.js';
 import { azioni_setup, azioni_modi } from './azioni_lib.js';
 
