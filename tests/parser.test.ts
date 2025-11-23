@@ -3,7 +3,7 @@ import path from 'node:path';
 // Rimosso @ts-expect-error inutilizzato
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 
-const DB = path.resolve(process.cwd(), 'db', 'Odessa.db');
+const DB = path.resolve(process.cwd(), 'db', 'odessa.db');
 
 describe('Parser REQ01 - casi base', () => {
   beforeAll(async () => {

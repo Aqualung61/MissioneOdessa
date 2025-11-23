@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { resetGameState, getGameStateSnapshot, enterLocation, confirmRestart } from '../src/logic/engine.js';
 
-const dbPath = process.env.ODESSA_DB_PATH || './db/Odessa.db';
+const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
 
 describe('Engine - luoghi terminali', () => {
   beforeEach(() => {

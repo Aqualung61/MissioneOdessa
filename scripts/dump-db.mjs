@@ -26,7 +26,7 @@ function ensureDir(dir) {
 }
 
 async function main() {
-  const dbPath = path.resolve(__dirname, '..', 'db', 'Odessa.db');
+  const dbPath = path.resolve(__dirname, '..', 'db', 'odessa.db');
   if (!fs.existsSync(dbPath)) {
     console.error(`Database non trovato: ${dbPath}`);
     process.exit(1);
@@ -52,7 +52,7 @@ async function main() {
   `);
 
   let schemaOut = [
-    '-- Generated from db/Odessa.db',
+    '-- Generated from db/odessa.db',
     `-- Date: ${now.toISOString()}`,
     'PRAGMA foreign_keys=OFF;',
   ];

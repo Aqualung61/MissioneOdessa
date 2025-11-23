@@ -1,9 +1,9 @@
-// Prints schema for Luoghi table from db/Odessa.db (ESM)
+// Prints schema for Luoghi table from db/odessa.db (ESM)
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
 const main = async () => {
-  const db = await open({ filename: 'db/Odessa.db', driver: sqlite3.Database });
+  const db = await open({ filename: 'db/odessa.db', driver: sqlite3.Database });
   const cols = await db.all("PRAGMA table_info('Luoghi')");
   const fks = await db.all("PRAGMA foreign_key_list('Luoghi')");
   console.log(JSON.stringify({ cols, fks }, null, 2));

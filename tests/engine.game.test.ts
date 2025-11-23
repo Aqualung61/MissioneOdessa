@@ -4,7 +4,7 @@ import path from 'node:path';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import { executeCommand, resetGameState, getGameStateSnapshot } from '../src/logic/engine.js';
 
-const DB = path.resolve(process.cwd(), 'db', 'Odessa.db');
+const DB = path.resolve(process.cwd(), 'db', 'odessa.db');
 
 describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
   beforeAll(async () => {

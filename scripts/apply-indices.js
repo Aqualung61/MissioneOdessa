@@ -7,7 +7,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
 async function main() {
-  const dbPath = process.argv[2] || process.env.ODESSA_DB_PATH || './db/Odessa.db';
+  const dbPath = process.argv[2] || process.env.ODESSA_DB_PATH || './db/odessa.db';
   const ddlPath = path.resolve(process.cwd(), 'ddl', 'indices_lexicon.sql');
   if (!fs.existsSync(ddlPath)) {
     console.error('DDL file not found:', ddlPath);

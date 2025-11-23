@@ -3,7 +3,7 @@ import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import path from 'node:path';
 
-const DB = path.resolve(process.cwd(), 'db', 'Odessa.db');
+const DB = path.resolve(process.cwd(), 'db', 'odessa.db');
 
 const qTypes = `
 SELECT t.NomeTipo AS Tipo, COUNT(DISTINCT tl.ID) AS Termini, COUNT(vl.ID) AS Voci

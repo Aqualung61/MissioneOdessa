@@ -2,7 +2,7 @@ import sqlite3
 import sys
 
 paths = [
-    r"c:\Users\mauro\OneDrive\Documenti\20251029 - Missione Odessa App\db\Odessa.db",
+    r"c:\Users\mauro\OneDrive\Documenti\20251029 - Missione Odessa App\db\odessa.db",
     r"c:\Users\mauro\OneDrive\Documenti\20251029 - Missione Odessa App\test-results\odessatest.db",
 ]
 

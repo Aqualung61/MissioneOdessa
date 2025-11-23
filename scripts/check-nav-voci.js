@@ -10,7 +10,7 @@ function removeDiacritics(s) {
 }
 
 async function main() {
-  const dbPath = process.argv[2] || './db/Odessa.db';
+  const dbPath = process.argv[2] || './db/odessa.db';
   const db = await open({ filename: dbPath, driver: sqlite3.Database });
   try {
     const rows = await db.all(

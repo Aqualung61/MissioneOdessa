@@ -3,7 +3,7 @@ import path from 'node:path';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
-const DB = path.resolve(process.cwd(), 'db', 'Odessa.db');
+const DB = path.resolve(process.cwd(), 'db', 'odessa.db');
 
 async function getTableInfo(table: string) {
   const db = await open({ filename: DB, driver: sqlite3.Database });
