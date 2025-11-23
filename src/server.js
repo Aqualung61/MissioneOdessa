@@ -9,7 +9,6 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import fs from 'fs';
 import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
@@ -49,12 +48,7 @@ const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
-// Copia DB se non esiste (per Railway/altri hosting senza persistenza)
-const sourceDb = path.join(__dirname, '..', 'db', 'odessa.db');
-if (!fs.existsSync(DB_PATH) && fs.existsSync(sourceDb)) {
-  fs.copyFileSync(sourceDb, DB_PATH);
-  console.log('DB copiato da', sourceDb, 'a', DB_PATH);
-}
+
 
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', (req, res) => {
