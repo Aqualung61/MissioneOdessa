@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import VociLessico from '../src/data-internal/VociLessico.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';

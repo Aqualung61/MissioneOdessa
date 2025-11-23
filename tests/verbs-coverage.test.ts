@@ -4,13 +4,7 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
-// Elenco verbi REQ01 (33 voci effettive nell'allegato)
-const ALL_VERBS = [
-  'ACCENDI','APRI','ATTACCA','CHIUDI','COLPISCI','DAI','DORMI','ESAMINA','GIRA','GUARDA','INFILA','INTRODUCI',
-  'LASCIA','LEGGI','MUOVI','OSSERVA','PICCHIA','PIGIA','PORGI','POSA','PREMI','PRENDI','RISPONDI','RUOTA',
-  'SCAPPA','SCARICA','SCAVA','SCHIACCIA','SIEDITI','SORRIDI','SPEGNI','SPOSTA','UCCIDI'
-] as const;
-
+// Verbi che non richiedono oggetto
 const NO_OBJECT = new Set(['DORMI','SCAPPA','SORRIDI']);
 
 describe('Copertura verbi azione REQ01', () => {
