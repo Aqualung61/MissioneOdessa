@@ -7,8 +7,12 @@ $dbPath = "$(Resolve-Path "$PSScriptRoot/../test-results/odessatest.db")"
 # Rimuovi il DB di test se esiste
 if (Test-Path $dbPath) { Remove-Item $dbPath }
 
+# Crea la directory se non esiste
+$dbDir = Split-Path $dbPath
+if (!(Test-Path $dbDir)) { New-Item -ItemType Directory -Force -Path $dbDir }
+
 # Crea il DB vuoto
-sqlite3 $dbPath ".databases"
+sqlite3 $dbPath "SELECT 1;"
 
 # Esegui tutti i DDL di creazione (ordinati per numero)
 Get-ChildItem -Path $ddlDir -Filter "[0-9][0-9]_create_*.sql" | Sort-Object Name | ForEach-Object {
