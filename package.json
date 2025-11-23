@@ -14,8 +14,8 @@
     "test:watch": "vitest",
     "check:nav": "node scripts/check-nav-voci.js",
     "db:apply-indices": "node scripts/apply-indices.js",
-    "lint": "eslint . --ext .js,.ts",
-    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
