@@ -17,6 +17,7 @@ export default [
       'coverage/',
       'test-results/',
       'backup/',
+      'dbbuild/',
       '*.min.js',
       'web/js/marked.min.js',
       'web/js/odessa1.js',
