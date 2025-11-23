@@ -8,6 +8,7 @@ dist/
 
 # SQLite
 dbbuild/
+!dbbuild/tests/
 
 # (nessun percorso Prisma necessario)
 # db/Odessa.db
