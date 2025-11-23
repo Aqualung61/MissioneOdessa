@@ -1,0 +1,356 @@
+[
+  {
+    "ID": 1,
+    "ID_luoghi": 1,
+    "Immagine": "Atrio palazzo Gauleiter.png",
+    "Buio": 0
+  },
+  {
+    "ID": 2,
+    "ID_luoghi": 2,
+    "Immagine": "Reception.png",
+    "Buio": 0
+  },
+  {
+    "ID": 3,
+    "ID_luoghi": 3,
+    "Immagine": "Grande corridoio impolverato.png",
+    "Buio": 0
+  },
+  {
+    "ID": 4,
+    "ID_luoghi": 4,
+    "Immagine": "Elevatore.png",
+    "Buio": 0
+  },
+  {
+    "ID": 5,
+    "ID_luoghi": 5,
+    "Immagine": "Ampio e umido corridoio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 6,
+    "ID_luoghi": 6,
+    "Immagine": "Ripostiglio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 7,
+    "ID_luoghi": 7,
+    "Immagine": "Grosso scalone.png",
+    "Buio": 0
+  },
+  {
+    "ID": 8,
+    "ID_luoghi": 8,
+    "Immagine": "Dentro elevatore.png",
+    "Buio": 0
+  },
+  {
+    "ID": 9,
+    "ID_luoghi": 9,
+    "Immagine": "Scalone.png",
+    "Buio": 0
+  },
+  {
+    "ID": 10,
+    "ID_luoghi": 10,
+    "Immagine": "Corridoio diroccato.png",
+    "Buio": 0
+  },
+  {
+    "ID": 11,
+    "ID_luoghi": 11,
+    "Immagine": "Stanzetta - ufficio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 12,
+    "ID_luoghi": 12,
+    "Immagine": "Grande sala.png",
+    "Buio": 0
+  },
+  {
+    "ID": 13,
+    "ID_luoghi": 13,
+    "Immagine": "Pianerottolo.png",
+    "Buio": 0
+  },
+  {
+    "ID": 14,
+    "ID_luoghi": 14,
+    "Immagine": "Grande salone.png",
+    "Buio": 0
+  },
+  {
+    "ID": 15,
+    "ID_luoghi": 15,
+    "Immagine": "Ex sala radio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 16,
+    "ID_luoghi": 16,
+    "Immagine": "Cortile esterno.png",
+    "Buio": 0
+  },
+  {
+    "ID": 17,
+    "ID_luoghi": 17,
+    "Immagine": "Cortile.png",
+    "Buio": 0
+  },
+  {
+    "ID": 18,
+    "ID_luoghi": 18,
+    "Immagine": "Garage.png",
+    "Buio": 0
+  },
+  {
+    "ID": 19,
+    "ID_luoghi": 19,
+    "Immagine": "Armeria.png",
+    "Buio": 0
+  },
+  {
+    "ID": 20,
+    "ID_luoghi": 20,
+    "Immagine": "Studio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 21,
+    "ID_luoghi": 21,
+    "Immagine": "Piccola saletta - piano terra.png",
+    "Buio": 0
+  },
+  {
+    "ID": 22,
+    "ID_luoghi": 22,
+    "Immagine": "Sala trofei.png",
+    "Buio": 0
+  },
+  {
+    "ID": 23,
+    "ID_luoghi": 23,
+    "Immagine": "Ampio e umido corridoio - primo piano.png",
+    "Buio": 0
+  },
+  {
+    "ID": 24,
+    "ID_luoghi": 24,
+    "Immagine": "Ex biblioteca.png",
+    "Buio": 0
+  },
+  {
+    "ID": 25,
+    "ID_luoghi": 25,
+    "Immagine": "Vecchio archivio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 26,
+    "ID_luoghi": 26,
+    "Immagine": "Pianerottolo inferiore.png",
+    "Buio": 0
+  },
+  {
+    "ID": 27,
+    "ID_luoghi": 27,
+    "Immagine": "Corridoio del seminterrato.png",
+    "Buio": 0
+  },
+  {
+    "ID": 28,
+    "ID_luoghi": 28,
+    "Immagine": "Atrio bunker.png",
+    "Buio": 0
+  },
+  {
+    "ID": 29,
+    "ID_luoghi": 29,
+    "Immagine": "Stretto passaggio - 2.png",
+    "Buio": 0
+  },
+  {
+    "ID": 30,
+    "ID_luoghi": 30,
+    "Immagine": "Stretto passaggio - 3.png",
+    "Buio": 0
+  },
+  {
+    "ID": 31,
+    "ID_luoghi": 31,
+    "Immagine": "Piccola cucina.png",
+    "Buio": 0
+  },
+  {
+    "ID": 32,
+    "ID_luoghi": 32,
+    "Immagine": "Stretto passaggio - 4.png",
+    "Buio": 0
+  },
+  {
+    "ID": 33,
+    "ID_luoghi": 33,
+    "Immagine": "Camera da letto.png",
+    "Buio": 0
+  },
+  {
+    "ID": 34,
+    "ID_luoghi": 34,
+    "Immagine": "Studio adiacente.png",
+    "Buio": 0
+  },
+  {
+    "ID": 35,
+    "ID_luoghi": 35,
+    "Immagine": "Bagno adiacente.png",
+    "Buio": 0
+  },
+  {
+    "ID": 36,
+    "ID_luoghi": 36,
+    "Immagine": "Stretto passaggio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 37,
+    "ID_luoghi": 37,
+    "Immagine": "Sala di torture.png",
+    "Buio": 0
+  },
+  {
+    "ID": 38,
+    "ID_luoghi": 38,
+    "Immagine": "Piccola saletta.png",
+    "Buio": 0
+  },
+  {
+    "ID": 39,
+    "ID_luoghi": 39,
+    "Immagine": "Pozzo.png",
+    "Buio": 0
+  },
+  {
+    "ID": 40,
+    "ID_luoghi": 40,
+    "Immagine": "Dentro il pozzo.png",
+    "Buio": 0
+  },
+  {
+    "ID": 41,
+    "ID_luoghi": 41,
+    "Immagine": "Passaggio Est - Ovest.png",
+    "Buio": 0
+  },
+  {
+    "ID": 42,
+    "ID_luoghi": 42,
+    "Immagine": "Ampia sala.png",
+    "Buio": 0
+  },
+  {
+    "ID": 43,
+    "ID_luoghi": 43,
+    "Immagine": "Stanza segreta.png",
+    "Buio": 0
+  },
+  {
+    "ID": 44,
+    "ID_luoghi": 44,
+    "Immagine": "Passaggio.png",
+    "Buio": 0
+  },
+  {
+    "ID": 45,
+    "ID_luoghi": 45,
+    "Immagine": "Scala a chiocciola.png",
+    "Buio": 0
+  },
+  {
+    "ID": 46,
+    "ID_luoghi": 46,
+    "Immagine": "Scala a chiocciola - alto.png",
+    "Buio": 0
+  },
+  {
+    "ID": 47,
+    "ID_luoghi": 47,
+    "Immagine": "Atrio retro.png",
+    "Buio": 0
+  },
+  {
+    "ID": 48,
+    "ID_luoghi": 48,
+    "Immagine": "Stanza domestica.png",
+    "Buio": 0
+  },
+  {
+    "ID": 49,
+    "ID_luoghi": 49,
+    "Immagine": "Tinello.png",
+    "Buio": 0
+  },
+  {
+    "ID": 50,
+    "ID_luoghi": 50,
+    "Immagine": "Piccola cucina - piano terra.png",
+    "Buio": 0
+  },
+  {
+    "ID": 51,
+    "ID_luoghi": 51,
+    "Immagine": "Grossa piazza.png",
+    "Buio": 0
+  },
+  {
+    "ID": 52,
+    "ID_luoghi": 52,
+    "Immagine": "Filo spinato - 1.png",
+    "Buio": 0
+  },
+  {
+    "ID": 53,
+    "ID_luoghi": 53,
+    "Immagine": "Posto di blocco.png",
+    "Buio": 0
+  },
+  {
+    "ID": 54,
+    "ID_luoghi": 54,
+    "Immagine": "Dentro posto di blocco.png",
+    "Buio": 0
+  },
+  {
+    "ID": 55,
+    "ID_luoghi": 55,
+    "Immagine": "Strada.png",
+    "Buio": 0
+  },
+  {
+    "ID": 56,
+    "ID_luoghi": 56,
+    "Immagine": "Filo spinato - 2.png",
+    "Buio": 0
+  },
+  {
+    "ID": 57,
+    "ID_luoghi": 57,
+    "Immagine": "Capanno degli attrezzi.png",
+    "Buio": 0
+  },
+  {
+    "ID": 58,
+    "ID_luoghi": 58,
+    "Immagine": "Filo spinato - 3.png",
+    "Buio": 0
+  },
+  {
+    "ID": 59,
+    "ID_luoghi": 59,
+    "Immagine": "Barriera settore americano.png",
+    "Buio": 0
+  }
+]

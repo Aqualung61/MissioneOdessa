@@ -1,0 +1,128 @@
+[
+  {
+    "ID_Voce": 1,
+    "Voce": "PRENDI",
+    "ID_Termine": 1,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 2,
+    "Voce": "INVENTARIO",
+    "ID_Termine": 2,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 3,
+    "Voce": "COSA",
+    "ID_Termine": 2,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 4,
+    "Voce": "?",
+    "ID_Termine": 2,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 5,
+    "Voce": "IL",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 6,
+    "Voce": "LO",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 7,
+    "Voce": "LAMPADA",
+    "ID_Termine": 4,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 8,
+    "Voce": "NORD",
+    "ID_Termine": 5,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 9,
+    "Voce": "N",
+    "ID_Termine": 5,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 10,
+    "Voce": "EST",
+    "ID_Termine": 6,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 11,
+    "Voce": "E",
+    "ID_Termine": 6,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 12,
+    "Voce": "SUD",
+    "ID_Termine": 7,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 13,
+    "Voce": "S",
+    "ID_Termine": 7,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 14,
+    "Voce": "OVEST",
+    "ID_Termine": 8,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 15,
+    "Voce": "O",
+    "ID_Termine": 8,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 16,
+    "Voce": "SU",
+    "ID_Termine": 9,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 17,
+    "Voce": "GIÙ",
+    "ID_Termine": 10,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 18,
+    "Voce": "ALTO",
+    "ID_Termine": 9,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 19,
+    "Voce": "SALI",
+    "ID_Termine": 9,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 20,
+    "Voce": "BASSO",
+    "ID_Termine": 10,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 21,
+    "Voce": "SCENDI",
+    "ID_Termine": 10,
+    "ID_Lingua": 1
+  }
+]

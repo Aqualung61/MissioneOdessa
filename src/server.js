@@ -9,7 +9,6 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
 import apiRoutes from './api/routes3.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
@@ -91,19 +90,8 @@ if (BASE_PATH) {
 const ROOT = path.resolve(__dirname, '..');
 app.use(cors());
 
-// Carica dati in memoria all'avvio (ora sostituito da initOdessa)
-// let luoghi = [];
-// try {
-//   luoghi = await loadLuoghi(DB_PATH);
-// } catch (err) {
-//   console.error('Errore nel caricamento luoghi:', err.message);
-// }
-// let vistaLuoghiOggetti = [];
-// try {
-//   vistaLuoghiOggetti = await loadVistaLuoghiOggetti(DB_PATH);
-// } catch (err) {
-//   console.error('Errore nel caricamento vista_luoghi_oggetti:', err.message);
-// }
+// Carica dati in memoria all'avvio
+await initOdessa();
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);

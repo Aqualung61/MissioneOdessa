@@ -1,0 +1,26 @@
+[
+  {
+    "ID": 1,
+    "IDLuogo": 32,
+    "IDLingua": 1,
+    "Sequenza": 1,
+    "Nord": 0,
+    "Est": 0,
+    "Sud": 36,
+    "Ovest": 30,
+    "Su": 0,
+    "Giu": 0
+  },
+  {
+    "ID": 2,
+    "IDLuogo": 32,
+    "IDLingua": 1,
+    "Sequenza": 2,
+    "Nord": 0,
+    "Est": 0,
+    "Sud": 0,
+    "Ovest": 30,
+    "Su": 0,
+    "Giu": 0
+  }
+]

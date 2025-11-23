@@ -1,56 +1,30 @@
 // src/initOdessa.js
-// Funzione per caricare tutto il DB odessa.db in memoria come strutture dati
+// Funzione per caricare i dati dai file JSON in src/data-internal in memoria come strutture dati
 
-import sqlite3 from 'sqlite3';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function initOdessa(dbPath) {
-  return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+// Lista delle tabelle (corrispondenti ai file JSON)
+const tableNames = ['Azioni', 'Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'Luoghi_immagine', 'Luoghi_oggetto', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
-      // Ottieni lista tabelle
-      db.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'", (err, tables) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+export async function initOdessa() {
+  const odessaData = {};
 
-        const odessaData = {};
-        let completed = 0;
-        const total = tables.length;
+  for (const tableName of tableNames) {
+    const filePath = path.join(__dirname, 'data-internal', `${tableName}.json`);
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      odessaData[tableName] = JSON.parse(data);
+    } catch (err) {
+      console.error(`Errore nel caricamento ${tableName}:`, err.message);
+      // Continua con le altre tabelle
+    }
+  }
 
-        if (total === 0) {
-          global.odessaData = odessaData;
-          resolve(odessaData);
-          db.close();
-          return;
-        }
-
-        tables.forEach(table => {
-          const tableName = table.name;
-          db.all(`SELECT * FROM ${tableName}`, (err, rows) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            odessaData[tableName] = rows;
-            completed++;
-            if (completed === total) {
-              global.odessaData = odessaData;
-              resolve(odessaData);
-              db.close();
-            }
-          });
-        });
-      });
-    });
-  });
+  global.odessaData = odessaData;
+  return odessaData;
 }

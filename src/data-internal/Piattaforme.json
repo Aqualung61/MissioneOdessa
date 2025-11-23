@@ -1,0 +1,10 @@
+[
+  {
+    "ID_Piattaforma": 1,
+    "NomePiattaforma": "Web"
+  },
+  {
+    "ID_Piattaforma": 2,
+    "NomePiattaforma": "C64"
+  }
+]

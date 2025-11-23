@@ -1,0 +1,22 @@
+[
+  {
+    "ID_TipoLessico": 1,
+    "NomeTipo": "VERBO_AZIONE"
+  },
+  {
+    "ID_TipoLessico": 2,
+    "NomeTipo": "NAVIGAZIONE"
+  },
+  {
+    "ID_TipoLessico": 3,
+    "NomeTipo": "SISTEMA"
+  },
+  {
+    "ID_TipoLessico": 4,
+    "NomeTipo": "NOUN"
+  },
+  {
+    "ID_TipoLessico": 5,
+    "NomeTipo": "STOPWORD"
+  }
+]

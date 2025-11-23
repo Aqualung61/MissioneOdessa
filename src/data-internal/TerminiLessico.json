@@ -1,0 +1,52 @@
+[
+  {
+    "ID_Termine": 1,
+    "Concetto": "PRENDERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 2,
+    "Concetto": "INVENTARIO",
+    "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 3,
+    "Concetto": "ARTICOLO_DET",
+    "ID_TipoLessico": 5
+  },
+  {
+    "ID_Termine": 4,
+    "Concetto": "LAMPADA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 5,
+    "Concetto": "NORD",
+    "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 6,
+    "Concetto": "EST",
+    "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 7,
+    "Concetto": "SUD",
+    "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 8,
+    "Concetto": "OVEST",
+    "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 9,
+    "Concetto": "SU",
+    "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 10,
+    "Concetto": "GIÙ",
+    "ID_TipoLessico": 2
+  }
+]

@@ -1,0 +1,240 @@
+[
+  {
+    "ID": 1,
+    "IDLingua": 1,
+    "Oggetto": "Bastone di comando",
+    "Attivo": 0,
+    "descrizione": "Bastone di comando"
+  },
+  {
+    "ID": 2,
+    "IDLingua": 1,
+    "Oggetto": "Grande tavolo",
+    "Attivo": 0,
+    "descrizione": "Grande tavolo"
+  },
+  {
+    "ID": 3,
+    "IDLingua": 1,
+    "Oggetto": "Sedie",
+    "Attivo": 0,
+    "descrizione": "Sedie"
+  },
+  {
+    "ID": 4,
+    "IDLingua": 1,
+    "Oggetto": "Badile arruginito",
+    "Attivo": 0,
+    "descrizione": "Badile arruginito"
+  },
+  {
+    "ID": 5,
+    "IDLingua": 1,
+    "Oggetto": "Arazzo in pessime condizioni",
+    "Attivo": 0,
+    "descrizione": "Arazzo in pessime condizioni"
+  },
+  {
+    "ID": 6,
+    "IDLingua": 1,
+    "Oggetto": "Lista di servizio",
+    "Attivo": 0,
+    "descrizione": "Lista di servizio"
+  },
+  {
+    "ID": 7,
+    "IDLingua": 1,
+    "Oggetto": "Scrivania",
+    "Attivo": 0,
+    "descrizione": "Scrivania"
+  },
+  {
+    "ID": 8,
+    "IDLingua": 1,
+    "Oggetto": "Statuetta",
+    "Attivo": 0,
+    "descrizione": "Statuetta"
+  },
+  {
+    "ID": 9,
+    "IDLingua": 1,
+    "Oggetto": "Trofei alle pareti",
+    "Attivo": 0,
+    "descrizione": "Trofei alle pareti"
+  },
+  {
+    "ID": 10,
+    "IDLingua": 1,
+    "Oggetto": "Fermacarte",
+    "Attivo": 0,
+    "descrizione": "Fermacarte"
+  },
+  {
+    "ID": 11,
+    "IDLingua": 1,
+    "Oggetto": "Scrivania",
+    "Attivo": 0,
+    "descrizione": "Scrivania"
+  },
+  {
+    "ID": 12,
+    "IDLingua": 1,
+    "Oggetto": "Scaffali vuoti",
+    "Attivo": 0,
+    "descrizione": "Scaffali vuoti"
+  },
+  {
+    "ID": 13,
+    "IDLingua": 1,
+    "Oggetto": "Nicchia vuota",
+    "Attivo": 0,
+    "descrizione": "Nicchia vuota"
+  },
+  {
+    "ID": 14,
+    "IDLingua": 1,
+    "Oggetto": "Letto",
+    "Attivo": 0,
+    "descrizione": "Letto"
+  },
+  {
+    "ID": 15,
+    "IDLingua": 1,
+    "Oggetto": "Sedile",
+    "Attivo": 0,
+    "descrizione": "Sedile"
+  },
+  {
+    "ID": 16,
+    "IDLingua": 1,
+    "Oggetto": "Fascicolo",
+    "Attivo": 0,
+    "descrizione": "Fascicolo"
+  },
+  {
+    "ID": 17,
+    "IDLingua": 1,
+    "Oggetto": "Tavolo",
+    "Attivo": 0,
+    "descrizione": "Tavolo"
+  },
+  {
+    "ID": 18,
+    "IDLingua": 1,
+    "Oggetto": "Bottone",
+    "Attivo": 0,
+    "descrizione": "Bottone"
+  },
+  {
+    "ID": 19,
+    "IDLingua": 1,
+    "Oggetto": "Porta",
+    "Attivo": 0,
+    "descrizione": "Porta"
+  },
+  {
+    "ID": 20,
+    "IDLingua": 1,
+    "Oggetto": "Tavolo",
+    "Attivo": 0,
+    "descrizione": "Tavolo"
+  },
+  {
+    "ID": 21,
+    "IDLingua": 1,
+    "Oggetto": "Peso",
+    "Attivo": 0,
+    "descrizione": "Peso"
+  },
+  {
+    "ID": 22,
+    "IDLingua": 1,
+    "Oggetto": "Banco degli attrezzi",
+    "Attivo": 0,
+    "descrizione": "Banco degli attrezzi"
+  },
+  {
+    "ID": 23,
+    "IDLingua": 1,
+    "Oggetto": "Pesa",
+    "Attivo": 0,
+    "descrizione": "Pesa"
+  },
+  {
+    "ID": 24,
+    "IDLingua": 1,
+    "Oggetto": "Foglio",
+    "Attivo": 0,
+    "descrizione": "Foglio"
+  },
+  {
+    "ID": 25,
+    "IDLingua": 1,
+    "Oggetto": "Cassaforte",
+    "Attivo": 0,
+    "descrizione": "Cassaforte"
+  },
+  {
+    "ID": 26,
+    "IDLingua": 1,
+    "Oggetto": "Manopola",
+    "Attivo": 0,
+    "descrizione": "Manopola"
+  },
+  {
+    "ID": 27,
+    "IDLingua": 1,
+    "Oggetto": "Lampada",
+    "Attivo": 0,
+    "descrizione": "Lampada"
+  },
+  {
+    "ID": 28,
+    "IDLingua": 1,
+    "Oggetto": "Lista di servizio",
+    "Attivo": 0,
+    "descrizione": "Lista di servizio"
+  },
+  {
+    "ID": 29,
+    "IDLingua": 1,
+    "Oggetto": "Forma circolare",
+    "Attivo": 0,
+    "descrizione": "Forma circolare"
+  },
+  {
+    "ID": 30,
+    "IDLingua": 1,
+    "Oggetto": "Medaglione",
+    "Attivo": 0,
+    "descrizione": "Medaglione"
+  },
+  {
+    "ID": 31,
+    "IDLingua": 1,
+    "Oggetto": "Pulsante",
+    "Attivo": 0,
+    "descrizione": "Pulsante"
+  },
+  {
+    "ID": 32,
+    "IDLingua": 1,
+    "Oggetto": "Paratia",
+    "Attivo": 0,
+    "descrizione": "Paratia"
+  },
+  {
+    "ID": 33,
+    "IDLingua": 1,
+    "Oggetto": "Quadro",
+    "Attivo": 0,
+    "descrizione": "Quadro"
+  },
+  {
+    "ID": 34,
+    "IDLingua": 1,
+    "Oggetto": "Dossier",
+    "Attivo": 0,
+    "descrizione": "Dossier"
+  }
+]

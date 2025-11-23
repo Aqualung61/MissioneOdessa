@@ -1,0 +1,12 @@
+[
+  {
+    "ID": 1,
+    "IDLingua": "IT",
+    "Descrizione": "Italiano"
+  },
+  {
+    "ID": 2,
+    "IDLingua": "EN",
+    "Descrizione": "English"
+  }
+]
