@@ -4,7 +4,7 @@ import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
 function getNavVoices(): Array<{ Concetto: string; Voce: string }> {
-  // Simula la query JOIN usando filtri su JSON
+  // Simula la query JOIN usando filtri su  JSON
   return VociLessico
     .filter(vl => vl.ID_Lingua === 1)
     .map(vl => {
