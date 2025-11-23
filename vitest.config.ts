@@ -16,6 +16,7 @@ export default defineConfig({
       'src/tests/e2e/**',
       '**/e2e/**',
       '**/*.e2e.*'
-    ]
+    ],
+    setupFiles: ['tests/setup.ts'],
   },
 });

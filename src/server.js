@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import apiRoutes from './api/routes3.js';
+import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
@@ -42,17 +42,15 @@ app.use(helmet({
   },
 }));
 const PORT = process.env.PORT || 3001;
-const DB_PATH = process.env.ODESSA_DB_PATH || './db/odessa.db';
 const BASE_PATH = process.env.BASE_PATH || '';
-console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
 // Carica tutto il DB in memoria
 try {
-  await initOdessa(DB_PATH);
-  console.log('DB caricato in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+  await initOdessa();
+  console.log('Dati caricati in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
 } catch (err) {
-  console.error('Errore nel caricamento DB in memoria:', err.message);
+  console.error('Errore nel caricamento dati in memoria:', err.message);
   process.exit(1); // Esci se non riesci a caricare
 }
 
@@ -65,7 +63,7 @@ app.get(BASE_PATH + '/api/version', (req, res) => {
 // API: init_odessa per test
 app.get(BASE_PATH + '/init_odessa', async (req, res) => {
   try {
-    await initOdessa(DB_PATH);
+    await initOdessa();
     const tables = Object.keys(global.odessaData);
     const counts = {};
     tables.forEach(table => {

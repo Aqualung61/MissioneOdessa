@@ -7,6 +7,8 @@ dist/
 .env.*
 
 # SQLite
+dbbuild/
+
 # (nessun percorso Prisma necessario)
 # db/Odessa.db
 

@@ -1,5 +1,5 @@
 // Stub: entra in luogo terminale (da implementare secondo logica app)
-export async function enterLocation(dbPath, locationId) {
+export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
   gameState.awaitingRestart = true;
   gameState.currentLocationId = locationId;
@@ -12,7 +12,7 @@ export async function executeCommandAsync(parseResult) {
   return executeCommand(parseResult);
 }
 // Stub: conferma riavvio (da implementare secondo logica app)
-export function confirmRestart(dbPath, risposta) {
+export function confirmRestart(risposta) {
   // Normalizza risposta
   const r = (risposta || '').toUpperCase();
   if (r === 'S' || r === 'SI' || r === 'SÌ') {

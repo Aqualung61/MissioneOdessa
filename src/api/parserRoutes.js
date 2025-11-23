@@ -1,12 +1,11 @@
 import express from 'express';
-import { parseCommand, ensureVocabulary, resetVocabularyCache } from '../logic/parser.js';
+import { parseCommand, resetVocabularyCache } from '../logic/parser.js';
 
 const router = express.Router();
 
 // POST /api/parser/parse  { input: string }
 router.post('/parse', async (req, res) => {
   try {
-    const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
     const inputChunks = [];
     req.on('data', (chunk) => inputChunks.push(chunk));
     req.on('end', async () => {
@@ -17,8 +16,8 @@ router.post('/parse', async (req, res) => {
       } catch {
         input = '';
       }
-      await ensureVocabulary(dbPath); // pre-carica se non già in cache
-      const result = await parseCommand(dbPath, input);
+      // ensureVocabulary ora chiamata automaticamente in parseCommand
+      const result = await parseCommand(null, input); // dbPath ignorato
       res.json(result);
     });
   } catch (err) {
@@ -32,7 +31,6 @@ export default router;
 // Ritorna conteggi per tipo lessicale e info DB path
 router.get('/stats', async (req, res) => {
   try {
-    const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
     const tipiLessico = global.odessaData.TipiLessico || [];
     const terminiLessico = global.odessaData.TerminiLessico || [];
     const vociLessico = global.odessaData.VociLessico || [];
@@ -47,7 +45,7 @@ router.get('/stats', async (req, res) => {
       };
     });
     
-    res.json({ dbPathResolved: dbPath, byType });
+    res.json({ dbPathResolved: 'in-memory (global.odessaData)', byType });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -58,8 +56,7 @@ router.post('/reload', async (req, res) => {
   try {
     resetVocabularyCache();
     // opzionalmente pre-carica subito
-    const dbPath = process.env.ODESSA_DB_PATH || './db/odessa.db';
-    await ensureVocabulary(dbPath);
+    await ensureVocabulary(null); // dbPath ignorato
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

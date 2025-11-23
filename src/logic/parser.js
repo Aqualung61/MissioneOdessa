@@ -1,11 +1,10 @@
 // Parser di comandi utente conforme REQ01
-// - Carica lessico da DB in memoria (Map token -> { type, canonical, termId })
+// - Carica lessico da global.odessaData in memoria (Map token -> { type, canonical, termId })
 // - Normalizza input (trim, upper, collapse spaces)
 // - Rimuove stopword
 // - Valida grammatica e produce ParseResult
 
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+// Rimossi import sqlite3 e open, ora usa global.odessaData
 
 // Tipi comando per ParseResult
 export const CommandType = {
@@ -26,86 +25,90 @@ export const ParseErrorType = {
 
 // Cache interna del vocabolario per processo
 let vocabCache = null;
-let vocabDbPath = null;
+
+// Rimossi vocabDbPath, ora usa global.odessaData sempre disponibile
 
 export function resetVocabularyCache() {
   vocabCache = null;
-  vocabDbPath = null;
 }
 
-// Carica il vocabolario da DB (LinguaID=1) e costruisce:
+// Carica il vocabolario da global.odessaData e costruisce:
 // - tokenMap: Map<string, { type, canonical, termId }>
 // - canonicalByTerm: Map<termId, canonicalToken>
 export async function ensureVocabulary(dbPath) {
-  if (vocabCache && vocabDbPath === dbPath) return vocabCache;
-  const db = await open({ filename: dbPath, driver: sqlite3.Database });
-  try {
-    const rows = await db.all(
-      `SELECT t.NomeTipo AS Tipo, tl.ID_Termine AS TermineID, tl.Concetto AS Concetto, vl.Voce AS Voce
-       FROM TerminiLessico tl
-       JOIN TipiLessico t ON t.ID_TipoLessico = tl.ID_TipoLessico
-       JOIN VociLessico vl ON vl.ID_Termine = tl.ID_Termine
-       WHERE vl.ID_Lingua = 1`
-    );
-    const tokenMap = new Map();
-    const canonicalByTerm = new Map();
+  // dbPath ignorato, ora usa global.odessaData
+  if (vocabCache) return vocabCache;
 
-    function mapTipoToCommandType(tipo) {
-      switch (tipo) {
-        case 'VERBO_AZIONE':
-          return CommandType.ACTION;
-        case 'NAVIGAZIONE':
-          return CommandType.NAVIGATION;
-        case 'SISTEMA':
-          return CommandType.SYSTEM;
-        case 'NOUN':
-          return CommandType.NOUN;
-        case 'STOPWORD':
-          return CommandType.STOPWORD;
-        default:
-          return null;
-      }
+  // Simula la query JOIN usando filtri su global.odessaData
+  const rows = global.odessaData.VociLessico
+    .filter(vl => vl.ID_Lingua === 1)
+    .map(vl => {
+      const tl = global.odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
+      if (!tl) return null; // Skip se termine non trovato
+      const t = global.odessaData.TipiLessico.find(t => t.ID_TipoLessico === tl.ID_TipoLessico);
+      if (!t) return null; // Skip se tipo non trovato
+      return {
+        Tipo: t.NomeTipo,
+        TermineID: tl.ID_Termine,
+        Concetto: tl.Concetto,
+        Voce: vl.Voce
+      };
+    })
+    .filter(row => row !== null); // Rimuovi null
+
+  const tokenMap = new Map();
+  const canonicalByTerm = new Map();
+
+  function mapTipoToCommandType(tipo) {
+    switch (tipo) {
+      case 'VERBO_AZIONE':
+        return CommandType.ACTION;
+      case 'NAVIGAZIONE':
+        return CommandType.NAVIGATION;
+      case 'SISTEMA':
+        return CommandType.SYSTEM;
+      case 'NOUN':
+        return CommandType.NOUN;
+      case 'STOPWORD':
+        return CommandType.STOPWORD;
+      default:
+        return null;
     }
-
-    // Funzione per rimuovere diacritici (accenti)
-    const removeDiacritics = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    for (const r of rows) {
-      const type = mapTipoToCommandType(r.Tipo);
-      if (!type) continue;
-      const token = r.Voce.toUpperCase();
-      // Canonico per termine:
-      // - NAVIGAZIONE: forziamo il concetto come canonico stabile (es. NORD, BASSO)
-      // - altri tipi: prendi il minimo lessicografico tra le voci IT
-      const prev = canonicalByTerm.get(r.TermineID);
-      if (type === CommandType.NAVIGATION) {
-        canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
-      } else if (!prev || token < prev) {
-        canonicalByTerm.set(r.TermineID, token);
-      }
-      const info = { type, canonical: null, termId: r.TermineID, concept: r.Concetto };
-      tokenMap.set(token, info);
-      // Aggiungi alias senza diacritici per tollerare input senza accenti (es. GIU -> GIÙ)
-      const noAcc = removeDiacritics(token);
-      if (noAcc !== token && !tokenMap.has(noAcc)) {
-        tokenMap.set(noAcc, info);
-      }
-    }
-    // Finalizza canonical
-    for (const [tok, info] of tokenMap) {
-      const canon = canonicalByTerm.get(info.termId) || tok;
-      tokenMap.set(tok, { ...info, canonical: canon });
-    }
-
-    vocabCache = { tokenMap };
-    vocabDbPath = dbPath;
-    return vocabCache;
-  } finally {
-    await db.close();
   }
-}
 
-// Preprocess: rimuove punteggiatura comune (ma preserva '?'), rimuove accenti, normalizza spazi
+  // Funzione per rimuovere diacritici (accenti)
+  const removeDiacritics = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  for (const r of rows) {
+    const type = mapTipoToCommandType(r.Tipo);
+    if (!type) continue;
+    const token = r.Voce.toUpperCase();
+    // Canonico per termine:
+    // - NAVIGAZIONE: forziamo il concetto come canonico stabile (es. NORD, BASSO)
+    // - altri tipi: prendi il minimo lessicografico tra le voci IT
+    const prev = canonicalByTerm.get(r.TermineID);
+    if (type === CommandType.NAVIGATION) {
+      canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
+    } else if (!prev || token < prev) {
+      canonicalByTerm.set(r.TermineID, token);
+    }
+    const info = { type, canonical: null, termId: r.TermineID, concept: r.Concetto };
+    tokenMap.set(token, info);
+    // Aggiungi alias senza diacritici per tollerare input senza accenti (es. GIU -> GIÙ)
+    const noAcc = removeDiacritics(token);
+    if (noAcc !== token && !tokenMap.has(noAcc)) {
+      tokenMap.set(noAcc, info);
+    }
+  }
+  // Finalizza canonical
+  for (const [tok, info] of tokenMap) {
+    const canon = canonicalByTerm.get(info.termId) || tok;
+    tokenMap.set(tok, { ...info, canonical: canon });
+  }
+
+  vocabCache = { tokenMap };
+  return vocabCache;
+}// Preprocess: rimuove punteggiatura comune (ma preserva '?'), rimuove accenti, normalizza spazi
 function normalizeInput(input) {
   const withoutPunct = input
     // sostituisci punteggiatura comune con spazio, ma NON rimuovere '?' che è un comando valido
