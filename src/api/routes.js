@@ -33,7 +33,7 @@ router.get('/luoghi', async (req, res) => {
   const luoghi = global.odessaData.Luoghi || [];
   const luoghiImmagini = global.odessaData.Luoghi_immagine || [];
   const luoghiConImmagini = luoghi.map(luogo => {
-    const immagine = luoghiImmagini.find(img => img.ID_Luoghi === luogo.ID);
+    const immagine = luoghiImmagini.find(img => img.ID_Luoghi == luogo.ID);
     return { ...luogo, Immagine: immagine?.Immagine || null };
   });
   res.json(luoghiConImmagini);
