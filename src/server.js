@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import { loadLuoghi, loadVistaLuoghiOggetti } from './data/luoghiStore.js';
-import apiRoutes from './api/routes.js';
+import apiRoutes from './api/routes3.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
@@ -49,8 +49,13 @@ console.log(`DB in uso: ${path.resolve(DB_PATH)}`);
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
 // Carica tutto il DB in memoria
-await initOdessa(DB_PATH);
-console.log('DB caricato in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+try {
+  await initOdessa(DB_PATH);
+  console.log('DB caricato in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+} catch (err) {
+  console.error('Errore nel caricamento DB in memoria:', err.message);
+  process.exit(1); // Esci se non riesci a caricare
+}
 
 
 
@@ -108,7 +113,7 @@ app.use(BASE_PATH + '/api/engine', engineRoutes);
 
 // Endpoint per vista luoghi-oggetti
 app.get(BASE_PATH + '/api/vista-luoghi-oggetti', (req, res) => {
-  res.json(global.odessaData.Luoghi_immagine || []);
+  res.json(global.odessaData.Luoghi_oggetto || []);
 });
 
 // Endpoint per oggetti in un luogo specifico
@@ -117,10 +122,13 @@ app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   if (!idLuogo || !idLingua) {
     return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
   }
-  const oggetti = (global.odessaData.Luoghi_immagine || [])
-    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua)
-    .map(item => ({ descrizione: item.DescrizioneOggetto }));
-  res.json(oggetti);
+  const idLuogoNum = parseInt(idLuogo, 10);
+  const idLinguaNum = parseInt(idLingua, 10);
+  const data = global.odessaData.Luoghi_oggetto || [];
+  const fields = Object.keys(data[0] || {});
+  const filtered = data
+    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum);
+  res.json({ fields, filtered, all: data.slice(0, 5) });
 });
 
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)

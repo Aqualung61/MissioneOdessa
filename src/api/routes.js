@@ -5,13 +5,11 @@ import { runE2ETests } from '../tests/runE2E.js';
 import { azioni_setup, azioni_modi } from './azioni_lib.js';
 
 const router = express.Router();
+
 // GET /api/introduzione - restituisce il testo markdown della presentazione
 router.get('/introduzione', async (req, res) => {
-  // Recupera il parametro `id` dalla query string, usa 1 come valore predefinito
   const id = parseInt(req.query.id, 10) || 1;
-  // Recupera il parametro `lingua` dalla query string, usa 1 come valore predefinito
   const lingua = parseInt(req.query.lingua, 10) || 1;
-
   const introduzioni = global.odessaData.Introduzione || [];
   const row = introduzioni.find(intro => intro.ID == id && intro.IDLingua == lingua);
   res.json({ testo: row?.Testo || '' });
@@ -33,10 +31,27 @@ router.get('/luoghi', async (req, res) => {
   const luoghi = global.odessaData.Luoghi || [];
   const luoghiImmagini = global.odessaData.Luoghi_immagine || [];
   const luoghiConImmagini = luoghi.map(luogo => {
-    const immagine = luoghiImmagini.find(img => img.ID_Luoghi == luogo.ID);
+    const immagine = luoghiImmagini.find(img => img.ID_luoghi == luogo.ID);
     return { ...luogo, Immagine: immagine?.Immagine || null };
   });
   res.json(luoghiConImmagini);
+});
+
+// GET /api/luogo-oggetti - restituisce gli oggetti in un luogo specifico
+router.get('/luogo-oggetti', async (req, res) => {
+  const { idLuogo, idLingua } = req.query;
+  if (!idLuogo || !idLingua) {
+    return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
+  }
+  const data = global.odessaData.Luoghi_oggetto || [];
+  const filtered = data
+    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua);
+  const oggetti = filtered
+    .map(item => {
+      const obj = (global.odessaData.Oggetti || []).find(o => o.ID == item.IDOggetto && o.IDLingua == idLingua);
+      return { descrizione: obj?.Oggetto || '' };
+    });
+  res.json(oggetti);
 });
 
 // GET /api/azioni - gestisce azioni_setup
