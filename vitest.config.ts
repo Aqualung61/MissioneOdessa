@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
+// Configurazione Vitest per test unitari
+
 export default defineConfig({
   test: {
     include: [
