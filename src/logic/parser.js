@@ -35,8 +35,8 @@ export function resetVocabularyCache() {
 // Carica il vocabolario da global.odessaData e costruisce:
 // - tokenMap: Map<string, { type, canonical, termId }>
 // - canonicalByTerm: Map<termId, canonicalToken>
-export async function ensureVocabulary(dbPath) {
-  // dbPath ignorato, ora usa global.odessaData
+export async function ensureVocabulary() {
+  // Usa global.odessaData
   if (vocabCache) return vocabCache;
 
   // Simula la query JOIN usando filtri su global.odessaData
@@ -130,7 +130,7 @@ function isDigits(str) {
 const ACTION_NO_OBJECT = new Set(['DORMI', 'SCAPPA', 'SORRIDI']);
 
 export async function parseCommand(dbPath, input) {
-  const vocab = await ensureVocabulary(dbPath);
+  const vocab = await ensureVocabulary();
   const { tokenMap } = vocab;
   const OriginalInput = input;
   const NormalizedInput = normalizeInput(input);

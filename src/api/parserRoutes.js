@@ -1,5 +1,5 @@
 import express from 'express';
-import { parseCommand, resetVocabularyCache } from '../logic/parser.js';
+import { parseCommand, resetVocabularyCache, ensureVocabulary } from '../logic/parser.js';
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.post('/parse', async (req, res) => {
       } catch {
         input = '';
       }
-      // ensureVocabulary ora chiamata automaticamente in parseCommand
+    // ensureVocabulary ora chiamata automaticamente in parseCommand
       const result = await parseCommand(null, input); // dbPath ignorato
       res.json(result);
     });
@@ -56,7 +56,7 @@ router.post('/reload', async (req, res) => {
   try {
     resetVocabularyCache();
     // opzionalmente pre-carica subito
-    await ensureVocabulary(null); // dbPath ignorato
+    await ensureVocabulary();
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
