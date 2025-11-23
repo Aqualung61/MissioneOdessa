@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-Applicazione adventure testuale con backend Node.js/Express, frontend statico e API REST su SQLite.
+Applicazione adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici (precedentemente SQLite).
 
 ## Avvio rapido
 
@@ -45,15 +45,15 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 - `.env` — configurazione ambiente (es. percorso DB)
 
 ## Note
-- Il server carica i dati dal DB SQLite e serve sia API che file statici dalla stessa porta.
+- Il server carica i dati da file JSON statici in `src/data-internal/` e serve sia API che file statici dalla stessa porta.
 - La logica di parsing e la presentazione sono modulari e facilmente estendibili.
 - I file di test e script di utilità sono in `src/tests/`.
 - I backup sono in `backup/`.
 
-## Database e migrazioni
+## Dati e struttura
 
- Schema e cambi strutturali gestiti con file DDL in `ddl/` (migrazioni, creazione e popolamento) nominati in modo descrittivo e documentati in `docs/`.
- - Linee guida: vedi `docs/ddl-guidelines.md`.
+I dati dell'applicazione sono memorizzati in file JSON statici in `src/data-internal/` per semplicità e velocità. Schema e struttura dati documentati in `docs/`.
+- Linee guida: vedi `docs/raccomandazioni.md` e `docs/data-modeling.md`.
 
 ## Release notes
 
@@ -119,7 +119,17 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
   ```
 - **Log**: Mostra la query SQL eseguita e i risultati in console se `log=1`.
 
+## Migrazione da DB a JSON
+
+A partire dalla versione 1.3.0, l'applicazione è stata migrata da SQLite a dati JSON statici per:
+- **Semplicità**: Eliminazione della dipendenza da DB, facilitando deploy e test.
+- **Velocità**: Caricamento immediato dei dati in memoria all'avvio.
+- **Manutenibilità**: Dati versionati con Git, modifiche dirette ai file JSON.
+
+I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i file in `src/data-internal/` e testare con `npm test`.
+
 ## Stato
 
-- Branch freeze: `freeze-20251031` allineato e stabile.
-- Smoke (suite=smoke) via API: ~9–10 secondi su ambiente locale.
+- Versione attuale: 1.3.0 (dati JSON statici).
+- Test E2E: Suite completa via Playwright, accessibile da `index.html` > "Esegui test applicazione".
+- Smoke test via API: ~9–10 secondi su ambiente locale.
