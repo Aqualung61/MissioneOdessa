@@ -57,7 +57,6 @@ try {
 }
 
 
-
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', (req, res) => {
   res.json({ version });
