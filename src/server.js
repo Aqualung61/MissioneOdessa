@@ -15,6 +15,7 @@ import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
+import { initOdessa } from './initOdessa.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -58,6 +59,21 @@ if (!fs.existsSync(DB_PATH) && fs.existsSync(sourceDb)) {
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', (req, res) => {
   res.json({ version });
+});
+
+// API: init_odessa per test
+app.get(BASE_PATH + '/init_odessa', async (req, res) => {
+  try {
+    await initOdessa(DB_PATH);
+    const tables = Object.keys(global.odessaData);
+    const counts = {};
+    tables.forEach(table => {
+      counts[table] = global.odessaData[table].length;
+    });
+    res.json({ tables, counts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Redirect root to BASE_PATH if BASE_PATH is set
