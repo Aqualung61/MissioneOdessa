@@ -43,4 +43,13 @@ export default [
       // Lasciamo la formattazione a Prettier (script dedicato)
     },
   },
+  // Disabilita regole per file minificati
+  {
+    files: ['**/*.min.js'],
+    rules: {
+      'no-undef': 'off',
+      'no-unused-expressions': 'off',
+      'no-useless-escape': 'off',
+    },
+  },
 ];
