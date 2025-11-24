@@ -334,66 +334,107 @@ inputForm.addEventListener('submit', function(e) {
       }
       return;
     }
-    if (parseResult.CommandType !== 'NAVIGATION') {
-      // Per ora, solo navigazione è supportata qui
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const err = document.createElement('div');
-        err.className = 'feed-msg error';
-        err.textContent = 'Solo comandi di navigazione sono supportati qui.';
-        feed.appendChild(err);
-        feed.scrollTop = feed.scrollHeight;
-      }
-      return;
-    }
-    // Determina il field basato su CanonicalVerb
-    let field = null;
-    const canonical = parseResult.CanonicalVerb;
-    if (canonical === 'NORD') field = 'Nord';
-    else if (canonical === 'EST') field = 'Est';
-    else if (canonical === 'SUD') field = 'Sud';
-    else if (canonical === 'OVEST') field = 'Ovest';
-    else if (canonical === 'SU') field = 'Su';
-    else if (canonical === 'GIÙ') field = 'Giu';
+    if (parseResult.CommandType === 'NAVIGATION') {
+      // Determina il field basato su CanonicalVerb
+      let field = null;
+      const canonical = parseResult.CanonicalVerb;
+      if (canonical === 'NORD') field = 'Nord';
+      else if (canonical === 'EST') field = 'Est';
+      else if (canonical === 'SUD') field = 'Sud';
+      else if (canonical === 'OVEST') field = 'Ovest';
+      else if (canonical === 'SU') field = 'Su';
+      else if (canonical === 'GIÙ') field = 'Giu';
 
-    if (!field) {
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const err = document.createElement('div');
-        err.className = 'feed-msg error';
-        err.textContent = 'Direzione non riconosciuta.';
-        feed.appendChild(err);
-        feed.scrollTop = feed.scrollHeight;
+      if (!field) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = 'Direzione non riconosciuta.';
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
       }
-      return;
-    }
 
-    const nextId = current[field];
-    if (!nextId || nextId === 0) {
+      const nextId = current[field];
+      if (!nextId || nextId === 0) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = `Comando: ${val} → muro (0)\nNon puoi andare in quella direzione.`;
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+      const next = luoghi.find(l => l.ID === nextId);
+      if (!next) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = `Luogo con ID=${nextId} non trovato!`;
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+      current = next;
+      showCurrent();
+    } else if (parseResult.CommandType === 'SYSTEM') {
+      // Esegui comando SYSTEM via API engine
+      fetch(basePath + 'api/engine/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: val })
+      })
+      .then(res => res.json())
+      .then(executeResult => {
+        if (executeResult.ok && executeResult.engine && executeResult.engine.message) {
+          // Mostra il messaggio nel feed
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const msg = document.createElement('div');
+            msg.className = 'feed-msg system';
+            msg.textContent = executeResult.engine.message;
+            feed.appendChild(msg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+        } else {
+          // Messaggio di errore
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const err = document.createElement('div');
+            err.className = 'feed-msg error';
+            err.textContent = 'Errore nell\'esecuzione del comando.';
+            feed.appendChild(err);
+            feed.scrollTop = feed.scrollHeight;
+          }
+        }
+      })
+      .catch(err => {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const errMsg = document.createElement('div');
+          errMsg.className = 'feed-msg error';
+          errMsg.textContent = 'Errore interno nell\'esecuzione.';
+          feed.appendChild(errMsg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+      });
+    } else {
+      // Messaggio per tipi non supportati (es. ACTION per ora)
       const feed = document.getElementById('placeFeed');
       if (feed) {
         const err = document.createElement('div');
         err.className = 'feed-msg error';
-        err.textContent = `Comando: ${val} → muro (0)\nNon puoi andare in quella direzione.`;
+        err.textContent = 'Tipo di comando non supportato qui.';
         feed.appendChild(err);
         feed.scrollTop = feed.scrollHeight;
       }
-      return;
     }
-    const next = luoghi.find(l => l.ID === nextId);
-    if (!next) {
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const err = document.createElement('div');
-        err.className = 'feed-msg error';
-        err.textContent = `Luogo con ID=${nextId} non trovato!`;
-        feed.appendChild(err);
-        feed.scrollTop = feed.scrollHeight;
-      }
-      return;
-    }
-    current = next;
-    showCurrent();
   })
   .catch(err => {
     console.error('Errore nel parser:', err);

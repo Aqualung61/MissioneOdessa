@@ -145,13 +145,15 @@ export function executeCommand(parseResult) {
         const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
         switch (concept) {
           case 'INVENTARIO':
-            if (gameState.inventory.length === 0) {
+            const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
+            if (activeItems.length === 0) {
               return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [] };
             }
+            const itemNames = activeItems.map(item => item.Oggetto).join(', ');
             return {
               accepted: true,
               resultType: 'OK',
-              message: 'Hai con te: ' + gameState.inventory.join(', ') + '.',
+              message: 'Hai con te: ' + itemNames + '.',
               effects: [],
             };
           case 'SALVA':

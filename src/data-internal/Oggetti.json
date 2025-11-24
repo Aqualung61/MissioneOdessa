@@ -236,5 +236,26 @@
     "Oggetto": "Dossier",
     "Attivo": 0,
     "descrizione": "Dossier"
+  },
+  {
+    "ID": 35,
+    "IDLingua": 1,
+    "Oggetto": "Documenti",
+    "Attivo": 1,
+    "descrizione": "Documenti"
+  },
+  {
+    "ID": 36,
+    "IDLingua": 1,
+    "Oggetto": "Fiammiferi",
+    "Attivo": 1,
+    "descrizione": "Fiammiferi"
+  },
+  {
+    "ID": 37,
+    "IDLingua": 1,
+    "Oggetto": "Torcia elettrica",
+    "Attivo": 1,
+    "descrizione": "Torcia elettrica"
   }
 ]

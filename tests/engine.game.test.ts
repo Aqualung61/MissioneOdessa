@@ -34,11 +34,26 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
       TipiLessico,
       VociLessico,
     };
+    // Aggiungi oggetto fittizio per test
+    global.odessaData.Oggetti = [...Oggetti];
+    global.odessaData.Oggetti.push({
+      ID: 1000,
+      IDLingua: 1,
+      Oggetto: 'LAMPADA',
+      Attivo: 0,
+      descrizione: 'Una lampada'
+    });
     await ensureVocabulary();
   });
 
   beforeEach(() => {
     resetGameState();
+    // Reset Attivo per oggetti di test
+    global.odessaData.Oggetti.forEach(item => {
+      if (item.Oggetto === 'LAMPADA' || ['Documenti', 'Fiammiferi', 'Torcia elettrica'].includes(item.Oggetto)) {
+        item.Attivo = 0;
+      }
+    });
   });
 
   it('PRENDI LAMPADA -> inventario contiene LAMPADA', async () => {
@@ -69,9 +84,9 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     let parsed = await parseCommand(null, 'INVENTARIO');
     let res = executeCommand(parsed);
     expect(res.message).toBe('Non hai nulla.');
-    // Dopo PRENDI LAMPADA
-    parsed = await parseCommand(null, 'PRENDI LAMPADA');
-    executeCommand(parsed);
+    // Simula oggetto attivo
+    const lampada = global.odessaData.Oggetti.find(item => item.Oggetto === 'LAMPADA');
+    if (lampada) lampada.Attivo = 1;
     parsed = await parseCommand(null, 'INVENTARIO');
     res = executeCommand(parsed);
     expect(res.message).toContain('LAMPADA');
