@@ -121,4 +121,3 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.effects).toEqual([]);
   });
 });
-# Test fix
