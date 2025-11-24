@@ -131,9 +131,20 @@
           loadIntroduzione(2);
           currentIntro = 2;
         } else if (currentIntro === 2) {
-          // Cambia immagine senza fading
-          document.getElementById('mainImage').src = '../images/Ferenc.png';
-          document.getElementById('mainImage').alt = 'Ferenc';
+          // Sostituisci con due immagini affiancate
+          const imageContainer = document.getElementById('mainImage').parentNode;
+          document.getElementById('mainImage').style.display = 'none';
+          const dualImages = document.createElement('div');
+          dualImages.id = 'dualImages';
+          dualImages.style.display = 'flex';
+          dualImages.style.justifyContent = 'center';
+          dualImages.style.gap = '20px';
+          dualImages.style.marginTop = '10px';
+          dualImages.innerHTML = `
+            <img src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" style="max-width: 35%; max-height: 75vh; flex-shrink: 0;" />
+            <img src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" style="max-width: 35%; max-height: 75vh; flex-shrink: 0;" />
+          `;
+          imageContainer.insertBefore(dualImages, document.getElementById('mainImage'));
           // Carica testo ID=3
           loadIntroduzione(3);
           currentIntro = 3;
