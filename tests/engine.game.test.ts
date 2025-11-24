@@ -91,4 +91,13 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     res = executeCommand(parsed);
     expect(res.message).toContain('LAMPADA');
   });
+
+  it('FINE chiede conferma', async () => {
+    const parsed = await parseCommand(null, 'FINE');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.resultType).toBe('CONFIRM_END');
+    expect(res.message).toBe('Vuoi davvero finire il gioco? (s/n)');
+  });
 });

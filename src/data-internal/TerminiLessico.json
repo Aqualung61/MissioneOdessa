@@ -88,5 +88,10 @@
     "ID_Termine": 18,
     "Concetto": "CHIUDERE",
     "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 19,
+    "Concetto": "FINE",
+    "ID_TipoLessico": 3
   }
 ]

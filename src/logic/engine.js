@@ -164,7 +164,7 @@ export function executeCommand(parseResult) {
           case 'PUNTI':
             return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [] };
           case 'FINE':
-            return { accepted: true, resultType: 'OK', message: 'Fine gioco (stub).', effects: [] };
+            return { accepted: true, resultType: 'CONFIRM_END', message: 'Vuoi davvero finire il gioco? (s/n)', effects: [] };
           default:
             return {
               accepted: true,

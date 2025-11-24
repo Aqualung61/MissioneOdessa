@@ -202,5 +202,11 @@
     "Voce": "CHIUDI",
     "ID_Termine": 18,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 35,
+    "Voce": "FINE",
+    "ID_Termine": 19,
+    "ID_Lingua": 1
   }
 ]

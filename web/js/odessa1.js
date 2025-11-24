@@ -149,6 +149,7 @@ const basePath = window.location.pathname.split('/').filter(p => p).length > 0 &
 let luoghi = [];
 let current = null;
 let awaitingRestart = false;
+let awaitingConfirmEnd = false;
 let visitedPlaces = new Set();
 
 function updateDynamicPlaceImage() {
@@ -270,6 +271,39 @@ function showCurrent() {
 }
 inputForm.addEventListener('submit', function(e) {
   e.preventDefault();
+  // Se in attesa di conferma fine gioco
+  if (awaitingConfirmEnd) {
+    const risposta = userInput.value.trim().toUpperCase();
+    if (/^S(I|Ì)?$/.test(risposta)) {
+      awaitingConfirmEnd = false;
+      awaitingRestart = true;
+      userInput.value = '';
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const msg = document.createElement('div');
+        msg.className = 'feed-msg system';
+        msg.innerHTML = '<b>Vuoi ripartire? (SI/SÌ per confermare)</b>';
+        feed.appendChild(msg);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    } else if (/^N(O)?$/.test(risposta)) {
+      awaitingConfirmEnd = false;
+      userInput.value = '';
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const msg = document.createElement('div');
+        msg.className = 'feed-msg system';
+        msg.textContent = 'Gioco continuato.';
+        feed.appendChild(msg);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      return;
+    } else {
+      userInput.value = '';
+      return;
+    }
+  }
   // Se in attesa di conferma riavvio
   if (awaitingRestart) {
     const risposta = userInput.value.trim().toUpperCase();
@@ -392,15 +426,21 @@ inputForm.addEventListener('submit', function(e) {
       })
       .then(res => res.json())
       .then(executeResult => {
-        if (executeResult.ok && executeResult.engine && executeResult.engine.message) {
-          // Mostra il messaggio nel feed
-          const feed = document.getElementById('placeFeed');
-          if (feed) {
-            const msg = document.createElement('div');
-            msg.className = 'feed-msg system';
-            msg.textContent = executeResult.engine.message;
-            feed.appendChild(msg);
-            feed.scrollTop = feed.scrollHeight;
+        if (executeResult.ok && executeResult.engine) {
+          const engine = executeResult.engine;
+          if (engine.resultType === 'CONFIRM_END') {
+            awaitingConfirmEnd = true;
+          }
+          if (engine.message) {
+            // Mostra il messaggio nel feed
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              const msg = document.createElement('div');
+              msg.className = 'feed-msg system';
+              msg.textContent = engine.message;
+              feed.appendChild(msg);
+              feed.scrollTop = feed.scrollHeight;
+            }
           }
         } else {
           // Messaggio di errore
