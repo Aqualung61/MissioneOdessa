@@ -157,8 +157,8 @@ export function executeCommand(parseResult) {
               effects: [],
             };
           }
-          case 'SALVA':
-            return { accepted: true, resultType: 'OK', message: 'Salvataggio (stub).', effects: [] };
+          case 'SALVARE':
+            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', gameState: getGameStateSnapshot(), effects: [] };
           case 'CARICA':
             return { accepted: true, resultType: 'OK', message: 'Caricamento (stub).', effects: [] };
           case 'PUNTI':

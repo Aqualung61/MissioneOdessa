@@ -431,6 +431,30 @@ inputForm.addEventListener('submit', function(e) {
           if (engine.resultType === 'CONFIRM_END') {
             awaitingConfirmEnd = true;
           }
+          if (engine.resultType === 'SAVE_GAME') {
+            const stateJson = JSON.stringify(engine.gameState, null, 2);
+            const blob = new Blob([stateJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const now = new Date();
+            const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
+            const filename = `MissioneOdessa_Save_${timestamp}.json`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            // Mostra messaggio di successo
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              const msg = document.createElement('div');
+              msg.className = 'feed-msg system';
+              msg.textContent = `Gioco salvato come ${filename}.`;
+              feed.appendChild(msg);
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
           if (engine.message) {
             // Mostra il messaggio nel feed
             const feed = document.getElementById('placeFeed');

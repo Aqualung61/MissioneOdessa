@@ -100,4 +100,15 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.resultType).toBe('CONFIRM_END');
     expect(res.message).toBe('Vuoi davvero finire il gioco? (s/n)');
   });
+
+  it('SALVA restituisce stato per download', async () => {
+    const parsed = await parseCommand(null, 'SALVA');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.resultType).toBe('SAVE_GAME');
+    expect(res.message).toBe('Salvataggio in corso...');
+    expect(res.gameState).toBeDefined();
+    expect(typeof res.gameState).toBe('object');
+  });
 });
