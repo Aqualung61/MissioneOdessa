@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseCommand } from '../logic/parser.js';
-import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart } from '../logic/engine.js';
+import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation } from '../logic/engine.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 
 const router = express.Router();
@@ -58,6 +58,20 @@ router.post('/reset', (req, res) => {
     resetGameState();
     const snap = getGameStateSnapshot();
     res.json({ ok: true, state: snap });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Stato engine: set location
+router.post('/set-location', (req, res) => {
+  try {
+    const { locationId } = req.body;
+    if (typeof locationId !== 'number' || locationId < 1) {
+      return res.status(400).json({ ok: false, error: 'Invalid locationId' });
+    }
+    setCurrentLocation(locationId);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

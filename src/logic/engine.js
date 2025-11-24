@@ -58,6 +58,10 @@ export function resetGameState() {
     ended: false
   };
 }
+// Funzione per impostare il luogo corrente
+export function setCurrentLocation(locationId) {
+  gameState.currentLocationId = locationId;
+}
   gameState = {
     roomItems: [...DEFAULT_STATE.roomItems],
     inventory: [...DEFAULT_STATE.inventory],
