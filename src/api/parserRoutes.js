@@ -6,20 +6,13 @@ const router = express.Router();
 // POST /api/parser/parse  { input: string }
 router.post('/parse', async (req, res) => {
   try {
-    const inputChunks = [];
-    req.on('data', (chunk) => inputChunks.push(chunk));
-    req.on('end', async () => {
-      let input = '';
-      try {
-        const body = inputChunks.length ? JSON.parse(Buffer.concat(inputChunks).toString('utf8')) : {};
-        input = (body?.input || '').toString();
-      } catch {
-        input = '';
-      }
+    const { input } = req.body || {};
+    if (!input || typeof input !== 'string') {
+      return res.status(400).json({ IsValid: false, Error: 'INVALID_INPUT' });
+    }
     // ensureVocabulary ora chiamata automaticamente in parseCommand
-      const result = await parseCommand(null, input); // dbPath ignorato
-      res.json(result);
-    });
+    const result = await parseCommand(null, input); // dbPath ignorato
+    res.json(result);
   } catch (err) {
     res.status(500).json({ IsValid: false, Error: 'INTERNAL', Message: err.message });
   }

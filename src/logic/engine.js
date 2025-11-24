@@ -3,7 +3,6 @@ export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
   gameState.awaitingRestart = true;
   gameState.currentLocationId = locationId;
-  console.log('[DEBUG enterLocation] gameState:', JSON.stringify(gameState));
   return { accepted: true, resultType: 'TERMINAL', locationId };
 }
 // Stub: esecuzione comando asincrona (da implementare secondo logica app)
@@ -60,7 +59,6 @@ export function resetGameState() {
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
-  console.log('[DEBUG setCurrentLocation] Impostando locationId:', locationId);
   gameState.currentLocationId = locationId;
 }
   gameState = {
@@ -88,7 +86,6 @@ export function getGameStateSnapshot() {
     timestamp: new Date().toISOString(),
     version: '1.3.0',
   };
-  console.log('[DEBUG getGameStateSnapshot] snapshot:', JSON.stringify(snapshot));
   return snapshot;
 }
 

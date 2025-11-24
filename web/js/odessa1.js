@@ -132,12 +132,17 @@ function handleDirectionClick(dir) {
   current = next;
   showCurrent();
   // Aggiorna luogo corrente nel server
-  console.log('[DEBUG] Navigazione click: chiamando set-location per', current.ID);
   fetch(basePath + 'api/engine/set-location', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ locationId: current.ID })
-  }).catch(err => console.error('Errore set-location:', err));
+  })
+  .then(response => {
+    if (!response.ok) {
+      console.error('set-location failed:', response.status);
+    }
+  })
+  .catch(err => console.error('Errore set-location:', err));
 }
 
 
@@ -425,12 +430,17 @@ inputForm.addEventListener('submit', function(e) {
       current = next;
       showCurrent();
       // Aggiorna luogo corrente nel server
-      console.log('[DEBUG] Navigazione input: chiamando set-location per', current.ID);
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locationId: current.ID })
-      }).catch(err => console.error('Errore set-location:', err));
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error('set-location failed:', response.status);
+        }
+      })
+      .catch(err => console.error('Errore set-location:', err));
     } else if (parseResult.CommandType === 'SYSTEM') {
       // Esegui comando SYSTEM via API engine
       fetch(basePath + 'api/engine/execute', {
