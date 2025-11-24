@@ -68,6 +68,8 @@ export function resetGameState() {
   };
 // ...nessuna graffa qui
 export function getGameStateSnapshot() {
+  const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
+  const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
   const snapshot = {
     roomItems: [...gameState.roomItems],
     inventory: [...gameState.inventory],
@@ -75,6 +77,11 @@ export function getGameStateSnapshot() {
     awaitingRestart: gameState.awaitingRestart,
     currentLocationId: gameState.currentLocationId,
     ended: gameState.ended,
+    // Metadata per chiarezza
+    currentLocationName: currentLocation ? currentLocation.Nome : 'Sconosciuto',
+    activeItems: activeItems.map(i => ({ id: i.ID, name: i.Oggetto, description: i.descrizione })),
+    timestamp: new Date().toISOString(),
+    version: '1.3.0',
   };
   console.log('[DEBUG getGameStateSnapshot] snapshot:', JSON.stringify(snapshot));
   return snapshot;

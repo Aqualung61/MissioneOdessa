@@ -110,5 +110,9 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toBe('Salvataggio in corso...');
     expect(res.gameState).toBeDefined();
     expect(typeof res.gameState).toBe('object');
+    expect(res.gameState.currentLocationName).toBeDefined();
+    expect(res.gameState.activeItems).toBeDefined();
+    expect(res.gameState.timestamp).toBeDefined();
+    expect(res.gameState.version).toBe('1.3.0');
   });
 });
