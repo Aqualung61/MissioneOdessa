@@ -98,17 +98,22 @@
       }, 100);
 
       function loadIntroduzione(id) {
+        console.log('Caricando introduzione ID:', id);
         fetch(basePath + 'api/introduzione?id=' + id + '&lingua=1')
           .then(res => res.json())
           .then(data => {
+            console.log('Testo ricevuto per ID', id, ':', data.testo);
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
             const lines = testo.split('\n');
+            console.log('Righe dopo split:', lines.length, 'ultima riga:', lines[lines.length - 1]);
             if (id === 1 || id === 2) {
               lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
+              console.log('Link aggiunto all ultima riga:', lines[lines.length - 1]);
             } else {
               lines[lines.length - 1] = `<a href='${basePath}web/odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
             }
             const parsedHTML = marked.parse(lines.join('\n'));
+            console.log('HTML parsato:', parsedHTML.substring(0, 200) + '...');
             // Senza fading per compatibilità con scroll
             introduzioneDiv.style.display = 'none';
             setTimeout(() => {
