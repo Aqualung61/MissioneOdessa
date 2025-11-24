@@ -68,15 +68,7 @@ export function setGameState(newState) {
 export function setCurrentLocation(locationId) {
   gameState.currentLocationId = locationId;
 }
-  gameState = {
-    roomItems: [...DEFAULT_STATE.roomItems],
-    inventory: [...DEFAULT_STATE.inventory],
-    openStates: { ...DEFAULT_STATE.openStates },
-    awaitingRestart: false,
-    currentLocationId: 1,
-    ended: false
-  };
-// ...nessuna graffa qui
+
 export function getGameStateSnapshot() {
   const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
   const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
@@ -177,7 +169,7 @@ export function executeCommand(parseResult) {
           case 'SALVARE': {
             return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', effects: [] };
           }
-          case 'CARICA':
+          case 'CARICARE':
             return { accepted: true, resultType: 'LOAD_GAME', message: 'Caricamento in corso...', effects: [] };
           case 'PUNTI':
             return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [] };

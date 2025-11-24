@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseCommand } from '../logic/parser.js';
-import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation } from '../logic/engine.js';
+import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState } from '../logic/engine.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 
 const router = express.Router();

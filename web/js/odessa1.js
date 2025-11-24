@@ -535,7 +535,7 @@ inputForm.addEventListener('submit', function(e) {
                             .then(res => res.json())
                             .then(stateResult => {
                               if (stateResult.ok) {
-                                current = luoghi.find(l => l.ID === stateResult.state.currentLocation) || luoghi[0];
+                                current = luoghi.find(l => l.ID === stateResult.state.currentLocationId) || luoghi[0];
                                 visitedPlaces = new Set(stateResult.state.visitedPlaces || []);
                                 showCurrent();
                                 const feed = document.getElementById('placeFeed');
