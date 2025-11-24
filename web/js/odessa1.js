@@ -381,15 +381,15 @@ inputForm.addEventListener('submit', function(e) {
       return;
     }
     if (parseResult.CommandType === 'NAVIGATION') {
-      // Determina il field basato su CanonicalVerb
+      // Determina il field basato su VerbConcept
       let field = null;
-      const canonical = parseResult.CanonicalVerb;
-      if (canonical === 'NORD') field = 'Nord';
-      else if (canonical === 'EST') field = 'Est';
-      else if (canonical === 'SUD') field = 'Sud';
-      else if (canonical === 'OVEST') field = 'Ovest';
-      else if (canonical === 'SU') field = 'Su';
-      else if (canonical === 'GIÙ') field = 'Giu';
+      const concept = parseResult.VerbConcept;
+      if (concept === 'NORD') field = 'Nord';
+      else if (concept === 'EST') field = 'Est';
+      else if (concept === 'SUD') field = 'Sud';
+      else if (concept === 'OVEST') field = 'Ovest';
+      else if (concept === 'ALTO') field = 'Su';
+      else if (concept === 'BASSO') field = 'Giu';
 
       if (!field) {
         const feed = document.getElementById('placeFeed');
@@ -456,29 +456,128 @@ inputForm.addEventListener('submit', function(e) {
             awaitingConfirmEnd = true;
           }
           if (engine.resultType === 'SAVE_GAME') {
-            const saveData = engine.saveData;
-            const stateJson = JSON.stringify(saveData, null, 2);
-            const blob = new Blob([stateJson], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const now = new Date();
-            const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
-            const filename = `MissioneOdessa_Save_${timestamp}.json`;
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            // Mostra messaggio di successo
-            const feed = document.getElementById('placeFeed');
-            if (feed) {
-              const msg = document.createElement('div');
-              msg.className = 'feed-msg system';
-              msg.textContent = `Gioco salvato come ${filename}.`;
-              feed.appendChild(msg);
-              feed.scrollTop = feed.scrollHeight;
-            }
+            // Invia luoghi aggiornati al server per salvare
+            fetch(basePath + 'api/engine/save-client-state', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ luoghi: luoghi })
+            })
+            .then(res => {
+              if (!res.ok) {
+                throw new Error('Errore nel salvataggio: ' + res.status);
+              }
+              return res.json();
+            })
+            .then(saveData => {
+              const stateJson = JSON.stringify(saveData, null, 2);
+              const blob = new Blob([stateJson], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const now = new Date();
+              const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
+              const filename = `MissioneOdessa_Save_${timestamp}.json`;
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              // Mostra messaggio di successo
+              const feed = document.getElementById('placeFeed');
+              if (feed) {
+                const msg = document.createElement('div');
+                msg.className = 'feed-msg system';
+                msg.textContent = `Gioco salvato come ${filename}.`;
+                feed.appendChild(msg);
+                feed.scrollTop = feed.scrollHeight;
+              }
+            })
+            .catch(err => {
+              console.error('Errore nel salvataggio:', err);
+              const feed = document.getElementById('placeFeed');
+              if (feed) {
+                const errMsg = document.createElement('div');
+                errMsg.className = 'feed-msg error';
+                errMsg.textContent = 'Errore nel salvataggio del gioco.';
+                feed.appendChild(errMsg);
+                feed.scrollTop = feed.scrollHeight;
+              }
+            });
+          }
+          if (engine.resultType === 'LOAD_GAME') {
+            // Apri file picker per selezionare file di salvataggio
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                try {
+                  const saveData = JSON.parse(e.target.result);
+                  // Invia dati al server per ripristinare stato
+                  fetch(basePath + 'api/engine/load-client-state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saveData)
+                  })
+                  .then(res => res.json())
+                  .then(result => {
+                    if (result.ok) {
+                      // Ricarica luoghi aggiornati dal server
+                      fetch(basePath + 'api/luoghi')
+                        .then(res => res.json())
+                        .then(data => {
+                          luoghi = Array.isArray(data) ? data : [];
+                          // Ottieni gameState aggiornato
+                          fetch(basePath + 'api/engine/state')
+                            .then(res => res.json())
+                            .then(stateResult => {
+                              if (stateResult.ok) {
+                                current = luoghi.find(l => l.ID === stateResult.state.currentLocation) || luoghi[0];
+                                visitedPlaces = new Set(stateResult.state.visitedPlaces || []);
+                                showCurrent();
+                                const feed = document.getElementById('placeFeed');
+                                if (feed) {
+                                  const msg = document.createElement('div');
+                                  msg.className = 'feed-msg system';
+                                  msg.textContent = 'Gioco caricato con successo.';
+                                  feed.appendChild(msg);
+                                  feed.scrollTop = feed.scrollHeight;
+                                }
+                              }
+                            });
+                        });
+                    } else {
+                      throw new Error(result.error);
+                    }
+                  })
+                  .catch(err => {
+                    console.error('Errore nel caricamento:', err);
+                    const feed = document.getElementById('placeFeed');
+                    if (feed) {
+                      const errMsg = document.createElement('div');
+                      errMsg.className = 'feed-msg error';
+                      errMsg.textContent = 'Errore nel caricamento del gioco.';
+                      feed.appendChild(errMsg);
+                      feed.scrollTop = feed.scrollHeight;
+                    }
+                  });
+                } catch (err) {
+                  const feed = document.getElementById('placeFeed');
+                  if (feed) {
+                    const errMsg = document.createElement('div');
+                    errMsg.className = 'feed-msg error';
+                    errMsg.textContent = 'File di salvataggio non valido.';
+                    feed.appendChild(errMsg);
+                    feed.scrollTop = feed.scrollHeight;
+                  }
+                }
+              };
+              reader.readAsText(file);
+            };
+            input.click();
           }
           if (engine.message) {
             // Mostra il messaggio nel feed

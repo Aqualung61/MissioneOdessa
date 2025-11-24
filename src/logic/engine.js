@@ -36,6 +36,7 @@ const DEFAULT_STATE = Object.freeze({
   roomItems: ['LAMPADA', 'BADILE', 'BOTOLA'],
   inventory: [],
   openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
+  visitedPlaces: [1], // array per serializzazione
 });
 
 let gameState = {
@@ -44,7 +45,8 @@ let gameState = {
   openStates: { ...DEFAULT_STATE.openStates },
   awaitingRestart: false,
   currentLocationId: 1,
-  ended: false
+  ended: false,
+  visitedPlaces: new Set(DEFAULT_STATE.visitedPlaces)
 };
 // Funzione per resettare lo stato di gioco
 export function resetGameState() {
@@ -54,8 +56,13 @@ export function resetGameState() {
     openStates: { ...DEFAULT_STATE.openStates },
     awaitingRestart: false,
     currentLocationId: 1,
-    ended: false
+    ended: false,
+    visitedPlaces: new Set(DEFAULT_STATE.visitedPlaces)
   };
+}
+// Funzione per impostare lo stato di gioco
+export function setGameState(newState) {
+  gameState = { ...newState, visitedPlaces: new Set(newState.visitedPlaces || []) };
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
@@ -80,6 +87,7 @@ export function getGameStateSnapshot() {
     awaitingRestart: gameState.awaitingRestart,
     currentLocationId: gameState.currentLocationId,
     ended: gameState.ended,
+    visitedPlaces: Array.from(gameState.visitedPlaces || []),
     // Metadata per chiarezza
     currentLocationName: currentLocation ? currentLocation.Nome : 'Sconosciuto',
     activeItems: activeItems.map(i => ({ id: i.ID, name: i.Oggetto, description: i.descrizione })),
@@ -167,16 +175,10 @@ export function executeCommand(parseResult) {
             };
           }
           case 'SALVARE': {
-            const fullSaveData = {
-              gameState: getGameStateSnapshot(),
-              odessaData: { ...global.odessaData }, // Copia completa dei dati JSON
-              timestamp: new Date().toISOString(),
-              version: '1.3.0',
-            };
-            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', saveData: fullSaveData, effects: [] };
+            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', effects: [] };
           }
           case 'CARICA':
-            return { accepted: true, resultType: 'OK', message: 'Caricamento (stub).', effects: [] };
+            return { accepted: true, resultType: 'LOAD_GAME', message: 'Caricamento in corso...', effects: [] };
           case 'PUNTI':
             return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [] };
           case 'FINE':
