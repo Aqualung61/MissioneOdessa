@@ -106,11 +106,8 @@
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
             const lines = testo.split('\n');
             console.log('Righe dopo split:', lines.length, 'ultima riga:', lines[lines.length - 1]);
-            if (id === 1) {
+            if (id === 1 || id === 2 || id === 3) {
               lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
-              console.log('Link aggiunto all ultima riga:', lines[lines.length - 1]);
-            } else if (id === 2) {
-              lines[lines.length - 1] = `<a href='${basePath}web/odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
               console.log('Link aggiunto all ultima riga:', lines[lines.length - 1]);
             } else {
               lines[lines.length - 1] = `<a href='${basePath}web/odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
@@ -152,6 +149,15 @@
           loadIntroduzione(2);
           currentIntro = 2;
         } else if (currentIntro === 2) {
+          // Cambia immagine a Simon Wiesenthal
+          document.getElementById('dualImages').style.display = 'none';
+          document.getElementById('mainImage').src = '../images/Simon Wiesenthal.png';
+          document.getElementById('mainImage').alt = 'Simon Wiesenthal';
+          document.getElementById('mainImage').style.display = '';
+          // Carica testo ID=3
+          loadIntroduzione(3);
+          currentIntro = 3;
+        } else if (currentIntro === 3) {
           // Vai alla pagina principale
           window.location.href = basePath + 'web/odessa_main.html' + location.search;
         }
