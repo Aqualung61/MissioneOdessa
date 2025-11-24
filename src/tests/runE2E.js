@@ -17,7 +17,8 @@ export function runE2ETests(options = {}) {
       const grep = 'API \\/api\\/version'; // pattern semplice e portabile
       cmd += ` -g "${grep}"`;
     }
-    exec(cmd, { maxBuffer: 1024 * 1024, cwd: process.cwd() }, (error, stdout, stderr) => {
+    const env = { ...process.env, APP_URL: process.env.APP_URL || 'http://localhost:3001' };
+    exec(cmd, { maxBuffer: 1024 * 1024, cwd: process.cwd(), env }, (error, stdout, stderr) => {
       if (error) {
         resolve({
           success: false,
