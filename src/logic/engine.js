@@ -60,6 +60,7 @@ export function resetGameState() {
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
+  console.log('[DEBUG setCurrentLocation] Impostando locationId:', locationId);
   gameState.currentLocationId = locationId;
 }
   gameState = {

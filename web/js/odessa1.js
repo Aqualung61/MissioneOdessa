@@ -132,6 +132,7 @@ function handleDirectionClick(dir) {
   current = next;
   showCurrent();
   // Aggiorna luogo corrente nel server
+  console.log('[DEBUG] Navigazione click: chiamando set-location per', current.ID);
   fetch(basePath + 'api/engine/set-location', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -424,6 +425,7 @@ inputForm.addEventListener('submit', function(e) {
       current = next;
       showCurrent();
       // Aggiorna luogo corrente nel server
+      console.log('[DEBUG] Navigazione input: chiamando set-location per', current.ID);
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
