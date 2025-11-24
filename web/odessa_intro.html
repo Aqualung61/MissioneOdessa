@@ -131,6 +131,7 @@
           loadIntroduzione(2);
           currentIntro = 2;
         } else if (currentIntro === 2) {
+          console.log('Passo 2: creando immagini affiancate');
           // Sostituisci con due immagini affiancate
           const imageContainer = document.getElementById('mainImage').parentNode;
           document.getElementById('mainImage').style.display = 'none';
@@ -145,6 +146,7 @@
             <img src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" style="max-width: 35%; max-height: 75vh; flex-shrink: 0;" />
           `;
           imageContainer.insertBefore(dualImages, document.getElementById('mainImage'));
+          console.log('Immagini affiancate create');
           // Carica testo ID=3
           loadIntroduzione(3);
           currentIntro = 3;
