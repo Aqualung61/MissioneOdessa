@@ -432,7 +432,8 @@ inputForm.addEventListener('submit', function(e) {
             awaitingConfirmEnd = true;
           }
           if (engine.resultType === 'SAVE_GAME') {
-            const stateJson = JSON.stringify(engine.gameState, null, 2);
+            const saveData = engine.saveData;
+            const stateJson = JSON.stringify(saveData, null, 2);
             const blob = new Blob([stateJson], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const now = new Date();

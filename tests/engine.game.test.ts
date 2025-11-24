@@ -108,11 +108,11 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('SAVE_GAME');
     expect(res.message).toBe('Salvataggio in corso...');
-    expect(res.gameState).toBeDefined();
-    expect(typeof res.gameState).toBe('object');
-    expect(res.gameState.currentLocationName).toBeDefined();
-    expect(res.gameState.activeItems).toBeDefined();
-    expect(res.gameState.timestamp).toBeDefined();
-    expect(res.gameState.version).toBe('1.3.0');
+    expect(res.saveData).toBeDefined();
+    expect(typeof res.saveData).toBe('object');
+    expect(res.saveData.gameState).toBeDefined();
+    expect(res.saveData.odessaData).toBeDefined();
+    expect(res.saveData.timestamp).toBeDefined();
+    expect(res.saveData.version).toBe('1.3.0');
   });
 });

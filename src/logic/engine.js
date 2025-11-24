@@ -164,8 +164,15 @@ export function executeCommand(parseResult) {
               effects: [],
             };
           }
-          case 'SALVARE':
-            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', gameState: getGameStateSnapshot(), effects: [] };
+          case 'SALVARE': {
+            const fullSaveData = {
+              gameState: getGameStateSnapshot(),
+              odessaData: { ...global.odessaData }, // Copia completa dei dati JSON
+              timestamp: new Date().toISOString(),
+              version: '1.3.0',
+            };
+            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', saveData: fullSaveData, effects: [] };
+          }
           case 'CARICA':
             return { accepted: true, resultType: 'OK', message: 'Caricamento (stub).', effects: [] };
           case 'PUNTI':
