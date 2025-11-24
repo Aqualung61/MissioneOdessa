@@ -144,7 +144,7 @@ export function executeCommand(parseResult) {
         // Preferisci il concetto per normalizzare i sinonimi (INVENTARIO/COSA/?)
         const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
         switch (concept) {
-          case 'INVENTARIO':
+          case 'INVENTARIO': {
             const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
             if (activeItems.length === 0) {
               return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [] };
@@ -156,6 +156,7 @@ export function executeCommand(parseResult) {
               message: 'Hai con te: ' + itemNames + '.',
               effects: [],
             };
+          }
           case 'SALVA':
             return { accepted: true, resultType: 'OK', message: 'Salvataggio (stub).', effects: [] };
           case 'CARICA':
