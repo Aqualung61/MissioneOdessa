@@ -158,6 +158,220 @@ const userInput = document.getElementById('userInput');
 // Determina base path per deployment in sottodirectory
 const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
 
+// Dati e stato per parsing livello 0
+let odessaData = {};
+let vocabCache = null;
+
+// Carica strutture JSON per parsing livello 0
+async function loadOdessaData() {
+  try {
+    const [termini, voci, tipi] = await Promise.all([
+      fetch(basePath + 'src/data-internal/TerminiLessico.json').then(r => r.json()),
+      fetch(basePath + 'src/data-internal/VociLessico.json').then(r => r.json()),
+      fetch(basePath + 'src/data-internal/TipiLessico.json').then(r => r.json())
+    ]);
+    odessaData.TerminiLessico = termini;
+    odessaData.VociLessico = voci;
+    odessaData.TipiLessico = tipi;
+    console.log('Dati lessico caricati per livello 0:', odessaData);
+  } catch (e) {
+    console.error('Errore caricamento dati livello 0:', e);
+  }
+}
+
+// Logica parser livello 0 (portata da parser.html)
+const CommandType = {
+  ACTION: 'ACTION',
+  NAVIGATION: 'NAVIGATION',
+  SYSTEM: 'SYSTEM',
+  NOUN: 'NOUN',
+  STOPWORD: 'STOPWORD',
+};
+
+const ParseErrorType = {
+  NONE: 'NONE',
+  COMMAND_UNKNOWN: 'COMMAND_UNKNOWN',
+  SYNTAX_ACTION_INCOMPLETE: 'SYNTAX_ACTION_INCOMPLETE',
+  SYNTAX_NOUN_UNKNOWN: 'SYNTAX_NOUN_UNKNOWN',
+  SYNTAX_INVALID_STRUCTURE: 'SYNTAX_INVALID_STRUCTURE',
+};
+
+function resetVocabularyCache() {
+  vocabCache = null;
+}
+
+async function ensureVocabulary() {
+  if (vocabCache) return vocabCache;
+
+  const rows = odessaData.VociLessico
+    .filter(vl => vl.ID_Lingua === 1)
+    .map(vl => {
+      const tl = odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
+      if (!tl) return null;
+      const t = odessaData.TipiLessico.find(t => t.ID_TipoLessico === tl.ID_TipoLessico);
+      if (!t) return null;
+      return {
+        Tipo: t.NomeTipo,
+        TermineID: tl.ID_Termine,
+        Concetto: tl.Concetto,
+        Voce: vl.Voce
+      };
+    })
+    .filter(row => row !== null);
+
+  const tokenMap = new Map();
+  const canonicalByTerm = new Map();
+
+  function mapTipoToCommandType(tipo) {
+    switch (tipo) {
+      case 'VERBO_AZIONE': return CommandType.ACTION;
+      case 'NAVIGAZIONE': return CommandType.NAVIGATION;
+      case 'SISTEMA': return CommandType.SYSTEM;
+      case 'NOUN': return CommandType.NOUN;
+      case 'STOPWORD': return CommandType.STOPWORD;
+      default: return null;
+    }
+  }
+
+  const removeDiacritics = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  for (const r of rows) {
+    const type = mapTipoToCommandType(r.Tipo);
+    if (!type) continue;
+    const token = r.Voce.toUpperCase();
+    const prev = canonicalByTerm.get(r.TermineID);
+    const canon = String(r.Concetto || token).toUpperCase();
+    if (!prev || canon < prev) {
+      canonicalByTerm.set(r.TermineID, canon);
+    }
+    const info = { type, canonical: null, termId: r.TermineID, concept: r.Concetto };
+    tokenMap.set(token, info);
+    const noAcc = removeDiacritics(token);
+    if (noAcc !== token && !tokenMap.has(noAcc)) {
+      tokenMap.set(noAcc, info);
+    }
+  }
+  for (const [tok, info] of tokenMap) {
+    const canon = canonicalByTerm.get(info.termId) || tok;
+    tokenMap.set(tok, { ...info, canonical: canon });
+  }
+
+  vocabCache = { tokenMap };
+  return vocabCache;
+}
+
+function normalizeInput(input) {
+  const withoutPunct = input.replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
+  const noAcc = withoutPunct.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return noAcc.trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+function isDigits(str) {
+  return /^\d+$/.test(str);
+}
+
+const ACTION_NO_OBJECT = new Set(['DORMI', 'SCAPPA', 'SORRIDI']);
+
+async function parseLevel0(input) {
+  const vocab = await ensureVocabulary();
+  const { tokenMap } = vocab;
+  const OriginalInput = input;
+  const NormalizedInput = normalizeInput(input);
+  const rawTokens = NormalizedInput.length ? NormalizedInput.split(' ') : [];
+
+  const looked = rawTokens.map((t) => tokenMap.get(t) || null);
+  const filteredTokens = [];
+  for (let i = 0; i < rawTokens.length; i++) {
+    const info = looked[i];
+    if (info && info.type === CommandType.STOPWORD) continue;
+    filteredTokens.push({ token: rawTokens[i], info });
+  }
+
+  const base = {
+    IsValid: false,
+    OriginalInput,
+    NormalizedInput,
+    CommandType: null,
+    CanonicalVerb: null,
+    CanonicalNoun: null,
+    NounIndex: null,
+    VerbTermId: null,
+    VerbConcept: null,
+    NounTermId: null,
+    NounConcept: null,
+    Error: ParseErrorType.NONE,
+    UnknownToken: null,
+    UnknownNounToken: null,
+  };
+
+  if (filteredTokens.length === 0) {
+    return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN };
+  }
+
+  if (filteredTokens.length === 1) {
+    const { token, info } = filteredTokens[0];
+    if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
+    if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
+      return {
+        ...base,
+        IsValid: true,
+        CommandType: info.type,
+        CanonicalVerb: info.canonical,
+        VerbTermId: info.termId,
+        VerbConcept: info.concept,
+      };
+    }
+    if (info.type === CommandType.ACTION) {
+      if (ACTION_NO_OBJECT.has(info.canonical)) {
+        return {
+          ...base,
+          IsValid: true,
+          CommandType: CommandType.ACTION,
+          CanonicalVerb: info.canonical,
+          VerbTermId: info.termId,
+          VerbConcept: info.concept,
+        };
+      }
+      return { ...base, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
+    }
+    return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+  }
+
+  if (filteredTokens.length === 2 || filteredTokens.length === 3) {
+    const [t1, t2, t3] = filteredTokens;
+    const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
+    const extra = filteredTokens.length === 3 && idx === null;
+    if (extra) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+
+    if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+
+    if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
+      return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    }
+
+    if (t1.info.type === CommandType.ACTION) {
+      if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: t2.token };
+      if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      return {
+        ...base,
+        IsValid: true,
+        CommandType: CommandType.ACTION,
+        CanonicalVerb: t1.info.canonical,
+        CanonicalNoun: t2.info.canonical,
+        VerbTermId: t1.info.termId,
+        VerbConcept: t1.info.concept,
+        NounTermId: t2.info.termId,
+        NounConcept: t2.info.concept,
+        NounIndex: idx,
+      };
+    }
+
+    return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+  }
+
+  return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+}
+
 let luoghi = [];
 let current = null;
 let awaitingRestart = false;
@@ -281,7 +495,7 @@ function showCurrent() {
     }
   }
 }
-inputForm.addEventListener('submit', function(e) {
+inputForm.addEventListener('submit', async function(e) {
   e.preventDefault();
   // Se in attesa di conferma fine gioco
   if (awaitingConfirmEnd) {
@@ -360,7 +574,108 @@ inputForm.addEventListener('submit', function(e) {
   userInput.value = '';
   if (!val) return;
 
-  // Chiama il parser API
+  // Parsing livello 0
+  try {
+    const level0Result = await parseLevel0(val);
+    console.log('Parsing livello 0:', level0Result);
+
+    // Se NAVIGATION valido, gestisci localmente senza API
+    if (level0Result.IsValid && level0Result.CommandType === 'NAVIGATION') {
+      // Determina il field basato su VerbConcept
+      let field = null;
+      const concept = level0Result.VerbConcept;
+      if (concept === 'NORD') field = 'Nord';
+      else if (concept === 'EST') field = 'Est';
+      else if (concept === 'SUD') field = 'Sud';
+      else if (concept === 'OVEST') field = 'Ovest';
+      else if (concept === 'ALTO') field = 'Su';
+      else if (concept === 'BASSO') field = 'Giu';
+
+      if (!field) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = 'Direzione non riconosciuta.';
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+
+      const nextId = current[field];
+      if (!nextId || nextId === 0) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = `Comando: ${val} → muro (0)\nNon puoi andare in quella direzione.`;
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+      const next = luoghi.find(l => l.ID === nextId);
+      if (!next) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const err = document.createElement('div');
+          err.className = 'feed-msg error';
+          err.textContent = `Luogo con ID=${nextId} non trovato!`;
+          feed.appendChild(err);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+      current = next;
+      showCurrent();
+      // Aggiorna luogo corrente nel server
+      fetch(basePath + 'api/engine/set-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId: current.ID })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error('set-location failed:', response.status);
+        }
+      })
+      .catch(err => console.error('Errore set-location:', err));
+      return; // Salta chiamata API
+    }
+
+    // Se SYSTEM valido, gestisci localmente dove possibile, altrimenti API
+    if (level0Result.IsValid && level0Result.CommandType === 'SYSTEM') {
+      console.log('Entrato in gestione SYSTEM locale');
+      const canonical = level0Result.CanonicalVerb;
+      console.log('SYSTEM command, canonical:', canonical);
+      if (canonical === 'INVENTARIO' || canonical === 'AIUTO') {
+        console.log('Gestione locale per', canonical);
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          let msg = '';
+          if (canonical === 'INVENTARIO') {
+            msg = 'Inventario: (per ora vuoto - implementazione futura)';
+          } else if (canonical === 'AIUTO') {
+            msg = 'Comandi disponibili: direzioni (NORD, SUD, ecc.), INVENTARIO, AIUTO, SALVA, CARICA. Azioni come PRENDI verranno implementate.';
+          }
+          const sysMsg = document.createElement('div');
+          sysMsg.className = 'feed-msg system';
+          sysMsg.textContent = msg;
+          feed.appendChild(sysMsg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        console.log('Return dopo gestione locale');
+        return; // Salta chiamata API per questi SYSTEM locali
+      }
+      console.log('Non gestito localmente, procedi con API');
+      // Per altri SYSTEM (es. SALVA, CARICA), procedi con chiamata API
+    }
+  } catch (e) {
+    console.error('Errore parsing livello 0:', e);
+  }
+
+  // Chiama il parser API per SYSTEM, ACTION, o fallback
   fetch(basePath + 'api/parser/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -612,13 +927,59 @@ inputForm.addEventListener('submit', function(e) {
           feed.scrollTop = feed.scrollHeight;
         }
       });
+    } else if (parseResult.CommandType === 'ACTION') {
+      // Esegui comando ACTION via API engine
+      fetch(basePath + 'api/engine/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: val })
+      })
+      .then(res => res.json())
+      .then(executeResult => {
+        if (executeResult.ok && executeResult.engine) {
+          const engine = executeResult.engine;
+          if (engine.message) {
+            // Mostra il messaggio nel feed
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              const msg = document.createElement('div');
+              msg.className = 'feed-msg system';
+              msg.textContent = engine.message;
+              feed.appendChild(msg);
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
+          // Per ACTION, potremmo aggiornare stato locale se necessario (es. inventario)
+          // Per ora, semplice messaggio
+        } else {
+          // Messaggio di errore
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const err = document.createElement('div');
+            err.className = 'feed-msg error';
+            err.textContent = 'Errore nell\'esecuzione del comando ACTION.';
+            feed.appendChild(err);
+            feed.scrollTop = feed.scrollHeight;
+          }
+        }
+      })
+      .catch(err => {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const errMsg = document.createElement('div');
+          errMsg.className = 'feed-msg error';
+          err.textContent = 'Errore interno nell\'esecuzione ACTION.';
+          feed.appendChild(errMsg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+      });
     } else {
-      // Messaggio per tipi non supportati (es. ACTION per ora)
+      // Messaggio per tipi non supportati
       const feed = document.getElementById('placeFeed');
       if (feed) {
         const err = document.createElement('div');
         err.className = 'feed-msg error';
-        err.textContent = 'Tipo di comando non supportato qui.';
+        err.textContent = 'Tipo di comando non supportato.';
         feed.appendChild(err);
         feed.scrollTop = feed.scrollHeight;
       }
@@ -638,12 +999,15 @@ inputForm.addEventListener('submit', function(e) {
 });
 fetch(basePath + 'api/luoghi')
   .then(res => res.json())
-  .then(data => {
+  .then(async data => {
     luoghi = Array.isArray(data) ? data : [];
     if (!luoghi.length) {
       console.error('Nessun luogo trovato!');
       return;
     }
+
+    // Carica dati per parsing livello 0 prima di procedere
+    await loadOdessaData();
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
     // Chiamata azioni_setup per aggiornare direzioni
@@ -668,3 +1032,5 @@ fetch(basePath + 'api/luoghi')
   .catch(err => {
     console.error('Errore nel caricamento dei luoghi:', err);
   });
+
+// Non chiamare loadOdessaData qui, è dentro il then

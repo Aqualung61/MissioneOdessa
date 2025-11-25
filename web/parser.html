@@ -74,18 +74,23 @@
     let vocabCache = null;
     let engineState = { roomItems: [], inventory: [], openStates: {} };
 
+    // Determina base path
+    const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
+
     // Carica strutture JSON
     async function loadData() {
       try {
         const [termini, voci, tipi] = await Promise.all([
-          fetch('/src/data-internal/TerminiLessico.json').then(r => r.json()),
-          fetch('/src/data-internal/VociLessico.json').then(r => r.json()),
-          fetch('/src/data-internal/TipiLessico.json').then(r => r.json())
+          fetch(basePath + 'src/data-internal/TerminiLessico.json').then(r => r.json()),
+          fetch(basePath + 'src/data-internal/VociLessico.json').then(r => r.json()),
+          fetch(basePath + 'src/data-internal/TipiLessico.json').then(r => r.json())
         ]);
         odessaData.TerminiLessico = termini;
         odessaData.VociLessico = voci;
         odessaData.TipiLessico = tipi;
         console.log('Dati caricati:', odessaData);
+        console.log('VociLessico includes I:', odessaData.VociLessico.some(v => v.Voce === 'I'));
+        console.log('VociLessico length:', odessaData.VociLessico.length);
       } catch (e) {
         console.error('Errore caricamento dati:', e);
       }
@@ -130,6 +135,8 @@
           };
         })
         .filter(row => row !== null);
+      console.log('rows length:', rows.length);
+      console.log('rows with I:', rows.filter(r => r.Voce === 'I'));
 
       const tokenMap = new Map();
       const canonicalByTerm = new Map();
@@ -151,6 +158,7 @@
         const type = mapTipoToCommandType(r.Tipo);
         if (!type) continue;
         const token = r.Voce.toUpperCase();
+        console.log('Adding token:', token, 'type:', type, 'for Voce:', r.Voce);
         const prev = canonicalByTerm.get(r.TermineID);
         if (type === CommandType.NAVIGATION) {
           canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
@@ -186,7 +194,10 @@
     const ACTION_NO_OBJECT = new Set(['DORMI', 'SCAPPA', 'SORRIDI']);
 
     async function parseCommand(input) {
+      resetVocabularyCache(); // Forza ricreazione vocab
       const vocab = await ensureVocabulary();
+      console.log('tokenMap has I:', vocab.tokenMap.has('I'));
+      console.log('tokenMap has DOCUMENTI:', vocab.tokenMap.has('DOCUMENTI'));
       const { tokenMap } = vocab;
       const OriginalInput = input;
       const NormalizedInput = normalizeInput(input);
@@ -252,6 +263,9 @@
 
       if (filteredTokens.length === 2 || filteredTokens.length === 3) {
         const [t1, t2, t3] = filteredTokens;
+        console.log('filteredTokens:', filteredTokens);
+        console.log('t1:', t1);
+        console.log('t2:', t2);
         const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
         const extra = filteredTokens.length === 3 && idx === null;
         if (extra) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
@@ -263,6 +277,7 @@
         }
 
         if (t1.info.type === CommandType.ACTION) {
+          console.log('t2.info:', t2.info);
           if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: t2.token };
           if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
           return {

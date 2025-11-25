@@ -283,5 +283,20 @@
     "ID_Termine": 57,
     "Concetto": "SPOSTARE",
     "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 58,
+    "Concetto": "AIUTO",
+    "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 59,
+    "Concetto": "LEGGERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 60,
+    "Concetto": "ARTICOLO_IND",
+    "ID_TipoLessico": 5
   }
 ]

@@ -486,8 +486,8 @@
     "ID_Lingua": 1
   },
   {
-    "ID_Voce": 82,
-    "Voce": "GUARDI",
+    "ID_Voce": 86,
+    "Voce": "GUARDA",
     "ID_Termine": 56,
     "ID_Lingua": 1
   },
@@ -495,6 +495,72 @@
     "ID_Voce": 83,
     "Voce": "SPOSTA",
     "ID_Termine": 57,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 84,
+    "Voce": "AIUTO",
+    "ID_Termine": 58,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 85,
+    "Voce": "LEGGI",
+    "ID_Termine": 59,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 87,
+    "Voce": "I",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 88,
+    "Voce": "L'",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 89,
+    "Voce": "GLI",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 90,
+    "Voce": "LE",
+    "ID_Termine": 3,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 91,
+    "Voce": "UN",
+    "ID_Termine": 60,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 92,
+    "Voce": "UNO",
+    "ID_Termine": 60,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 93,
+    "Voce": "UNA",
+    "ID_Termine": 60,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 94,
+    "Voce": "UN'",
+    "ID_Termine": 60,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 95,
+    "Voce": "Documento",
+    "ID_Termine": 50,
     "ID_Lingua": 1
   }
 ]
