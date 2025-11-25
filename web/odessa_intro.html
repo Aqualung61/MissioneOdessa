@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
+  <link rel="preload" href="../images/Simon Wiesenthal.png" as="image" />
+  <link rel="preload" href="../images/1948 - Berlin map.png" as="image" />
+  <link rel="preload" href="../images/Ferenc.png" as="image" />
   <script>
     // Detect base path dynamically
     const pathParts = window.location.pathname.split('/').filter(p => p);
@@ -157,6 +160,11 @@
           `;
           imageContainer.insertBefore(dualImages, document.getElementById('mainImage'));
           console.log('Immagini affiancate create');
+          // Aggiungi eventi onload per logging
+          const imgs = dualImages.querySelectorAll('img');
+          imgs.forEach(img => {
+            img.onload = () => console.log('Immagine caricata:', img.alt);
+          });
           // Carica testo ID=2
           loadIntroduzione(2);
           currentIntro = 2;
@@ -165,6 +173,7 @@
           document.getElementById('dualImages').style.display = 'none';
           document.getElementById('mainImage').src = '../images/Ferenc.png';
           document.getElementById('mainImage').alt = 'Ferenc';
+          document.getElementById('mainImage').onload = () => console.log('Immagine Ferenc caricata');
           document.getElementById('mainImage').style.display = '';
           // Carica testo ID=3
           loadIntroduzione(3);
