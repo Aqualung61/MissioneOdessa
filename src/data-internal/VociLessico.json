@@ -208,5 +208,209 @@
     "Voce": "FINE",
     "ID_Termine": 19,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 36,
+    "Voce": "Bastone di comando",
+    "ID_Termine": 20,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 37,
+    "Voce": "Grande tavolo",
+    "ID_Termine": 21,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 38,
+    "Voce": "Sedie",
+    "ID_Termine": 22,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 39,
+    "Voce": "Badile arruginito",
+    "ID_Termine": 23,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 40,
+    "Voce": "Arazzo in pessime condizioni",
+    "ID_Termine": 24,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 41,
+    "Voce": "Lista di servizio",
+    "ID_Termine": 25,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 42,
+    "Voce": "Scrivania",
+    "ID_Termine": 26,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 43,
+    "Voce": "Statuetta",
+    "ID_Termine": 27,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 44,
+    "Voce": "Trofei alle pareti",
+    "ID_Termine": 28,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 45,
+    "Voce": "Fermacarte",
+    "ID_Termine": 29,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 46,
+    "Voce": "Scaffali vuoti",
+    "ID_Termine": 30,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 47,
+    "Voce": "Nicchia vuota",
+    "ID_Termine": 31,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 48,
+    "Voce": "Letto",
+    "ID_Termine": 32,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 49,
+    "Voce": "Sedile",
+    "ID_Termine": 33,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 50,
+    "Voce": "Fascicolo",
+    "ID_Termine": 34,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 51,
+    "Voce": "Tavolo",
+    "ID_Termine": 35,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 52,
+    "Voce": "Bottone",
+    "ID_Termine": 36,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 53,
+    "Voce": "Porta",
+    "ID_Termine": 37,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 54,
+    "Voce": "Peso",
+    "ID_Termine": 38,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 55,
+    "Voce": "Banco degli attrezzi",
+    "ID_Termine": 39,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 56,
+    "Voce": "Pesa",
+    "ID_Termine": 40,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 57,
+    "Voce": "Foglio",
+    "ID_Termine": 41,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 58,
+    "Voce": "Cassaforte",
+    "ID_Termine": 42,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 59,
+    "Voce": "Manopola",
+    "ID_Termine": 43,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 60,
+    "Voce": "Lampada",
+    "ID_Termine": 4,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 61,
+    "Voce": "Forma circolare",
+    "ID_Termine": 44,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 62,
+    "Voce": "Medaglione",
+    "ID_Termine": 45,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 63,
+    "Voce": "Pulsante",
+    "ID_Termine": 46,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 64,
+    "Voce": "Paratia",
+    "ID_Termine": 47,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 65,
+    "Voce": "Quadro",
+    "ID_Termine": 48,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 66,
+    "Voce": "Dossier",
+    "ID_Termine": 49,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 67,
+    "Voce": "Documenti",
+    "ID_Termine": 50,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 68,
+    "Voce": "Fiammiferi",
+    "ID_Termine": 51,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 69,
+    "Voce": "Torcia elettrica",
+    "ID_Termine": 52,
+    "ID_Lingua": 1
   }
 ]

@@ -93,5 +93,170 @@
     "ID_Termine": 19,
     "Concetto": "FINE",
     "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 20,
+    "Concetto": "BASTONE_DI_COMANDO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 21,
+    "Concetto": "GRANDE_TAVOLO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 22,
+    "Concetto": "SEDIE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 23,
+    "Concetto": "BADILE_ARRUGINITO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 24,
+    "Concetto": "ARAZZO_IN_PESSIME_CONDIZIONI",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 25,
+    "Concetto": "LISTA_DI_SERVIZIO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 26,
+    "Concetto": "SCRIVANIA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 27,
+    "Concetto": "STATUETTA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 28,
+    "Concetto": "TROFEI_ALLE_PARETI",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 29,
+    "Concetto": "FERMACARTE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 30,
+    "Concetto": "SCAFFALI_Vuoti",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 31,
+    "Concetto": "NICCHIA_VUOTA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 32,
+    "Concetto": "LETTO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 33,
+    "Concetto": "SEDILE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 34,
+    "Concetto": "FASCICOLO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 35,
+    "Concetto": "TAVOLO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 36,
+    "Concetto": "BOTTON",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 37,
+    "Concetto": "PORTA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 38,
+    "Concetto": "PESO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 39,
+    "Concetto": "BANCO_DEGLI_ATTREZZI",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 40,
+    "Concetto": "PESA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 41,
+    "Concetto": "FOGLIO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 42,
+    "Concetto": "CASSAFORTE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 43,
+    "Concetto": "MANOPOLA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 44,
+    "Concetto": "FORMA_CIRCOLARE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 45,
+    "Concetto": "MEDAGLIONE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 46,
+    "Concetto": "PULSANTE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 47,
+    "Concetto": "PARATIA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 48,
+    "Concetto": "QUADRO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 49,
+    "Concetto": "DOSSIER",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 50,
+    "Concetto": "DOCUMENTI",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 51,
+    "Concetto": "FIAMMIFERI",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 52,
+    "Concetto": "TORCIA_ELETTRICA",
+    "ID_TipoLessico": 4
   }
 ]
