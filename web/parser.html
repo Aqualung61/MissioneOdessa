@@ -66,17 +66,225 @@
     </div>
   </details>
   <footer>
-    API: <code>POST /api/parser/parse</code> — Usa il DB locale configurato (<code>ODESSA_DB_PATH</code>)
+    Parser client-side: Carica dati da JSON locali. Motore simulato in memoria.
   </footer>
   <script>
-    const $out = document.getElementById('out');
-    const $cmd = document.getElementById('cmd');
-    const $run = document.getElementById('run');
-    const $samples = document.querySelectorAll('.sample');
-    const $exec = document.getElementById('exec');
-    const $btnState = document.getElementById('btnState');
-    const $btnReset = document.getElementById('btnReset');
-    const $statePanel = document.getElementById('statePanel');
+    // Dati e stato in memoria client (sostituisce DB)
+    let odessaData = {};
+    let vocabCache = null;
+    let engineState = { roomItems: [], inventory: [], openStates: {} };
+
+    // Carica strutture JSON
+    async function loadData() {
+      try {
+        const [termini, voci, tipi] = await Promise.all([
+          fetch('/src/data-internal/TerminiLessico.json').then(r => r.json()),
+          fetch('/src/data-internal/VociLessico.json').then(r => r.json()),
+          fetch('/src/data-internal/TipiLessico.json').then(r => r.json())
+        ]);
+        odessaData.TerminiLessico = termini;
+        odessaData.VociLessico = voci;
+        odessaData.TipiLessico = tipi;
+        console.log('Dati caricati:', odessaData);
+      } catch (e) {
+        console.error('Errore caricamento dati:', e);
+      }
+    }
+
+    // Logica parser (portata da src/logic/parser.js)
+    const CommandType = {
+      ACTION: 'ACTION',
+      NAVIGATION: 'NAVIGATION',
+      SYSTEM: 'SYSTEM',
+      NOUN: 'NOUN',
+      STOPWORD: 'STOPWORD',
+    };
+
+    const ParseErrorType = {
+      NONE: 'NONE',
+      COMMAND_UNKNOWN: 'COMMAND_UNKNOWN',
+      SYNTAX_ACTION_INCOMPLETE: 'SYNTAX_ACTION_INCOMPLETE',
+      SYNTAX_NOUN_UNKNOWN: 'SYNTAX_NOUN_UNKNOWN',
+      SYNTAX_INVALID_STRUCTURE: 'SYNTAX_INVALID_STRUCTURE',
+    };
+
+    function resetVocabularyCache() {
+      vocabCache = null;
+    }
+
+    async function ensureVocabulary() {
+      if (vocabCache) return vocabCache;
+
+      const rows = odessaData.VociLessico
+        .filter(vl => vl.ID_Lingua === 1)
+        .map(vl => {
+          const tl = odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
+          if (!tl) return null;
+          const t = odessaData.TipiLessico.find(t => t.ID_TipoLessico === tl.ID_TipoLessico);
+          if (!t) return null;
+          return {
+            Tipo: t.NomeTipo,
+            TermineID: tl.ID_Termine,
+            Concetto: tl.Concetto,
+            Voce: vl.Voce
+          };
+        })
+        .filter(row => row !== null);
+
+      const tokenMap = new Map();
+      const canonicalByTerm = new Map();
+
+      function mapTipoToCommandType(tipo) {
+        switch (tipo) {
+          case 'VERBO_AZIONE': return CommandType.ACTION;
+          case 'NAVIGAZIONE': return CommandType.NAVIGATION;
+          case 'SISTEMA': return CommandType.SYSTEM;
+          case 'NOUN': return CommandType.NOUN;
+          case 'STOPWORD': return CommandType.STOPWORD;
+          default: return null;
+        }
+      }
+
+      const removeDiacritics = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      for (const r of rows) {
+        const type = mapTipoToCommandType(r.Tipo);
+        if (!type) continue;
+        const token = r.Voce.toUpperCase();
+        const prev = canonicalByTerm.get(r.TermineID);
+        if (type === CommandType.NAVIGATION) {
+          canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
+        } else if (!prev || token < prev) {
+          canonicalByTerm.set(r.TermineID, token);
+        }
+        const info = { type, canonical: null, termId: r.TermineID, concept: r.Concetto };
+        tokenMap.set(token, info);
+        const noAcc = removeDiacritics(token);
+        if (noAcc !== token && !tokenMap.has(noAcc)) {
+          tokenMap.set(noAcc, info);
+        }
+      }
+      for (const [tok, info] of tokenMap) {
+        const canon = canonicalByTerm.get(info.termId) || tok;
+        tokenMap.set(tok, { ...info, canonical: canon });
+      }
+
+      vocabCache = { tokenMap };
+      return vocabCache;
+    }
+
+    function normalizeInput(input) {
+      const withoutPunct = input.replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
+      const noAcc = withoutPunct.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return noAcc.trim().toUpperCase().replace(/\s+/g, ' ');
+    }
+
+    function isDigits(str) {
+      return /^\d+$/.test(str);
+    }
+
+    const ACTION_NO_OBJECT = new Set(['DORMI', 'SCAPPA', 'SORRIDI']);
+
+    async function parseCommand(input) {
+      const vocab = await ensureVocabulary();
+      const { tokenMap } = vocab;
+      const OriginalInput = input;
+      const NormalizedInput = normalizeInput(input);
+      const rawTokens = NormalizedInput.length ? NormalizedInput.split(' ') : [];
+
+      const looked = rawTokens.map((t) => tokenMap.get(t) || null);
+      const filteredTokens = [];
+      for (let i = 0; i < rawTokens.length; i++) {
+        const info = looked[i];
+        if (info && info.type === CommandType.STOPWORD) continue;
+        filteredTokens.push({ token: rawTokens[i], info });
+      }
+
+      const base = {
+        IsValid: false,
+        OriginalInput,
+        NormalizedInput,
+        CommandType: null,
+        CanonicalVerb: null,
+        CanonicalNoun: null,
+        NounIndex: null,
+        VerbTermId: null,
+        VerbConcept: null,
+        NounTermId: null,
+        NounConcept: null,
+        Error: ParseErrorType.NONE,
+        UnknownToken: null,
+        UnknownNounToken: null,
+      };
+
+      if (filteredTokens.length === 0) {
+        return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN };
+      }
+
+      if (filteredTokens.length === 1) {
+        const { token, info } = filteredTokens[0];
+        if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
+        if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
+          return {
+            ...base,
+            IsValid: true,
+            CommandType: info.type,
+            CanonicalVerb: info.canonical,
+            VerbTermId: info.termId,
+            VerbConcept: info.concept,
+          };
+        }
+        if (info.type === CommandType.ACTION) {
+          if (ACTION_NO_OBJECT.has(info.canonical)) {
+            return {
+              ...base,
+              IsValid: true,
+              CommandType: CommandType.ACTION,
+              CanonicalVerb: info.canonical,
+              VerbTermId: info.termId,
+              VerbConcept: info.concept,
+            };
+          }
+          return { ...base, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
+        }
+        return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      }
+
+      if (filteredTokens.length === 2 || filteredTokens.length === 3) {
+        const [t1, t2, t3] = filteredTokens;
+        const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
+        const extra = filteredTokens.length === 3 && idx === null;
+        if (extra) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+
+        if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+
+        if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
+          return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+        }
+
+        if (t1.info.type === CommandType.ACTION) {
+          if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: t2.token };
+          if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+          return {
+            ...base,
+            IsValid: true,
+            CommandType: CommandType.ACTION,
+            CanonicalVerb: t1.info.canonical,
+            CanonicalNoun: t2.info.canonical,
+            VerbTermId: t1.info.termId,
+            VerbConcept: t1.info.concept,
+            NounTermId: t2.info.termId,
+            NounConcept: t2.info.concept,
+            NounIndex: idx,
+          };
+        }
+
+        return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      }
+
+      return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    }
+  </script>
 
     function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
       ">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
@@ -108,14 +316,9 @@
     }
 
     async function callParse(input) {
-      $out.textContent = 'Chiamo /api/parser/parse…';
+      $out.textContent = 'Analizzo comando…';
       try {
-        const res = await fetch('/api/parser/parse', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input })
-        });
-        const data = await res.json();
+        const data = await parseCommand(input);
         $out.textContent = JSON.stringify(data, null, 2);
         const $sum = document.getElementById('summary');
         if($sum){ $sum.innerHTML = renderSummary(data); }
@@ -127,20 +330,31 @@
     }
 
     async function callExecute(input){
-      $out.textContent = 'Chiamo /api/engine/execute…';
+      $out.textContent = 'Eseguo comando…';
       try{
-        const res = await fetch('/api/engine/execute',{
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({input})
-        });
-        const data = await res.json();
-        const $sum = document.getElementById('summary');
-        if(res.ok){
-          $out.textContent = JSON.stringify(data, null, 2);
-          if($sum){ $sum.innerHTML = renderSummary(data.parseResult) + `<div style='margin-top:.5rem'><b>Motore:</b> ${data.engine?.message||''}</div>`; }
+        const parseResult = await parseCommand(input);
+        // Simula motore stub client-side
+        let message = 'Comando simulato eseguito.';
+        if (parseResult.IsValid) {
+          if (parseResult.CommandType === 'ACTION' && parseResult.CanonicalVerb === 'PRENDI') {
+            if (!engineState.inventory.includes(parseResult.CanonicalNoun)) {
+              engineState.inventory.push(parseResult.CanonicalNoun);
+              message = `Hai preso ${parseResult.CanonicalNoun}.`;
+            } else {
+              message = `Hai già ${parseResult.CanonicalNoun}.`;
+            }
+          } else if (parseResult.CommandType === 'SYSTEM' && parseResult.CanonicalVerb === 'INVENTARIO') {
+            message = `Inventario: ${engineState.inventory.join(', ') || 'vuoto'}.`;
+          } else {
+            message = `Azione ${parseResult.CanonicalVerb} simulata.`;
+          }
         } else {
-          $out.textContent = JSON.stringify(data, null, 2);
-          if($sum){ $sum.innerHTML = renderSummary(data.parseResult) + (data.userMessage? `<div style='margin-top:.5rem'><b>Messaggio:</b> ${data.userMessage}</div>`:''); }
+          message = 'Comando non valido.';
         }
+        const data = { parseResult, engine: { message } };
+        $out.textContent = JSON.stringify(data, null, 2);
+        const $sum = document.getElementById('summary');
+        if($sum){ $sum.innerHTML = renderSummary(data.parseResult) + `<div style='margin-top:.5rem'><b>Motore:</b> ${data.engine?.message||''}</div>`; }
       }catch(e){
         $out.textContent = 'Errore: ' + (e?.message || e);
         const $sum = document.getElementById('summary');
@@ -161,28 +375,17 @@
     }
 
     async function fetchState(){
-      try{
-        const res = await fetch('/api/engine/state');
-        const data = await res.json();
-        if($statePanel){
-          $statePanel.style.display = 'block';
-          $statePanel.innerHTML = data?.state? renderState(data.state) : '<em>Nessuno stato</em>';
-        }
-      }catch(e){
-        if($statePanel){ $statePanel.style.display='block'; $statePanel.textContent = 'Errore stato: ' + (e?.message||e); }
+      if($statePanel){
+        $statePanel.style.display = 'block';
+        $statePanel.innerHTML = renderState(engineState);
       }
     }
 
     async function resetState(){
-      try{
-        const res = await fetch('/api/engine/reset', { method:'POST' });
-        const data = await res.json();
-        if($statePanel){
-          $statePanel.style.display = 'block';
-          $statePanel.innerHTML = data?.state? renderState(data.state) : '<em>Nessuno stato</em>';
-        }
-      }catch(e){
-        if($statePanel){ $statePanel.style.display='block'; $statePanel.textContent = 'Errore reset: ' + (e?.message||e); }
+      engineState = { roomItems: [], inventory: [], openStates: {} };
+      if($statePanel){
+        $statePanel.style.display = 'block';
+        $statePanel.innerHTML = renderState(engineState);
       }
     }
 
@@ -205,8 +408,11 @@
     $btnState?.addEventListener('click', fetchState);
     $btnReset?.addEventListener('click', resetState);
 
-    // Autofocus
-    $cmd.focus();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadData(); // Carica dati JSON prima di tutto
+      // Autofocus
+      $cmd.focus();
+    });
   </script>
 </body>
 </html>
