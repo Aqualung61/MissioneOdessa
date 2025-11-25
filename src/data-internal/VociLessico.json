@@ -412,5 +412,59 @@
     "Voce": "Torcia elettrica",
     "ID_Termine": 52,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 70,
+    "Voce": "Torcia",
+    "ID_Termine": 52,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 71,
+    "Voce": "Bastone",
+    "ID_Termine": 20,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 72,
+    "Voce": "Badile",
+    "ID_Termine": 23,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 73,
+    "Voce": "Arazzo",
+    "ID_Termine": 24,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 74,
+    "Voce": "Trofei",
+    "ID_Termine": 28,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 75,
+    "Voce": "Scaffali",
+    "ID_Termine": 30,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 76,
+    "Voce": "Nicchia",
+    "ID_Termine": 31,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 77,
+    "Voce": "Banco",
+    "ID_Termine": 39,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 78,
+    "Voce": "Forma",
+    "ID_Termine": 44,
+    "ID_Lingua": 1
   }
 ]
