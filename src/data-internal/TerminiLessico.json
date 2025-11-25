@@ -258,5 +258,30 @@
     "ID_Termine": 52,
     "Concetto": "TORCIA_ELETTRICA",
     "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 53,
+    "Concetto": "LASCIARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 54,
+    "Concetto": "INFILARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 55,
+    "Concetto": "METTERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 56,
+    "Concetto": "GUARDARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 57,
+    "Concetto": "SPOSTARE",
+    "ID_TipoLessico": 1
   }
 ]

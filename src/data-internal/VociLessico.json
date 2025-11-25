@@ -466,5 +466,35 @@
     "Voce": "Forma",
     "ID_Termine": 44,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 79,
+    "Voce": "LASCIA",
+    "ID_Termine": 53,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 80,
+    "Voce": "INFILA",
+    "ID_Termine": 54,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 81,
+    "Voce": "METTI",
+    "ID_Termine": 55,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 82,
+    "Voce": "GUARDI",
+    "ID_Termine": 56,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 83,
+    "Voce": "SPOSTA",
+    "ID_Termine": 57,
+    "ID_Lingua": 1
   }
 ]
