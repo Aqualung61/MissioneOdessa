@@ -62,7 +62,7 @@
         <li>Accenti tollerati/normalizzati: es. <code>GIÙ</code> e <code>GIU</code> sono equivalenti.</li>
         <li>Comandi singoli validi: NAVIGAZIONE (<code>NORD</code>, <code>N</code> …), SISTEMA (<code>INVENTARIO</code>, <code>?</code>), alcune ACTION come <code>DORMI</code>, <code>SCAPPA</code>, <code>SORRIDI</code>.</li>
       </ul>
-      <div style="margin-top:.5rem">Endpoint: <code>POST /api/parser/parse</code> — body: <code>{"input":"PRENDI LA LAMPADA"}</code></div>
+      <div style="margin-top:.5rem">Logica client-side: parsing in memoria senza API backend.</div>
     </div>
   </details>
   <footer>
@@ -284,7 +284,6 @@
 
       return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
     }
-  </script>
 
     function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
       ">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
@@ -314,6 +313,15 @@
       }
       return lines.join('');
     }
+
+    const $out = document.getElementById('out');
+    const $cmd = document.getElementById('cmd');
+    const $run = document.getElementById('run');
+    const $samples = document.querySelectorAll('.sample');
+    const $exec = document.getElementById('exec');
+    const $btnState = document.getElementById('btnState');
+    const $btnReset = document.getElementById('btnReset');
+    const $statePanel = document.getElementById('statePanel');
 
     async function callParse(input) {
       $out.textContent = 'Analizzo comando…';
