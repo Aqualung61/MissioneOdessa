@@ -3,7 +3,7 @@
 # Consenti override con ALLOW_DIRECT_PUSH=1
 
 BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
-PROTECTED_PATTERN='^(main|master|freeze-.*)$'
+PROTECTED_PATTERN='^(master|freeze-.*)$'
 
 if [ "$ALLOW_DIRECT_PUSH" = "1" ]; then
   exit 0
