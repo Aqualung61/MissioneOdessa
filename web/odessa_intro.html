@@ -83,7 +83,7 @@
 </head>
 <body>
 
-    <img id="mainImage" src="../images/MissioneOdessa-Mainimage.png" alt="Missione Odessa" />
+    <img id="mainImage" src="../images/MissioneOdessa_intro.png" alt="Missione Odessa" />
     <div id="introduzione"></div>
 
   <script src="js/marked.min.js"></script>
@@ -106,12 +106,7 @@
             const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
             const lines = testo.split('\n');
             console.log('Righe dopo split:', lines.length, 'ultima riga:', lines[lines.length - 1]);
-            if (id === 1 || id === 2 || id === 3) {
-              lines[lines.length - 1] = `<a href="#" onclick="nextStage()" style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
-              console.log('Link aggiunto all ultima riga:', lines[lines.length - 1]);
-            } else {
-              lines[lines.length - 1] = `<a href='${basePath}web/odessa_main.html${location.search}' style='background-color: red; color: white; text-decoration: none; margin: 10px; padding: 5px;' onmouseover="this.style.backgroundColor='darkred';" onmouseout="this.style.backgroundColor='red';">${lines[lines.length - 1]}</a>`;
-            }
+            // Rimossa evidenziazione ultima riga
             const parsedHTML = marked.parse(lines.join('\n'));
             console.log('HTML parsato:', parsedHTML.substring(0, 200) + '...');
             // Senza fading per compatibilità con scroll
@@ -119,6 +114,23 @@
             setTimeout(() => {
               introduzioneDiv.innerHTML = parsedHTML;
               introduzioneDiv.style.display = '';
+              // Aggiungi bottone sotto il testo
+              const button = document.createElement('button');
+              button.textContent = 'Continua';
+              button.style.backgroundColor = 'red';
+              button.style.color = 'white';
+              button.style.border = 'none';
+              button.style.padding = '10px 20px';
+              button.style.marginTop = '20px';
+              button.style.cursor = 'pointer';
+              button.style.display = 'block';
+              button.style.marginLeft = 'auto';
+              button.style.marginRight = 'auto';
+              button.style.fontWeight = 'bold';
+              button.onmouseover = () => button.style.backgroundColor = 'darkred';
+              button.onmouseout = () => button.style.backgroundColor = 'red';
+              button.onclick = nextStage;
+              introduzioneDiv.appendChild(button);
               window.scrollTo(0, 0);
             }, 10);
           })
