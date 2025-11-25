@@ -657,11 +657,11 @@ inputForm.addEventListener('submit', async function(e) {
           if (canonical === 'INVENTARIO') {
             msg = 'Inventario: (per ora vuoto - implementazione futura)';
           } else if (canonical === 'AIUTO') {
-            msg = 'Comandi disponibili: direzioni (NORD, SUD, ecc.), INVENTARIO, AIUTO, SALVA, CARICA. Azioni come PRENDI verranno implementate.';
+            msg = '<b>Comandi disponibili:</b> <br><b>Direzioni:</b> <i>Nord, Est, Sud, Ovest, Su, Giu (e sinonimi)</i><br><b>Gioco:</b> <i>Aiuto, Inventario, Fine, Salva, Carica</i><br><b>Azioni:</b> <i>Prendi, Leggi, Esamina, Infila, Lascia, altro.</i>';
           }
           const sysMsg = document.createElement('div');
           sysMsg.className = 'feed-msg system';
-          sysMsg.textContent = msg;
+          sysMsg.innerHTML = msg;
           feed.appendChild(sysMsg);
           feed.scrollTop = feed.scrollHeight;
         }
