@@ -1,6 +1,7 @@
 import express from 'express';
 import { runE2ETests } from '../tests/runE2E.js';
 import { azioni_setup, azioni_modi } from './azioni_lib.js';
+import { getOggetti } from '../logic/engine.js';
 
 const router = express.Router();
 
@@ -41,13 +42,12 @@ router.get('/luogo-oggetti', async (req, res) => {
   if (!idLuogo || !idLingua) {
     return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
   }
-  const data = global.odessaData.Luoghi_oggetto || [];
+  const data = getOggetti();
   const filtered = data
-    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua);
+    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua && item.Attivo === 1);
   const oggetti = filtered
     .map(item => {
-      const obj = (global.odessaData.Oggetti || []).find(o => o.ID == item.IDOggetto && o.IDLingua == idLingua);
-      return { descrizione: obj?.Oggetto || '' };
+      return { descrizione: item.Oggetto || '' };
     });
   res.json(oggetti);
 });

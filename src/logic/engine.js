@@ -31,38 +31,47 @@ export function confirmRestart(risposta) {
 }
 // Engine: mapping ParseResult -> Command DTO ed esecuzione (stub con stato minimale)
 
-// Stato di gioco minimale (singleton in memoria)
-const DEFAULT_STATE = Object.freeze({
-  roomItems: ['LAMPADA', 'BADILE', 'BOTOLA'],
-  inventory: [],
-  openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
-  visitedPlaces: [1], // array per serializzazione
-});
-
+// Stato di gioco (singleton in memoria)
 let gameState = {
-  roomItems: [...DEFAULT_STATE.roomItems],
-  inventory: [...DEFAULT_STATE.inventory],
-  openStates: { ...DEFAULT_STATE.openStates },
+  openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
   awaitingRestart: false,
   currentLocationId: 1,
   ended: false,
-  visitedPlaces: new Set(DEFAULT_STATE.visitedPlaces)
+  visitedPlaces: new Set([1]),
+  Oggetti: []
 };
 // Funzione per resettare lo stato di gioco
 export function resetGameState() {
+  console.log('Inizializzazione gameState');
   gameState = {
-    roomItems: [...DEFAULT_STATE.roomItems],
-    inventory: [...DEFAULT_STATE.inventory],
-    openStates: { ...DEFAULT_STATE.openStates },
+    openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
     awaitingRestart: false,
     currentLocationId: 1,
     ended: false,
-    visitedPlaces: new Set(DEFAULT_STATE.visitedPlaces)
+    visitedPlaces: new Set([1]),
+    Oggetti: []
   };
+  // Aggiungi Oggetti a gameState
+  if (global.odessaData && global.odessaData.Oggetti) {
+    gameState.Oggetti = JSON.parse(JSON.stringify(global.odessaData.Oggetti)); // Deep copy
+    console.log('Caricamento Oggetti in gameState: Sì, numero di record: ' + gameState.Oggetti.length);
+  } else {
+    console.log('Caricamento Oggetti in gameState: No');
+    gameState.Oggetti = [];
+  }
+}
+
+// Funzione per ottenere gli oggetti correnti
+export function getOggetti() {
+  return gameState.Oggetti || [];
 }
 // Funzione per impostare lo stato di gioco
 export function setGameState(newState) {
-  gameState = { ...newState, visitedPlaces: new Set(newState.visitedPlaces || []) };
+  gameState = { 
+    ...newState, 
+    visitedPlaces: new Set(newState.visitedPlaces || []),
+    Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : []
+  };
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
@@ -71,36 +80,19 @@ export function setCurrentLocation(locationId) {
 
 export function getGameStateSnapshot() {
   const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
-  const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
   const snapshot = {
-    roomItems: [...gameState.roomItems],
-    inventory: [...gameState.inventory],
     openStates: { ...gameState.openStates },
     awaitingRestart: gameState.awaitingRestart,
     currentLocationId: gameState.currentLocationId,
     ended: gameState.ended,
     visitedPlaces: Array.from(gameState.visitedPlaces || []),
+    Oggetti: JSON.parse(JSON.stringify(gameState.Oggetti || [])),
     // Metadata per chiarezza
     currentLocationName: currentLocation ? currentLocation.Nome : 'Sconosciuto',
-    activeItems: activeItems.map(i => ({ id: i.ID, name: i.Oggetto, description: i.descrizione })),
     timestamp: new Date().toISOString(),
     version: '1.3.0',
   };
   return snapshot;
-}
-
-function removeFirstMatch(arr, name, index /* optional 1-based */) {
-  const positions = [];
-  for (let i = 0; i < arr.length; i++) if (arr[i] === name) positions.push(i);
-  if (positions.length === 0) return -1;
-  const pos = index != null ? positions[(index - 1) | 0] : positions[0];
-  if (pos == null) return -1;
-  arr.splice(pos, 1);
-  return pos;
-}
-
-function addItem(arr, name) {
-  arr.push(name);
 }
 
 export function toCommandDTO(parseResult) {
@@ -154,11 +146,11 @@ export function executeCommand(parseResult) {
         const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
         switch (concept) {
           case 'INVENTARIO': {
-            const activeItems = global.odessaData.Oggetti.filter(item => item.Attivo === 1 && item.IDLingua === 1);
-            if (activeItems.length === 0) {
+            const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo === 1 && item.IDLuogo === 0 && item.IDLingua === 1);
+            if (inventoryItems.length === 0) {
               return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [] };
             }
-            const itemNames = activeItems.map(item => item.Oggetto).join(', ');
+            const itemNames = inventoryItems.map(item => item.Oggetto).join(', ');
             return {
               accepted: true,
               resultType: 'OK',
@@ -193,17 +185,21 @@ export function executeCommand(parseResult) {
         if (!noun) {
           return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
         }
-        const isPresentHere = gameState.roomItems.includes(noun) || gameState.inventory.includes(noun);
+        // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
+        const oggetto = (gameState.Oggetti || []).find(obj => 
+          obj.Oggetto.toUpperCase() === noun && 
+          (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
+          obj.Attivo === 1
+        );
         // ESAMINA / OSSERVA / GUARDA (concetti affini)
         if (concept === 'ESAMINARE' || concept === 'OSSERVARE' || verb === 'ESAMINA' || verb === 'OSSERVA' || verb === 'GUARDA') {
-          if (!isPresentHere) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
-          const descriptions = { LAMPADA: 'Una normale lampada.', BADILE: 'Un badile robusto.', BOTOLA: 'Una botola nel pavimento.' };
-          const text = descriptions[noun] || 'Non noti nulla di particolare.';
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
+          const text = oggetto.descrizione || 'Non noti nulla di particolare.';
           return { accepted: true, resultType: 'OK', message: text, effects: [] };
         }
         // APRI / CHIUDI (elementi apribili)
         if (verb === 'APRI' || verb === 'CHIUDI') {
-          if (!isPresentHere) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
           const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
           if (!canOpen) return { accepted: true, resultType: 'OK', message: `Non puoi ${verb.toLowerCase()} ${noun}.`, effects: [] };
           const openNow = !!gameState.openStates[noun];
@@ -218,18 +214,28 @@ export function executeCommand(parseResult) {
           }
         }
         if (verb === 'PRENDI') {
-          const pos = removeFirstMatch(gameState.roomItems, noun, idx);
-          if (pos >= 0) {
-            addItem(gameState.inventory, noun);
-            return { accepted: true, resultType: 'OK', message: `Hai preso la ${noun}.`, effects: [] };
+          // Trova l'oggetto nel luogo corrente
+          const oggetto = (gameState.Oggetti || []).find(obj => 
+            obj.Oggetto.toUpperCase() === noun && 
+            obj.IDLuogo === gameState.currentLocationId && 
+            obj.Attivo === 1
+          );
+          if (oggetto) {
+            oggetto.IDLuogo = 0; // Sposta nell'inventario
+            return { accepted: true, resultType: 'OK', message: `Hai preso ${oggetto.Oggetto}.`, effects: [] };
           }
           return { accepted: true, resultType: 'OK', message: `Non c'è ${noun} qui.`, effects: [] };
         }
         if (verb === 'POSA' || verb === 'LASCIA') {
-          const pos = removeFirstMatch(gameState.inventory, noun, idx);
-          if (pos >= 0) {
-            addItem(gameState.roomItems, noun);
-            return { accepted: true, resultType: 'OK', message: `Hai posato la ${noun}.`, effects: [] };
+          // Trova l'oggetto nell'inventario
+          const oggetto = (gameState.Oggetti || []).find(obj => 
+            obj.Oggetto.toUpperCase() === noun && 
+            obj.IDLuogo === 0 && 
+            obj.Attivo === 1
+          );
+          if (oggetto) {
+            oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente
+            return { accepted: true, resultType: 'OK', message: `Hai posato ${oggetto.Oggetto}.`, effects: [] };
           }
           return { accepted: true, resultType: 'OK', message: `Non hai ${noun} con te.`, effects: [] };
         }

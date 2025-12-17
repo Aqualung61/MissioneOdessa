@@ -1,0 +1,40 @@
+graph TD
+    subgraph Frontend [Interfaccia Web]
+        UI[odessa1.html]
+        JS_Client[odessa1.js]
+        UI --> JS_Client
+    end
+
+    subgraph Backend [Server Node.js]
+        Server[server.js]
+        
+        subgraph API_Layer [API & Routes]
+            Routes[routes.js]
+            EngRoutes[engineRoutes.js]
+            ParRoutes[parserRoutes.js]
+        end
+        
+        subgraph Core_Logic [Logica di Gioco]
+            Engine[engine.js]
+            Parser[parser.js]
+            Msg[messages.js]
+        end
+        
+        subgraph Data_Layer [Dati]
+            JSON_Files[(File JSON)]
+            SQLite[(Odessa.db)]
+        end
+    end
+
+    %% Relazioni ipotizzate
+    JS_Client -- "Chiamate HTTP/Fetch" --> Server
+    Server --> Routes
+    Routes --> EngRoutes & ParRoutes
+    
+    EngRoutes -- "Gestisce stato" --> Engine
+    ParRoutes -- "Interpreta comandi" --> Parser
+    
+    Parser -- "Invia comandi" --> Engine
+    Engine -- "Genera output" --> Msg
+    
+    Engine -- "Legge/Scrive" --> Data_Layer

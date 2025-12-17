@@ -1,0 +1,85 @@
+classDiagram
+    %% --- LIVELLO API (CONTROLLER) ---
+    class EngineRoutes {
+        <<Express Router>>
+        +POST /execute
+        +GET /state
+        +POST /reset
+        +POST /save-client-state
+        -- Logica --
+        1. Riceve input utente
+        2. Chiama Parser.parseCommand()
+        3. Gestisce errori di parse
+        4. Chiama Engine.executeCommand()
+    }
+
+    %% --- LIVELLO LOGICA (SERVICES) ---
+    class Parser {
+        <<Module: parser.js>>
+        +CommandType
+        +ParseErrorType
+        -vocabCache : Map
+        -- Metodi --
+        +parseCommand(input) : ParseResult
+        +ensureVocabulary()
+        -normalizeInput(input)
+    }
+
+    class Engine {
+        <<Module: engine.js>>
+        -gameState : Object
+        -- Metodi --
+        +resetGameState()
+        +getGameStateSnapshot()
+        +toCommandDTO(parseResult)
+        +executeCommand(parseResult)
+        +confirmRestart(input)
+        -handleAction(verb, noun)
+    }
+
+    %% --- LIVELLO DATI ---
+    class GlobalOdessaData {
+        <<Global Memory>>
+        Contiene dati statici caricati dal DB
+        .VociLessico
+        .TerminiLessico
+        .Oggetti
+        .Luoghi
+    }
+
+    class GameState {
+        <<In-Memory Object>>
+        +currentLocationId : Int
+        +inventory : Array
+        +roomItems : Array
+        +openStates : Map
+        +awaitingRestart : Boolean
+    }
+
+    class ParseResult {
+        <<Object>>
+        +IsValid : Boolean
+        +CommandType : String
+        +CanonicalVerb : String
+        +CanonicalNoun : String
+        +Error : ParseErrorType
+    }
+
+    %% --- RELAZIONI ---
+    
+    %% EngineRoutes orchestra tutto
+    EngineRoutes ..> Parser : Usa per analizzare il testo
+    EngineRoutes ..> Engine : Usa per eseguire azioni e leggere stato
+
+    %% Parser legge i dati globali per il vocabolario
+    Parser ..> GlobalOdessaData : Legge (VociLessico, ecc.)
+    Parser --> ParseResult : Produce
+
+    %% Engine consuma il risultato del Parser
+    Engine ..> ParseResult : Legge input parsato
+    Engine ..> GlobalOdessaData : Legge (Luoghi, Oggetti per validazione)
+    Engine --* GameState : Gestisce e Modifica
+
+    %% Note esplicative
+    note for Engine "Gestisce la logica di gioco:\nVerifica se oggetti sono presenti,\nse porte sono aperte, ecc."
+    note for Parser "Trasforma 'prendi la lampada'\nin {Verb: PRENDI, Noun: LAMPADA}"

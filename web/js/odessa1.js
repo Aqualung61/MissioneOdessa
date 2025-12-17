@@ -649,14 +649,12 @@ inputForm.addEventListener('submit', async function(e) {
       console.log('Entrato in gestione SYSTEM locale');
       const canonical = level0Result.CanonicalVerb;
       console.log('SYSTEM command, canonical:', canonical);
-      if (canonical === 'INVENTARIO' || canonical === 'AIUTO') {
+      if (canonical === 'AIUTO') {
         console.log('Gestione locale per', canonical);
         const feed = document.getElementById('placeFeed');
         if (feed) {
           let msg = '';
-          if (canonical === 'INVENTARIO') {
-            msg = 'Inventario: (per ora vuoto - implementazione futura)';
-          } else if (canonical === 'AIUTO') {
+          if (canonical === 'AIUTO') {
             msg = '<b>Comandi disponibili:</b> <br><b>Direzioni:</b> <i>Nord, Est, Sud, Ovest, Su, Giu (e sinonimi)</i><br><b>Gioco:</b> <i>Aiuto, Inventario, Fine, Salva, Carica</i><br><b>Azioni:</b> <i>Prendi, Leggi, Esamina, Infila, Lascia, altro.</i>';
           }
           const sysMsg = document.createElement('div');

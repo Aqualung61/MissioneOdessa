@@ -75,10 +75,14 @@ router.post('/save-client-state', (req, res) => {
     }
     // Ottieni gameState dal server
     const gameState = getGameStateSnapshot();
-    // Crea saveData con luoghi aggiornati
+    // Crea saveData con luoghi e oggetti aggiornati
     const saveData = {
       gameState,
-      odessaData: { ...global.odessaData, Luoghi: luoghi },
+      odessaData: { 
+        ...global.odessaData, 
+        Luoghi: luoghi,
+        Oggetti: gameState.Oggetti
+      },
       timestamp: new Date().toISOString(),
       version: '1.3.0'
     };
@@ -102,8 +106,11 @@ router.post('/load-client-state', (req, res) => {
     }
     // Ripristina gameState
     setGameState(gameState);
-    // Aggiorna odessaData.Luoghi
+    // Aggiorna odessaData.Luoghi e Oggetti
     global.odessaData.Luoghi = odessaData.Luoghi;
+    if (Array.isArray(odessaData.Oggetti)) {
+      global.odessaData.Oggetti = odessaData.Oggetti;
+    }
     res.json({ ok: true, message: 'Stato ripristinato' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

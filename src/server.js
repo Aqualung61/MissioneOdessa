@@ -14,6 +14,7 @@ import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
 import { initOdessa } from './initOdessa.js';
+import { resetGameState, getOggetti } from './logic/engine.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -49,6 +50,8 @@ console.log(`Base path: ${BASE_PATH || 'root'}`);
 try {
   await initOdessa();
   console.log('Dati caricati in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+  // Inizializza gameState con log per Step 1
+  resetGameState();
 } catch (err) {
   console.error('Errore nel caricamento dati in memoria:', err.message);
   process.exit(1); // Esci se non riesci a caricare
@@ -93,11 +96,6 @@ app.use(BASE_PATH + '/api/lingue', linguaRoutes);
 app.use(BASE_PATH + '/api/parser', parserRoutes);
 app.use(BASE_PATH + '/api/engine', engineRoutes);
 
-// Endpoint per vista luoghi-oggetti
-app.get(BASE_PATH + '/api/vista-luoghi-oggetti', (req, res) => {
-  res.json(global.odessaData.Luoghi_oggetto || []);
-});
-
 // Endpoint per oggetti in un luogo specifico
 app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   const { idLuogo, idLingua } = req.query;
@@ -106,10 +104,10 @@ app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   }
   const idLuogoNum = parseInt(idLuogo, 10);
   const idLinguaNum = parseInt(idLingua, 10);
-  const data = global.odessaData.Luoghi_oggetto || [];
-  const fields = Object.keys(data[0] || {});
+  const data = getOggetti();
   const filtered = data
-    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum);
+    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum && item.Attivo === 1);
+  const fields = Object.keys(data[0] || {});
   res.json({ fields, filtered, all: data.slice(0, 5) });
 });
 
