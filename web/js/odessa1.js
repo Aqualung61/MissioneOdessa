@@ -652,25 +652,9 @@ inputForm.addEventListener('submit', async function(e) {
       console.log('Entrato in gestione SYSTEM locale');
       const canonical = level0Result.CanonicalVerb;
       console.log('SYSTEM command, canonical:', canonical);
-      if (canonical === 'AIUTO') {
-        console.log('Gestione locale per', canonical);
-        const feed = document.getElementById('placeFeed');
-        if (feed) {
-          let msg = '';
-          if (canonical === 'AIUTO') {
-            msg = '<b>Comandi disponibili:</b> <br><b>Direzioni:</b> <i>Nord, Est, Sud, Ovest, Su, Giu (e sinonimi)</i><br><b>Gioco:</b> <i>Aiuto, Inventario, Fine, Salva, Carica</i><br><b>Azioni:</b> <i>Prendi, Leggi, Esamina, Infila, Lascia, altro.</i>';
-          }
-          const sysMsg = document.createElement('div');
-          sysMsg.className = 'feed-msg system';
-          sysMsg.innerHTML = msg;
-          feed.appendChild(sysMsg);
-          feed.scrollTop = feed.scrollHeight;
-        }
-        console.log('Return dopo gestione locale');
-        return; // Salta chiamata API per questi SYSTEM locali
-      }
+      // Rimosso gestione locale AIUTO - ora gestito dal server
       console.log('Non gestito localmente, procedi con API');
-      // Per altri SYSTEM (es. SALVA, CARICA), procedi con chiamata API
+      // Per comandi SYSTEM (INVENTARIO, SALVA, CARICA, AIUTO), procedi con chiamata API
     }
   } catch (e) {
     console.error('Errore parsing livello 0:', e);

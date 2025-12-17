@@ -562,5 +562,11 @@
     "Voce": "Documento",
     "ID_Termine": 50,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 96,
+    "Voce": "HELP",
+    "ID_Termine": 58,
+    "ID_Lingua": 1
   }
 ]

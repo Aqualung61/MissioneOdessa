@@ -73,6 +73,78 @@ export function resetGameState() {
   }
 }
 
+// Funzione helper per capitalizzare comandi
+function capitalizeCommand(str) {
+  // Mapping speciale per alcuni comandi
+  const mappings = {
+    'PRENDERE': 'Prendi',
+    'SALVARE': 'Salva',
+    'CARICARE': 'Carica',
+    'INVENTARIO': 'Inventario',
+    'ESAMINARE': 'Esamina',
+    'OSSERVARE': 'Osserva',
+    'GUARDARE': 'Guarda',
+    'APRIRE': 'Apri',
+    'CHIUDERE': 'Chiudi',
+    'LEGGERE': 'Leggi',
+    'INFILARE': 'Infila',
+    'POSARE': 'Posa',
+    'LASCIARE': 'Lascia',
+    'SPOSTARE': 'Sposta',
+    'AIUTO': 'Aiuto',
+    'FINE': 'Fine',
+    'PUNTI': 'Punti',
+    'NORD': 'Nord',
+    'SUD': 'Sud',
+    'EST': 'Est',
+    'OVEST': 'Ovest',
+    'SU': 'Su',
+    'GIU': 'Giù'
+  };
+  if (mappings[str]) return mappings[str];
+  
+  // Capitalizzazione standard
+  return str.charAt(0) + str.slice(1).toLowerCase();
+}
+
+// Funzione isolata per generare messaggio di aiuto
+export function generateHelpMessage(idLingua = 1) {
+  const termini = global.odessaData.TerminiLessico || [];
+  
+  // Filtra e ordina comandi di direzione
+  const direzioni = termini
+    .filter(t => t.ID_TipoLessico === 2)
+    .map(t => capitalizeCommand(t.Concetto))
+    .sort();
+  
+  // Filtra e ordina comandi di sistema
+  const sistema = termini
+    .filter(t => t.ID_TipoLessico === 3)
+    .map(t => capitalizeCommand(t.Concetto))
+    .sort();
+  
+  // Filtra e ordina verbi azione
+  const verbi = termini
+    .filter(t => t.ID_TipoLessico === 1)
+    .map(t => capitalizeCommand(t.Concetto))
+    .sort();
+  
+  // Filtra oggetti per lingua e ordina
+  const oggetti = (global.odessaData.Oggetti || [])
+    .filter(o => o.IDLingua === idLingua)
+    .map(o => o.Oggetto)
+    .sort();
+  
+  // Costruisci messaggio
+  let msg = 'COMANDI DISPONIBILI:\n\n';
+  msg += 'Direzioni: ' + direzioni.join(', ') + '\n';
+  msg += 'Sistema: ' + sistema.join(', ') + '\n';
+  msg += 'Azioni: ' + verbi.join(', ') + '\n\n';
+  msg += 'OGGETTI NEL GIOCO:\n' + oggetti.join(', ');
+  
+  return msg;
+}
+
 // Funzione per ottenere gli oggetti correnti
 export function getOggetti() {
   return gameState.Oggetti || [];
@@ -169,6 +241,10 @@ export function executeCommand(parseResult) {
               message: 'Hai con te: ' + itemNames + '.',
               effects: [],
             };
+          }
+          case 'AIUTO': {
+            const message = generateHelpMessage(1); // Default lingua 1
+            return { accepted: true, resultType: 'OK', message, effects: [] };
           }
           case 'SALVARE': {
             return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', effects: [] };
