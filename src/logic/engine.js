@@ -181,7 +181,6 @@ export function executeCommand(parseResult) {
         const verb = (parseResult.CanonicalVerb || '').toUpperCase();
         const concept = (parseResult.VerbConcept || '').toUpperCase();
         const noun = (parseResult.CanonicalNoun || '').toUpperCase();
-        const idx = parseResult.NounIndex != null ? Number(parseResult.NounIndex) : null;
         if (!noun) {
           return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
         }
