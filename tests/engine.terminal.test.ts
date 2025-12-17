@@ -6,7 +6,6 @@ import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
 import Luoghi from '../src/data-internal/Luoghi.json';
 import Luoghi_immagine from '../src/data-internal/Luoghi_immagine.json';
-import Luoghi_oggetto from '../src/data-internal/Luoghi_oggetto.json';
 import Oggetti from '../src/data-internal/Oggetti.json';
 import Piattaforme from '../src/data-internal/Piattaforme.json';
 import Software from '../src/data-internal/Software.json';
@@ -24,7 +23,6 @@ describe('Engine - luoghi terminali', () => {
       Lingue,
       Luoghi,
       Luoghi_immagine,
-      Luoghi_oggetto,
       Oggetti,
       Piattaforme,
       Software,

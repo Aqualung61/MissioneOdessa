@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
-const tableNames = ['Azioni', 'Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'Luoghi_immagine', 'Luoghi_oggetto', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
+const tableNames = ['Azioni', 'Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'Luoghi_immagine', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
 const odessaData = {};
 
