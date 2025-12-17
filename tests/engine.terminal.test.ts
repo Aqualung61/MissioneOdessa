@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { resetGameState, getGameStateSnapshot, enterLocation, confirmRestart } from '../src/logic/engine.js';
+import { resetGameState, getGameStateSnapshot, enterLocation, confirmRestart, initializeOriginalData } from '../src/logic/engine.js';
 import Azioni from '../src/data-internal/Azioni.json';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
@@ -30,6 +30,7 @@ describe('Engine - luoghi terminali', () => {
       TipiLessico,
       VociLessico,
     };
+    initializeOriginalData();
   });
 
   beforeEach(() => {

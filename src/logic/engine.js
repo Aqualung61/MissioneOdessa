@@ -40,6 +40,18 @@ let gameState = {
   visitedPlaces: new Set([1]),
   Oggetti: []
 };
+
+// Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
+let originalOggetti = [];
+
+// Funzione per inizializzare i dati originali (chiamata una volta all'avvio)
+export function initializeOriginalData() {
+  if (global.odessaData && global.odessaData.Oggetti) {
+    originalOggetti = JSON.parse(JSON.stringify(global.odessaData.Oggetti));
+    console.log('Dati originali salvati: ' + originalOggetti.length + ' oggetti');
+  }
+}
+
 // Funzione per resettare lo stato di gioco
 export function resetGameState() {
   console.log('Inizializzazione gameState');
@@ -51,9 +63,9 @@ export function resetGameState() {
     visitedPlaces: new Set([1]),
     Oggetti: []
   };
-  // Aggiungi Oggetti a gameState
-  if (global.odessaData && global.odessaData.Oggetti) {
-    gameState.Oggetti = JSON.parse(JSON.stringify(global.odessaData.Oggetti)); // Deep copy
+  // Aggiungi Oggetti a gameState dai dati originali
+  if (originalOggetti.length > 0) {
+    gameState.Oggetti = JSON.parse(JSON.stringify(originalOggetti)); // Deep copy dai dati originali
     console.log('Caricamento Oggetti in gameState: Sì, numero di record: ' + gameState.Oggetti.length);
   } else {
     console.log('Caricamento Oggetti in gameState: No');

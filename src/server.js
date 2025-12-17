@@ -14,7 +14,7 @@ import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
 import { initOdessa } from './initOdessa.js';
-import { resetGameState, getOggetti } from './logic/engine.js';
+import { resetGameState, getOggetti, initializeOriginalData } from './logic/engine.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -50,6 +50,8 @@ console.log(`Base path: ${BASE_PATH || 'root'}`);
 try {
   await initOdessa();
   console.log('Dati caricati in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+  // Salva copia immutabile dei dati originali
+  initializeOriginalData();
   // Inizializza gameState con log per Step 1
   resetGameState();
 } catch (err) {

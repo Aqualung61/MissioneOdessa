@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 // Rimosso @ts-expect-error inutilizzato
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
-import { executeCommand, resetGameState, getGameStateSnapshot } from '../src/logic/engine.js';
+import { executeCommand, resetGameState, getGameStateSnapshot, initializeOriginalData } from '../src/logic/engine.js';
 import Azioni from '../src/data-internal/Azioni.json';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
@@ -32,6 +32,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
       TipiLessico,
       VociLessico,
     };
+    initializeOriginalData();
     await ensureVocabulary();
   });
 
