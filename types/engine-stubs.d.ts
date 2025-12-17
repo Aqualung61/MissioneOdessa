@@ -26,7 +26,7 @@ declare module "../src/logic/engine.js" {
   export function toCommandDTO(parseResult: any): CommandDTO | null;
   export function executeCommand(parseResult: any): EngineResult;
   export function resetGameState(): void;
-  export function getGameStateSnapshot(): { roomItems: string[]; inventory: string[] };
+  export function getGameStateSnapshot(): { Oggetti: any[]; currentLocation: number };
 }
 declare module "../src/logic/messages.js" {
   export function mapParseErrorToUserMessage(parseResult: any): string;

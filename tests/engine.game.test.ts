@@ -32,26 +32,11 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
       TipiLessico,
       VociLessico,
     };
-    // Aggiungi oggetto fittizio per test
-    global.odessaData.Oggetti = [...Oggetti];
-    global.odessaData.Oggetti.push({
-      ID: 1000,
-      IDLingua: 1,
-      Oggetto: 'LAMPADA',
-      Attivo: 0,
-      descrizione: 'Una lampada'
-    });
     await ensureVocabulary();
   });
 
   beforeEach(() => {
     resetGameState();
-    // Reset Attivo per oggetti di test
-    global.odessaData.Oggetti.forEach(item => {
-      if (item.Oggetto === 'LAMPADA' || ['Documenti', 'Fiammiferi', 'Torcia elettrica'].includes(item.Oggetto)) {
-        item.Attivo = 0;
-      }
-    });
   });
 
   it('PRENDI oggetto -> inventario lo contiene', async () => {
@@ -66,7 +51,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toMatch(/Hai preso/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia ora in inventario (IDLuogo = 0)
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone');
     expect(bastone).toBeDefined();
     expect(bastone.IDLuogo).toBe(0);
   });
@@ -83,15 +68,15 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res2.message).toMatch(/Hai posato/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia tornato nel luogo corrente
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone');
     expect(bastone).toBeDefined();
     expect(bastone.IDLuogo).toBe(11);
   });
 
   it('INVENTARIO mostra contenuto o assenza', async () => {
     // All'inizio ci sono oggetti in inventario (Documenti, Fiammiferi, Torcia)
-    let parsed = await parseCommand(null, 'INVENTARIO');
-    let res = executeCommand(parsed);
+    const parsed = await parseCommand(null, 'INVENTARIO');
+    const res = executeCommand(parsed);
     expect(res.message).toMatch(/Hai con te:|Documenti|Fiammiferi|Torcia/i);
   });
 
