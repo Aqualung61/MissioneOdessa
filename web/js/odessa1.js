@@ -544,6 +544,9 @@ inputForm.addEventListener('submit', async function(e) {
       current = luoghi.find(l => l.ID === 1) || luoghi[0];
       awaitingRestart = false;
       visitedPlaces = new Set(); // Reset luoghi visitati
+      // Reset del gameState sul server
+      fetch(basePath + 'api/engine/reset', { method: 'POST' })
+        .catch(err => console.error('Errore reset engine:', err));
       // Chiamata azioni_setup per aggiornare direzioni al restart
       fetch(basePath + 'api/azioni?idLingua=1&log=0')
         .then(res => res.json())
@@ -1006,6 +1009,10 @@ fetch(basePath + 'api/luoghi')
 
     // Carica dati per parsing livello 0 prima di procedere
     await loadOdessaData();
+
+    // Reset del gameState sul server all'avvio
+    fetch(basePath + 'api/engine/reset', { method: 'POST' })
+      .catch(err => console.error('Errore reset engine iniziale:', err));
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
     // Chiamata azioni_setup per aggiornare direzioni
