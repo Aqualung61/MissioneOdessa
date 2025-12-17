@@ -885,7 +885,7 @@ inputForm.addEventListener('submit', async function(e) {
             if (feed) {
               const msg = document.createElement('div');
               msg.className = 'feed-msg system';
-              msg.textContent = engine.message;
+              msg.innerHTML = engine.message;
               feed.appendChild(msg);
               feed.scrollTop = feed.scrollHeight;
             }
@@ -929,7 +929,7 @@ inputForm.addEventListener('submit', async function(e) {
             if (feed) {
               const msg = document.createElement('div');
               msg.className = 'feed-msg system';
-              msg.textContent = engine.message;
+              msg.innerHTML = engine.message;
               feed.appendChild(msg);
               feed.scrollTop = feed.scrollHeight;
             }
