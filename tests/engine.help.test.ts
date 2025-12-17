@@ -37,11 +37,12 @@ describe('Engine: Comando HELP/AIUTO', () => {
   it('generateHelpMessage genera messaggio con tutte le sezioni', () => {
     const message = generateHelpMessage(1);
     
-    expect(message).toContain('COMANDI DISPONIBILI:');
-    expect(message).toContain('Direzioni:');
-    expect(message).toContain('Sistema:');
-    expect(message).toContain('Azioni:');
-    expect(message).toContain('OGGETTI NEL GIOCO:');
+    expect(message).toContain('<b>COMANDI DISPONIBILI:</b>');
+    expect(message).toContain('<i>Direzioni:');
+    expect(message).toContain('<i>Sistema:');
+    expect(message).toContain('<i>Azioni:');
+    expect(message).toContain('<b>OGGETTI NEL GIOCO:</b>');
+    expect(message).toContain('</i>');
   });
 
   it('generateHelpMessage include comandi di direzione', () => {
@@ -72,8 +73,8 @@ describe('Engine: Comando HELP/AIUTO', () => {
   it('generateHelpMessage include oggetti del gioco', () => {
     const message = generateHelpMessage(1);
     
-    // Verifica che ci siano oggetti elencati
-    expect(message).toMatch(/OGGETTI NEL GIOCO:\n.+/);
+    // Verifica che ci siano oggetti elencati con formattazione
+    expect(message).toMatch(/<b>OGGETTI NEL GIOCO:<\/b>\n<i>.+<\/i>/);
   });
 
   it('AIUTO viene riconosciuto e eseguito correttamente', async () => {
@@ -84,7 +85,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('OK');
-    expect(res.message).toContain('COMANDI DISPONIBILI:');
+    expect(res.message).toContain('<b>COMANDI DISPONIBILI:</b>');
   });
 
   it('HELP viene riconosciuto come sinonimo di AIUTO', async () => {
@@ -96,6 +97,6 @@ describe('Engine: Comando HELP/AIUTO', () => {
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('OK');
-    expect(res.message).toContain('COMANDI DISPONIBILI:');
+    expect(res.message).toContain('<b>COMANDI DISPONIBILI:</b>');
   });
 });

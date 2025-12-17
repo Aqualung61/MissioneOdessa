@@ -135,12 +135,12 @@ export function generateHelpMessage(idLingua = 1) {
     .map(o => o.Oggetto)
     .sort();
   
-  // Costruisci messaggio
-  let msg = 'COMANDI DISPONIBILI:\n\n';
-  msg += 'Direzioni: ' + direzioni.join(', ') + '\n';
-  msg += 'Sistema: ' + sistema.join(', ') + '\n';
-  msg += 'Azioni: ' + verbi.join(', ') + '\n\n';
-  msg += 'OGGETTI NEL GIOCO:\n' + oggetti.join(', ');
+  // Costruisci messaggio con formattazione HTML
+  let msg = '<b>COMANDI DISPONIBILI:</b>\n';
+  msg += '<i>Direzioni: ' + direzioni.join(', ') + '</i>\n';
+  msg += '<i>Sistema: ' + sistema.join(', ') + '</i>\n';
+  msg += '<i>Azioni: ' + verbi.join(', ') + '</i>\n\n';
+  msg += '<b>OGGETTI NEL GIOCO:</b>\n<i>' + oggetti.join(', ') + '</i>';
   
   return msg;
 }
