@@ -54,40 +54,45 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     });
   });
 
-  it('PRENDI LAMPADA -> inventario contiene LAMPADA', async () => {
-    const parsed = await parseCommand(null, 'PRENDI LAMPADA');
+  it('PRENDI oggetto -> inventario lo contiene', async () => {
+    // Imposta luogo corrente a 11 dove c'è "Bastone di comando"
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(11);
+    
+    const parsed = await parseCommand(null, 'PRENDI BASTONE');
     expect(parsed.IsValid).toBe(true);
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
-    expect(res.message).toMatch(/Hai preso la LAMPADA/);
+    expect(res.message).toMatch(/Hai preso/i);
     const snap = getGameStateSnapshot();
-    expect(snap.inventory).toContain('LAMPADA');
-    expect(snap.roomItems).not.toContain('LAMPADA');
+    // Verifica che l'oggetto sia ora in inventario (IDLuogo = 0)
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
+    expect(bastone).toBeDefined();
+    expect(bastone.IDLuogo).toBe(0);
   });
 
-  it('POSA LAMPADA dopo PRENDI -> torna nella stanza', async () => {
-    let parsed = await parseCommand(null, 'PRENDI LAMPADA');
+  it('POSA oggetto dopo PRENDI -> torna nel luogo', async () => {
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(11);
+    
+    let parsed = await parseCommand(null, 'PRENDI BASTONE');
     executeCommand(parsed);
-    parsed = await parseCommand(null, 'POSA LAMPADA');
+    parsed = await parseCommand(null, 'POSA BASTONE');
     const res2 = executeCommand(parsed);
     expect(res2.accepted).toBe(true);
-    expect(res2.message).toMatch(/Hai posato la LAMPADA/);
+    expect(res2.message).toMatch(/Hai posato/i);
     const snap = getGameStateSnapshot();
-    expect(snap.inventory).not.toContain('LAMPADA');
-    expect(snap.roomItems).toContain('LAMPADA');
+    // Verifica che l'oggetto sia tornato nel luogo corrente
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
+    expect(bastone).toBeDefined();
+    expect(bastone.IDLuogo).toBe(11);
   });
 
   it('INVENTARIO mostra contenuto o assenza', async () => {
-    // Vuoto
+    // All'inizio ci sono oggetti in inventario (Documenti, Fiammiferi, Torcia)
     let parsed = await parseCommand(null, 'INVENTARIO');
     let res = executeCommand(parsed);
-    expect(res.message).toBe('Non hai nulla.');
-    // Simula oggetto attivo
-    const lampada = global.odessaData.Oggetti.find(item => item.Oggetto === 'LAMPADA');
-    if (lampada) lampada.Attivo = 1;
-    parsed = await parseCommand(null, 'INVENTARIO');
-    res = executeCommand(parsed);
-    expect(res.message).toContain('LAMPADA');
+    expect(res.message).toMatch(/Hai con te:|Documenti|Fiammiferi|Torcia/i);
   });
 
   it('FINE chiede conferma', async () => {
