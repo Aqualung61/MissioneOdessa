@@ -129,9 +129,9 @@ export function generateHelpMessage(idLingua = 1) {
     .map(t => capitalizeCommand(t.Concetto))
     .sort();
   
-  // Filtra oggetti per lingua e ordina
+  // Filtra oggetti per lingua e ordina (solo visibili)
   const oggetti = (global.odessaData.Oggetti || [])
-    .filter(o => o.IDLingua === idLingua)
+    .filter(o => o.IDLingua === idLingua && o.Attivo >= 1)
     .map(o => o.Oggetto)
     .sort();
   
@@ -230,7 +230,7 @@ export function executeCommand(parseResult) {
         const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
         switch (concept) {
           case 'INVENTARIO': {
-            const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo === 1 && item.IDLuogo === 0 && item.IDLingua === 1);
+            const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === 1);
             if (inventoryItems.length === 0) {
               return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [], showLocation: true };
             }
@@ -277,7 +277,7 @@ export function executeCommand(parseResult) {
         const oggetto = (gameState.Oggetti || []).find(obj => 
           obj.Oggetto.toUpperCase() === noun && 
           (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
-          obj.Attivo === 1
+          obj.Attivo >= 1
         );
         // ESAMINA / OSSERVA / GUARDA (concetti affini)
         if (concept === 'ESAMINARE' || concept === 'OSSERVARE' || verb === 'ESAMINA' || verb === 'OSSERVA' || verb === 'GUARDA') {
@@ -306,9 +306,14 @@ export function executeCommand(parseResult) {
           const oggetto = (gameState.Oggetti || []).find(obj => 
             obj.Oggetto.toUpperCase() === noun && 
             obj.IDLuogo === gameState.currentLocationId && 
-            obj.Attivo === 1
+            obj.Attivo >= 1
           );
           if (oggetto) {
+            if (oggetto.Attivo < 3) {
+              // Oggetto scenico (1) o spostabile (2), non raccoglibile
+              return { accepted: true, resultType: 'OK', message: 'Questo oggetto non può essere preso.', effects: [] };
+            }
+            // Attivo >= 3: oggetto raccoglibile
             oggetto.IDLuogo = 0; // Sposta nell'inventario
             return { accepted: true, resultType: 'OK', message: `Hai preso ${oggetto.Oggetto}.`, effects: [] };
           }
@@ -319,7 +324,7 @@ export function executeCommand(parseResult) {
           const oggetto = (gameState.Oggetti || []).find(obj => 
             obj.Oggetto.toUpperCase() === noun && 
             obj.IDLuogo === 0 && 
-            obj.Attivo === 1
+            obj.Attivo >= 3
           );
           if (oggetto) {
             oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente

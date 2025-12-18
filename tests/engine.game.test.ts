@@ -109,4 +109,28 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toBe('Caricamento in corso...');
     expect(res.effects).toEqual([]);
   });
+
+  it('PRENDI oggetto scenico (Attivo=1) -> messaggio di rifiuto', async () => {
+    // Imposta luogo corrente a 14 dove ci sono "Sedie" (Attivo=1, scenico)
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(14);
+    
+    const parsed = await parseCommand(null, 'PRENDI SEDIE');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.message).toBe('Questo oggetto non può essere preso.');
+  });
+
+  it('PRENDI oggetto spostabile (Attivo=2) -> messaggio di rifiuto', async () => {
+    // Imposta luogo corrente a 24 dove c'è "Quadro" (Attivo=2, spostabile)
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(24);
+    
+    const parsed = await parseCommand(null, 'PRENDI QUADRO');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.message).toBe('Questo oggetto non può essere preso.');
+  });
 });

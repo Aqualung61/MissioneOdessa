@@ -3,7 +3,7 @@
     "ID": 1,
     "IDLingua": 1,
     "Oggetto": "Bastone",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 11,
     "descrizione": "Bastone di comando"
   },
@@ -27,7 +27,7 @@
     "ID": 4,
     "IDLingua": 1,
     "Oggetto": "Badile arruginito",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 18,
     "descrizione": "Badile arruginito"
   },
@@ -35,7 +35,7 @@
     "ID": 5,
     "IDLingua": 1,
     "Oggetto": "Arazzo in pessime condizioni",
-    "Attivo": 1,
+    "Attivo": 2,
     "IDLuogo": 20,
     "descrizione": "Arazzo in pessime condizioni"
   },
@@ -43,7 +43,7 @@
     "ID": 6,
     "IDLingua": 1,
     "Oggetto": "Lista di servizio",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 21,
     "descrizione": "Lista di servizio"
   },
@@ -59,7 +59,7 @@
     "ID": 8,
     "IDLingua": 1,
     "Oggetto": "Statuetta",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 22,
     "descrizione": "Statuetta"
   },
@@ -75,7 +75,7 @@
     "ID": 10,
     "IDLingua": 1,
     "Oggetto": "Fermacarte",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 25,
     "descrizione": "Fermacarte"
   },
@@ -123,7 +123,7 @@
     "ID": 16,
     "IDLingua": 1,
     "Oggetto": "Fascicolo",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 43,
     "descrizione": "Fascicolo"
   },
@@ -163,7 +163,7 @@
     "ID": 21,
     "IDLingua": 1,
     "Oggetto": "Peso",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 50,
     "descrizione": "Peso"
   },
@@ -187,7 +187,7 @@
     "ID": 24,
     "IDLingua": 1,
     "Oggetto": "Foglio",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": null,
     "descrizione": "Foglio"
   },
@@ -203,7 +203,7 @@
     "ID": 26,
     "IDLingua": 1,
     "Oggetto": "Manopola",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": null,
     "descrizione": "Manopola"
   },
@@ -211,7 +211,7 @@
     "ID": 27,
     "IDLingua": 1,
     "Oggetto": "Lampada",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 6,
     "descrizione": "Lampada"
   },
@@ -219,7 +219,7 @@
     "ID": 28,
     "IDLingua": 1,
     "Oggetto": "Lista di servizio",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": null,
     "descrizione": "Lista di servizio"
   },
@@ -227,7 +227,7 @@
     "ID": 29,
     "IDLingua": 1,
     "Oggetto": "Forma circolare",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 36,
     "descrizione": "Forma circolare"
   },
@@ -235,7 +235,7 @@
     "ID": 30,
     "IDLingua": 1,
     "Oggetto": "Medaglione",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 24,
     "descrizione": "Medaglione"
   },
@@ -251,7 +251,7 @@
     "ID": 32,
     "IDLingua": 1,
     "Oggetto": "Paratia",
-    "Attivo": 1,
+    "Attivo": 2,
     "IDLuogo": 42,
     "descrizione": "Paratia"
   },
@@ -259,7 +259,7 @@
     "ID": 33,
     "IDLingua": 1,
     "Oggetto": "Quadro",
-    "Attivo": 1,
+    "Attivo": 2,
     "IDLuogo": 24,
     "descrizione": "Quadro"
   },
@@ -267,7 +267,7 @@
     "ID": 34,
     "IDLingua": 1,
     "Oggetto": "Dossier",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 57,
     "descrizione": "Dossier"
   },
@@ -275,7 +275,7 @@
     "ID": 35,
     "IDLingua": 1,
     "Oggetto": "Documenti",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 0,
     "descrizione": "Documenti"
   },
@@ -283,7 +283,7 @@
     "ID": 36,
     "IDLingua": 1,
     "Oggetto": "Fiammiferi",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 0,
     "descrizione": "Fiammiferi"
   },
@@ -291,7 +291,7 @@
     "ID": 37,
     "IDLingua": 1,
     "Oggetto": "Torcia elettrica",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 0,
     "descrizione": "Torcia elettrica"
   }

@@ -108,7 +108,7 @@ app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
   const idLinguaNum = parseInt(idLingua, 10);
   const data = getOggetti();
   const filtered = data
-    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum && item.Attivo === 1);
+    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum && item.Attivo >= 1);
   const fields = Object.keys(data[0] || {});
   res.json({ fields, filtered, all: data.slice(0, 5) });
 });

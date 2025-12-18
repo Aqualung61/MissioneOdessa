@@ -207,6 +207,23 @@ CREATE TABLE "Oggetti" (
 | Oggetto | TEXT | Sì |  | No |
 | Attivo | NUMERIC | Sì | 0 | No |
 
+### Campo Attivo - Stati oggetti:
+
+| Valore | Significato | Visibile | Raccoglibile | Spostabile | Può cambiare |
+|--------|-------------|----------|--------------|------------|--------------|
+| 0 | Inattivo/Nascosto | No | No | No | Sì |
+| 1 | Scenico fisso | Sì | No | No | No |
+| 2 | Scenico spostabile | Sì | No | Sì | No |
+| 3 | Normale raccoglibile | Sì | Sì | No | Sì (→4) |
+| 4 | Usato/Rotto (finale) | Sì | Sì | No | No |
+
+**Note**:
+- **Stato 0**: Oggetti nascosti, rivelati da eventi di gioco
+- **Stato 1**: Mobili, arredi fissi (tavoli, sedie, porte)
+- **Stato 2**: Oggetti scenici ma mobili (arazzo, quadri, paratia)
+- **Stato 3**: Oggetti raccoglibili normali (documenti, chiavi, strumenti)
+- **Stato 4**: Stato finale dopo utilizzo (fiammiferi bruciati, oggetti rotti)
+
 ## Tabella: Introduzione
 
 ### Struttura:
