@@ -52,7 +52,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toMatch(/Hai preso/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia ora in inventario (IDLuogo = 0)
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone');
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
     expect(bastone).toBeDefined();
     expect(bastone.IDLuogo).toBe(0);
   });
@@ -69,7 +69,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res2.message).toMatch(/Hai posato/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia tornato nel luogo corrente
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone');
+    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
     expect(bastone).toBeDefined();
     expect(bastone.IDLuogo).toBe(11);
   });
@@ -129,6 +129,22 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     
     const parsed = await parseCommand(null, 'PRENDI QUADRO');
     expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.message).toBe('Questo oggetto non può essere preso.');
+  });
+
+  it('PRENDI oggetto con nome composto normalizzato (es. Scaffali) -> riconosce forma abbreviata', async () => {
+    // Imposta luogo corrente a 24 dove ci sono "Scaffali vuoti" (Attivo=1, scenico)
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(24);
+    
+    // Test con "SCAFFALI" (forma breve che il parser riconosce)
+    // Il parser converte "SCAFFALI" in concetto "SCAFFALI_Vuoti"
+    // L'engine normalizza sia il concetto che il nome oggetto per confrontarli
+    const parsed = await parseCommand(null, 'PRENDI SCAFFALI');
+    expect(parsed.IsValid).toBe(true);
+    expect(parsed.NounConcept).toBe('SCAFFALI_Vuoti');
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.message).toBe('Questo oggetto non può essere preso.');

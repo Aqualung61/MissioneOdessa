@@ -269,13 +269,16 @@ export function executeCommand(parseResult) {
       {
         const verb = (parseResult.CanonicalVerb || '').toUpperCase();
         const concept = (parseResult.VerbConcept || '').toUpperCase();
-        const noun = (parseResult.CanonicalNoun || '').toUpperCase();
+        // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
+        const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
         if (!noun) {
           return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
         }
         // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
+        // Normalizza sia l'oggetto che il noun: converti spazi in underscore per confronto
+        const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
         const oggetto = (gameState.Oggetti || []).find(obj => 
-          obj.Oggetto.toUpperCase() === noun && 
+          normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
           (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
           obj.Attivo >= 1
         );
@@ -303,8 +306,9 @@ export function executeCommand(parseResult) {
         }
         if (verb === 'PRENDI') {
           // Trova l'oggetto nel luogo corrente
+          const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
           const oggetto = (gameState.Oggetti || []).find(obj => 
-            obj.Oggetto.toUpperCase() === noun && 
+            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
             obj.IDLuogo === gameState.currentLocationId && 
             obj.Attivo >= 1
           );
@@ -321,8 +325,9 @@ export function executeCommand(parseResult) {
         }
         if (verb === 'POSA' || verb === 'LASCIA') {
           // Trova l'oggetto nell'inventario
+          const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
           const oggetto = (gameState.Oggetti || []).find(obj => 
-            obj.Oggetto.toUpperCase() === noun && 
+            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
             obj.IDLuogo === 0 && 
             obj.Attivo >= 3
           );
