@@ -348,12 +348,6 @@
     "ID_Lingua": 1
   },
   {
-    "ID_Voce": 59,
-    "Voce": "Manopola",
-    "ID_Termine": 43,
-    "ID_Lingua": 1
-  },
-  {
     "ID_Voce": 60,
     "Voce": "Lampada",
     "ID_Termine": 4,
@@ -579,6 +573,24 @@
     "ID_Voce": 98,
     "Voce": "ACCENDERE",
     "ID_Termine": 61,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 99,
+    "Voce": "METTERE",
+    "ID_Termine": 55,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 100,
+    "Voce": "MUOVI",
+    "ID_Termine": 57,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 101,
+    "Voce": "MUOVERE",
+    "ID_Termine": 57,
     "ID_Lingua": 1
   }
 ]

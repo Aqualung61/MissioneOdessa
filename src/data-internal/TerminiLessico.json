@@ -210,11 +210,6 @@
     "ID_TipoLessico": 4
   },
   {
-    "ID_Termine": 43,
-    "Concetto": "MANOPOLA",
-    "ID_TipoLessico": 4
-  },
-  {
     "ID_Termine": 44,
     "Concetto": "FORMA_CIRCOLARE",
     "ID_TipoLessico": 4

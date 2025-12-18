@@ -146,10 +146,10 @@
   {
     "ID": 19,
     "IDLingua": 1,
-    "Oggetto": "Porta",
-    "Attivo": 1,
+    "Oggetto": "Porta aperta",
+    "Attivo": 0,
     "IDLuogo": 27,
-    "descrizione": "Porta"
+    "descrizione": "Porta aperta"
   },
   {
     "ID": 20,
@@ -195,17 +195,9 @@
     "ID": 25,
     "IDLingua": 1,
     "Oggetto": "Cassaforte",
-    "Attivo": 1,
+    "Attivo": 0,
     "IDLuogo": 24,
     "descrizione": "Cassaforte"
-  },
-  {
-    "ID": 26,
-    "IDLingua": 1,
-    "Oggetto": "Manopola",
-    "Attivo": 3,
-    "IDLuogo": null,
-    "descrizione": "Manopola"
   },
   {
     "ID": 27,
@@ -235,7 +227,7 @@
     "ID": 30,
     "IDLingua": 1,
     "Oggetto": "Medaglione",
-    "Attivo": 3,
+    "Attivo": 0,
     "IDLuogo": 24,
     "descrizione": "Medaglione"
   },
@@ -294,5 +286,29 @@
     "Attivo": 3,
     "IDLuogo": 0,
     "descrizione": "Torcia elettrica"
+  },
+  {
+    "ID": 38,
+    "IDLingua": 1,
+    "Oggetto": "Scomparto segreto",
+    "Attivo": 0,
+    "IDLuogo": 27,
+    "descrizione": "Scomparto segreto"
+  },
+  {
+    "ID": 39,
+    "IDLingua": 1,
+    "Oggetto": "Foglio",
+    "Attivo": 0,
+    "IDLuogo": 27,
+    "descrizione": "Foglio"
+  },
+  {
+    "ID": 40,
+    "IDLingua": 1,
+    "Oggetto": "Scrivania",
+    "Attivo": 1,
+    "IDLuogo": 21,
+    "descrizione": "Scrivania"
   }
 ]
