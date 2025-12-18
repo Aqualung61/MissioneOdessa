@@ -568,5 +568,17 @@
     "Voce": "HELP",
     "ID_Termine": 58,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 97,
+    "Voce": "ACCENDI",
+    "ID_Termine": 61,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 98,
+    "Voce": "ACCENDERE",
+    "ID_Termine": 61,
+    "ID_Lingua": 1
   }
 ]

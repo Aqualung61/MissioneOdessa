@@ -298,5 +298,10 @@
     "ID_Termine": 60,
     "Concetto": "ARTICOLO_IND",
     "ID_TipoLessico": 5
+  },
+  {
+    "ID_Termine": 61,
+    "Concetto": "ACCENDERE",
+    "ID_TipoLessico": 1
   }
 ]

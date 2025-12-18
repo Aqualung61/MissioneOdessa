@@ -62,4 +62,10 @@ describe('Parser REQ01 - casi base', () => {
     expect(res.IsValid).toBe(true);
     expect(res.CommandType).toBe('NAVIGATION');
   });
-});
+  it('Verbo ACCENDERE: ACCENDI LAMPADA => valido', async () => {
+    const res = await parseCommand(null, 'ACCENDI LAMPADA');
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('ACCENDERE');
+    expect(res.CanonicalNoun).toBe('LAMPADA');
+  });});
