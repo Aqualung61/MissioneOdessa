@@ -5,7 +5,7 @@ import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
 // Verbi che non richiedono oggetto
-const NO_OBJECT = new Set(['DORMI','SCAPPA','SORRIDI']);
+const NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
 
 describe('Copertura verbi azione REQ01', () => {
   beforeAll(async () => {

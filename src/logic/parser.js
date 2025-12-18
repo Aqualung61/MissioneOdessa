@@ -126,8 +126,10 @@ function isDigits(str) {
   return /^\d+$/.test(str);
 }
 
-// Alcuni verbi d'azione non richiedono oggetto (da REQ01 esempi)
-const ACTION_NO_OBJECT = new Set(['DORMI', 'SCAPPA', 'SORRIDI']);
+// Alcuni verbi d'azione non richiedono oggetto
+// DORMI: azione senza oggetto
+// ESAMINA/GUARDA: possono essere usati senza oggetto per descrivere il luogo
+const ACTION_NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
 
 export async function parseCommand(dbPath, input) {
   const vocab = await ensureVocabulary();

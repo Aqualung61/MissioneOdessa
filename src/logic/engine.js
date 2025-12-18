@@ -272,9 +272,7 @@ export function executeCommand(parseResult) {
         const concept = (parseResult.VerbConcept || '').toUpperCase();
         // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
         const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
-        if (!noun) {
-          return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
-        }
+        
         // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
         // Normalizza sia l'oggetto che il noun: converti spazi in underscore per confronto
         const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
@@ -283,8 +281,17 @@ export function executeCommand(parseResult) {
           (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
           obj.Attivo >= 1
         );
-        // ESAMINA / OSSERVA / GUARDA (concetti affini)
-        if (concept === 'ESAMINARE' || concept === 'OSSERVARE' || verb === 'ESAMINA' || verb === 'OSSERVA' || verb === 'GUARDA') {
+        // ESAMINA / GUARDA
+        if (concept === 'ESAMINARE' || concept === 'GUARDARE' || verb === 'ESAMINA' || verb === 'GUARDA') {
+          // Senza oggetto: mostra descrizione del luogo corrente
+          if (!noun) {
+            const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
+            if (currentLocation) {
+              return { accepted: true, resultType: 'OK', message: currentLocation.Descrizione, effects: [], showLocation: true };
+            }
+            return { accepted: true, resultType: 'OK', message: 'Non vedi nulla di particolare.', effects: [], showLocation: true };
+          }
+          // Con oggetto: mostra descrizione dell'oggetto
           if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
           const text = oggetto.descrizione || 'Non noti nulla di particolare.';
           return { accepted: true, resultType: 'OK', message: text, effects: [] };
@@ -337,6 +344,10 @@ export function executeCommand(parseResult) {
             return { accepted: true, resultType: 'OK', message: `Hai posato ${oggetto.Oggetto}.`, effects: [] };
           }
           return { accepted: true, resultType: 'OK', message: `Non hai ${noun} con te.`, effects: [] };
+        }
+        // Altri verbi: verifica se richiedono oggetto
+        if (!noun) {
+          return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
         }
         // Altri verbi: risposta generica
         return {

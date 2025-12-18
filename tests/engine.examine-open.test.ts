@@ -49,6 +49,26 @@ describe('Engine: ESAMINA e APRI/CHIUDI', () => {
     expect(res.message.length).toBeGreaterThan(0);
   });
 
+  it('ESAMINA senza oggetto -> descrizione luogo corrente', async () => {
+    const parsed = await parseCommand(null, 'ESAMINA');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(typeof res.message).toBe('string');
+    expect(res.message.length).toBeGreaterThan(0);
+    expect(res.showLocation).toBe(true);
+  });
+
+  it('GUARDA senza oggetto -> descrizione luogo corrente', async () => {
+    const parsed = await parseCommand(null, 'GUARDA');
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(typeof res.message).toBe('string');
+    expect(res.message.length).toBeGreaterThan(0);
+    expect(res.showLocation).toBe(true);
+  });
+
   // Test temporaneamente disabilitato - richiede setup di oggetti apribili specifici
   it.skip('APRI oggetto -> aperto; CHIUDI oggetto -> chiuso', async () => {
     let parsed = await parseCommand(null, 'APRI BOTOLA');
