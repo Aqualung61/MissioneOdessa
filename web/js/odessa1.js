@@ -890,6 +890,10 @@ inputForm.addEventListener('submit', async function(e) {
               feed.scrollTop = feed.scrollHeight;
             }
           }
+          // Se il comando SYSTEM richiede di mostrare nuovamente il luogo
+          if (engine.showLocation) {
+            showCurrent();
+          }
         } else {
           // Messaggio di errore
           const feed = document.getElementById('placeFeed');

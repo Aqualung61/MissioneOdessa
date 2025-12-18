@@ -136,11 +136,11 @@ export function generateHelpMessage(idLingua = 1) {
     .sort();
   
   // Costruisci messaggio con formattazione HTML
-  let msg = '<b>COMANDI DISPONIBILI:</b>\n';
+  let msg = '<b>Comandi disponibili:</b>\n';
   msg += '<i>Direzioni: ' + direzioni.join(', ') + '</i>\n';
   msg += '<i>Sistema: ' + sistema.join(', ') + '</i>\n';
   msg += '<i>Azioni: ' + verbi.join(', ') + '</i>\n\n';
-  msg += '<b>OGGETTI NEL GIOCO:</b>\n<i>' + oggetti.join(', ') + '</i>';
+  msg += '<b>Oggetti nel gioco:</b>\n<i>' + oggetti.join(', ') + '</i>';
   
   return msg;
 }
@@ -232,7 +232,7 @@ export function executeCommand(parseResult) {
           case 'INVENTARIO': {
             const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo === 1 && item.IDLuogo === 0 && item.IDLingua === 1);
             if (inventoryItems.length === 0) {
-              return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [] };
+              return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [], showLocation: true };
             }
             const itemNames = inventoryItems.map(item => item.Oggetto).join(', ');
             return {
@@ -240,11 +240,12 @@ export function executeCommand(parseResult) {
               resultType: 'OK',
               message: 'Hai con te: ' + itemNames + '.',
               effects: [],
+              showLocation: true
             };
           }
           case 'AIUTO': {
             const message = generateHelpMessage(1); // Default lingua 1
-            return { accepted: true, resultType: 'OK', message, effects: [] };
+            return { accepted: true, resultType: 'OK', message, effects: [], showLocation: true };
           }
           case 'SALVARE': {
             return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', effects: [] };
@@ -252,7 +253,7 @@ export function executeCommand(parseResult) {
           case 'CARICARE':
             return { accepted: true, resultType: 'LOAD_GAME', message: 'Caricamento in corso...', effects: [] };
           case 'PUNTI':
-            return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [] };
+            return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [], showLocation: true };
           case 'FINE':
             return { accepted: true, resultType: 'CONFIRM_END', message: 'Vuoi davvero finire il gioco? (s/n)', effects: [] };
           default:
