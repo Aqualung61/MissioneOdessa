@@ -91,6 +91,7 @@ function capitalizeCommand(str) {
     'POSARE': 'Posa',
     'LASCIARE': 'Lascia',
     'SPOSTARE': 'Sposta',
+    'ACCENDERE': 'Accendi',
     'AIUTO': 'Aiuto',
     'FINE': 'Fine',
     'PUNTI': 'Punti',
