@@ -23,7 +23,7 @@
     "id": "sposta_arazzo_20",
     "trigger": {
       "verbo": "SPOSTARE",
-      "oggetto": "ARAZZO"
+      "oggetto": "ARAZZO_IN_PESSIME_CONDIZIONI"
     },
     "condizioni": {
       "luogo": 20,

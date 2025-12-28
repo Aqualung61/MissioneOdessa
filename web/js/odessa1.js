@@ -938,8 +938,25 @@ inputForm.addEventListener('submit', async function(e) {
               feed.scrollTop = feed.scrollHeight;
             }
           }
-          // Per ACTION, potremmo aggiornare stato locale se necessario (es. inventario)
-          // Per ora, semplice messaggio
+          // Aggiorna le direzioni dinamiche dopo un'azione riuscita
+          if (current && current.ID) {
+            fetch(basePath + `api/engine/direzioni/${current.ID}`)
+              .then(res => res.json())
+              .then(direzioniResult => {
+                if (direzioniResult.ok && direzioniResult.direzioni) {
+                  // Aggiorna le direzioni del luogo corrente
+                  Object.assign(current, direzioniResult.direzioni);
+                  // Aggiorna anche nell'array luoghi per coerenza
+                  const luogoInArray = luoghi.find(l => l.ID === current.ID);
+                  if (luogoInArray) {
+                    Object.assign(luogoInArray, direzioniResult.direzioni);
+                  }
+                  // Aggiorna la stella delle direzioni
+                  updateDirectionUI(current);
+                }
+              })
+              .catch(err => console.error('Errore aggiornamento direzioni:', err));
+          }
         } else {
           // Messaggio di errore
           const feed = document.getElementById('placeFeed');

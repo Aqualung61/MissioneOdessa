@@ -33,13 +33,14 @@ export function confirmRestart(risposta) {
 
 // Stato di gioco (singleton in memoria)
 let gameState = {
-  openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
+  openStates: { BOTOLA: false },
   awaitingRestart: false,
   currentLocationId: 1,
   ended: false,
   visitedPlaces: new Set([1]),
   Oggetti: [],
   interazioniEseguite: [], // ID delle interazioni già eseguite (non ripetibili)
+  direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
   direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
   sequenze: {} // Stato delle sequenze (es. cassaforte)
 };
@@ -59,13 +60,14 @@ export function initializeOriginalData() {
 export function resetGameState() {
   console.log('Inizializzazione gameState');
   gameState = {
-    openStates: { BOTOLA: false, CASSAFORTE: false, SCOMPARTO: false },
+    openStates: { BOTOLA: false },
     awaitingRestart: false,
     currentLocationId: 1,
     ended: false,
     visitedPlaces: new Set([1]),
     Oggetti: [],
     interazioniEseguite: [],
+    direzioniSbloccate: {},
     direzioniToggle: {},
     sequenze: {}
   };
@@ -390,7 +392,8 @@ function cercaEseguiInterazione(verb, noun) {
       
       // Verifica se già eseguita (se non ripetibile)
       if (!interazione.ripetibile && gameState.interazioniEseguite.includes(interazione.id)) {
-        return null; // Già eseguita, non fare nulla
+        const messaggio = interazione.risposta_gia_eseguita || "Non c'è bisogno di farlo di nuovo.";
+        return { accepted: true, resultType: 'OK', message: messaggio, effects: [] };
       }
       
       // Verifica prerequisiti
@@ -603,6 +606,11 @@ export function executeCommand(parseResult) {
           }
         }
         if (verb === 'PRENDI') {
+          // Controlla limite inventario (max 5 oggetti)
+          const oggettiInInventario = (gameState.Oggetti || []).filter(obj => obj.IDLuogo === 0 && obj.Attivo >= 3);
+          if (oggettiInInventario.length >= 5) {
+            return { accepted: true, resultType: 'OK', message: 'Non puoi trasportare più di 5 oggetti.', effects: [] };
+          }
           // Trova l'oggetto nel luogo corrente
           const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
           const oggetto = (gameState.Oggetti || []).find(obj => 

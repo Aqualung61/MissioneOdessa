@@ -35,7 +35,7 @@
     "ID": 5,
     "IDLingua": 1,
     "Oggetto": "Arazzo in pessime condizioni",
-    "Attivo": 2,
+    "Attivo": 1,
     "IDLuogo": 20,
     "descrizione": "L'arazzo è del 700 raffigurante una scena di caccia: le sue condizioni però pessime."
   },
@@ -219,7 +219,7 @@
     "ID": 29,
     "IDLingua": 1,
     "Oggetto": "Forma circolare",
-    "Attivo": 0,
+    "Attivo": 1,
     "IDLuogo": 36,
     "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
   },
@@ -318,5 +318,13 @@
     "Attivo": 0,
     "IDLuogo": 57,
     "descrizione": "La botola rivela un piccolo nascondiglio sul pavimento. All'interno c'è un dossier."
+  },
+  {
+    "ID": 42,
+    "IDLingua": 1,
+    "Oggetto": "Forma circolare",
+    "Attivo": 0,
+    "IDLuogo": 20,
+    "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
   }
 ]

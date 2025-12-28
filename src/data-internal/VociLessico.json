@@ -670,5 +670,17 @@
     "Voce": "SINISTRA",
     "ID_Termine": 68,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 115,
+    "Voce": "lista",
+    "ID_Termine": 25,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 116,
+    "Voce": "dossier",
+    "ID_Termine": 25,
+    "ID_Lingua": 1
   }
 ]
