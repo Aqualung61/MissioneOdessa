@@ -38,7 +38,9 @@ let gameState = {
   currentLocationId: 1,
   ended: false,
   visitedPlaces: new Set([1]),
-  Oggetti: []
+  Oggetti: [],
+  interazioniEseguite: [], // ID delle interazioni già eseguite (non ripetibili)
+  direzioniToggle: {} // Stato dei toggle (es. "44_Est": true/false)
 };
 
 // Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
@@ -61,7 +63,9 @@ export function resetGameState() {
     currentLocationId: 1,
     ended: false,
     visitedPlaces: new Set([1]),
-    Oggetti: []
+    Oggetti: [],
+    interazioniEseguite: [],
+    direzioniToggle: {}
   };
   // Aggiungi Oggetti a gameState dai dati originali
   if (originalOggetti.length > 0) {
@@ -152,6 +156,64 @@ export function generateHelpMessage(idLingua = 1) {
 export function getOggetti() {
   return gameState.Oggetti || [];
 }
+
+// Funzione per ottenere le direzioni disponibili per un luogo
+export function getDirezioniLuogo(idLuogo) {
+  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo);
+  if (!luogo) return {};
+  
+  const direzioni = {
+    Nord: luogo.Nord,
+    Est: luogo.Est,
+    Sud: luogo.Sud,
+    Ovest: luogo.Ovest,
+    Su: luogo.Su,
+    Giu: luogo.Giu
+  };
+  
+  // Applica sblocchi permanenti
+  if (gameState.direzioniSbloccate) {
+    for (const [key, value] of Object.entries(gameState.direzioniSbloccate)) {
+      const [luogoStr, direzione] = key.split('_');
+      if (parseInt(luogoStr) === idLuogo) {
+        direzioni[direzione] = value;
+      }
+    }
+  }
+  
+  // Applica toggle
+  if (gameState.direzioniToggle) {
+    for (const [key, isOpen] of Object.entries(gameState.direzioniToggle)) {
+      const [luogoStr, direzione] = key.split('_');
+      if (parseInt(luogoStr) === idLuogo) {
+        // Se il toggle è attivo, usa la destinazione, altrimenti blocca
+        if (isOpen) {
+          // Trova la destinazione originale
+          const interazione = (global.odessaData.Interazioni || []).find(i => 
+            i.effetti && i.effetti.some(e => 
+              e.tipo === 'TOGGLE_DIREZIONE' && 
+              e.luogo === idLuogo && 
+              e.direzione === direzione
+            )
+          );
+          if (interazione) {
+            const effetto = interazione.effetti.find(e => 
+              e.tipo === 'TOGGLE_DIREZIONE' && 
+              e.luogo === idLuogo && 
+              e.direzione === direzione
+            );
+            direzioni[direzione] = effetto.destinazione;
+          }
+        } else {
+          direzioni[direzione] = 0;
+        }
+      }
+    }
+  }
+  
+  return direzioni;
+}
+
 // Funzione per impostare lo stato di gioco
 export function setGameState(newState) {
   gameState = { 
@@ -205,6 +267,129 @@ export function toCommandDTO(parseResult) {
       : null,
   };
   return dto;
+}
+
+// Funzione helper per normalizzare nomi (spazi -> underscore)
+function normalizeForComparison(str) {
+  return str.toUpperCase().replace(/\s+/g, '_');
+}
+
+// Funzione per verificare i prerequisiti di un'interazione
+function verificaPrerequisiti(prerequisiti) {
+  if (!prerequisiti || prerequisiti.length === 0) return true;
+  
+  for (const req of prerequisiti) {
+    if (req.tipo === 'OGGETTO_IN_INVENTARIO') {
+      const oggetto = gameState.Oggetti.find(o => 
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
+        o.IDLuogo === 0 && 
+        o.Attivo >= 3
+      );
+      if (!oggetto) return false;
+    } else if (req.tipo === 'OGGETTO_IN_LUOGO') {
+      const oggetto = gameState.Oggetti.find(o => 
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
+        o.IDLuogo === req.luogo && 
+        o.Attivo >= 1
+      );
+      if (!oggetto) return false;
+    } else if (req.tipo === 'OGGETTO_VISIBILE') {
+      const oggetto = gameState.Oggetti.find(o => 
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
+        o.IDLuogo === req.luogo && 
+        o.Attivo >= 1
+      );
+      if (!oggetto) return false;
+    }
+  }
+  return true;
+}
+
+// Funzione per applicare gli effetti di un'interazione
+function applicaEffetti(effetti) {
+  for (const effetto of effetti) {
+    if (effetto.tipo === 'VISIBILITA') {
+      const oggetto = gameState.Oggetti.find(o => 
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target)
+      );
+      if (oggetto) {
+        oggetto.Attivo = effetto.valore;
+      }
+    } else if (effetto.tipo === 'SPOSTA_OGGETTO') {
+      const oggetto = gameState.Oggetti.find(o => 
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target)
+      );
+      if (oggetto) {
+        oggetto.IDLuogo = effetto.a_luogo;
+      }
+    } else if (effetto.tipo === 'SBLOCCA_DIREZIONE') {
+      // Modifica la direzione nel gameState (da implementare con Luoghi dinamici)
+      // Per ora registriamo l'effetto
+      const key = `${effetto.luogo}_${effetto.direzione}`;
+      if (!gameState.direzioniSbloccate) gameState.direzioniSbloccate = {};
+      gameState.direzioniSbloccate[key] = effetto.destinazione;
+    } else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
+      const key = `${effetto.luogo}_${effetto.direzione}`;
+      if (!gameState.direzioniToggle[key]) {
+        gameState.direzioniToggle[key] = false;
+      }
+      gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
+    } else if (effetto.tipo === 'VITTORIA') {
+      gameState.ended = true;
+    }
+  }
+}
+
+// Funzione per cercare e eseguire un'interazione
+function cercaEseguiInterazione(verb, noun) {
+  const interazioni = global.odessaData.Interazioni || [];
+  
+  // Cerca un'interazione che corrisponda
+  for (const interazione of interazioni) {
+    if (normalizeForComparison(interazione.trigger.verbo) === normalizeForComparison(verb) &&
+        normalizeForComparison(interazione.trigger.oggetto) === normalizeForComparison(noun)) {
+      
+      // Verifica luogo
+      if (interazione.condizioni.luogo && interazione.condizioni.luogo !== gameState.currentLocationId) {
+        continue;
+      }
+      
+      // Verifica se già eseguita (se non ripetibile)
+      if (!interazione.ripetibile && gameState.interazioniEseguite.includes(interazione.id)) {
+        return null; // Già eseguita, non fare nulla
+      }
+      
+      // Verifica prerequisiti
+      if (!verificaPrerequisiti(interazione.condizioni.prerequisiti)) {
+        continue;
+      }
+      
+      // Interazione trovata e valida
+      // Determina la risposta (per toggle)
+      let risposta = interazione.risposta;
+      if (interazione.trigger.verbo === 'PREMI' || interazione.trigger.verbo === 'RUOTA') {
+        // Verifica stato toggle
+        const primoEffetto = interazione.effetti.find(e => e.tipo === 'TOGGLE_DIREZIONE');
+        if (primoEffetto) {
+          const key = `${primoEffetto.luogo}_${primoEffetto.direzione}`;
+          const statoCorrente = gameState.direzioniToggle[key] || false;
+          risposta = statoCorrente ? interazione.risposta_chiudi : interazione.risposta_apri;
+        }
+      }
+      
+      // Applica effetti
+      applicaEffetti(interazione.effetti);
+      
+      // Segna come eseguita
+      if (!interazione.ripetibile) {
+        gameState.interazioniEseguite.push(interazione.id);
+      }
+      
+      return { accepted: true, resultType: 'OK', message: risposta, effects: interazione.effetti };
+    }
+  }
+  
+  return null;
 }
 
 export function executeCommand(parseResult) {
@@ -275,9 +460,16 @@ export function executeCommand(parseResult) {
         // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
         const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
         
+        // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json
+        if (noun) {
+          const interazioneResult = cercaEseguiInterazione(verb, noun);
+          if (interazioneResult) {
+            return interazioneResult;
+          }
+        }
+        
+        // PRIORITÀ 2: Gestione standard degli oggetti
         // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
-        // Normalizza sia l'oggetto che il noun: converti spazi in underscore per confronto
-        const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
         const oggetto = (gameState.Oggetti || []).find(obj => 
           normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
           (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&

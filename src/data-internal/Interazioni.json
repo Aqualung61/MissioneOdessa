@@ -1,0 +1,374 @@
+[
+  {
+    "id": "sposta_quadro_24",
+    "trigger": {
+      "verbo": "SPOSTA",
+      "oggetto": "QUADRO"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": []
+    },
+    "risposta": "Sposti il quadro polveroso. Con tua sorpresa, riveli una cassaforte incassata nel muro!",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Cassaforte",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "sposta_arazzo_20",
+    "trigger": {
+      "verbo": "SPOSTA",
+      "oggetto": "ARAZZO"
+    },
+    "condizioni": {
+      "luogo": 20,
+      "prerequisiti": []
+    },
+    "risposta": "Dietro l'arazzo c'è una strana forma sul muro, circolare.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Forma circolare",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "muovi_fermacarte_25",
+    "trigger": {
+      "verbo": "MUOVI",
+      "oggetto": "FERMACARTE"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_LUOGO",
+          "target": "Fermacarte",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "Muovi il fermacarte lungo la guida: con uno scricchiolio si apre uno scomparto segreto su un fianco della scrivania.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Scomparto segreto",
+        "valore": 1
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Foglio",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "infila_medaglione_forma_20",
+    "trigger": {
+      "verbo": "INFILA",
+      "oggetto": "MEDAGLIONE"
+    },
+    "condizioni": {
+      "luogo": 20,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medaglione"
+        },
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Forma circolare",
+          "luogo": 20
+        }
+      ]
+    },
+    "risposta": "Infili il medaglione nella forma e di colpo la parete sud inizia a ruotare, rivelando una stanza segreta.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Medaglione",
+        "da_luogo": 0,
+        "a_luogo": 20
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 20,
+        "direzione": "Sud",
+        "destinazione": 21
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 21,
+        "direzione": "Nord",
+        "destinazione": 20
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "infila_statuetta_nicchia_27",
+    "trigger": {
+      "verbo": "INFILA",
+      "oggetto": "STATUETTA"
+    },
+    "condizioni": {
+      "luogo": 27,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Statuetta"
+        }
+      ]
+    },
+    "risposta": "Infili la statuetta nella nicchia vuota: il fondo di questa si abbassa e scatta un meccanismo che apre una porta altrimenti invisibile a nord.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Statuetta",
+        "da_luogo": 0,
+        "a_luogo": 27
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Porta aperta",
+        "valore": 1
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 27,
+        "direzione": "Nord",
+        "destinazione": 28
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 28,
+        "direzione": "Sud",
+        "destinazione": 27
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "infila_medaglione_forma_36",
+    "trigger": {
+      "verbo": "INFILA",
+      "oggetto": "MEDAGLIONE"
+    },
+    "condizioni": {
+      "luogo": 36,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medaglione"
+        },
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Forma circolare",
+          "luogo": 36
+        }
+      ]
+    },
+    "risposta": "Infili il medaglione nella forma e di colpo la parete ovest inizia a ruotare, rivelando la stanza delle torture.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Medaglione",
+        "da_luogo": 0,
+        "a_luogo": 36
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 36,
+        "direzione": "Ovest",
+        "destinazione": 37
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 37,
+        "direzione": "Est",
+        "destinazione": 36
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "carica_pesa_57",
+    "trigger": {
+      "verbo": "CARICA",
+      "oggetto": "PESA"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Peso"
+        }
+      ]
+    },
+    "risposta": "Carichi la pesa: il piatto è ora sollevato in equilibrio col braccio della pesa. Con uno strano rumore il coperchio di una botola si apre davanti a te sul pavimento.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Peso",
+        "da_luogo": 0,
+        "a_luogo": 57
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Botola",
+        "valore": 1
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Dossier",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "premi_pulsante_44",
+    "trigger": {
+      "verbo": "PREMI",
+      "oggetto": "PULSANTE"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta_apri": "Premi il pulsante e la porta ad est si apre con sinistri cigolii.",
+    "risposta_chiudi": "Premi il pulsante e la porta ad est si chiude con sinistri cigolii.",
+    "effetti": [
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 44,
+        "direzione": "Est",
+        "destinazione": 45
+      },
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 45,
+        "direzione": "Ovest",
+        "destinazione": 44
+      }
+    ],
+    "ripetibile": true
+  },
+  {
+    "id": "ruota_sedile_42",
+    "trigger": {
+      "verbo": "RUOTA",
+      "oggetto": "SEDILE"
+    },
+    "condizioni": {
+      "luogo": 42,
+      "prerequisiti": []
+    },
+    "risposta_apri": "Ruoti il sedile: un meccanismo apre una paratia sulla parete est.",
+    "risposta_chiudi": "Ruoti il sedile: un meccanismo chiude una paratia sulla parete est.",
+    "effetti": [
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 42,
+        "direzione": "Est",
+        "destinazione": 43
+      },
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 43,
+        "direzione": "Ovest",
+        "destinazione": 42
+      }
+    ],
+    "ripetibile": true
+  },
+  {
+    "id": "scava_macerie_11",
+    "trigger": {
+      "verbo": "SCAVA",
+      "oggetto": "MACERIE"
+    },
+    "condizioni": {
+      "luogo": 11,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Badile arruginito"
+        }
+      ]
+    },
+    "risposta": "Rimuovi le macerie che impediscono di prendere il bastone.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Bastone di comando",
+        "valore": 3
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "scava_macerie_49",
+    "trigger": {
+      "verbo": "SCAVA",
+      "oggetto": "MACERIE"
+    },
+    "condizioni": {
+      "luogo": 49,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Badile arruginito"
+        }
+      ]
+    },
+    "risposta": "Scavando allarghi il passaggio ad ovest.",
+    "effetti": [
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 49,
+        "direzione": "Ovest",
+        "destinazione": 50
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 50,
+        "direzione": "Est",
+        "destinazione": 49
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "porgi_documenti_59",
+    "trigger": {
+      "verbo": "PORGI",
+      "oggetto": "DOCUMENTI"
+    },
+    "condizioni": {
+      "luogo": 59,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Documenti"
+        }
+      ]
+    },
+    "risposta": "Porgi i documenti e la guardia li guarda con cura. Sono attimi importanti.\n\nLa guardia ti guarda, sorride e ti ritorna i documenti. Poi solleva la sbarra e ti fa segno di passare.\n\nCe l'hai fatta. Sei nel settore americano e fra poco sarai su un aereo diretto a Linz. I documenti arriveranno a destinazione attraverso i canali dei servizi di informazione gestiti da Ferenc. Hai terminato la missione!! Sei un agente di prima categoria: arrivederci alla tua prossima missione, Liebermann.",
+    "effetti": [
+      {
+        "tipo": "VITTORIA"
+      }
+    ],
+    "ripetibile": false
+  }
+]

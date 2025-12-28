@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseCommand } from '../logic/parser.js';
-import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState } from '../logic/engine.js';
+import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo } from '../logic/engine.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 
 const router = express.Router();
@@ -112,6 +112,20 @@ router.post('/load-client-state', (req, res) => {
       global.odessaData.Oggetti = odessaData.Oggetti;
     }
     res.json({ ok: true, message: 'Stato ripristinato' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Nuovo endpoint per ottenere direzioni dinamiche di un luogo
+router.get('/direzioni/:idLuogo', (req, res) => {
+  try {
+    const idLuogo = parseInt(req.params.idLuogo, 10);
+    if (isNaN(idLuogo)) {
+      return res.status(400).json({ ok: false, error: 'Invalid location ID' });
+    }
+    const direzioni = getDirezioniLuogo(idLuogo);
+    res.json({ ok: true, direzioni });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
