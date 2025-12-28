@@ -598,5 +598,65 @@
     "Voce": "TAVOLO",
     "ID_Termine": 21,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 103,
+    "Voce": "PREMI",
+    "ID_Termine": 62,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 104,
+    "Voce": "PREMERE",
+    "ID_Termine": 62,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 105,
+    "Voce": "RUOTA",
+    "ID_Termine": 63,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 106,
+    "Voce": "RUOTARE",
+    "ID_Termine": 63,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 107,
+    "Voce": "SCAVA",
+    "ID_Termine": 64,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 108,
+    "Voce": "SCAVARE",
+    "ID_Termine": 64,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 109,
+    "Voce": "PORGI",
+    "ID_Termine": 65,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 110,
+    "Voce": "PORGERE",
+    "ID_Termine": 65,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 111,
+    "Voce": "SCOMPARTO",
+    "ID_Termine": 66,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 112,
+    "Voce": "SEGRETO",
+    "ID_Termine": 66,
+    "ID_Lingua": 1
   }
 ]

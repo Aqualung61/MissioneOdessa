@@ -251,7 +251,7 @@
     "ID": 33,
     "IDLingua": 1,
     "Oggetto": "Quadro",
-    "Attivo": 2,
+    "Attivo": 1,
     "IDLuogo": 24,
     "descrizione": "Il quadro è logoro e impolverato. Si riconosce comunque, un dipinto dallo stile pomposo, retorico, di moda nel nazismo: raffigura una scena di battaglia del XIX secolo. Non ha valore artistico."
   },
@@ -299,7 +299,7 @@
     "ID": 39,
     "IDLingua": 1,
     "Oggetto": "Foglio",
-    "Attivo": 0,
+    "Attivo": 2,
     "IDLuogo": 25,
     "descrizione": "Il foglio contiente solo delle lettere scritte a macchina: D S S D S. Sembra essere una combinazione di una cassaforte."
   },

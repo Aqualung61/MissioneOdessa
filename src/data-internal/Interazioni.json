@@ -2,7 +2,7 @@
   {
     "id": "sposta_quadro_24",
     "trigger": {
-      "verbo": "SPOSTA",
+      "verbo": "SPOSTARE",
       "oggetto": "QUADRO"
     },
     "condizioni": {
@@ -22,7 +22,7 @@
   {
     "id": "sposta_arazzo_20",
     "trigger": {
-      "verbo": "SPOSTA",
+      "verbo": "SPOSTARE",
       "oggetto": "ARAZZO"
     },
     "condizioni": {
@@ -42,7 +42,7 @@
   {
     "id": "muovi_fermacarte_25",
     "trigger": {
-      "verbo": "MUOVI",
+      "verbo": "SPOSTARE",
       "oggetto": "FERMACARTE"
     },
     "condizioni": {
@@ -61,11 +61,32 @@
         "tipo": "VISIBILITA",
         "target": "Scomparto segreto",
         "valore": 1
-      },
+      }
+    ],
+    "ripetibile": false
+  },
+  {
+    "id": "esamina_scomparto_25",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "SCOMPARTO_SEGRETO"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Scomparto segreto",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "All'interno dello scomparto c'è un foglio dattiloscritto.",
+    "effetti": [
       {
         "tipo": "VISIBILITA",
         "target": "Foglio",
-        "valore": 1
+        "valore": 3
       }
     ],
     "ripetibile": false
@@ -73,7 +94,7 @@
   {
     "id": "infila_medaglione_forma_20",
     "trigger": {
-      "verbo": "INFILA",
+      "verbo": "INFILARE",
       "oggetto": "MEDAGLIONE"
     },
     "condizioni": {
@@ -116,7 +137,7 @@
   {
     "id": "infila_statuetta_nicchia_27",
     "trigger": {
-      "verbo": "INFILA",
+      "verbo": "INFILARE",
       "oggetto": "STATUETTA"
     },
     "condizioni": {
@@ -159,7 +180,7 @@
   {
     "id": "infila_medaglione_forma_36",
     "trigger": {
-      "verbo": "INFILA",
+      "verbo": "INFILARE",
       "oggetto": "MEDAGLIONE"
     },
     "condizioni": {
@@ -202,7 +223,7 @@
   {
     "id": "carica_pesa_57",
     "trigger": {
-      "verbo": "CARICA",
+      "verbo": "METTERE",
       "oggetto": "PESA"
     },
     "condizioni": {
@@ -238,7 +259,7 @@
   {
     "id": "premi_pulsante_44",
     "trigger": {
-      "verbo": "PREMI",
+      "verbo": "PREMERE",
       "oggetto": "PULSANTE"
     },
     "condizioni": {
@@ -266,7 +287,7 @@
   {
     "id": "ruota_sedile_42",
     "trigger": {
-      "verbo": "RUOTA",
+      "verbo": "RUOTARE",
       "oggetto": "SEDILE"
     },
     "condizioni": {
@@ -294,7 +315,7 @@
   {
     "id": "scava_macerie_11",
     "trigger": {
-      "verbo": "SCAVA",
+      "verbo": "SCAVARE",
       "oggetto": "MACERIE"
     },
     "condizioni": {
@@ -319,7 +340,7 @@
   {
     "id": "scava_macerie_49",
     "trigger": {
-      "verbo": "SCAVA",
+      "verbo": "SCAVARE",
       "oggetto": "MACERIE"
     },
     "condizioni": {
@@ -351,7 +372,7 @@
   {
     "id": "porgi_documenti_59",
     "trigger": {
-      "verbo": "PORGI",
+      "verbo": "PORGERE",
       "oggetto": "DOCUMENTI"
     },
     "condizioni": {

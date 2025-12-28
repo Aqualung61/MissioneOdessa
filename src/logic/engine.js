@@ -306,11 +306,14 @@ function verificaPrerequisiti(prerequisiti) {
 }
 
 // Funzione per applicare gli effetti di un'interazione
-function applicaEffetti(effetti) {
+function applicaEffetti(effetti, luogoCorrente) {
   for (const effetto of effetti) {
     if (effetto.tipo === 'VISIBILITA') {
+      // Se l'effetto specifica un luogo, cerca solo lì. Altrimenti cerca nel luogo corrente
+      const targetLuogo = effetto.luogo !== undefined ? effetto.luogo : luogoCorrente;
       const oggetto = gameState.Oggetti.find(o => 
-        normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target)
+        normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target) &&
+        (targetLuogo === undefined || o.IDLuogo === targetLuogo)
       );
       if (oggetto) {
         oggetto.Attivo = effetto.valore;
@@ -377,12 +380,38 @@ function cercaEseguiInterazione(verb, noun) {
         }
       }
       
-      // Applica effetti
-      applicaEffetti(interazione.effetti);
+      // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
+      applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
       
       // Segna come eseguita
       if (!interazione.ripetibile) {
         gameState.interazioniEseguite.push(interazione.id);
+      }
+      
+      // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
+      const haVisibilitaEffects = interazione.effetti.some(e => e.tipo === 'VISIBILITA');
+      if (haVisibilitaEffects) {
+        // Ottieni descrizione luogo corrente
+        const luogo = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
+        let messaggioCompleto = risposta + '\n\n';
+        
+        if (luogo) {
+          messaggioCompleto += luogo.Descrizione + '\n';
+          
+          // Aggiungi lista oggetti visibili (esclusi contenuti: Attivo=2)
+          const oggettiVisibili = gameState.Oggetti.filter(o => 
+            o.IDLuogo === gameState.currentLocationId && (o.Attivo === 1 || o.Attivo >= 3)
+          );
+          
+          if (oggettiVisibili.length > 0) {
+            messaggioCompleto += '\nOggetti visibili:\n';
+            oggettiVisibili.forEach(obj => {
+              messaggioCompleto += `  - ${obj.Oggetto}\n`;
+            });
+          }
+        }
+        
+        return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
       }
       
       return { accepted: true, resultType: 'OK', message: risposta, effects: interazione.effetti };
@@ -461,8 +490,9 @@ export function executeCommand(parseResult) {
         const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
         
         // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json
-        if (noun) {
-          const interazioneResult = cercaEseguiInterazione(verb, noun);
+        // Usa il VerbConcept (significato semantico) invece del CanonicalVerb (forma)
+        if (noun && concept) {
+          const interazioneResult = cercaEseguiInterazione(concept, noun);
           if (interazioneResult) {
             return interazioneResult;
           }

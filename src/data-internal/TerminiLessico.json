@@ -298,5 +298,30 @@
     "ID_Termine": 61,
     "Concetto": "ACCENDERE",
     "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 62,
+    "Concetto": "PREMERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 63,
+    "Concetto": "RUOTARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 64,
+    "Concetto": "SCAVARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 65,
+    "Concetto": "PORGERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 66,
+    "Concetto": "SCOMPARTO_SEGRETO",
+    "ID_TipoLessico": 4
   }
 ]
