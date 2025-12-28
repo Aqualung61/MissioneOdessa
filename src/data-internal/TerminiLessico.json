@@ -323,5 +323,15 @@
     "ID_Termine": 66,
     "Concetto": "SCOMPARTO_SEGRETO",
     "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 67,
+    "Concetto": "DESTRA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 68,
+    "Concetto": "SINISTRA",
+    "ID_TipoLessico": 4
   }
 ]

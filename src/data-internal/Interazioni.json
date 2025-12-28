@@ -391,5 +391,113 @@
       }
     ],
     "ripetibile": false
+  },
+  {
+    "id": "ruota_destra_cassaforte_24",
+    "trigger": {
+      "verbo": "RUOTARE",
+      "oggetto": "DESTRA"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta_step": "Clic clic. Fatto.",
+    "risposta_completa": "La cassaforte si apre senza rumore.",
+    "risposta_errore": "Hai sbagliato la combinazione. La cassaforte si blocca e devi ricominciare.",
+    "effetti": [
+      {
+        "tipo": "SEQUENZA",
+        "target": "cassaforte_24",
+        "direzione": "DESTRA",
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
+        "effetti_completamento": []
+      }
+    ],
+    "ripetibile": true
+  },
+  {
+    "id": "ruota_sinistra_cassaforte_24",
+    "trigger": {
+      "verbo": "RUOTARE",
+      "oggetto": "SINISTRA"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta_step": "Clic clic. Fatto.",
+    "risposta_completa": "La cassaforte si apre senza rumore.",
+    "risposta_errore": "Hai sbagliato la combinazione. La cassaforte si blocca e devi ricominciare.",
+    "effetti": [
+      {
+        "tipo": "SEQUENZA",
+        "target": "cassaforte_24",
+        "direzione": "SINISTRA",
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
+        "effetti_completamento": []
+      }
+    ],
+    "ripetibile": true
+  },
+  {
+    "id": "esamina_cassaforte_vuota_24",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        },
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medaglione"
+        }
+      ]
+    },
+    "risposta": "La cassaforte è aperta e vuota.",
+    "effetti": [],
+    "ripetibile": true
+  },
+  {
+    "id": "esamina_cassaforte_con_medaglione_24",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "Aperta la cassaforte, vedi all'interno un medaglione.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Medaglione",
+        "valore": 3
+      }
+    ],
+    "ripetibile": true
   }
 ]

@@ -40,7 +40,8 @@ let gameState = {
   visitedPlaces: new Set([1]),
   Oggetti: [],
   interazioniEseguite: [], // ID delle interazioni già eseguite (non ripetibili)
-  direzioniToggle: {} // Stato dei toggle (es. "44_Est": true/false)
+  direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
+  sequenze: {} // Stato delle sequenze (es. cassaforte)
 };
 
 // Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
@@ -65,7 +66,8 @@ export function resetGameState() {
     visitedPlaces: new Set([1]),
     Oggetti: [],
     interazioniEseguite: [],
-    direzioniToggle: {}
+    direzioniToggle: {},
+    sequenze: {}
   };
   // Aggiungi Oggetti a gameState dai dati originali
   if (originalOggetti.length > 0) {
@@ -150,6 +152,28 @@ export function generateHelpMessage(idLingua = 1) {
   msg += '<b>Oggetti nel gioco:</b>\n<i>' + oggetti.join(', ') + '</i>';
   
   return msg;
+}
+
+// Funzione centralizzata per generare descrizione luogo con oggetti presenti
+export function generaDescrizioneLuogoConOggetti(idLuogo) {
+  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo);
+  if (!luogo) return '';
+  
+  let messaggio = `<span style="color: black;">${luogo.Descrizione}</span>\n`;
+  
+  // Aggiungi lista oggetti presenti (esclusi contenuti: Attivo=2)
+  const oggettiPresenti = gameState.Oggetti.filter(o => 
+    o.IDLuogo === idLuogo && (o.Attivo === 1 || o.Attivo >= 3)
+  );
+  
+  if (oggettiPresenti.length > 0) {
+    messaggio += '\n<b><i>Oggetti presenti:</i></b>\n';
+    oggettiPresenti.forEach(obj => {
+      messaggio += `<i>  - ${obj.Oggetto}</i>\n`;
+    });
+  }
+  
+  return messaggio;
 }
 
 // Funzione per ottenere gli oggetti correnti
@@ -300,6 +324,9 @@ function verificaPrerequisiti(prerequisiti) {
         o.Attivo >= 1
       );
       if (!oggetto) return false;
+    } else if (req.tipo === 'SEQUENZA_COMPLETATA') {
+      const seq = gameState.sequenze[req.target];
+      if (!seq || !seq.completata) return false;
     }
   }
   return true;
@@ -339,6 +366,10 @@ function applicaEffetti(effetti, luogoCorrente) {
       gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
     } else if (effetto.tipo === 'VITTORIA') {
       gameState.ended = true;
+    } else if (effetto.tipo === 'SEQUENZA') {
+      // Gestione sequenze (es. combinazione cassaforte)
+      // Questo effetto viene gestito direttamente in cercaEseguiInterazione
+      // perché richiede accesso alla risposta e controllo flusso
     }
   }
 }
@@ -380,6 +411,57 @@ function cercaEseguiInterazione(verb, noun) {
         }
       }
       
+      // Gestione speciale per effetto SEQUENZA
+      const effettoSequenza = interazione.effetti.find(e => e.tipo === 'SEQUENZA');
+      if (effettoSequenza) {
+        const key = effettoSequenza.target;
+        const direzione = effettoSequenza.direzione;
+        
+        // Inizializza sequenza se non esiste
+        if (!gameState.sequenze[key]) {
+          gameState.sequenze[key] = {
+            pattern: effettoSequenza.pattern,
+            progressione: [],
+            completata: false
+          };
+        }
+        
+        const seq = gameState.sequenze[key];
+        
+        // Se già completata, non fare nulla
+        if (seq.completata) {
+          return { accepted: true, resultType: 'OK', message: 'La cassaforte è già aperta.', effects: [] };
+        }
+        
+        // Verifica se la direzione è corretta per il passo attuale
+        const passoAtteso = seq.pattern[seq.progressione.length];
+        
+        if (direzione === passoAtteso) {
+          seq.progressione.push(direzione);
+          
+          // Sequenza completata?
+          if (seq.progressione.length === seq.pattern.length) {
+            seq.completata = true;
+            applicaEffetti(effettoSequenza.effetti_completamento, interazione.condizioni.luogo);
+            risposta = interazione.risposta_completa;
+            
+            // Usa funzione centralizzata per descrizione luogo e oggetti
+            const descrizioneCompleta = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
+            const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
+            
+            return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
+          } else {
+            risposta = interazione.risposta_step;
+            return { accepted: true, resultType: 'OK', message: risposta, effects: [] };
+          }
+        } else {
+          // Errore: reset sequenza
+          seq.progressione = [];
+          risposta = interazione.risposta_errore;
+          return { accepted: true, resultType: 'OK', message: risposta, effects: [] };
+        }
+      }
+      
       // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
       applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
       
@@ -391,25 +473,9 @@ function cercaEseguiInterazione(verb, noun) {
       // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
       const haVisibilitaEffects = interazione.effetti.some(e => e.tipo === 'VISIBILITA');
       if (haVisibilitaEffects) {
-        // Ottieni descrizione luogo corrente
-        const luogo = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
-        let messaggioCompleto = risposta + '\n\n';
-        
-        if (luogo) {
-          messaggioCompleto += luogo.Descrizione + '\n';
-          
-          // Aggiungi lista oggetti visibili (esclusi contenuti: Attivo=2)
-          const oggettiVisibili = gameState.Oggetti.filter(o => 
-            o.IDLuogo === gameState.currentLocationId && (o.Attivo === 1 || o.Attivo >= 3)
-          );
-          
-          if (oggettiVisibili.length > 0) {
-            messaggioCompleto += '\nOggetti visibili:\n';
-            oggettiVisibili.forEach(obj => {
-              messaggioCompleto += `  - ${obj.Oggetto}\n`;
-            });
-          }
-        }
+        // Usa funzione centralizzata per descrizione luogo e oggetti
+        const descrizioneCompleta = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
+        const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
         
         return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
       }

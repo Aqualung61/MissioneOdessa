@@ -658,5 +658,17 @@
     "Voce": "SEGRETO",
     "ID_Termine": 66,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 113,
+    "Voce": "DESTRA",
+    "ID_Termine": 67,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 114,
+    "Voce": "SINISTRA",
+    "ID_Termine": 68,
+    "ID_Lingua": 1
   }
 ]
