@@ -592,5 +592,11 @@
     "Voce": "MUOVERE",
     "ID_Termine": 57,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 102,
+    "Voce": "TAVOLO",
+    "ID_Termine": 21,
+    "ID_Lingua": 1
   }
 ]
