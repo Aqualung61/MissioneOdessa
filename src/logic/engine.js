@@ -329,6 +329,8 @@ function verificaPrerequisiti(prerequisiti) {
     } else if (req.tipo === 'SEQUENZA_COMPLETATA') {
       const seq = gameState.sequenze[req.target];
       if (!seq || !seq.completata) return false;
+    } else if (req.tipo === 'INTERAZIONE_ESEGUITA') {
+      if (!gameState.interazioniEseguite.includes(req.target)) return false;
     }
   }
   return true;
@@ -404,7 +406,7 @@ function cercaEseguiInterazione(verb, noun) {
       // Interazione trovata e valida
       // Determina la risposta (per toggle)
       let risposta = interazione.risposta;
-      if (interazione.trigger.verbo === 'PREMI' || interazione.trigger.verbo === 'RUOTA') {
+      if (interazione.trigger.verbo === 'PREMERE' || interazione.trigger.verbo === 'RUOTARE') {
         // Verifica stato toggle
         const primoEffetto = interazione.effetti.find(e => e.tipo === 'TOGGLE_DIREZIONE');
         if (primoEffetto) {

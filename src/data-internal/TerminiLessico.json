@@ -333,5 +333,15 @@
     "ID_Termine": 68,
     "Concetto": "SINISTRA",
     "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 69,
+    "Concetto": "MACERIE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 70,
+    "Concetto": "TAVOLO",
+    "ID_TipoLessico": 4
   }
 ]

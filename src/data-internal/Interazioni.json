@@ -224,7 +224,7 @@
     "id": "carica_pesa_57",
     "trigger": {
       "verbo": "METTERE",
-      "oggetto": "PESA"
+      "oggetto": "PESO"
     },
     "condizioni": {
       "luogo": 57,
@@ -247,14 +247,28 @@
         "tipo": "VISIBILITA",
         "target": "Botola",
         "valore": 1
-      },
-      {
-        "tipo": "VISIBILITA",
-        "target": "Dossier",
-        "valore": 1
       }
     ],
     "ripetibile": false
+  },
+  {
+    "id": "esamina_botola_57",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "BOTOLA"
+    },
+    "condizioni": {
+      "luogo": 57
+    },
+    "risposta": "La botola rivela un piccolo nascondiglio sul pavimento. All'interno c'è un dossier.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Dossier",
+        "valore": 3
+      }
+    ],
+    "ripetibile": true
   },
   {
     "id": "premi_pulsante_44",
@@ -368,6 +382,25 @@
       }
     ],
     "ripetibile": false
+  },
+  {
+    "id": "esamina_macerie_dopo_scavo_49",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "MACERIE"
+    },
+    "condizioni": {
+      "luogo": 49,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "scava_macerie_49"
+        }
+      ]
+    },
+    "risposta": "Macerie rimosse dal passaggio ad ovest",
+    "effetti": [],
+    "ripetibile": true
   },
   {
     "id": "porgi_documenti_59",

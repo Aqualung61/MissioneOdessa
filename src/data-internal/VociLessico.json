@@ -300,18 +300,7 @@
     "ID_Lingua": 1
   },
   {
-    "ID_Voce": 51,
-    "Voce": "Tavolo",
-    "ID_Termine": 35,
-    "ID_Lingua": 1
-  },
-  {
-    "ID_Voce": 52,
-    "Voce": "Bottone",
-    "ID_Termine": 36,
-    "ID_Lingua": 1
-  },
-  {
+
     "ID_Voce": 53,
     "Voce": "Porta",
     "ID_Termine": 37,
@@ -678,9 +667,15 @@
     "ID_Lingua": 1
   },
   {
-    "ID_Voce": 116,
-    "Voce": "dossier",
-    "ID_Termine": 25,
+    "ID_Voce": 117,
+    "Voce": "Macerie",
+    "ID_Termine": 69,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 118,
+    "Voce": "Tavolo",
+    "ID_Termine": 70,
     "ID_Lingua": 1
   }
 ]

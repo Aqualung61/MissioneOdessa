@@ -136,14 +136,6 @@
     "descrizione": "E' un vecchio tavolo rettangolare."
   },
   {
-    "ID": 18,
-    "IDLingua": 1,
-    "Oggetto": "Bottone",
-    "Attivo": 1,
-    "IDLuogo": 44,
-    "descrizione": "E' di colore rosso. Un cartello sotto di esso dice: USCITA."
-  },
-  {
     "ID": 19,
     "IDLingua": 1,
     "Oggetto": "Porta aperta",
@@ -154,10 +146,10 @@
   {
     "ID": 20,
     "IDLingua": 1,
-    "Oggetto": "Tavolo",
+    "Oggetto": "Macerie",
     "Attivo": 1,
     "IDLuogo": 49,
-    "descrizione": "E' un vecchio tavolo rettangolare."
+    "descrizione": "Macerie che impediscono di andare ad ovest"
   },
   {
     "ID": 21,

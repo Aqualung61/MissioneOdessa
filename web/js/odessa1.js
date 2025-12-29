@@ -130,7 +130,30 @@ function handleDirectionClick(dir) {
     return;
   }
   current = next;
-  showCurrent();
+  
+  // Aggiorna direzioni dinamiche del nuovo luogo prima di mostrarlo
+  console.log(`Navigazione: aggiornamento direzioni per luogo ${current.ID}`);
+  fetch(basePath + `api/engine/direzioni/${current.ID}`)
+    .then(res => res.json())
+    .then(direzioniResult => {
+      console.log(`Direzioni ricevute per luogo ${current.ID}:`, direzioniResult);
+      if (direzioniResult.ok && direzioniResult.direzioni) {
+        // Aggiorna le direzioni del luogo corrente
+        Object.assign(current, direzioniResult.direzioni);
+        // Aggiorna anche nell'array luoghi per coerenza
+        const luogoInArray = luoghi.find(l => l.ID === current.ID);
+        if (luogoInArray) {
+          Object.assign(luogoInArray, direzioniResult.direzioni);
+        }
+        console.log(`Direzioni aggiornate. current.Sud = ${current.Sud}`);
+      }
+      showCurrent();
+    })
+    .catch(err => {
+      console.error('Errore aggiornamento direzioni navigazione:', err);
+      showCurrent(); // Mostra comunque il luogo
+    });
+  
   // Aggiorna luogo corrente nel server
   fetch(basePath + 'api/engine/set-location', {
     method: 'POST',
@@ -631,7 +654,30 @@ inputForm.addEventListener('submit', async function(e) {
         return;
       }
       current = next;
-      showCurrent();
+      
+      // Aggiorna direzioni dinamiche del nuovo luogo prima di mostrarlo
+      console.log(`Livello0 NAVIGATION: aggiornamento direzioni per luogo ${current.ID}`);
+      fetch(basePath + `api/engine/direzioni/${current.ID}`)
+        .then(res => res.json())
+        .then(direzioniResult => {
+          console.log(`Direzioni ricevute per luogo ${current.ID}:`, direzioniResult);
+          if (direzioniResult.ok && direzioniResult.direzioni) {
+            // Aggiorna le direzioni del luogo corrente
+            Object.assign(current, direzioniResult.direzioni);
+            // Aggiorna anche nell'array luoghi per coerenza
+            const luogoInArray = luoghi.find(l => l.ID === current.ID);
+            if (luogoInArray) {
+              Object.assign(luogoInArray, direzioniResult.direzioni);
+            }
+            console.log(`Direzioni aggiornate. current.Sud = ${current.Sud}, current.Nord = ${current.Nord}`);
+          }
+          showCurrent();
+        })
+        .catch(err => {
+          console.error('Errore aggiornamento direzioni navigazione livello0:', err);
+          showCurrent(); // Mostra comunque il luogo
+        });
+      
       // Aggiorna luogo corrente nel server
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
@@ -729,6 +775,7 @@ inputForm.addEventListener('submit', async function(e) {
       }
       current = next;
       showCurrent();
+      
       // Aggiorna luogo corrente nel server
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
