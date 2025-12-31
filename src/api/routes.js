@@ -4,6 +4,21 @@ import { getOggetti } from '../logic/engine.js';
 
 const router = express.Router();
 
+// GET /api/frontend-messages/:lingua - restituisce messaggi UI localizzati
+router.get('/frontend-messages/:lingua', async (req, res) => {
+  try {
+    const lingua = parseInt(req.params.lingua, 10);
+    if (!lingua || (lingua !== 1 && lingua !== 2)) {
+      return res.status(400).json({ ok: false, error: 'Lingua non valida (1=IT, 2=EN)' });
+    }
+    const messaggiFrontend = global.odessaData.MessaggiFrontend || [];
+    const filtered = messaggiFrontend.filter(m => m.IDLingua === lingua);
+    res.json({ ok: true, messages: filtered, count: filtered.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // GET /api/introduzione - restituisce il testo markdown della presentazione
 router.get('/introduzione', async (req, res) => {
   const id = parseInt(req.query.id, 10) || 1;

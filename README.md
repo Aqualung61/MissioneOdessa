@@ -15,8 +15,8 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
    npm run dev
    ```
 3. Accedi all'applicazione web:
-   - [http://localhost:3001/web/odessa1.html](http://localhost:3001/web/odessa1.html)
-   - [http://localhost:3001/index.html](http://localhost:3001/index.html)
+   - [http://localhost:3001/index.html](http://localhost:3001/index.html) (entrypoint con selezione lingua)
+   - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
 
 4. Le API sono disponibili su:
    - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
@@ -39,7 +39,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
   - `src/api/` — router API Express (es. `routes.js`, `linguaRoutes.js`)
   - `src/server.js` — entry point server Express (statico + API)
   - `src/tests/` — script di test, utilità e backup
-- `web/` — file frontend statici (es. `odessa1.html`, `odessa1.js`)
+- `web/` — file frontend statici (es. `odessa_main.html`, `odessa_intro.html`, `odessa1.js`)
 - `backup/` — backup e archivi
 - `docs/` — documentazione e note di modellazione
 - `.env` — configurazione ambiente (es. percorso DB)

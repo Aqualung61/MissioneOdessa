@@ -9,7 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
-const tableNames = ['Azioni', 'Interazioni', 'Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
+// DEPRECATED 2025-12-31: 'Azioni' rimosso (sostituito da SBLOCCA_DIREZIONE in Interazioni)
+const tableNames = ['Interazioni', 'Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiFrontend', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
 export async function initOdessa() {
   const odessaData = {};

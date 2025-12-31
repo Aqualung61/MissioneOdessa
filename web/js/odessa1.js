@@ -8,6 +8,37 @@ function getQueryParam(name) {
 const idLingua = parseInt(getQueryParam('idLingua')) || parseInt(localStorage.getItem('linguaSelezionata')) || 1;
 console.log('ID Lingua corrente (odessa1.js):', idLingua);
 
+// Carica messaggi i18n frontend
+if (window.i18n) {
+  window.i18n.load(idLingua)
+    .then(() => {
+      window.i18n.initHTML();
+      console.log('Testi HTML localizzati');
+      
+      // Mostra lingua selezionata localizzata
+      let descrizione = localStorage.getItem('linguaDescrizione') || '';
+      if (!descrizione && idLingua) {
+        // Fallback: recupera nome lingua dal backend
+        fetch('/api/lingue')
+          .then(res => res.json())
+          .then(data => {
+            const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
+            if (lingua) {
+              const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
+              descrizione = nome || '';
+              if (descrizione) {
+                document.getElementById('linguaScelta').textContent = window.i18n.msg('ui.lang.selected', descrizione);
+                localStorage.setItem('linguaDescrizione', descrizione);
+              }
+            }
+          });
+      } else if (descrizione) {
+        document.getElementById('linguaScelta').textContent = window.i18n.msg('ui.lang.selected', descrizione);
+      }
+    })
+    .catch(err => console.error('Errore caricamento i18n:', err));
+}
+
 // Nessuna logica click/hover: solo visualizzazione direzioni
 // Modifica 20251107: aggiunta logica click sulle direzioni abilitate
 function updateDirectionUI(cur) {
@@ -109,7 +140,7 @@ function handleDirectionClick(dir) {
     if (feed) {
       const err = document.createElement('div');
       err.className = 'feed-msg error';
-      err.textContent = 'Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O.';
+      err.textContent = window.i18n ? window.i18n.msg('ui.error.input') : 'Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O.';
       feed.appendChild(err);
       feed.scrollTop = feed.scrollHeight;
     }
@@ -133,7 +164,7 @@ function handleDirectionClick(dir) {
     if (feed) {
       const err = document.createElement('div');
       err.className = 'feed-msg error';
-      err.textContent = `Luogo con ID=${nextId} non trovato!`;
+      err.textContent = window.i18n ? window.i18n.msg('ui.error.location', nextId) : `Luogo con ID=${nextId} non trovato!`;
       feed.appendChild(err);
       feed.scrollTop = feed.scrollHeight;
     }
@@ -409,6 +440,7 @@ let luoghi = [];
 let current = null;
 let awaitingRestart = false;
 let awaitingConfirmEnd = false;
+let gameEnded = false;
 let visitedPlaces = new Set();
 
 function updateDynamicPlaceImage() {
@@ -440,7 +472,7 @@ function showCurrent() {
       // Scritta "Gioco" con stile personalizzato
       const gameTitle = document.createElement('div');
       gameTitle.className = 'game-title-custom';
-      gameTitle.textContent = 'Gioco';
+      gameTitle.textContent = window.i18n ? window.i18n.msg('ui.game') : 'Gioco';
       gameTitle.style.background = '#d60000'; // rosso vivo
       gameTitle.style.color = '#fff';
       gameTitle.style.fontWeight = 'bold';
@@ -513,6 +545,13 @@ function showCurrent() {
 }
 inputForm.addEventListener('submit', async function(e) {
   e.preventDefault();
+  
+  // Blocca input se gioco terminato
+  if (gameEnded) {
+    userInput.value = '';
+    return;
+  }
+  
   // Se in attesa di conferma fine gioco
   if (awaitingConfirmEnd) {
     const risposta = userInput.value.trim().toUpperCase();
@@ -536,7 +575,7 @@ inputForm.addEventListener('submit', async function(e) {
       if (feed) {
         const msg = document.createElement('div');
         msg.className = 'feed-msg system';
-        msg.textContent = 'Gioco continuato.';
+        msg.textContent = window.i18n ? window.i18n.msg('ui.game.continued') : 'Gioco continuato.';
         feed.appendChild(msg);
         feed.scrollTop = feed.scrollHeight;
       }
@@ -568,6 +607,25 @@ inputForm.addEventListener('submit', async function(e) {
       })
         .catch(err => console.error('Errore reset engine:', err));
       showCurrent();
+      return;
+    } else if (/^N(O)?$/.test(risposta)) {
+      // Risposta NO: termina gioco definitivamente
+      awaitingRestart = false;
+      gameEnded = true;
+      userInput.value = '';
+      userInput.disabled = true;
+      userInput.placeholder = '';
+      
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const msg = document.createElement('div');
+        msg.className = 'feed-msg system';
+        msg.style.fontWeight = 'bold';
+        msg.style.color = '#d60000';
+        msg.textContent = window.i18n ? window.i18n.msg('ui.game.ended') : 'Gioco terminato. Ricarica la pagina per giocare di nuovo.';
+        feed.appendChild(msg);
+        feed.scrollTop = feed.scrollHeight;
+      }
       return;
     }
     // Se risposta non valida, ignora qualsiasi input e rimane sulla descrizione terminale
@@ -627,7 +685,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const err = document.createElement('div');
           err.className = 'feed-msg error';
-          err.textContent = `Luogo con ID=${nextId} non trovato!`;
+          err.textContent = window.i18n ? window.i18n.msg('ui.error.location', nextId) : `Luogo con ID=${nextId} non trovato!`;
           feed.appendChild(err);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -700,7 +758,8 @@ inputForm.addEventListener('submit', async function(e) {
       if (feed) {
         const err = document.createElement('div');
         err.className = 'feed-msg error';
-        err.textContent = parseResult.Error === 'COMMAND_UNKNOWN' ? 'Comando sconosciuto.' : 'Input non valido.';
+        const msgKey = parseResult.Error === 'COMMAND_UNKNOWN' ? 'ui.error.unknownCommand' : 'ui.error.input';
+        err.textContent = window.i18n ? window.i18n.msg(msgKey) : (parseResult.Error === 'COMMAND_UNKNOWN' ? 'Comando sconosciuto.' : 'Input non valido.');
         feed.appendChild(err);
         feed.scrollTop = feed.scrollHeight;
       }
@@ -722,7 +781,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const err = document.createElement('div');
           err.className = 'feed-msg error';
-          err.textContent = 'Direzione non riconosciuta.';
+          err.textContent = window.i18n ? window.i18n.msg('ui.error.direction') : 'Direzione non riconosciuta.';
           feed.appendChild(err);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -747,7 +806,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const err = document.createElement('div');
           err.className = 'feed-msg error';
-          err.textContent = `Luogo con ID=${nextId} non trovato!`;
+          err.textContent = window.i18n ? window.i18n.msg('ui.error.location', nextId) : `Luogo con ID=${nextId} non trovato!`;
           feed.appendChild(err);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -825,7 +884,7 @@ inputForm.addEventListener('submit', async function(e) {
               if (feed) {
                 const errMsg = document.createElement('div');
                 errMsg.className = 'feed-msg error';
-                errMsg.textContent = 'Errore nel salvataggio del gioco.';
+                errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel salvataggio del gioco.';
                 feed.appendChild(errMsg);
                 feed.scrollTop = feed.scrollHeight;
               }
@@ -869,7 +928,7 @@ inputForm.addEventListener('submit', async function(e) {
                                 if (feed) {
                                   const msg = document.createElement('div');
                                   msg.className = 'feed-msg system';
-                                  msg.textContent = 'Gioco caricato con successo.';
+                                  msg.textContent = window.i18n ? window.i18n.msg('ui.game.loaded') : 'Gioco caricato con successo.';
                                   feed.appendChild(msg);
                                   feed.scrollTop = feed.scrollHeight;
                                 }
@@ -886,7 +945,7 @@ inputForm.addEventListener('submit', async function(e) {
                     if (feed) {
                       const errMsg = document.createElement('div');
                       errMsg.className = 'feed-msg error';
-                      errMsg.textContent = 'Errore nel caricamento del gioco.';
+                      errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel caricamento del gioco.';
                       feed.appendChild(errMsg);
                       feed.scrollTop = feed.scrollHeight;
                     }
@@ -896,7 +955,7 @@ inputForm.addEventListener('submit', async function(e) {
                   if (feed) {
                     const errMsg = document.createElement('div');
                     errMsg.className = 'feed-msg error';
-                    errMsg.textContent = 'File di salvataggio non valido.';
+                    errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.invalidFile') : 'File di salvataggio non valido.';
                     feed.appendChild(errMsg);
                     feed.scrollTop = feed.scrollHeight;
                   }
@@ -927,7 +986,7 @@ inputForm.addEventListener('submit', async function(e) {
           if (feed) {
             const err = document.createElement('div');
             err.className = 'feed-msg error';
-            err.textContent = 'Errore nell\'esecuzione del comando.';
+            err.textContent = window.i18n ? window.i18n.msg('ui.error.execution') : 'Errore nell\'esecuzione del comando.';
             feed.appendChild(err);
             feed.scrollTop = feed.scrollHeight;
           }
@@ -938,7 +997,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const errMsg = document.createElement('div');
           errMsg.className = 'feed-msg error';
-          errMsg.textContent = 'Errore interno nell\'esecuzione.';
+          errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.internal') : 'Errore interno nell\'esecuzione.';
           feed.appendChild(errMsg);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -990,7 +1049,7 @@ inputForm.addEventListener('submit', async function(e) {
           if (feed) {
             const err = document.createElement('div');
             err.className = 'feed-msg error';
-            err.textContent = 'Errore nell\'esecuzione del comando ACTION.';
+            err.textContent = window.i18n ? window.i18n.msg('ui.error.action') : 'Errore nell\'esecuzione del comando ACTION.';
             feed.appendChild(err);
             feed.scrollTop = feed.scrollHeight;
           }
@@ -1001,7 +1060,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const errMsg = document.createElement('div');
           errMsg.className = 'feed-msg error';
-          err.textContent = 'Errore interno nell\'esecuzione ACTION.';
+          errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.actionInternal') : 'Errore interno nell\'esecuzione ACTION.';
           feed.appendChild(errMsg);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -1012,7 +1071,7 @@ inputForm.addEventListener('submit', async function(e) {
       if (feed) {
         const err = document.createElement('div');
         err.className = 'feed-msg error';
-        err.textContent = 'Tipo di comando non supportato.';
+        err.textContent = window.i18n ? window.i18n.msg('ui.error.unsupported') : 'Tipo di comando non supportato.';
         feed.appendChild(err);
         feed.scrollTop = feed.scrollHeight;
       }
@@ -1024,7 +1083,7 @@ inputForm.addEventListener('submit', async function(e) {
     if (feed) {
       const errMsg = document.createElement('div');
       errMsg.className = 'feed-msg error';
-      errMsg.textContent = 'Errore interno del parser.';
+      errMsg.textContent = window.i18n ? window.i18n.msg('ui.error.parser') : 'Errore interno del parser.';
       feed.appendChild(errMsg);
       feed.scrollTop = feed.scrollHeight;
     }
@@ -1051,24 +1110,7 @@ fetch(basePath + 'api/luoghi')
       .catch(err => console.error('Errore reset engine iniziale:', err));
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
-    // Chiamata azioni_setup per aggiornare direzioni
-    fetch(basePath + 'api/azioni?idLingua=' + idLingua + '&log=0')
-      .then(res => res.json())
-      .then(azioniData => {
-        if (azioniData.updatedDirections) {
-          for (const [id, directions] of Object.entries(azioniData.updatedDirections)) {
-            const luogo = luoghi.find(l => l.ID == id);
-            if (luogo) {
-              Object.assign(luogo, directions);
-            }
-          }
-        }
-        showCurrent();
-      })
-      .catch(err => {
-        console.error('Errore in azioni_setup:', err);
-        showCurrent(); // Procedi comunque
-      });
+    showCurrent();
   })
   .catch(err => {
     console.error('Errore nel caricamento dei luoghi:', err);

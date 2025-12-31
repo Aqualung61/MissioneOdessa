@@ -69,7 +69,7 @@
 
 ### Come usare
 - Avvia il server con `npm run dev`.
-- Accedi al frontend su `/web/odessa1.html`.
+- Accedi al frontend su `/index.html` (selezione lingua) o `/web/odessa_main.html` (gioco diretto).
 - Consulta le API su `/api/luoghi` e `/api/version`.
 
 ---

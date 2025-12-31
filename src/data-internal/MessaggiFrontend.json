@@ -1,0 +1,332 @@
+[
+  {
+    "Chiave": "ui.loading",
+    "IDLingua": 1,
+    "Messaggio": "Caricamento..."
+  },
+  {
+    "Chiave": "ui.loading",
+    "IDLingua": 2,
+    "Messaggio": "Loading..."
+  },
+  {
+    "Chiave": "ui.error.connection",
+    "IDLingua": 1,
+    "Messaggio": "Errore di connessione al server"
+  },
+  {
+    "Chiave": "ui.error.connection",
+    "IDLingua": 2,
+    "Messaggio": "Server connection error"
+  },
+  {
+    "Chiave": "ui.error.command",
+    "IDLingua": 1,
+    "Messaggio": "Errore nell'esecuzione del comando"
+  },
+  {
+    "Chiave": "ui.error.command",
+    "IDLingua": 2,
+    "Messaggio": "Command execution error"
+  },
+  {
+    "Chiave": "ui.inventory.empty",
+    "IDLingua": 1,
+    "Messaggio": "Inventario vuoto"
+  },
+  {
+    "Chiave": "ui.inventory.empty",
+    "IDLingua": 2,
+    "Messaggio": "Empty inventory"
+  },
+  {
+    "Chiave": "ui.inventory.title",
+    "IDLingua": 1,
+    "Messaggio": "Inventario"
+  },
+  {
+    "Chiave": "ui.inventory.title",
+    "IDLingua": 2,
+    "Messaggio": "Inventory"
+  },
+  {
+    "Chiave": "ui.title",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa"
+  },
+  {
+    "Chiave": "ui.title",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa"
+  },
+  {
+    "Chiave": "ui.input.placeholder",
+    "IDLingua": 1,
+    "Messaggio": "Inserisci comando..."
+  },
+  {
+    "Chiave": "ui.input.placeholder",
+    "IDLingua": 2,
+    "Messaggio": "Enter command..."
+  },
+  {
+    "Chiave": "ui.help.title",
+    "IDLingua": 1,
+    "Messaggio": "Comandi disponibili"
+  },
+  {
+    "Chiave": "ui.help.title",
+    "IDLingua": 2,
+    "Messaggio": "Available commands"
+  },
+  {
+    "Chiave": "ui.directions.title",
+    "IDLingua": 1,
+    "Messaggio": "Direzioni"
+  },
+  {
+    "Chiave": "ui.directions.title",
+    "IDLingua": 2,
+    "Messaggio": "Directions"
+  },
+  {
+    "Chiave": "ui.load.success",
+    "IDLingua": 1,
+    "Messaggio": "Partita caricata con successo"
+  },
+  {
+    "Chiave": "ui.load.success",
+    "IDLingua": 2,
+    "Messaggio": "Game loaded successfully"
+  },
+  {
+    "Chiave": "ui.save.success",
+    "IDLingua": 1,
+    "Messaggio": "Partita salvata con successo"
+  },
+  {
+    "Chiave": "ui.save.success",
+    "IDLingua": 2,
+    "Messaggio": "Game saved successfully"
+  },
+  {
+    "Chiave": "ui.error.direction",
+    "IDLingua": 1,
+    "Messaggio": "Direzione non riconosciuta."
+  },
+  {
+    "Chiave": "ui.error.direction",
+    "IDLingua": 2,
+    "Messaggio": "Unrecognized direction."
+  },
+  {
+    "Chiave": "ui.error.unknownCommand",
+    "IDLingua": 1,
+    "Messaggio": "Comando sconosciuto."
+  },
+  {
+    "Chiave": "ui.error.unknownCommand",
+    "IDLingua": 2,
+    "Messaggio": "Unknown command."
+  },
+  {
+    "Chiave": "ui.error.blocked",
+    "IDLingua": 1,
+    "Messaggio": "Comando: {0} → muro (0)\nNon puoi andare in quella direzione."
+  },
+  {
+    "Chiave": "ui.error.blocked",
+    "IDLingua": 2,
+    "Messaggio": "Command: {0} → wall (0)\nYou cannot go in that direction."
+  },
+  {
+    "Chiave": "ui.error.location",
+    "IDLingua": 1,
+    "Messaggio": "Luogo con ID={0} non trovato!"
+  },
+  {
+    "Chiave": "ui.error.location",
+    "IDLingua": 2,
+    "Messaggio": "Location with ID={0} not found!"
+  },
+  {
+    "Chiave": "ui.error.input",
+    "IDLingua": 1,
+    "Messaggio": "Input non valido. Usa solo Nord, Est, Sud, Ovest, Su, Giu o iniziali N/E/S/O."
+  },
+  {
+    "Chiave": "ui.error.input",
+    "IDLingua": 2,
+    "Messaggio": "Invalid input. Use only North, East, South, West, Up, Down or initials N/E/S/W."
+  },
+  {
+    "Chiave": "ui.game.continued",
+    "IDLingua": 1,
+    "Messaggio": "Gioco continuato."
+  },
+  {
+    "Chiave": "ui.game.continued",
+    "IDLingua": 2,
+    "Messaggio": "Game continued."
+  },
+  {
+    "Chiave": "ui.game.loaded",
+    "IDLingua": 1,
+    "Messaggio": "Gioco caricato con successo."
+  },
+  {
+    "Chiave": "ui.game.loaded",
+    "IDLingua": 2,
+    "Messaggio": "Game loaded successfully."
+  },
+  {
+    "Chiave": "ui.game.ended",
+    "IDLingua": 1,
+    "Messaggio": "Gioco terminato. Ricarica la pagina per giocare di nuovo."
+  },
+  {
+    "Chiave": "ui.game.ended",
+    "IDLingua": 2,
+    "Messaggio": "Game ended. Reload the page to play again."
+  },
+  {
+    "Chiave": "ui.error.invalidFile",
+    "IDLingua": 1,
+    "Messaggio": "File di salvataggio non valido."
+  },
+  {
+    "Chiave": "ui.error.invalidFile",
+    "IDLingua": 2,
+    "Messaggio": "Invalid save file."
+  },
+  {
+    "Chiave": "ui.page.title",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa Adventure"
+  },
+  {
+    "Chiave": "ui.page.title",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa Adventure"
+  },
+  {
+    "Chiave": "ui.heading",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Adventure"
+  },
+  {
+    "Chiave": "ui.heading",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Adventure"
+  },
+  {
+    "Chiave": "ui.input.directions",
+    "IDLingua": 1,
+    "Messaggio": "Dove vuoi andare? (Nord, Est, Sud, Ovest, Su, Giu)"
+  },
+  {
+    "Chiave": "ui.input.directions",
+    "IDLingua": 2,
+    "Messaggio": "Where do you want to go? (North, East, South, West, Up, Down)"
+  },
+  {
+    "Chiave": "ui.button.submit",
+    "IDLingua": 1,
+    "Messaggio": "Invia"
+  },
+  {
+    "Chiave": "ui.button.submit",
+    "IDLingua": 2,
+    "Messaggio": "Submit"
+  },
+  {
+    "Chiave": "ui.lang.selected",
+    "IDLingua": 1,
+    "Messaggio": "Lingua selezionata: {0}"
+  },
+  {
+    "Chiave": "ui.lang.selected",
+    "IDLingua": 2,
+    "Messaggio": "Selected language: {0}"
+  },
+  {
+    "Chiave": "ui.game",
+    "IDLingua": 1,
+    "Messaggio": "Gioco"
+  },
+  {
+    "Chiave": "ui.game",
+    "IDLingua": 2,
+    "Messaggio": "Game"
+  },
+  {
+    "Chiave": "ui.error.execution",
+    "IDLingua": 1,
+    "Messaggio": "Errore nell'esecuzione del comando."
+  },
+  {
+    "Chiave": "ui.error.execution",
+    "IDLingua": 2,
+    "Messaggio": "Command execution error."
+  },
+  {
+    "Chiave": "ui.error.internal",
+    "IDLingua": 1,
+    "Messaggio": "Errore interno nell'esecuzione."
+  },
+  {
+    "Chiave": "ui.error.internal",
+    "IDLingua": 2,
+    "Messaggio": "Internal execution error."
+  },
+  {
+    "Chiave": "ui.error.action",
+    "IDLingua": 1,
+    "Messaggio": "Errore nell'esecuzione del comando ACTION."
+  },
+  {
+    "Chiave": "ui.error.action",
+    "IDLingua": 2,
+    "Messaggio": "ACTION command execution error."
+  },
+  {
+    "Chiave": "ui.error.actionInternal",
+    "IDLingua": 1,
+    "Messaggio": "Errore interno nell'esecuzione ACTION."
+  },
+  {
+    "Chiave": "ui.error.actionInternal",
+    "IDLingua": 2,
+    "Messaggio": "Internal ACTION execution error."
+  },
+  {
+    "Chiave": "ui.error.unsupported",
+    "IDLingua": 1,
+    "Messaggio": "Tipo di comando non supportato."
+  },
+  {
+    "Chiave": "ui.error.unsupported",
+    "IDLingua": 2,
+    "Messaggio": "Unsupported command type."
+  },
+  {
+    "Chiave": "ui.error.parser",
+    "IDLingua": 1,
+    "Messaggio": "Errore interno del parser."
+  },
+  {
+    "Chiave": "ui.error.parser",
+    "IDLingua": 2,
+    "Messaggio": "Internal parser error."
+  },
+  {
+    "Chiave": "ui.welcome",
+    "IDLingua": 1,
+    "Messaggio": "Benvenuto in Missione Odessa"
+  },
+  {
+    "Chiave": "ui.welcome",
+    "IDLingua": 2,
+    "Messaggio": "Welcome to Mission Odessa"
+  }
+]
