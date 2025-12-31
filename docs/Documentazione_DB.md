@@ -283,18 +283,18 @@ CREATE TABLE "Azioni" (
 | Su | NUMERIC | Sì |  | No |
 | Giu | NUMERIC | Sì |  | No |
 
-## Tabella: Luoghi_immagine
+## Tabella: LuoghiLogici
+
+Tabella che definisce i "luoghi logici" indipendenti dalla lingua. Ogni luogo logico rappresenta una stanza fisica/area del gioco e contiene le informazioni visive (immagine) e ambientali (buio) associate.
 
 ### Struttura:
 
 ```sql
-CREATE TABLE "Luoghi_immagine" (
-	"ID"	INTEGER NOT NULL,
-	"ID_luoghi"	INTEGER NOT NULL,
+CREATE TABLE "LuoghiLogici" (
+	"ID_LuogoLogico"	INTEGER NOT NULL UNIQUE,
 	"Immagine"	TEXT NOT NULL,
 	"Buio"	INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("ID" AUTOINCREMENT),
-	CONSTRAINT "ID_luoghi" FOREIGN KEY("ID_luoghi") REFERENCES "Luoghi"("ID")
+	PRIMARY KEY("ID_LuogoLogico" AUTOINCREMENT)
 )
 ```
 
@@ -302,10 +302,15 @@ CREATE TABLE "Luoghi_immagine" (
 
 | Nome | Tipo | Not Null | Predefinito | Chiave Primaria |
 |------|------|----------|-------------|----------------|
-| ID | INTEGER | Sì |  | Sì |
-| ID_luoghi | INTEGER | Sì |  | No |
+| ID_LuogoLogico | INTEGER | Sì |  | Sì |
 | Immagine | TEXT | Sì |  | No |
 | Buio | INTEGER | Sì | 0 | No |
+
+**Note**:
+- Ogni luogo in `Luoghi` ha un campo `ID_LuogoLogico` che referenzia questa tabella
+- Luoghi con lingue diverse che rappresentano la stessa stanza fisica condividono lo stesso `ID_LuogoLogico`
+- Il campo `Immagine` contiene il nome del file PNG nella cartella `images/`
+- Il campo `Buio` indica se il luogo richiede illuminazione (0 = visibile, 1 = buio)
 
 ## Tabella: Luoghi_oggetto
 

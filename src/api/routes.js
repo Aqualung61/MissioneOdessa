@@ -27,10 +27,14 @@ router.post('/run-tests', async (req, res) => {
 // GET /api/luoghi - restituisce tutti i luoghi
 router.get('/luoghi', async (req, res) => {
   const luoghi = global.odessaData.Luoghi || [];
-  const luoghiImmagini = global.odessaData.Luoghi_immagine || [];
+  const luoghiLogici = global.odessaData.LuoghiLogici || [];
   const luoghiConImmagini = luoghi.map(luogo => {
-    const immagine = luoghiImmagini.find(img => img.ID_luoghi == luogo.ID);
-    return { ...luogo, Immagine: immagine?.Immagine || null };
+    const luogoLogico = luoghiLogici.find(ll => ll.ID_LuogoLogico == luogo.ID_LuogoLogico);
+    return { 
+      ...luogo, 
+      Immagine: luogoLogico?.Immagine || null,
+      Buio: luogoLogico?.Buio || 0
+    };
   });
   res.json(luoghiConImmagini);
 });

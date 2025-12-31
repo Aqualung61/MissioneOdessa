@@ -6,7 +6,7 @@ import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
 import Luoghi from '../src/data-internal/Luoghi.json';
-import Luoghi_immagine from '../src/data-internal/Luoghi_immagine.json';
+import LuoghiLogici from '../src/data-internal/LuoghiLogici.json';
 import Oggetti from '../src/data-internal/Oggetti.json';
 import Piattaforme from '../src/data-internal/Piattaforme.json';
 import Software from '../src/data-internal/Software.json';
@@ -22,7 +22,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
       LessicoSoftware,
       Lingue,
       Luoghi,
-      Luoghi_immagine,
+      LuoghiLogici,
       Oggetti,
       Piattaforme,
       Software,
