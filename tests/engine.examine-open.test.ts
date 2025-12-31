@@ -54,7 +54,8 @@ describe('Engine: ESAMINA e APRI/CHIUDI', () => {
     expect(res.accepted).toBe(true);
     expect(typeof res.message).toBe('string');
     expect(res.message.length).toBeGreaterThan(0);
-    expect(res.showLocation).toBe(true);
+    // Ora la descrizione include anche gli oggetti presenti
+    expect(res.message).toContain('atrio');
   });
 
   it('GUARDA senza oggetto -> descrizione luogo corrente', async () => {
@@ -64,7 +65,8 @@ describe('Engine: ESAMINA e APRI/CHIUDI', () => {
     expect(res.accepted).toBe(true);
     expect(typeof res.message).toBe('string');
     expect(res.message.length).toBeGreaterThan(0);
-    expect(res.showLocation).toBe(true);
+    // Ora la descrizione include anche gli oggetti presenti
+    expect(res.message).toContain('atrio');
   });
 
   // Test temporaneamente disabilitato - richiede setup di oggetti apribili specifici

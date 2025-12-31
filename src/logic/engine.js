@@ -160,7 +160,7 @@ export function generateHelpMessage(idLingua = 1) {
 
 // Funzione centralizzata per generare descrizione luogo con oggetti presenti
 export function generaDescrizioneLuogoConOggetti(idLuogo) {
-  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo);
+  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
   if (!luogo) return '';
   
   let messaggio = `<span style="color: black;">${luogo.Descrizione}</span>\n`;
@@ -187,7 +187,7 @@ export function getOggetti() {
 
 // Funzione per ottenere le direzioni disponibili per un luogo
 export function getDirezioniLuogo(idLuogo) {
-  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo);
+  const luogo = global.odessaData.Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
   if (!luogo) return {};
   
   const direzioni = {
@@ -258,7 +258,7 @@ export function setCurrentLocation(locationId) {
 }
 
 export function getGameStateSnapshot() {
-  const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
+  const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua);
   const snapshot = {
     openStates: { ...gameState.openStates },
     awaitingRestart: gameState.awaitingRestart,
@@ -583,13 +583,13 @@ export function executeCommand(parseResult) {
         );
         // ESAMINA / GUARDA
         if (concept === 'ESAMINARE' || concept === 'GUARDARE' || verb === 'ESAMINA' || verb === 'GUARDA') {
-          // Senza oggetto: mostra descrizione del luogo corrente
+          // Senza oggetto: mostra descrizione del luogo corrente con oggetti presenti
           if (!noun) {
-            const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId);
-            if (currentLocation) {
-              return { accepted: true, resultType: 'OK', message: currentLocation.Descrizione, effects: [], showLocation: true };
+            const messaggioCompleto = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
+            if (messaggioCompleto) {
+              return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: 'Non vedi nulla di particolare.', effects: [], showLocation: true };
+            return { accepted: true, resultType: 'OK', message: 'Non vedi nulla di particolare.', effects: [] };
           }
           // Con oggetto: mostra descrizione dell'oggetto
           if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
