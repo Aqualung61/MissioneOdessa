@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import { executeCommand, generateHelpMessage, initializeOriginalData } from '../src/logic/engine.js';
-import Azioni from '../src/data-internal/Azioni.json';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -17,7 +16,6 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 describe('Engine: Comando HELP/AIUTO', () => {
   beforeAll(async () => {
     global.odessaData = {
-      Azioni,
       Introduzione,
       LessicoSoftware,
       Lingue,

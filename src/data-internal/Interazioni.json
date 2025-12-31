@@ -17,7 +17,8 @@
         "valore": 1
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "sposta_arazzo_20",
@@ -37,7 +38,8 @@
         "valore": 1
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "muovi_fermacarte_25",
@@ -63,7 +65,8 @@
         "valore": 1
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "esamina_scomparto_25",
@@ -89,7 +92,8 @@
         "valore": 3
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "infila_medaglione_forma_20",
@@ -132,7 +136,8 @@
         "destinazione": 20
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "infila_statuetta_nicchia_27",
@@ -175,7 +180,8 @@
         "destinazione": 27
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "infila_medaglione_forma_36",
@@ -218,7 +224,8 @@
         "destinazione": 36
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "carica_pesa_57",
@@ -249,7 +256,8 @@
         "valore": 1
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "esamina_botola_57",
@@ -268,7 +276,8 @@
         "valore": 3
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "premi_pulsante_44",
@@ -296,7 +305,8 @@
         "destinazione": 44
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "ruota_sedile_42",
@@ -324,7 +334,8 @@
         "destinazione": 42
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "scava_macerie_11",
@@ -349,7 +360,8 @@
         "valore": 3
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "scava_macerie_49",
@@ -381,7 +393,8 @@
         "destinazione": 49
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "esamina_macerie_dopo_scavo_49",
@@ -400,7 +413,8 @@
     },
     "risposta": "Macerie rimosse dal passaggio ad ovest",
     "effetti": [],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "porgi_documenti_59",
@@ -423,7 +437,8 @@
         "tipo": "VITTORIA"
       }
     ],
-    "ripetibile": false
+    "ripetibile": false,
+    "IDLingua": 1
   },
   {
     "id": "ruota_destra_cassaforte_24",
@@ -449,11 +464,18 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "DESTRA",
-        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
+        "pattern": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
         "effetti_completamento": []
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "ruota_sinistra_cassaforte_24",
@@ -479,11 +501,18 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "SINISTRA",
-        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
+        "pattern": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
         "effetti_completamento": []
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "esamina_cassaforte_vuota_24",
@@ -506,7 +535,8 @@
     },
     "risposta": "La cassaforte è aperta e vuota.",
     "effetti": [],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   },
   {
     "id": "esamina_cassaforte_con_medaglione_24",
@@ -531,6 +561,7 @@
         "valore": 3
       }
     ],
-    "ripetibile": true
+    "ripetibile": true,
+    "IDLingua": 1
   }
 ]

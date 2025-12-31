@@ -42,7 +42,8 @@ let gameState = {
   interazioniEseguite: [], // ID delle interazioni già eseguite (non ripetibili)
   direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
   direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
-  sequenze: {} // Stato delle sequenze (es. cassaforte)
+  sequenze: {}, // Stato delle sequenze (es. cassaforte)
+  currentLingua: 1 // Lingua corrente (default: italiano)
 };
 
 // Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
@@ -57,8 +58,8 @@ export function initializeOriginalData() {
 }
 
 // Funzione per resettare lo stato di gioco
-export function resetGameState() {
-  console.log('Inizializzazione gameState');
+export function resetGameState(idLingua = 1) {
+  console.log('Inizializzazione gameState con lingua:', idLingua);
   gameState = {
     openStates: { BOTOLA: false },
     awaitingRestart: false,
@@ -69,7 +70,8 @@ export function resetGameState() {
     interazioniEseguite: [],
     direzioniSbloccate: {},
     direzioniToggle: {},
-    sequenze: {}
+    sequenze: {},
+    currentLingua: idLingua
   };
   // Aggiungi Oggetti a gameState dai dati originali
   if (originalOggetti.length > 0) {
@@ -215,13 +217,15 @@ export function getDirezioniLuogo(idLuogo) {
         // Se il toggle è attivo, usa la destinazione, altrimenti blocca
         if (isOpen) {
           // Trova la destinazione originale
-          const interazione = (global.odessaData.Interazioni || []).find(i => 
-            i.effetti && i.effetti.some(e => 
-              e.tipo === 'TOGGLE_DIREZIONE' && 
-              e.luogo === idLuogo && 
-              e.direzione === direzione
-            )
-          );
+          const interazione = (global.odessaData.Interazioni || [])
+            .filter(i => i.IDLingua === gameState.currentLingua)
+            .find(i => 
+              i.effetti && i.effetti.some(e => 
+                e.tipo === 'TOGGLE_DIREZIONE' && 
+                e.luogo === idLuogo && 
+                e.direzione === direzione
+              )
+            );
           if (interazione) {
             const effetto = interazione.effetti.find(e => 
               e.tipo === 'TOGGLE_DIREZIONE' && 
@@ -380,7 +384,8 @@ function applicaEffetti(effetti, luogoCorrente) {
 
 // Funzione per cercare e eseguire un'interazione
 function cercaEseguiInterazione(verb, noun) {
-  const interazioni = global.odessaData.Interazioni || [];
+  const interazioni = (global.odessaData.Interazioni || [])
+    .filter(i => i.IDLingua === gameState.currentLingua);
   
   // Cerca un'interazione che corrisponda
   for (const interazione of interazioni) {
@@ -518,7 +523,7 @@ export function executeCommand(parseResult) {
         const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
         switch (concept) {
           case 'INVENTARIO': {
-            const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === 1);
+            const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === gameState.currentLingua);
             if (inventoryItems.length === 0) {
               return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [], showLocation: true };
             }
@@ -587,15 +592,15 @@ export function executeCommand(parseResult) {
             return { accepted: true, resultType: 'OK', message: 'Non vedi nulla di particolare.', effects: [], showLocation: true };
           }
           // Con oggetto: mostra descrizione dell'oggetto
-          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
           const text = oggetto.descrizione || 'Non noti nulla di particolare.';
           return { accepted: true, resultType: 'OK', message: text, effects: [] };
         }
         // APRI / CHIUDI (elementi apribili)
         if (verb === 'APRI' || verb === 'CHIUDI') {
-          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun} qui.`, effects: [] };
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
           const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
-          if (!canOpen) return { accepted: true, resultType: 'OK', message: `Non puoi ${verb.toLowerCase()} ${noun}.`, effects: [] };
+          if (!canOpen) return { accepted: true, resultType: 'OK', message: `Non puoi ${verb.toLowerCase()} ${noun.toLowerCase().replace(/_/g, ' ')}.`, effects: [] };
           const openNow = !!gameState.openStates[noun];
           if (verb === 'APRI') {
             if (openNow) return { accepted: true, resultType: 'OK', message: `È già aperto.`, effects: [] };
@@ -629,7 +634,7 @@ export function executeCommand(parseResult) {
             oggetto.IDLuogo = 0; // Sposta nell'inventario
             return { accepted: true, resultType: 'OK', message: `Hai preso ${oggetto.Oggetto}.`, effects: [] };
           }
-          return { accepted: true, resultType: 'OK', message: `Non c'è ${noun} qui.`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
         }
         if (verb === 'POSA' || verb === 'LASCIA') {
           // Trova l'oggetto nell'inventario
@@ -643,17 +648,21 @@ export function executeCommand(parseResult) {
             oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente
             return { accepted: true, resultType: 'OK', message: `Hai posato ${oggetto.Oggetto}.`, effects: [] };
           }
-          return { accepted: true, resultType: 'OK', message: `Non hai ${noun} con te.`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: `Non hai ${noun.toLowerCase().replace(/_/g, ' ')} con te.`, effects: [] };
         }
         // Altri verbi: verifica se richiedono oggetto
         if (!noun) {
           return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
         }
-        // Altri verbi: risposta generica
+        // PRIORITÀ: Verifica esistenza oggetto prima di dire che l'azione non è possibile
+        if (!oggetto) {
+          return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
+        }
+        // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
         return {
           accepted: true,
           resultType: 'OK',
-          message: `Stub: azione ${verb}` + (noun ? ` su ${noun}` : ''),
+          message: `Non puoi ${verb.toLowerCase()} ${noun.toLowerCase().replace(/_/g, ' ')}.`,
           effects: [],
         };
       }

@@ -1,0 +1,690 @@
+# Considerazioni su Architettura Applicativa e Interventi
+
+**Versione:** 1.0  
+**Data:** 30 dicembre 2025  
+**Contesto:** Analisi post-sviluppo per valutazione refactoring e strategia testing  
+**Riferimenti:** `specifica-tecnica-completa-integrata.md`
+
+---
+
+## 1. Executive Summary
+
+Questo documento raccoglie le considerazioni sull'architettura applicativa attuale di Missione Odessa e le raccomandazioni per interventi futuri. 
+
+**Conclusioni Chiave:**
+- ✅ Architettura attuale **adeguata** per il caso d'uso (gioco single-player, no espansioni)
+- ❌ Refactoring **non necessario** (over-engineering per questo contesto)
+- ❌ Unit test estensivi **non consigliati** (ROI basso, 40-50h sprecate)
+- ✅ Focus raccomandato: **implementazione feature mancanti** + **E2E testing critico**
+
+**Riferimenti Chiave:**
+- **Sezione 5.1.2 - HLD:** Tabella completa luoghi pericolosi/terminali con requisiti comportamentali
+- **Sezione 5.1.2 - TD:** Verifica costante `LUOGHI_PERICOLOSI` e test mancanti
+
+---
+
+## 2. Analisi Architettura Attuale
+
+### 2.1 Pattern Identificati
+
+| Pattern | Implementazione | Valutazione Enterprise | Valutazione Pragmatica |
+|---------|-----------------|----------------------|----------------------|
+| **State Management** | `let gameState = {...}` singleton globale | ❌ Anti-pattern | ✅ Perfetto per single-player |
+| **Data Access** | `global.odessaData` per JSON statici | ❌ Dipendenza globale | ✅ Appropriato per dati read-only |
+| **Command Orchestration** | `executeCommand()` 170 righe | ❌ Troppo monolitico | ⚠️ Accettabile, decomponibile se necessario |
+| **Side Effects** | Mutazione diretta `gameState` in-place | ❌ Non funzionale | ✅ Performance ottimale |
+
+### 2.2 Confronto con Standard di Settore
+
+#### Text Adventure Classici
+- **Zork (Infocom):** Singleton state mutabile in Z-machine
+- **Colossal Cave:** Global state C structs
+- **Missione Odessa:** Allineato con tradizione del genere
+
+#### Framework Moderni (Non Applicabili)
+- **React/Redux:** Immutable state per UI multi-component
+- **Entity-Component-System:** Per giochi multi-threaded
+- **Event Sourcing:** Per sistemi transazionali
+
+**Verdict:** L'architettura di Missione Odessa è **standard per il genere**, non "codice AI mal scritto".
+
+### 2.3 Punti di Forza
+
+1. **Pragmatismo:** Sviluppo iterativo veloce, feature-first
+2. **Performance:** Mutazione in-place più veloce di clonazione immutabile
+3. **Semplicità:** Meno indirezioni = debugging più facile
+4. **Stabilità:** Zero bug architetturali segnalati
+5. **Manutenibilità:** AI-assisted development funziona bene con pattern attuale
+
+### 2.4 Potenziali Debolezze (Non Critiche)
+
+1. **Testabilità:** Unit test richiedono setup pesante (mock `global.odessaData`, reset `gameState`)
+2. **Accoppiamento:** Funzioni dipendono da stato globale (difficile isolare)
+3. **Granularità:** `executeCommand` gestisce troppi casi (170 righe)
+
+**Impatto Reale:** Basso, dato che:
+- Non previste espansioni future
+- Performance non è problema
+- Manutenzione gestibile con AI
+
+---
+
+## 3. Valutazione Necessità Refactoring
+
+### 3.1 Refactoring per Test Automatici
+
+#### Cosa Risolverebbe
+- Riduzione setup boilerplate test (da 30 righe a 5)
+- Aumento automabilità AI (da 47% a 70%)
+- Test più veloci (no deep copy oggetti)
+
+#### Cosa NON Risolve
+- ❌ Nessun bug esistente
+- ❌ Nessun problema performance
+- ❌ Nessun rischio per utente finale
+
+#### Effort Stimato
+- Dependency injection `gameState`: 6-8h
+- Dependency injection `odessaData`: 4-6h
+- Decomposizione `executeCommand`: 8-12h
+- **Totale: 18-26h**
+
+#### Conclusione
+**NON raccomandato** per questo progetto. Benefici marginali non giustificano effort.
+
+---
+
+### 3.2 Refactoring per Problemi Reali
+
+#### Checklist Sintomi Critici
+
+| Sintomo | Presenza | Gravità | Azione |
+|---------|----------|---------|--------|
+| Bug frequenti in gameState | ❌ No | - | Nessuna |
+| Difficoltà aggiungere feature | ❌ No | - | Nessuna |
+| Performance issues | ❌ No | - | Nessuna |
+| Codice incomprensibile | ❌ No (AI disponibile) | - | Nessuna |
+
+#### Domande di Validazione (Risposte Utente)
+
+**Q1:** Negli ultimi 2 mesi, quanti bug legati a gameState inconsistente?  
+**A:** Nessuno. Bug solo su nuove feature per incomprensione requisiti, non architettura.
+
+**Q2:** Quando aggiungi interazione a `Interazioni.json`, devi modificare `engine.js` in 3+ punti?  
+**A:** No, l'architettura non ha rallentato lo sviluppo.
+
+**Q3:** Performance issues (lag, memoria)?  
+**A:** Zero.
+
+**Q4:** Codice incomprensibile dopo 2 mesi?  
+**A:** No, AI gestisce manutenzione.
+
+#### Conclusione
+**Refactoring NON necessario.** Nessun sintomo critico presente.
+
+---
+
+## 4. Valutazione Strategia Testing
+
+### 4.1 Unit Test Estensivi: Analisi Costo/Beneficio
+
+#### Scenario: Coverage 80-90% Codebase
+
+**Effort Richiesto:**
+- Parser tests: 10h
+- Engine tests (state management): 15h
+- Engine tests (business logic): 20h
+- API tests: 8h
+- **Totale: 53h**
+
+**Benefici:**
+- ✅ Catch regressions automaticamente
+- ✅ Documentazione esecutiva del comportamento
+- ✅ Confidence per refactoring futuro
+
+**Svantaggi:**
+- ❌ ROI basso per app "one-shot release" senza espansioni
+- ❌ Test fragili (accoppiati all'implementazione)
+- ❌ Manutenzione test richiede effort continuo
+- ❌ Setup boilerplate pesante (mock `global.odessaData`)
+
+#### Conclusione
+**NON raccomandato.** Per progetto single-release senza espansioni, unit test estensivi sono **lusso inutile**.
+
+---
+
+### 4.2 E2E Testing Critico: Raccomandato
+
+#### Scenario: Coverage 100% User Experience
+
+**Effort Richiesto:**
+- 8-10 scenari critici con Playwright: 5-8h
+- Smoke testing manuale: 3-5h
+- **Totale: 8-13h**
+
+**Scenari Critici:**
+```javascript
+// 1. Vittoria completa (happy path)
+test('scenario vittoria completo', async ({ page }) => {
+  // 30-40 comandi chiave dall'inizio al finale
+});
+
+// 2. Game Over - Torcia esaurita
+test('game over torcia', async ({ page }) => {
+  // 6 mosse senza accendere lampada
+});
+
+// 3. Game Over - Intercettazione
+test('game over intercettazione', async ({ page }) => {
+  // 3 azioni consecutive in luogo 51
+});
+
+// 4. Game Over - Lampada abbandonata
+test('game over lampada', async ({ page }) => {
+  // Lascia lampada accesa, cambia stanza
+});
+
+// 5. Sistema punteggio
+test('punteggio aumenta con esplorazione', async ({ page }) => {
+  // Visita 10 luoghi, verifica punteggio
+});
+
+// 6. Salva/Carica
+test('save and load state', async ({ page }) => {
+  // Salva a metà partita, ricarica, verifica stato
+});
+
+// 7-10: Altri scenari critici
+```
+
+**Benefici:**
+- ✅ Copre 100% del flusso utente
+- ✅ Catch regressions su critical path
+- ✅ Low maintenance (decoupled da implementazione)
+- ✅ AI può generare 70% del boilerplate
+
+**Copertura:**
+- Codebase: 20-30%
+- User Experience: **100%**
+
+#### Conclusione
+**Altamente raccomandato.** Miglior ROI per garantire "zero bug in produzione".
+
+---
+
+## 5. Piano Pragmatico Raccomandato
+
+### 5.1 Contesto Decisionale
+
+**Input dall'Utente:**
+- Gioco single-player, no componenti transazionali ✅
+- No release successive/evoluzioni (solo bug fix) ✅
+- Sviluppo iterativo pragmatico (vibe coding) ✅
+- Zero bug frequenti in gameState ✅
+- Architettura non ha rallentato sviluppo ✅
+- No performance issues ✅
+- AI disponibile per manutenzione ✅
+- Obiettivo: **zero bug in produzione** 🎯
+- Budget: **tempo illimitato** 🕐
+
+**Priorità Strategiche:**
+1. Completare feature mancanti dalla specifica tecnica
+2. Garantire stabilità con testing critico
+3. Deploy v1.0 production-ready
+
+---
+
+### 5.2 Roadmap Implementazione
+
+#### **Fase 1: Fondamenta e Pulizia Dati (Settimana 1)**
+**Effort:** 10-12h
+
+**Task:**
+1. Eliminare oggetto ID=28 duplicato da `Oggetti.json` (15 min)
+2. Creare `Misteri.json` con 9 obiettivi (2h)
+3. Estendere `gameState` in `engine.js`:
+   ```javascript
+   gameState = {
+     // ... campi esistenti
+     punteggio: {
+       totale: 0,
+       luoghiVisitati: new Set(),
+       interazioniPunteggio: new Set(),
+       misteriRisolti: new Set()
+     }
+   };
+   ```
+4. Aggiornare `saveGame`/`loadGame` per serializzare Set → Array (1h)
+5. Implementare sistema punteggio base (8h):
+   - Luoghi: +1 punto primo ingresso
+   - Interazioni: +2 punti (marcare 15-20 in `Interazioni.json`)
+   - Misteri: +3 punti (funzione `verificaMisteriRisolti()`)
+   - Comando PUNTI con visualizzazione ranghi
+
+**Validazione:** Gioca 30 min, verifica punteggio aumenta correttamente.
+
+---
+
+#### **Fase 2: Sistema Temporizzazione (Settimana 2)**
+**Effort:** 10-12h
+
+**Task:**
+1. Estendere `gameState.timers`:
+   ```javascript
+   timers: {
+     movementCounter: 0,
+     torciaDifettosa: true,
+     lampadaAccesa: false,
+     azioniInLuogoPericoloso: 0,
+     ultimoLuogoPericoloso: null
+   }
+   ```
+2. Implementare timer torcia (3h):
+   - Incremento `movementCounter` (esclusi system commands)
+   - `checkTorciaEsaurita()` dopo 6 mosse
+   - Game Over con messaggio "Oscurità Fatale"
+3. Implementare timer intercettazione (4h):
+   - Array `LUOGHI_PERICOLOSI = [51,52,53,55,56,58]` (vedi specifica tecnica § 1.2.2 per dettagli)
+   - Counter `azioniInLuogoPericoloso` (reset solo uscendo)
+   - `checkIntercettazione()` a 3 azioni
+   - Game Over "Catturato!"
+4. Implementare timer lampada + comando ACCENDI (3h):
+   - Comando `ACCENDI LAMPADA` (prerequisito: fiammiferi)
+   - `checkLampadaAbbandonata()` al movimento
+   - Game Over "Buio Mortale"
+
+**Validazione:** Trigger manualmente tutti i 3 game over (30 min).
+
+**Riferimento Tecnico:** Vedere `specifica-tecnica-completa-integrata.md`:
+- § 1.2.2 (HLD): Tabella completa luoghi pericolosi/terminali
+- § 2.3.1 (TD): Implementazione costante `LUOGHI_PERICOLOSI` e verifica
+
+**Checklist Operativa Codice:**
+- [ ] Verificare `const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58]` in `src/logic/engine.js`
+- [ ] Confermare esclusioni: ID=54 (terminale), ID=57 (rifugio)
+- [ ] Test esistenti: `tests/luoghi.schema.test.ts`, `tests/engine.terminal.test.ts`
+- [ ] Test MANCANTE: timer intercettazione E2E
+
+#### **TD: Interventi Codice per Luoghi Pericolosi/Terminali**
+
+**Status Attuale:**
+- ✅ Luoghi terminali (ID=8, 40, 54): **GIÀ IMPLEMENTATI** correttamente
+- ✅ Costante `LUOGHI_PERICOLOSI`: Da verificare nel codice
+
+**Verifica Necessaria:**
+```javascript
+// File: src/logic/engine.js
+// Verificare che la costante sia:
+const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
+
+// NON deve includere:
+// - ID=54 (terminale, morte istantanea)
+// - ID=57 (rifugio, zona sicura)
+```
+
+**Test di Validazione:**
+1. ✅ `tests/luoghi.schema.test.ts`: Verifica campo `Terminale` (-1 per ID 8,40,54)
+2. ✅ `tests/engine.terminal.test.ts`: Verifica comportamento luoghi terminali
+3. ⚠️ **MANCANTE**: Test timer intercettazione su `LUOGHI_PERICOLOSI`
+
+**Azioni Raccomandate:**
+- [ ] Verificare costante `LUOGHI_PERICOLOSI` in `src/logic/engine.js`
+- [ ] Se non presente, implementare come da specifica tecnica § 2.3.1
+- [ ] Aggiungere test E2E per timer intercettazione (Fase 2, vedi sotto)
+
+**Riferimento:** Per tabella completa luoghi pericolosi/terminali, vedere `specifica-tecnica-completa-integrata.md` § 1.2.2 (HLD) e § 2.3.1 (TD).
+
+---
+
+#### **Fase 3: Sistema Vittoria (Settimana 3)**
+**Effort:** 12-15h
+
+**Task:**
+1. Estendere `gameState` per narrativa:
+   ```javascript
+   narrativeState: null, // ENDING_PHASE_1A, 1B, 2_WAIT, etc.
+   victory: false,
+   movementBlocked: false,
+   unusefulCommandsCounter: 0,
+   awaitingContinue: false
+   ```
+2. Implementare sequenza Fase 1A/1B (4h):
+   - Check prerequisiti al luogo 1 (Documenti, Lista, Dossier)
+   - Dialogo Ferenc
+   - Meccanica BARRA SPAZIO
+3. Implementare teleport luogo 59 (3h):
+   - Rimuovi Lista (ID=6) e Dossier (ID=34) da inventario
+   - Conserva Documenti (ID=35)
+   - Blocca movimenti (`movementBlocked = true`)
+4. Implementare comando PORGI + logica guardia (4h):
+   - Aggiungere verbo PORGI a `Lessico.json`
+   - Comando `PORGI DOCUMENTI` (solo luogo 59)
+   - Counter comandi inappropriati (max 3)
+   - Game Over "Sospetti Fatali"
+5. Implementare Fase 2A/2B/2C (2h):
+   - Controllo documenti
+   - Schermata vittoria + statistiche
+
+**Validazione:** Completa gioco dall'inizio alla fine (45 min).
+
+---
+
+#### **Fase 4: Stabilizzazione e Testing (Settimana 4)**
+**Effort:** 10-15h
+
+**Task:**
+1. **E2E Tests con Playwright (5-8h):**
+   - Scenario vittoria completo
+   - 3 Game Over (torcia, intercettazione, lampada)
+   - Sistema punteggio (10 luoghi → verifica score)
+   - Salva/carica
+   - Comandi di sistema (INVENTARIO, AIUTO, PUNTI)
+
+2. **Smoke Testing Manuale (3-5h):**
+   - [ ] Gioco completo inizio→fine (30-45 min)
+   - [ ] Tutti i 9 misteri (verifica 3pt ciascuno) (30 min)
+   - [ ] Edge cases: inventario pieno, comandi invalidi (15 min)
+   - [ ] Tutti i game over possibili (15 min)
+   - [ ] Save/load in 5 punti diversi (10 min)
+
+3. **Bug Fixing (2-5h):**
+   - Correggi issue trovati durante testing
+   - Re-test scenari falliti
+
+4. **Deploy v1.0:**
+   - Build produzione
+   - Deploy su server/hosting
+   - Smoke test ambiente produzione
+
+---
+
+### 5.3 Budget Totale
+
+| Fase | Attività | Effort | Priorità |
+|------|----------|--------|----------|
+| 1 | Punteggio + Misteri | 10-12h | 🔴 Critica |
+| 2 | Temporizzazione (3 timer) | 10-12h | 🔴 Critica |
+| 3 | Sequenza Vittoria | 12-15h | 🔴 Critica |
+| 4 | Testing + Deploy | 10-15h | 🔴 Critica |
+| **TOTALE** | | **42-54h** | |
+
+**vs. Piano Originale (Refactoring + Unit Test):**
+- Refactoring: 20h → **Eliminato** ✅
+- Unit test estensivi: 53h → **8h E2E** ✅
+- Feature implementation: 0h → **34-39h** ✅
+
+**Risultato:** Stesso budget (~50h), speso su **valore utente finale** invece che su over-engineering.
+
+---
+
+## 6. Decisioni Chiave e Rationale
+
+### 6.1 Perché NO Refactoring
+
+**Scenario Applicabilità:** Refactoring si giustifica quando:
+- App ha bug architetturali frequenti ❌ (non presente)
+- Performance è problema critico ❌ (zero issues)
+- Previste espansioni/DLC multiple ❌ (no evoluzioni)
+- Team multi-developer con turnover ❌ (single dev + AI)
+- Codebase incomprensibile dopo 3+ mesi ❌ (AI gestisce)
+
+**Missione Odessa non soddisfa NESSUN criterio.**
+
+**Analogia:** Riorganizzare l'armadio prima di trasloco definitivo. Sforzo sprecato.
+
+---
+
+### 6.2 Perché NO Unit Test Estensivi
+
+**Unit test sono utili quando:**
+- Codebase evolve continuamente (add/remove feature) ❌
+- Refactoring frequente richiesto ❌
+- Business logic complessa con edge case nascosti ⚠️ (parziale)
+- Team multi-developer (catch regressions cross-team) ❌
+- Deployment continuo (CI/CD automatico) ❌
+
+**Missione Odessa:** Solo business logic parzialmente complessa giustificherebbe, ma:
+- No CI/CD
+- No evoluzioni future
+- E2E tests coprono critical path meglio
+
+**ROI:** 53h effort per beneficio marginale = **spreco**.
+
+---
+
+### 6.3 Perché SÌ E2E Testing
+
+**E2E tests sono ideali quando:**
+- Critical path ben definito ✅ (inizio → vittoria)
+- UI/UX è parte integrante del test ✅ (text adventure)
+- Pochi scenari coprono molti code path ✅ (10 scenari = 80% codebase)
+- Decoupling da implementazione ✅ (test robusti)
+- Focus su user experience ✅ (zero bug in produzione)
+
+**Missione Odessa soddisfa TUTTI i criteri.**
+
+**ROI:** 8h effort per copertura 100% user experience = **ottimo**.
+
+---
+
+### 6.4 Perché Priorità su Feature Implementation
+
+**Feature dalla specifica NON implementate:**
+- Sistema punteggio (57 + 34 + 27 + 4 = 122 punti)
+- 3 Timer survival (torcia, intercettazione, lampada)
+- Sequenza vittoria (6 fasi narrative)
+- 9 Misteri (3pt ciascuno)
+- 2 Comandi speciali (ACCENDI, PORGI)
+
+**Impatto Utente Finale:**
+- **Senza queste feature:** Gioco incompleto, no game over, no vittoria ❌
+- **Con unit test ma senza feature:** Codice testato ma inutilizzabile ❌
+- **Con feature + E2E test:** Gioco completo e stabile ✅
+
+**Priorità ovvia:** Feature first, test dopo.
+
+---
+
+## 7. Rischi e Mitigazioni
+
+### 7.1 Rischio: Bug in Implementazione Feature
+
+**Probabilità:** Media (nuove feature = nuovi bug)  
+**Impatto:** Alto (blocca rilascio)
+
+**Mitigazione:**
+- Validazione manuale dopo ogni fase (playtest 30-45 min)
+- E2E tests automatici per catch regressions
+- Implementazione incrementale (1 sistema alla volta)
+
+---
+
+### 7.2 Rischio: Test Insufficienti
+
+**Probabilità:** Bassa (8 scenari E2E coprono critical path)  
+**Impatto:** Medio (possibili bug in produzione)
+
+**Mitigazione:**
+- Smoke testing manuale estensivo (3-5h)
+- E2E tests su 4 game over + vittoria
+- Beta testing con 2-3 utenti esterni (opzionale)
+
+---
+
+### 7.3 Rischio: Tech Debt Futuro
+
+**Probabilità:** Alta (no refactoring = debt accumula)  
+**Impatto:** Basso (no evoluzioni previste)
+
+**Mitigazione:**
+- Accettare tech debt come trade-off consapevole
+- Se in futuro servono espansioni, rivalutare refactoring
+- Documentare decisioni architetturali (questo documento)
+
+---
+
+## 8. Metriche di Successo
+
+### 8.1 Criteri Completamento Fase
+
+| Fase | Criterio Successo | Metrica |
+|------|-------------------|---------|
+| **Fase 1** | Sistema punteggio funzionante | Playtest 30min: punteggio aumenta correttamente |
+| **Fase 2** | 3 Timer attivi | Trigger manuali di 3 game over (100% success) |
+| **Fase 3** | Vittoria completa | Playtest: inizio→fine senza crash |
+| **Fase 4** | Stabilità garantita | E2E tests: 10/10 pass + smoke test completo |
+
+### 8.2 Criteri Produzione
+
+- [ ] **Zero crash** durante smoke test completo (3h playtest)
+- [ ] **10 scenari E2E** passano al 100%
+- [ ] **Punteggio massimo** raggiungibile (122 punti verificato)
+- [ ] **Tutti i game over** trigger correttamente (6 verificati)
+- [ ] **Salva/Carica** funziona in 5 punti diversi
+- [ ] **Performance** accettabile (risposta comandi <100ms)
+
+---
+
+## 9. Alternative Considerate e Respinte
+
+### 9.1 Opzione A: Refactoring + Unit Test Estensivi
+
+**Descrizione:** Refactorare architettura a dependency injection, scrivere 80-90% coverage unit test.
+
+**Effort:** 73h (20h refactor + 53h test)
+
+**Pro:**
+- Codebase "perfetto" per standard enterprise
+- Test robusti e manutenibili
+- AI automazione 70%
+
+**Contro:**
+- Over-engineering per progetto one-shot
+- Zero beneficio utente finale
+- Budget sproporzionato per ROI
+
+**Motivo Rifiuto:** Spreco di tempo per contesto applicativo.
+
+---
+
+### 9.2 Opzione B: Solo Feature, Zero Test
+
+**Descrizione:** Implementare feature, deployare senza test automatici.
+
+**Effort:** 34h (solo feature)
+
+**Pro:**
+- Time-to-market ottimale
+- Focus totale su funzionalità
+
+**Contro:**
+- Rischio alto bug in produzione
+- Regressioni non catturate
+- Conflitto con obiettivo "zero bug"
+
+**Motivo Rifiuto:** Non soddisfa requisito stabilità.
+
+---
+
+### 9.3 Opzione C: Feature + Unit Test Selettivi
+
+**Descrizione:** Feature + unit test solo su aree bug-prone (es. timer, prerequisiti).
+
+**Effort:** 49h (34h feature + 15h unit test selettivi)
+
+**Pro:**
+- Bilanciamento feature/quality
+- Test su aree critiche
+
+**Contro:**
+- Effort test maggiore di E2E (15h vs 8h)
+- Coverage parziale (60-70%)
+- Setup mock comunque pesante
+
+**Motivo Rifiuto:** E2E tests offrono miglior ROI.
+
+---
+
+## 10. Conclusioni e Next Steps
+
+### 10.1 Sintesi Raccomandazioni
+
+1. **❌ NON fare refactoring** → Architettura attuale adeguata
+2. **❌ NON scrivere unit test estensivi** → ROI insufficiente
+3. **✅ Implementare feature mancanti** → Priorità assoluta (34-39h)
+4. **✅ E2E testing critico** → Miglior ROI per stabilità (8h)
+5. **✅ Smoke testing manuale** → Validazione finale (3-5h)
+
+**Budget Totale:** 45-52h per v1.0 production-ready
+
+---
+
+### 10.2 Prossimi Passi Immediati
+
+#### **Step 1: Validazione Piano (30 min)**
+- [ ] Review documento con stakeholder
+- [ ] Conferma priorità feature
+- [ ] Approva budget 45-52h
+
+#### **Step 2: Kickoff Fase 1 (Giorno 1)**
+- [ ] Crea branch `feature/punteggio-misteri`
+- [ ] Elimina oggetto duplicato ID=28
+- [ ] Crea `Misteri.json` schema
+- [ ] Estendi `gameState` con campi punteggio
+
+#### **Step 3: Tracking Progresso**
+- [ ] Usa questa checklist per monitoring
+- [ ] Daily playtest 15-30 min dopo ogni commit
+- [ ] Bug log in `docs/bug-tracker.md` (se necessario)
+
+---
+
+### 10.3 Criteri Go/No-Go per Produzione
+
+**GO se:**
+- ✅ 10 scenari E2E passano
+- ✅ Smoke test completo senza crash
+- ✅ Punteggio massimo raggiungibile verificato
+- ✅ Tutti i game over trigger correttamente
+
+**NO-GO se:**
+- ❌ >2 crash durante smoke test
+- ❌ E2E tests <80% pass rate
+- ❌ Bug critici non risolti (game-breaking)
+
+---
+
+### 10.4 Post-Deployment
+
+**Monitoring:**
+- Raccogliere feedback primi 10 utenti
+- Bug log con priorità (critical/high/low)
+- Hotfix per bug critici entro 48h
+
+**Manutenzione:**
+- Bug fix only (no feature expansion)
+- AI-assisted debugging (architettura attuale funziona)
+- Documentazione aggiornata per ogni fix
+
+**Potenziali Espansioni Future (Se Richieste):**
+- Se >50 utenti richiedono feature: rivalutare architettura
+- Se multiplayer/online: refactoring diventa necessario
+- Se DLC/episodi: considerare modularizzazione
+
+---
+
+## 11. Riferimenti
+
+- **Specifica Tecnica:** `specifica-tecnica-completa-integrata.md`
+- **Codebase:** `src/logic/engine.js`, `src/logic/parser.js`
+- **Test Framework:** Vitest (unit), Playwright (E2E)
+- **Issue Tracker:** GitHub Issues (se attivato)
+
+---
+
+**Fine Documento**
+
+**Approvazione:**
+- [ ] Sviluppatore: ______________________
+- [ ] Stakeholder: ______________________
+- [ ] Data: ______________________

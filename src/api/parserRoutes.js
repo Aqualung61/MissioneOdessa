@@ -30,7 +30,7 @@ router.get('/stats', async (req, res) => {
     
     const byType = tipiLessico.map(t => {
       const termini = terminiLessico.filter(tl => tl.ID_TipoLessico === t.ID_TipoLessico);
-      const voci = vociLessico.filter(vl => termini.some(tl => tl.ID_Termine === vl.ID_Termine) && vl.ID_Lingua === 1);
+      const voci = vociLessico.filter(vl => termini.some(tl => tl.ID_Termine === vl.ID_Termine));
       return {
         Tipo: t.NomeTipo,
         Termini: new Set(termini.map(tl => tl.ID_Termine)).size,

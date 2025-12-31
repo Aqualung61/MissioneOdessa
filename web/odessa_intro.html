@@ -95,14 +95,24 @@
       const introduzioneDiv = document.getElementById('introduzione');
       let currentIntro = 1;
 
+      // Funzione per leggere parametri URL
+      function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+      }
+
+      // Legge idLingua da URL, localStorage o default a 1
+      const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
+      console.log('ID Lingua corrente:', idLingua);
+
       // Fetch e mostra il testo di introduzione ID=1 con leggero delay per uniformità
       setTimeout(() => {
         loadIntroduzione(1);
       }, 100);
 
       function loadIntroduzione(id) {
-        console.log('Caricando introduzione ID:', id);
-        fetch(basePath + 'api/introduzione?id=' + id + '&lingua=1')
+        console.log('Caricando introduzione ID:', id, 'lingua:', idLingua);
+        fetch(basePath + 'api/introduzione?id=' + id + '&lingua=' + idLingua)
           .then(res => res.json())
           .then(data => {
             console.log('Testo ricevuto per ID', id, ':', data.testo);

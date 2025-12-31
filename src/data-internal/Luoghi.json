@@ -8,7 +8,7 @@
     "Nord": 0,
     "Est": 2,
     "Sud": 0,
-    "Ovest": 59,
+    "Ovest": 0,
     "Su": 0,
     "Giu": 0,
     "Terminale": 0
@@ -501,7 +501,7 @@
     "Ovest": 0,
     "Su": 0,
     "Giu": 0,
-    "Terminale": 32
+    "Terminale": 0
   },
   {
     "ID": 37,

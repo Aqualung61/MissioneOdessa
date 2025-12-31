@@ -1,3 +1,13 @@
+// Funzione per leggere parametri URL
+function getQueryParam(name) {
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name);
+}
+
+// Legge idLingua da URL, localStorage o default a 1
+const idLingua = parseInt(getQueryParam('idLingua')) || parseInt(localStorage.getItem('linguaSelezionata')) || 1;
+console.log('ID Lingua corrente (odessa1.js):', idLingua);
+
 // Nessuna logica click/hover: solo visualizzazione direzioni
 // Modifica 20251107: aggiunta logica click sulle direzioni abilitate
 function updateDirectionUI(cur) {
@@ -227,7 +237,7 @@ async function ensureVocabulary() {
   if (vocabCache) return vocabCache;
 
   const rows = odessaData.VociLessico
-    .filter(vl => vl.ID_Lingua === 1)
+    .filter(vl => vl.ID_Lingua === idLingua)
     .map(vl => {
       const tl = odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
       if (!tl) return null;
@@ -478,7 +488,7 @@ function showCurrent() {
     placeFeed.scrollTop = placeFeed.scrollHeight;
 
     // Carica e mostra oggetti nel luogo
-    fetch(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=1`)
+    fetch(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=${idLingua}`)
       .then(res => res.json())
       .then(oggetti => {
         if (oggetti.length > 0) {
@@ -498,23 +508,6 @@ function showCurrent() {
       placeFeed.appendChild(endMsg);
       placeFeed.scrollTop = placeFeed.scrollHeight;
       awaitingRestart = true;
-    } else if (current.Terminale > 0) {
-      // Chiamata azioni_modi per aggiornare direzioni in luoghi speciali
-      fetch(basePath + 'api/azioni-modi?idLingua=1&log=0&IDLuogo=' + current.Terminale)
-        .then(res => res.json())
-        .then(modiData => {
-          if (modiData.updatedDirections) {
-            for (const [id, directions] of Object.entries(modiData.updatedDirections)) {
-              const luogo = luoghi.find(l => l.ID == id);
-              if (luogo) {
-                Object.assign(luogo, directions);
-              }
-            }
-          }
-        })
-        .catch(err => {
-          console.error('Errore in azioni_modi:', err);
-        });
     }
   }
 }
@@ -568,26 +561,13 @@ inputForm.addEventListener('submit', async function(e) {
       awaitingRestart = false;
       visitedPlaces = new Set(); // Reset luoghi visitati
       // Reset del gameState sul server
-      fetch(basePath + 'api/engine/reset', { method: 'POST' })
+      fetch(basePath + 'api/engine/reset', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idLingua })
+      })
         .catch(err => console.error('Errore reset engine:', err));
-      // Chiamata azioni_setup per aggiornare direzioni al restart
-      fetch(basePath + 'api/azioni?idLingua=1&log=0')
-        .then(res => res.json())
-        .then(azioniData => {
-          if (azioniData.updatedDirections) {
-            for (const [id, directions] of Object.entries(azioniData.updatedDirections)) {
-              const luogo = luoghi.find(l => l.ID == id);
-              if (luogo) {
-                Object.assign(luogo, directions);
-              }
-            }
-          }
-          showCurrent();
-        })
-        .catch(err => {
-          console.error('Errore in azioni_setup al restart:', err);
-          showCurrent(); // Procedi comunque
-        });
+      showCurrent();
       return;
     }
     // Se risposta non valida, ignora qualsiasi input e rimane sulla descrizione terminale
@@ -1063,12 +1043,16 @@ fetch(basePath + 'api/luoghi')
     await loadOdessaData();
 
     // Reset del gameState sul server all'avvio
-    fetch(basePath + 'api/engine/reset', { method: 'POST' })
+    fetch(basePath + 'api/engine/reset', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idLingua })
+    })
       .catch(err => console.error('Errore reset engine iniziale:', err));
 
     current = luoghi.find(l => l.ID === 1) || luoghi[0];
     // Chiamata azioni_setup per aggiornare direzioni
-    fetch(basePath + 'api/azioni?idLingua=1&log=0')
+    fetch(basePath + 'api/azioni?idLingua=' + idLingua + '&log=0')
       .then(res => res.json())
       .then(azioniData => {
         if (azioniData.updatedDirections) {

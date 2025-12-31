@@ -18,7 +18,7 @@ router.post('/execute', async (req, res) => {
       const engine = await confirmRestart(input); // dbPath rimosso
       return res.json({ ok: true, parseResult: null, command: null, engine });
     }
-    const parsed = await parseCommand(null, input); // dbPath ignorato
+    const parsed = await parseCommand(null, input, state); // passa gameState
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed);
       return res.status(400).json({ ok: false, parseResult: parsed, error: parsed.Error, userMessage });
@@ -44,7 +44,8 @@ router.get('/state', (req, res) => {
 // Stato engine: reset
 router.post('/reset', (req, res) => {
   try {
-    resetGameState();
+    const { idLingua } = req.body || {};
+    resetGameState(idLingua);
     const snap = getGameStateSnapshot();
     res.json({ ok: true, state: snap });
   } catch (err) {

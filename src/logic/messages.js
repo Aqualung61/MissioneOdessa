@@ -10,7 +10,7 @@ export function mapParseErrorToUserMessage(parseResult) {
       return '?COSA VUOI?';
     case 'SYNTAX_NOUN_UNKNOWN': {
       const noun = parseResult?.UnknownNounToken;
-      if (noun) return `?NON VEDO NESSUN "${noun}" QUI.`;
+      if (noun) return `?NON VEDO NESSUN "${noun.toLowerCase()}" QUI.`;
       return '?NON VEDO QUESTO OGGETTO QUI.';
     }
     case 'SYNTAX_INVALID_STRUCTURE':

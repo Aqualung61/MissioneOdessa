@@ -35,13 +35,16 @@ export function resetVocabularyCache() {
 // Carica il vocabolario da global.odessaData e costruisce:
 // - tokenMap: Map<string, { type, canonical, termId }>
 // - canonicalByTerm: Map<termId, canonicalToken>
-export async function ensureVocabulary() {
+export async function ensureVocabulary(gameState = null) {
   // Usa global.odessaData
   if (vocabCache) return vocabCache;
 
+  // Determina la lingua corrente dal gameState, default 1
+  const currentLingua = gameState?.currentLingua || 1;
+
   // Simula la query JOIN usando filtri su global.odessaData
   const rows = global.odessaData.VociLessico
-    .filter(vl => vl.ID_Lingua === 1)
+    .filter(vl => vl.ID_Lingua === currentLingua)
     .map(vl => {
       const tl = global.odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
       if (!tl) return null; // Skip se termine non trovato
@@ -131,20 +134,24 @@ function isDigits(str) {
 // ESAMINA/GUARDA: possono essere usati senza oggetto per descrivere il luogo
 const ACTION_NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
 
-export async function parseCommand(dbPath, input) {
-  const vocab = await ensureVocabulary();
+export async function parseCommand(dbPath, input, gameState = null) {
+  const vocab = await ensureVocabulary(gameState);
   const { tokenMap } = vocab;
   const OriginalInput = input;
   const NormalizedInput = normalizeInput(input);
   const rawTokens = NormalizedInput.length ? NormalizedInput.split(' ') : [];
+  // Preserva i token originali (senza normalizzazione uppercase) per messaggi utente
+  const originalTokens = input.trim().length ? input.trim().split(/\s+/) : [];
 
   // Mappa token -> info e filtra STOPWORD
   const looked = rawTokens.map((t) => tokenMap.get(t) || null);
   const filteredTokens = [];
+  const filteredOriginalTokens = []; // Token originali corrispondenti
   for (let i = 0; i < rawTokens.length; i++) {
     const info = looked[i];
     if (info && info.type === CommandType.STOPWORD) continue; // scarta
     filteredTokens.push({ token: rawTokens[i], info });
+    filteredOriginalTokens.push(originalTokens[i] || rawTokens[i]);
   }
 
   // Helper per risultato
@@ -219,7 +226,7 @@ export async function parseCommand(dbPath, input) {
     }
 
     if (t1.info.type === CommandType.ACTION) {
-      if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: t2.token };
+      if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
       if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
       return {
         ...base,

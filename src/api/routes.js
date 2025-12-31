@@ -1,6 +1,5 @@
 import express from 'express';
 import { runE2ETests } from '../tests/runE2E.js';
-import { azioni_setup, azioni_modi } from './azioni_lib.js';
 import { getOggetti } from '../logic/engine.js';
 
 const router = express.Router();
@@ -51,12 +50,6 @@ router.get('/luogo-oggetti', async (req, res) => {
     });
   res.json(oggetti);
 });
-
-// GET /api/azioni - gestisce azioni_setup
-router.get('/azioni', azioni_setup);
-
-// GET /api/azioni-modi - gestisce azioni_modi
-router.get('/azioni-modi', azioni_modi);
 
 // Esempio di endpoint
 router.get('/ping', (req, res) => {
