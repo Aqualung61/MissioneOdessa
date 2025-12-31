@@ -898,6 +898,720 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 ## Fase 3: Sistema di Temporizzazione (Medio Rischio)
 *   **Obiettivo:** Introdurre le condizioni di morte.
 *   **Task:**
+    1.  Estendere `gameState.timers` con campi per 3 timer.
+    2.  Implementare check functions (`checkTorciaEsaurita`, `checkIntercettazione`, `checkLampadaAbbandonata`).
+    3.  Integrare check nel flusso `executeCommand`.
+    4.  Implementare comando `ACCENDI LAMPADA`.
+*   **Test:**
+    - Trigger manuale dei 3 game over (30 min)
+    - Verificare messaggi dettagliati
+    - Test E2E: morte torcia, morte intercettazione, morte lampada
+
+## Fase 4: Sequenza Vittoria (Alto Rischio)
+*   **Obiettivo:** Implementare il finale di gioco completo.
+*   **Task:**
+    1.  Estendere `gameState` per narrativa (state machine ENDING_PHASE_*).
+    2.  Implementare check condizioni vittoria (3 oggetti in Luogo 1).
+    3.  Implementare sequenze Fase 1A/1B con BARRA SPAZIO.
+    4.  Implementare teleport Luogo 59 + rimozione Lista/Dossier.
+    5.  Implementare comando PORGI DOCUMENTI.
+    6.  Implementare fasi 2A/2B/2C con schermata vittoria.
+*   **Test:**
+    - Playtest completo inizio→fine (45 min)
+    - Verificare prerequisiti (mancanza Documenti = no trigger)
+    - Test comandi inappropriati al Luogo 59 (game over)
+    - Verificare statistiche finali
+
+---
+
+# CAPITOLO 4: REFACTORING OPZIONALE (TD)
+
+**Status:** Non prioritario per v1.0 - Da valutare post-release  
+**Effort stimato:** 5-7 ore  
+**Prerequisito:** Completamento Fasi 1-4 (feature implementation) + Deploy v1.0  
+**Riferimento decisionale:** Vedere `considerazioni-architettura-interventi.md` § 6.4 per analisi costo/beneficio strategico
+
+---
+
+## 4.1 Contesto: Analisi Complessità Codice
+
+### 4.1.1 Misurazione ESLint Complexity Rules
+
+Applicando le regole standard di complessità enterprise:
+- **`complexity`**: max 10 (complessità ciclomatica)
+- **`max-lines-per-function`**: max 50 LOC
+- **`max-depth`**: max 4 (nesting depth)
+
+**Risultati misurazione:**
+- **Funzioni totali:** 23 `export function` in .js files
+- **Conformi:** 21 (91.3%)
+- **Violazioni:** 2 (8.7%)
+
+### 4.1.2 Violazioni Identificate
+
+#### Violazione Critica: executeCommand()
+
+**File:** `src/logic/engine.js` (linea 503)  
+**Metriche:**
+- **LOC:** 173 (violation: 3.5x soglia max 50)
+- **Complessità ciclomatica:** 64 (violation: 6.4x soglia max 10)
+- **Nesting depth:** 4-5 livelli (violation borderline)
+
+**Categoria:** God Function  
+**Responsabilità attuali:**
+1. Validazione input (`parseResult.IsValid`)
+2. Routing per tipo comando (switch su `CommandType`)
+3. Esecuzione logica NAVIGATION (stub)
+4. Esecuzione logica SYSTEM (7 comandi: INVENTARIO, AIUTO, SALVARE, CARICARE, PUNTI, FINE, fallback)
+5. Esecuzione logica ACTION (6 verbi: ESAMINA, GUARDA, APRI, CHIUDI, PRENDI, POSA/LASCIA + generic)
+6. Gestione interazioni custom (lookup `Interazioni.json`)
+7. Gestione stato oggetti (mutazione `gameState.Oggetti`)
+8. Gestione stato aperture (mutazione `gameState.openStates`)
+9. Formattazione messaggi i18n
+
+**Problemi:**
+- **Cognitive load:** Difficile comprendere flusso completo in singola lettura
+- **Testing:** Impossibile testare singoli verbi isolatamente (setup pesante)
+- **Manutenzione:** Modifica a PRENDI rischia regressione su APRI
+- **Estensibilità:** Aggiungere nuovo verbo richiede modifica monolite
+
+#### Violazione Minore: ensureVocabulary()
+
+**File:** `src/logic/parser.js`  
+**Metriche:**
+- **LOC:** 77 (violation: 1.5x soglia max 50)
+- **Complessità:** <10 (conforme)
+
+**Categoria:** Setup complesso vocabolario multilingua  
+**Nota:** Priorità bassa, violation solo su lunghezza non complessità.
+
+---
+
+## 4.2 High-Level Design: Decomposizione Funzionale
+
+### 4.2.1 Obiettivo Architetturale
+
+Scomporre `executeCommand()` da:
+- **Monolite:** 1 funzione (173 LOC, complessità 64)
+- **Modulare:** 1 router (15-20 LOC, complessità 4) + 20 handler specializzati (max 30 LOC ciascuno)
+
+**Pattern applicato:** Router + Handler Specializzati (variant di Strategy Pattern)
+
+### 4.2.2 Architettura Target
+
+```
+executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
+  ├─ validateParseResult(parseResult)    [Validation - 10 LOC]
+  │   └─ return null | ErrorResult
+  │
+  ├─ handleNavigationCommand(parseResult) [Handler - 5 LOC]
+  │   └─ return EngineResult (stub)
+  │
+  ├─ handleSystemCommand(parseResult)     [Dispatcher - 25 LOC]
+  │   ├─ handleInventoryCommand()         [Sub-handler - 15 LOC]
+  │   ├─ handleHelpCommand()              [Sub-handler - 5 LOC]
+  │   ├─ handleSaveCommand()              [Sub-handler - 3 LOC]
+  │   ├─ handleLoadCommand()              [Sub-handler - 3 LOC]
+  │   ├─ handleScoreCommand()             [Sub-handler - 5 LOC]
+  │   ├─ handleEndCommand()               [Sub-handler - 3 LOC]
+  │   └─ handleSystemFallback()           [Sub-handler - 5 LOC]
+  │
+  ├─ handleActionCommand(parseResult)     [Dispatcher - 30 LOC]
+  │   ├─ handleExamineAction()            [Sub-handler - 20 LOC]
+  │   ├─ handleOpenCloseAction()          [Sub-handler - 25 LOC]
+  │   ├─ handleTakeAction()               [Sub-handler - 20 LOC]
+  │   ├─ handleDropAction()               [Sub-handler - 15 LOC]
+  │   └─ handleGenericAction()            [Sub-handler - 15 LOC]
+  │
+  └─ handleManipulationCommand()          [Stub - 5 LOC]
+
+[Utilities Layer]
+  ├─ createErrorResult(key, params)       [Factory - 5 LOC]
+  ├─ createSuccessResult(...)             [Factory - 8 LOC]
+  ├─ findObject(noun)                     [Query - 5 LOC]
+  ├─ findObjectInLocation(noun, locId)    [Query - 5 LOC]
+  └─ findObjectInInventory(noun)          [Query - 5 LOC]
+```
+
+**Principi applicati:**
+- **Single Responsibility:** Ogni handler gestisce 1 tipo comando o 1 verbo
+- **Separation of Concerns:** Router (what) vs Handler (how)
+- **DRY:** Utilities layer per logiche comuni
+- **Open/Closed:** Aggiungere verbo = nuovo handler, non modifica esistente
+
+### 4.2.3 Benefici Attesi
+
+| Metrica | Prima | Dopo | Delta |
+|---------|-------|------|-------|
+| **executeCommand() LOC** | 173 | 17 | **-90%** ✅ |
+| **Complessità ciclomatica** | 64 | 4 | **-94%** ✅ |
+| **Max LOC/function** | 173 | 30 | **-83%** ✅ |
+| **Funzioni totali** | 23 | 43 | **+87%** (20 handler nuovi) |
+| **Handler specializzati** | 0 | 20 | **+20** ✅ |
+| **Testabilità** | Monolitica | Modulare | **+400%** (unit test per handler) |
+| **Manutenibilità** | God Function | Single Responsibility | **+300%** |
+| **Conformità ESLint** | 91.3% | 100% | **+8.7%** ✅ |
+
+---
+
+## 4.3 Technical Design: Implementazione Sprint
+
+### 4.3.1 Strategia Generale
+
+**Nome Sprint:** "Command Handler Decomposition"  
+**Durata totale:** 5-7 ore  
+**Approccio:** Refactoring incrementale con backward compatibility garantita
+
+**Garanzie per ogni sotto-sprint:**
+- ✅ Zero breaking changes per client
+- ✅ Tutti i 42 test esistenti passano
+- ✅ Deployable autonomamente (no half-implemented state)
+- ✅ Rollback strategy: Git tag per ogni sotto-sprint
+
+**Struttura file:**
+- `src/logic/engine.js` → mantiene `executeCommand()` come router + `gameState`
+- `src/logic/engine-handlers.js` → nuovo file con tutti gli handler (20+ funzioni)
+
+### 4.3.2 Sotto-Sprint Dettagliati
+
+#### SS0: Foundation & Router (1 ora)
+
+**Obiettivo:** Creare architettura base con zero regression
+
+**Task:**
+1. Creare file `src/logic/engine-handlers.js`
+2. Implementare utilities layer:
+   ```javascript
+   export function validateParseResult(parseResult) { ... }
+   export function createErrorResult(messageKey, params = []) { ... }
+   export function createSuccessResult(messageKey, effects = [], showLocation = false, params = []) { ... }
+   function normalizeForComparison(str) { ... }
+   export function findObject(noun) { ... }
+   export function findObjectInLocation(noun, locationId) { ... }
+   export function findObjectInInventory(noun) { ... }
+   ```
+
+3. Refactorare `executeCommand()` in `engine.js`:
+   ```javascript
+   export function executeCommand(parseResult) {
+     const validationError = validateParseResult(parseResult);
+     if (validationError) return validationError;
+     
+     // FALLBACK: usa logica esistente (ancora non refactored)
+     return executeCommandLegacy(parseResult);
+   }
+   
+   function executeCommandLegacy(parseResult) {
+     // TUTTA la logica attuale spostata qui (switch gigante)
+     // Questo garantisce zero breaking changes
+   }
+   ```
+
+**Deliverable:**
+- File `src/logic/engine-handlers.js` con 7 utilities
+- File `engine.js` con router skeleton + legacy fallback
+- Test `tests/engine-handlers-foundation.test.ts` (utilities coverage 100%)
+
+**Acceptance Criteria:**
+- [ ] Tutti i 42 test esistenti passano senza modifiche
+- [ ] Test manuale: gioco funziona identicamente
+- [ ] Utilities testate: `validateParseResult`, `findObject`, etc.
+
+---
+
+#### SS1: Navigation Handler (30 min)
+
+**Obiettivo:** Estrarre e integrare gestione NAVIGATION
+
+**Task:**
+1. Implementare in `engine-handlers.js`:
+   ```javascript
+   export function handleNavigationCommand(parseResult) {
+     return {
+       accepted: true,
+       resultType: 'OK',
+       message: `Stub: spostamento verso ${parseResult.CanonicalVerb}`,
+       effects: [],
+     };
+   }
+   ```
+
+2. Modificare router in `engine.js`:
+   ```javascript
+   switch (parseResult.CommandType) {
+     case 'NAVIGATION':
+       return handleNavigationCommand(parseResult); // ✅ nuovo
+     default:
+       return executeCommandLegacy(parseResult); // fallback
+   }
+   ```
+
+3. Rimuovere case 'NAVIGATION' da `executeCommandLegacy()`
+
+**Deliverable:**
+- Handler `handleNavigationCommand()` in engine-handlers.js
+- Router integrato in engine.js
+- Test `tests/engine-handlers-navigation.test.ts`
+
+**Acceptance Criteria:**
+- [ ] Test N/S/E/O funzionanti (stub)
+- [ ] Tutti 42 test + 3 nuovi passano
+- [ ] Navigation estratta, resto invariato
+
+---
+
+#### SS2: System Commands Handler (1.5 ore)
+
+**Obiettivo:** Estrarre gestione SYSTEM + 7 sub-handler
+
+**Task:**
+1. Implementare sub-handlers in `engine-handlers.js`:
+   ```javascript
+   function handleInventoryCommand() { ... }    // 15 LOC
+   function handleHelpCommand() { ... }         // 5 LOC  
+   function handleSaveCommand() { ... }         // 3 LOC
+   function handleLoadCommand() { ... }         // 3 LOC
+   function handleScoreCommand() { ... }        // 5 LOC
+   function handleEndCommand() { ... }          // 3 LOC
+   function handleSystemFallback(verb) { ... }  // 5 LOC
+   ```
+
+2. Implementare dispatcher:
+   ```javascript
+   export function handleSystemCommand(parseResult) {
+     const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
+     
+     const systemHandlers = {
+       'INVENTARIO': handleInventoryCommand,
+       'AIUTO': handleHelpCommand,
+       'SALVARE': handleSaveCommand,
+       'CARICARE': handleLoadCommand,
+       'PUNTI': handleScoreCommand,
+       'FINE': handleEndCommand,
+     };
+     
+     const handler = systemHandlers[concept];
+     return handler ? handler(parseResult) : handleSystemFallback(parseResult);
+   }
+   ```
+
+3. Integrare in router + rimuovere SYSTEM da legacy
+
+**Deliverable:**
+- Handler `handleSystemCommand()` + 7 sub-handlers
+- Test `tests/engine-handlers-system.test.ts` (12 test)
+
+**Acceptance Criteria:**
+- [ ] INVENTARIO: lista corretta oggetti (filtro lingua)
+- [ ] PUNTI: visualizza punteggio (se Fase 2 implementata)
+- [ ] SALVA/CARICA: resultType corretto
+- [ ] 42 + 12 test passano (54 totali)
+
+---
+
+#### SS3: Action - Examine (45 min)
+
+**Obiettivo:** Estrarre ESAMINA/GUARDA + skeleton ACTION dispatcher
+
+**Task:**
+1. Implementare `handleExamineAction()` (20 LOC)
+2. Creare dispatcher parziale:
+   ```javascript
+   export function handleActionCommand(parseResult) {
+     const verb = (parseResult.CanonicalVerb || '').toUpperCase();
+     const concept = (parseResult.VerbConcept || '').toUpperCase();
+     const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
+     
+     // PRIORITÀ 1: Interazioni custom
+     if (noun && concept) {
+       const interazioneResult = cercaEseguiInterazione(concept, noun);
+       if (interazioneResult) return interazioneResult;
+     }
+     
+     // PRIORITÀ 2: Handler implementati
+     if (concept === 'ESAMINARE' || concept === 'GUARDARE') {
+       return handleExamineAction(parseResult, verb, concept, noun);
+     }
+     
+     // FALLBACK: legacy per altri verbi (temporaneo)
+     return handleActionLegacy(parseResult, verb, concept, noun);
+   }
+   ```
+
+**Deliverable:**
+- Handler `handleExamineAction()` + dispatcher skeleton
+- Test `tests/engine-handlers-action-examine.test.ts`
+
+**Acceptance Criteria:**
+- [ ] ESAMINA (no noun): descrizione luogo + oggetti visibili
+- [ ] ESAMINA OGGETTO: descrizione oggetto
+- [ ] Altri verbi ACTION via legacy (temporaneo)
+
+---
+
+#### SS4: Action - Open/Close (30 min)
+
+**Obiettivo:** Estrarre APRI/CHIUDI
+
+**Task:**
+1. Implementare `handleOpenCloseAction()` (25 LOC)
+2. Integrare in dispatcher ACTION
+3. Rimuovere APRI/CHIUDI da `handleActionLegacy()`
+
+**Deliverable:**
+- Handler `handleOpenCloseAction()`
+- Test `tests/engine-handlers-action-openclose.test.ts`
+
+**Acceptance Criteria:**
+- [ ] APRI: aggiorna `gameState.openStates[noun] = true`
+- [ ] CHIUDI: aggiorna `gameState.openStates[noun] = false`
+- [ ] Messaggi alreadyOpen/alreadyClosed corretti
+
+---
+
+#### SS5: Action - Take/Drop (45 min)
+
+**Obiettivo:** Estrarre PRENDI/POSA/LASCIA
+
+**Task:**
+1. Implementare `handleTakeAction()` (20 LOC) + `handleDropAction()` (15 LOC)
+2. Integrare in dispatcher
+3. Rimuovere da legacy
+
+**Deliverable:**
+- Handlers `handleTakeAction()` + `handleDropAction()`
+- Test `tests/engine-handlers-action-takedrop.test.ts`
+
+**Acceptance Criteria:**
+- [ ] PRENDI: oggetto.IDLuogo = 0 (inventario)
+- [ ] POSA: oggetto.IDLuogo = currentLocationId
+- [ ] Limite 5 oggetti in inventario rispettato
+- [ ] Test sequence: PRENDI → INVENTARIO → POSA
+
+---
+
+#### SS6: Action - Completion (30 min)
+
+**Obiettivo:** Completare dispatcher ACTION + cleanup legacy
+
+**Task:**
+1. Implementare `handleGenericAction()` per verbi non gestiti
+2. Completare dispatcher con routing a tutti handler
+3. **Eliminare `executeCommandLegacy()` completamente**
+
+**Deliverable:**
+- Handler `handleGenericAction()`
+- Dispatcher ACTION completo
+- Test `tests/engine-handlers-action-complete.test.ts`
+- Cleanup: executeCommandLegacy() rimosso
+
+**Acceptance Criteria:**
+- [ ] executeCommandLegacy() non esiste più
+- [ ] executeCommand() LOC = 17 (verifica manuale)
+- [ ] Tutti 42 originali + ~25 nuovi = 67 test passano
+- [ ] Zero fallback legacy rimasti
+
+---
+
+#### SS7: Manipulation Stub + Final Verification (20 min)
+
+**Obiettivo:** Stub MANIPULATION + verifica finale metriche
+
+**Task:**
+1. Implementare stub:
+   ```javascript
+   export function handleManipulationCommand(parseResult) {
+     return {
+       accepted: true,
+       resultType: 'OK',
+       message: 'I comandi di manipolazione complessa non sono ancora implementati.',
+       effects: [],
+     };
+   }
+   ```
+
+2. Integrare nel router (case 'MANIPULATION')
+3. Aggiungere JSDoc completo a tutti handler
+4. Verificare metriche finali
+5. Aggiornare `docs/STATISTICHE_PROGETTO.md`
+
+**Deliverable:**
+- Handler stub `handleManipulationCommand()`
+- JSDoc completo
+- Metriche verificate
+- Documentazione aggiornata
+
+**Acceptance Criteria:**
+- [ ] **Metriche finali:**
+  - executeCommand() LOC: 17 (era 173) → -90% ✅
+  - Complessità ciclomatica: 4 (era 64) → -94% ✅
+  - Handler specializzati: 20 nuovi ✅
+  - Funzioni totali: 23 → 43 (+20) ✅
+- [ ] **Test suite completa:**
+  - 42 test originali passano ✅
+  - ~30 test nuovi passano ✅
+  - Total: 72 test passing ✅
+- [ ] **Conformità ESLint:** 100% (era 91.3%) ✅
+- [ ] **PRODUCTION READY** 🚀
+
+---
+
+## 4.4 Priorità e Dipendenze
+
+### 4.4.1 Pre-condizioni
+
+**Bloccanti:**
+- ✅ Fasi 1-4 implementazione feature complete (punteggio, timer, vittoria)
+- ✅ Suite E2E testing validata (10 scenari passing)
+- ✅ Deploy v1.0 in produzione
+- ✅ Smoke testing post-release (0 bug critici)
+
+**Raccomandati:**
+- ✅ Feedback primi 10-20 utenti raccolto
+- ✅ Hotfix urgenti applicati (se presenti)
+- ✅ Stabilità v1.0 confermata (7+ giorni senza incident)
+
+### 4.4.2 Ordine di Esecuzione
+
+**Timeline consigliata:**
+
+```
+Ora → v1.0 Release → +1 settimana → +2 settimane → Refactoring
+│                    │                │              │
+│                    │                │              └─ SS0-SS7 (5-7h)
+│                    │                └─ Raccolta feedback utenti
+│                    └─ Monitoring stabilità
+└─ Completamento Fasi 1-4
+```
+
+**Rationale postponimento:**
+1. **Feature mancanti sono bloccanti** per release → priorità assoluta
+2. **Refactoring è qualitativo** non funzionale → può attendere
+3. **Rischio regression** minore post-release (meno pressione time-to-market)
+4. **Validazione utente** può rivelare altre priorità (es. nuove feature richieste)
+
+### 4.4.3 Trigger Decision Point
+
+**Valutare refactoring SE (almeno 1 condizione vera):**
+
+| Condizione | Come Misurare | Threshold |
+|------------|---------------|----------|
+| **Bug architetturali frequenti** | Issue tracker | ≥3 bug in executeCommand() in 30 giorni |
+| **Team expansion** | Headcount | ≥2 developer full-time sul progetto |
+| **Previste espansioni** | Product roadmap | DLC/sequel confermati in pianificazione |
+| **Performance degradation** | Profiling | Risposta comando >200ms (era <100ms) |
+| **Difficoltà manutenzione** | Velocity | Tempo medio fix bug +50% vs baseline |
+
+**Missione Odessa attualmente: 0/5 condizioni soddisfatte**
+
+**Decisione:** Refactoring rimane "debt tecnico documentato" ma non pagato fino a trigger.
+
+---
+
+## 4.5 Alternative Considerate e Respinte
+
+### 4.5.1 Opzione B: Refactoring a Classi OOP
+
+**Proposta:**
+```javascript
+class CommandExecutor {
+  constructor(gameState) {
+    this.gameState = gameState;
+  }
+  
+  execute(parseResult) { ... }
+  private handleSystem() { ... }
+  private handleAction() { ... }
+}
+```
+
+**Pro:**
+- Encapsulation di gameState
+- Pattern OOP standard enterprise
+
+**Contro:**
+- ❌ Introduce OOP in codebase **100% funzionale puro**
+- ❌ Incoerenza architetturale (23 funzioni esistenti, 1 classe)
+- ❌ Overhead (constructor, this binding)
+- ❌ Non risolvibile da AI (richiede decisione architetturale umana)
+
+**Verdict:** ❌ Respinto per incoerenza con pattern esistente
+
+---
+
+### 4.5.2 Opzione C: Strategy Pattern Formale
+
+**Proposta:**
+```javascript
+const strategies = {
+  NAVIGATION: new NavigationStrategy(),
+  SYSTEM: new SystemStrategy(),
+  ACTION: new ActionStrategy()
+};
+
+strategies[parseResult.CommandType].execute(parseResult);
+```
+
+**Pro:**
+- Pattern GoF canonico
+- Estensibilità via plugin
+
+**Contro:**
+- ❌ Over-engineering per 4 tipi comando fissi
+- ❌ Richiede class instances (vedi Opzione B)
+- ❌ Complessità eccessiva per scope progetto
+
+**Verdict:** ❌ Respinto per over-engineering
+
+---
+
+### 4.5.3 Opzione D: Refactoring Parziale (Solo SYSTEM)
+
+**Proposta:** Estrarre solo i comandi SYSTEM (7 handler), lasciare ACTION monolitico.
+
+**Pro:**
+- Effort ridotto (2-3h vs 5-7h)
+- Risk minore
+
+**Contro:**
+- ❌ **God Function parzialmente risolta** (ACTION rimane 100+ LOC)
+- ❌ Complessità ciclomatica ancora ~40 (vs target 10)
+- ❌ Lascia debt tecnico maggiore non risolto
+- ❌ Peggio di non fare nulla (inconsistenza: SYSTEM modulare, ACTION monolitico)
+
+**Verdict:** ❌ Respinto perché "half-refactoring" crea più problemi di quanti ne risolva
+
+---
+
+### 4.5.4 Opzione E: No Refactoring (Status Quo)
+
+**Proposta:** Accettare God Function come debt tecnico permanente.
+
+**Pro:**
+- ✅ Zero effort speso
+- ✅ Zero risk regression
+- ✅ Architettura attuale funzionante
+
+**Contro:**
+- ⚠️ Debt tecnico permanente (8.7% non-conformità ESLint)
+- ⚠️ Difficoltà onboarding future developer (se team si espande)
+- ⚠️ Test coverage difficile (setup pesante per unit test)
+
+**Verdict:** ✅ **Opzione raccomandata per v1.0**, rivalutare per v1.1+ se condizioni cambiano
+
+---
+
+## 4.6 Metriche di Successo Post-Refactoring
+
+### 4.6.1 Metriche Quantitative
+
+| Metrica | Baseline (Pre) | Target (Post) | Misurazione |
+|---------|----------------|---------------|-------------|
+| **executeCommand() LOC** | 173 | ≤20 | `wc -l src/logic/engine.js` (funzione specifica) |
+| **Complessità ciclomatica** | 64 | ≤5 | ESLint `complexity` rule |
+| **Max LOC/function** | 173 | ≤50 | ESLint `max-lines-per-function` rule |
+| **Nesting depth** | 4-5 | ≤4 | ESLint `max-depth` rule |
+| **Conformità ESLint** | 91.3% (21/23) | 100% (43/43) | `eslint src/**/*.js --rule complexity:error` |
+| **Test coverage handlers** | 0% (no test isolati) | ≥95% | Vitest coverage report |
+| **Test suite size** | 42 test | ≥70 test | `npm test -- --reporter=json` |
+
+### 4.6.2 Metriche Qualitative
+
+| Aspetto | Baseline | Target | Validazione |
+|---------|----------|--------|-------------|
+| **Testabilità** | Setup 30 righe boilerplate | Setup 5 righe | Code review test files |
+| **Manutenibilità** | Modifica 1 verbo = risk 10 verbi | Modifica isolata | Git diff analysis |
+| **Comprensibilità** | Cognitive load alto (173 LOC) | Funzione auto-documentante | Developer survey |
+| **Estensibilità** | Nuovo verbo = modifica monolite | Nuovo handler = nuovo file | Time to implement feature |
+
+### 4.6.3 Criteri Go/No-Go
+
+**GO per merge in main SE:**
+- [ ] Tutti i 42 test originali passano (zero regression)
+- [ ] ≥30 nuovi test handler passano (coverage nuove funzioni)
+- [ ] executeCommand() LOC ≤20 (verificato manualmente)
+- [ ] Complessità ≤5 (ESLint passing)
+- [ ] Code review approvato (peer review)
+- [ ] Smoke test manuale completo OK (playtest 30 min)
+
+**NO-GO (rollback a pre-refactoring) SE:**
+- [ ] >2 test regressati e non fixabili in 1h
+- [ ] Bug critici scoperti in smoke test
+- [ ] Performance degradation >20% (benchmark comandi)
+
+---
+
+## 4.7 Rollback Strategy
+
+### 4.7.1 Git Workflow
+
+```bash
+# Ogni sotto-sprint è un commit atomico
+git checkout -b refactor/command-handlers
+
+# SS0
+git commit -m "refactor: SS0 - Foundation & Router"
+git tag refactor-ss0
+
+# SS1  
+git commit -m "refactor: SS1 - Navigation Handler"
+git tag refactor-ss1
+
+# ... SS2-SS7
+
+# Merge finale
+git checkout main
+git merge refactor/command-handlers
+```
+
+### 4.7.2 Rollback Procedure
+
+**Se sotto-sprint N fallisce:**
+```bash
+# Rollback a sotto-sprint N-1
+git reset --hard refactor-ss{N-1}
+
+# Re-implementare SS N con fix
+# Oppure: stop refactoring, merge fino a SS N-1
+```
+
+**Esempio:** SS4 (Open/Close) introduce bug → rollback a `refactor-ss3`, merge SS0-SS3, postpone SS4-SS7.
+
+---
+
+## 4.8 Considerazioni Finali
+
+### 4.8.1 Quando NON fare questo refactoring
+
+**Skip refactoring SE:**
+- Gioco rimane one-shot release (no DLC, no sequel)
+- Team rimane single developer + AI
+- Zero bug architetturali emergono in 6+ mesi post-release
+- Budget disponibile <10h (refactoring richiede 5-7h + validazione)
+
+**Investire effort altrove:**
+- Nuove feature richieste da utenti
+- Porting ad altre piattaforme (mobile, Steam)
+- Localizzazioni aggiuntive (FR, DE, ES)
+
+### 4.8.2 Quando FARE questo refactoring
+
+**Trigger immediato SE:**
+- Team si espande a ≥2 developer full-time
+- Pianificate espansioni/DLC con 10+ nuove interazioni
+- Bug architetturali ≥3 in executeCommand() in 30 giorni
+- Performance degrada >50% (profiling identifica executeCommand())
+
+**Segnali precoci (valutare):**
+- Onboarding nuovo developer richiede >1 settimana per capire engine
+- Fix bug in executeCommand() richiede >2h in media
+- Test E2E failano per regression non catturate da unit test
+
+---
+
+**Riferimento decisionale:** Vedere `considerazioni-architettura-interventi.md` § 6.4 per contesto strategico e analisi ROI completa.
+
+**Status corrente:** Debt tecnico documentato, non prioritario per v1.0, rivalutare post-release.
     1.  Implementare costanti `LUOGHI_PERICOLOSI` e `SYSTEM_COMMANDS`.
     2.  Implementare funzione `isSystemCommand()`.
     3.  Implementare le 3 funzioni di check con messaggi Game Over:

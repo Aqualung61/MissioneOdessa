@@ -467,7 +467,119 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-### 6.4 Perché Priorità su Feature Implementation
+### 6.4 Analisi ESLint Complexity Rules
+
+#### 6.4.1 Contesto Normativo
+
+Standard di settore per codice enterprise (ESLint recommended rules):
+- **Complessità ciclomatica:** max 10 (`complexity` rule)
+- **LOC per funzione:** max 50 (`max-lines-per-function` rule)
+- **Nesting depth:** max 4 (`max-depth` rule)
+
+**Rationale:** Funzioni brevi e semplici sono più facili da:
+- Comprendere (cognitive load ridotto)
+- Testare (meno edge cases)
+- Debuggare (isolamento errori)
+- Manutenere (modifiche localizzate)
+
+#### 6.4.2 Risultati Misurazione Codebase
+
+**Funzioni analizzate:** 23 `export function` in .js files
+- ✅ **Conformi:** 21 funzioni (91.3%)
+- ⚠️ **Violazioni:** 2 funzioni (8.7%)
+
+**Dettaglio violazioni:**
+
+**1. `executeCommand()` (src/logic/engine.js)**
+- **Complessità ciclomatica:** 64 (6.4x soglia max 10)
+- **LOC:** 173 (3.5x soglia max 50)
+- **Categoria:** God Function (gestisce TUTTI i tipi di comando: NAVIGATION, SYSTEM, ACTION, MANIPULATION)
+- **Responsabilità:** Routing + validation + execution in unica funzione
+- **Impatto:** Difficoltà testing isolato, cognitive load alto, refactoring rischioso
+
+**2. `ensureVocabulary()` (src/logic/parser.js)**
+- **LOC:** 77 (1.5x soglia max 50)
+- **Complessità:** <10 (conforme)
+- **Categoria:** Setup complesso vocabolario multilingua
+- **Responsabilità:** Caricamento + caching + building token map per i18n
+- **Impatto:** Minore (complessità bassa, solo length violation)
+
+#### 6.4.3 Valutazione Impatto
+
+**Da prospettiva enterprise standard:** ❌ Codice non conforme (8.7% violazioni)
+
+**Da prospettiva pragmatica per questo progetto:** ⚠️ Accettabile con riserve
+
+**Motivazioni accettazione tecnica del debito:**
+
+1. **God Function è isolata e centrale**
+   - Solo 1 funzione su 23 con problema grave (non pattern sistemico)
+   - È la "main entry point" del game engine (ruolo architetturale giustificato)
+   - Nessun altro modulo replica il pattern (no propagazione)
+
+2. **Zero sintomi critici in 2 mesi sviluppo**
+   - Nessun bug architetturale legato a `executeCommand()`
+   - Nessun problema performance (response time <100ms)
+   - Nessuna difficoltà aggiunta feature (Interazioni.json estendibile)
+
+3. **Manutenibilità assistita da AI**
+   - Copilot/AI gestisce navigazione codice complesso
+   - No onboarding cost (single developer + AI, no team multi-person)
+   - Refactoring futuro automatizzabile con AI agents
+
+4. **Contesto progettuale specifico**
+   - Gioco single-player, no componenti multi-threaded
+   - No evoluzioni/DLC previste (one-shot release)
+   - Architettura allineata a tradizione text adventure (Zork, Colossal Cave usano pattern simili)
+
+#### 6.4.4 Decisione Strategica
+
+**Raccomandazione:** Refactoring `executeCommand()` **NON prioritario per v1.0**
+
+**Rationale costo/beneficio:**
+
+| Aspetto | Refactoring | Feature Implementation |
+|---------|-------------|------------------------|
+| **Effort** | 5-7h (executeCommand) + 1-2h (ensureVocabulary) = 6-9h | 34-39h (punteggio, timer, vittoria) |
+| **Impatto utente** | Zero (miglioramento interno) | Critico (gioco incompleto senza) |
+| **Risk regression** | Medio (tocca core engine) | Basso (feature isolate) |
+| **Urgenza** | Bassa (no bug, no performance issues) | Alta (bloccante per release) |
+| **ROI** | Basso (beneficio solo per developer) | Alto (valore per end-user) |
+
+**Budget disponibile: ~50h (tempo illimitato ma effort finito)**
+- **Scenario A (con refactoring):** 8h refactoring + 34h feature + 8h testing = 50h
+- **Scenario B (senza refactoring):** 0h refactoring + 34h feature + 8h testing = 42h (**8h risparmiate**)
+
+**Scelta:** Scenario B permette:
+- Buffer 8h per imprevisti/bug fixing
+- Focus totale su completezza funzionale
+- Deploy v1.0 più veloce
+
+**Condizioni per rivalutazione post-v1.0:**
+
+Refactoring diventa prioritario SE:
+- ✅ Team si espande (>2 developer) → onboarding cost giustifica cleanup
+- ✅ Emergono bug architetturali frequenti → stabilità richiede refactoring
+- ✅ Previste espansioni/DLC multiple → manutenibilità long-term critica
+- ✅ Performance degrada → profiling identifica `executeCommand()` come bottleneck
+
+**Missione Odessa non soddisfa NESSUNA condizione attualmente.**
+
+**Analogia decisionale:** È come riorganizzare l'armadio il giorno prima di un trasloco definitivo. Sforzo sprecato se non ci torni più.
+
+#### 6.4.5 Riferimento Implementativo
+
+**Per dettagli tecnici completi del refactoring (se necessario in futuro):**
+- Vedere `specifica-tecnica-completa-integrata.md` § 4 (TD - Refactoring Opzionale)
+- Piano sprint 7 sotto-sprint (5-7h)
+- Architettura target: Router + 20 handler specializzati
+- Metriche attese: -90% LOC, -94% complessità
+
+**Status:** Documentato come debt tecnico accettato, da pagare solo se condizioni cambiano.
+
+---
+
+### 6.5 Perché Priorità su Feature Implementation
 
 **Feature dalla specifica NON implementate:**
 - Sistema punteggio (57 + 34 + 27 + 4 = 122 punti)
