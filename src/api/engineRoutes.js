@@ -20,7 +20,7 @@ router.post('/execute', async (req, res) => {
     }
     const parsed = await parseCommand(null, input, state); // passa gameState
     if (parsed.IsValid !== true) {
-      const userMessage = mapParseErrorToUserMessage(parsed);
+      const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
       return res.status(400).json({ ok: false, parseResult: parsed, error: parsed.Error, userMessage });
     }
     const command = toCommandDTO(parsed);

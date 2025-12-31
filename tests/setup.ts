@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
 // DEPRECATED 2025-12-31: 'Azioni' rimosso da tableNames (sistema sostituito da SBLOCCA_DIREZIONE)
-const tableNames = ['Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
+const tableNames = ['Introduzione', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
 const odessaData = {};
 
@@ -26,3 +26,7 @@ for (const tableName of tableNames) {
 }
 
 global.odessaData = odessaData;
+
+// Carica messaggi di sistema per i test
+import { loadMessaggiSistema } from '../src/logic/systemMessages.js';
+loadMessaggiSistema();

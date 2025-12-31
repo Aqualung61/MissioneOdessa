@@ -15,6 +15,7 @@ import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
 import { initOdessa } from './initOdessa.js';
 import { resetGameState, getOggetti, initializeOriginalData } from './logic/engine.js';
+import { loadMessaggiSistema } from './logic/systemMessages.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -139,6 +140,10 @@ app.use(BASE_PATH, (req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`Server unico avviato su http://localhost:${PORT}/`);
+  // Carica messaggi di sistema dopo l'inizializzazione dei dati
+  await initOdessa();
+  loadMessaggiSistema();
+  console.log('Messaggi di sistema caricati');
 });

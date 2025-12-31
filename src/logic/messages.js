@@ -1,20 +1,25 @@
-// Mappatura ParseErrorType -> messaggio utente (IT)
+// Mappatura ParseErrorType -> messaggio utente localizzato
 // Fonte: docs/20251103 - REQ01.md, Sezione 2.4.2
+// Sprint 1: i18n - usa MessaggiSistema.json
 
-export function mapParseErrorToUserMessage(parseResult) {
+import { getSystemMessage } from './systemMessages.js';
+
+export function mapParseErrorToUserMessage(parseResult, idLingua = 1) {
   const code = parseResult?.Error || 'NONE';
   switch (code) {
     case 'COMMAND_UNKNOWN':
-      return '?NON CAPISCO QUESTA PAROLA.';
+      return getSystemMessage('parse.error.commandUnknown', idLingua);
     case 'SYNTAX_ACTION_INCOMPLETE':
-      return '?COSA VUOI?';
+      return getSystemMessage('parse.error.syntaxActionIncomplete', idLingua);
     case 'SYNTAX_NOUN_UNKNOWN': {
       const noun = parseResult?.UnknownNounToken;
-      if (noun) return `?NON VEDO NESSUN "${noun.toLowerCase()}" QUI.`;
-      return '?NON VEDO QUESTO OGGETTO QUI.';
+      if (noun) {
+        return getSystemMessage('parse.error.syntaxNounUnknown', idLingua, [noun.toLowerCase()]);
+      }
+      return getSystemMessage('parse.error.syntaxNounUnknownGeneric', idLingua);
     }
     case 'SYNTAX_INVALID_STRUCTURE':
-      return '?NON CAPISCO.';
+      return getSystemMessage('parse.error.syntaxInvalidStructure', idLingua);
     case 'NONE':
     default:
       return '';

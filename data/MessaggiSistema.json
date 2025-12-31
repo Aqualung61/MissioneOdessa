@@ -1,0 +1,282 @@
+[
+  {
+    "Chiave": "parse.error.commandUnknown",
+    "IDLingua": 1,
+    "Messaggio": "?NON CAPISCO QUESTA PAROLA."
+  },
+  {
+    "Chiave": "parse.error.commandUnknown",
+    "IDLingua": 2,
+    "Messaggio": "?I DON'T UNDERSTAND THIS WORD."
+  },
+  {
+    "Chiave": "parse.error.syntaxActionIncomplete",
+    "IDLingua": 1,
+    "Messaggio": "?COSA VUOI?"
+  },
+  {
+    "Chiave": "parse.error.syntaxActionIncomplete",
+    "IDLingua": 2,
+    "Messaggio": "?WHAT DO YOU WANT?"
+  },
+  {
+    "Chiave": "parse.error.syntaxNounUnknown",
+    "IDLingua": 1,
+    "Messaggio": "?NON VEDO NESSUN \"{0}\" QUI."
+  },
+  {
+    "Chiave": "parse.error.syntaxNounUnknown",
+    "IDLingua": 2,
+    "Messaggio": "?I DON'T SEE ANY \"{0}\" HERE."
+  },
+  {
+    "Chiave": "parse.error.syntaxNounUnknownGeneric",
+    "IDLingua": 1,
+    "Messaggio": "?NON VEDO QUESTO OGGETTO QUI."
+  },
+  {
+    "Chiave": "parse.error.syntaxNounUnknownGeneric",
+    "IDLingua": 2,
+    "Messaggio": "?I DON'T SEE THIS OBJECT HERE."
+  },
+  {
+    "Chiave": "parse.error.syntaxInvalidStructure",
+    "IDLingua": 1,
+    "Messaggio": "?NON CAPISCO."
+  },
+  {
+    "Chiave": "parse.error.syntaxInvalidStructure",
+    "IDLingua": 2,
+    "Messaggio": "?I DON'T UNDERSTAND."
+  },
+  {
+    "Chiave": "engine.error.noParseResult",
+    "IDLingua": 1,
+    "Messaggio": "Nessun risultato di parsing"
+  },
+  {
+    "Chiave": "engine.error.noParseResult",
+    "IDLingua": 2,
+    "Messaggio": "No parse result"
+  },
+  {
+    "Chiave": "engine.inventory.empty",
+    "IDLingua": 1,
+    "Messaggio": "Non hai nulla."
+  },
+  {
+    "Chiave": "engine.inventory.empty",
+    "IDLingua": 2,
+    "Messaggio": "You have nothing."
+  },
+  {
+    "Chiave": "engine.inventory.list",
+    "IDLingua": 1,
+    "Messaggio": "Hai con te: {0}."
+  },
+  {
+    "Chiave": "engine.inventory.list",
+    "IDLingua": 2,
+    "Messaggio": "You have: {0}."
+  },
+  {
+    "Chiave": "engine.save.inProgress",
+    "IDLingua": 1,
+    "Messaggio": "Salvataggio in corso..."
+  },
+  {
+    "Chiave": "engine.save.inProgress",
+    "IDLingua": 2,
+    "Messaggio": "Saving..."
+  },
+  {
+    "Chiave": "engine.load.inProgress",
+    "IDLingua": 1,
+    "Messaggio": "Caricamento in corso..."
+  },
+  {
+    "Chiave": "engine.load.inProgress",
+    "IDLingua": 2,
+    "Messaggio": "Loading..."
+  },
+  {
+    "Chiave": "engine.score.display",
+    "IDLingua": 1,
+    "Messaggio": "Punteggio: {0}."
+  },
+  {
+    "Chiave": "engine.score.display",
+    "IDLingua": 2,
+    "Messaggio": "Score: {0}."
+  },
+  {
+    "Chiave": "engine.end.confirm",
+    "IDLingua": 1,
+    "Messaggio": "Vuoi davvero finire il gioco? (s/n)"
+  },
+  {
+    "Chiave": "engine.end.confirm",
+    "IDLingua": 2,
+    "Messaggio": "Do you really want to end the game? (y/n)"
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecial",
+    "IDLingua": 1,
+    "Messaggio": "Non vedi nulla di particolare."
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecial",
+    "IDLingua": 2,
+    "Messaggio": "You see nothing special."
+  },
+  {
+    "Chiave": "engine.examine.objectNotHere",
+    "IDLingua": 1,
+    "Messaggio": "Non vedi {0} qui."
+  },
+  {
+    "Chiave": "engine.examine.objectNotHere",
+    "IDLingua": 2,
+    "Messaggio": "You don't see {0} here."
+  },
+  {
+    "Chiave": "engine.openClose.cannotDo",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi {0} {1}."
+  },
+  {
+    "Chiave": "engine.openClose.cannotDo",
+    "IDLingua": 2,
+    "Messaggio": "You can't {0} {1}."
+  },
+  {
+    "Chiave": "engine.open.alreadyOpen",
+    "IDLingua": 1,
+    "Messaggio": "È già aperto."
+  },
+  {
+    "Chiave": "engine.open.alreadyOpen",
+    "IDLingua": 2,
+    "Messaggio": "It's already open."
+  },
+  {
+    "Chiave": "engine.open.success",
+    "IDLingua": 1,
+    "Messaggio": "Hai aperto la {0}."
+  },
+  {
+    "Chiave": "engine.open.success",
+    "IDLingua": 2,
+    "Messaggio": "You opened the {0}."
+  },
+  {
+    "Chiave": "engine.close.alreadyClosed",
+    "IDLingua": 1,
+    "Messaggio": "È già chiuso."
+  },
+  {
+    "Chiave": "engine.close.alreadyClosed",
+    "IDLingua": 2,
+    "Messaggio": "It's already closed."
+  },
+  {
+    "Chiave": "engine.close.success",
+    "IDLingua": 1,
+    "Messaggio": "Hai chiuso la {0}."
+  },
+  {
+    "Chiave": "engine.close.success",
+    "IDLingua": 2,
+    "Messaggio": "You closed the {0}."
+  },
+  {
+    "Chiave": "engine.take.inventoryFull",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi trasportare più di 5 oggetti."
+  },
+  {
+    "Chiave": "engine.take.inventoryFull",
+    "IDLingua": 2,
+    "Messaggio": "You can't carry more than 5 objects."
+  },
+  {
+    "Chiave": "engine.take.cannotTake",
+    "IDLingua": 1,
+    "Messaggio": "Questo oggetto non può essere preso."
+  },
+  {
+    "Chiave": "engine.take.cannotTake",
+    "IDLingua": 2,
+    "Messaggio": "You can't take that."
+  },
+  {
+    "Chiave": "engine.take.success",
+    "IDLingua": 1,
+    "Messaggio": "Hai preso {0}."
+  },
+  {
+    "Chiave": "engine.take.success",
+    "IDLingua": 2,
+    "Messaggio": "You took {0}."
+  },
+  {
+    "Chiave": "engine.drop.success",
+    "IDLingua": 1,
+    "Messaggio": "Hai posato {0}."
+  },
+  {
+    "Chiave": "engine.drop.success",
+    "IDLingua": 2,
+    "Messaggio": "You dropped {0}."
+  },
+  {
+    "Chiave": "engine.drop.notInInventory",
+    "IDLingua": 1,
+    "Messaggio": "Non hai {0} con te."
+  },
+  {
+    "Chiave": "engine.drop.notInInventory",
+    "IDLingua": 2,
+    "Messaggio": "You don't have {0}."
+  },
+  {
+    "Chiave": "engine.action.whatDoYouWant",
+    "IDLingua": 1,
+    "Messaggio": "Cosa vuoi {0}?"
+  },
+  {
+    "Chiave": "engine.action.whatDoYouWant",
+    "IDLingua": 2,
+    "Messaggio": "What do you want to {0}?"
+  },
+  {
+    "Chiave": "engine.action.cannotDo",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi {0} {1}."
+  },
+  {
+    "Chiave": "engine.action.cannotDo",
+    "IDLingua": 2,
+    "Messaggio": "You can't {0} {1}."
+  },
+  {
+    "Chiave": "engine.error.unknownCommandType",
+    "IDLingua": 1,
+    "Messaggio": "Tipo comando sconosciuto"
+  },
+  {
+    "Chiave": "engine.error.unknownCommandType",
+    "IDLingua": 2,
+    "Messaggio": "Unknown command type"
+  },
+  {
+    "Chiave": "engine.safeAlreadyOpen",
+    "IDLingua": 1,
+    "Messaggio": "La cassaforte è già aperta."
+  },
+  {
+    "Chiave": "engine.safeAlreadyOpen",
+    "IDLingua": 2,
+    "Messaggio": "The safe is already open."
+  }
+]

@@ -1,3 +1,6 @@
+// Sprint 1: i18n - importa helper per messaggi di sistema
+import { getSystemMessage } from './systemMessages.js';
+
 // Stub: entra in luogo terminale (da implementare secondo logica app)
 export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
@@ -440,7 +443,7 @@ function cercaEseguiInterazione(verb, noun) {
         
         // Se già completata, non fare nulla
         if (seq.completata) {
-          return { accepted: true, resultType: 'OK', message: 'La cassaforte è già aperta.', effects: [] };
+          return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.safeAlreadyOpen', gameState.currentLingua), effects: [] };
         }
         
         // Verifica se la direzione è corretta per il passo attuale
@@ -499,7 +502,7 @@ function cercaEseguiInterazione(verb, noun) {
 
 export function executeCommand(parseResult) {
   if (!parseResult) {
-    return { accepted: false, resultType: 'ERROR', message: 'Nessun risultato di parsing' };
+    return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
   }
   if (parseResult.IsValid !== true) {
     return {
@@ -525,13 +528,13 @@ export function executeCommand(parseResult) {
           case 'INVENTARIO': {
             const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === gameState.currentLingua);
             if (inventoryItems.length === 0) {
-              return { accepted: true, resultType: 'OK', message: 'Non hai nulla.', effects: [], showLocation: true };
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.inventory.empty', gameState.currentLingua), effects: [], showLocation: true };
             }
             const itemNames = inventoryItems.map(item => item.Oggetto).join(', ');
             return {
               accepted: true,
               resultType: 'OK',
-              message: 'Hai con te: ' + itemNames + '.',
+              message: getSystemMessage('engine.inventory.list', gameState.currentLingua, [itemNames]),
               effects: [],
               showLocation: true
             };
@@ -541,14 +544,14 @@ export function executeCommand(parseResult) {
             return { accepted: true, resultType: 'OK', message, effects: [], showLocation: true };
           }
           case 'SALVARE': {
-            return { accepted: true, resultType: 'SAVE_GAME', message: 'Salvataggio in corso...', effects: [] };
+            return { accepted: true, resultType: 'SAVE_GAME', message: getSystemMessage('engine.save.inProgress', gameState.currentLingua), effects: [] };
           }
           case 'CARICARE':
-            return { accepted: true, resultType: 'LOAD_GAME', message: 'Caricamento in corso...', effects: [] };
+            return { accepted: true, resultType: 'LOAD_GAME', message: getSystemMessage('engine.load.inProgress', gameState.currentLingua), effects: [] };
           case 'PUNTI':
-            return { accepted: true, resultType: 'OK', message: 'Punteggio: 0 (stub).', effects: [], showLocation: true };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.score.display', gameState.currentLingua, ['0 (stub)']), effects: [], showLocation: true };
           case 'FINE':
-            return { accepted: true, resultType: 'CONFIRM_END', message: 'Vuoi davvero finire il gioco? (s/n)', effects: [] };
+            return { accepted: true, resultType: 'CONFIRM_END', message: getSystemMessage('engine.end.confirm', gameState.currentLingua), effects: [] };
           default:
             return {
               accepted: true,
@@ -589,34 +592,34 @@ export function executeCommand(parseResult) {
             if (messaggioCompleto) {
               return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: 'Non vedi nulla di particolare.', effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
           }
           // Con oggetto: mostra descrizione dell'oggetto
-          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           const text = oggetto.descrizione || 'Non noti nulla di particolare.';
           return { accepted: true, resultType: 'OK', message: text, effects: [] };
         }
         // APRI / CHIUDI (elementi apribili)
         if (verb === 'APRI' || verb === 'CHIUDI') {
-          if (!oggetto) return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
+          if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
-          if (!canOpen) return { accepted: true, resultType: 'OK', message: `Non puoi ${verb.toLowerCase()} ${noun.toLowerCase().replace(/_/g, ' ')}.`, effects: [] };
+          if (!canOpen) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.openClose.cannotDo', gameState.currentLingua, [verb.toLowerCase(), noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           const openNow = !!gameState.openStates[noun];
           if (verb === 'APRI') {
-            if (openNow) return { accepted: true, resultType: 'OK', message: `È già aperto.`, effects: [] };
+            if (openNow) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.open.alreadyOpen', gameState.currentLingua), effects: [] };
             gameState.openStates[noun] = true;
-            return { accepted: true, resultType: 'OK', message: `Hai aperto la ${noun}.`, effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.open.success', gameState.currentLingua, [noun]), effects: [] };
           } else {
-            if (!openNow) return { accepted: true, resultType: 'OK', message: `È già chiuso.`, effects: [] };
+            if (!openNow) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.close.alreadyClosed', gameState.currentLingua), effects: [] };
             gameState.openStates[noun] = false;
-            return { accepted: true, resultType: 'OK', message: `Hai chiuso la ${noun}.`, effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.close.success', gameState.currentLingua, [noun]), effects: [] };
           }
         }
         if (verb === 'PRENDI') {
           // Controlla limite inventario (max 5 oggetti)
           const oggettiInInventario = (gameState.Oggetti || []).filter(obj => obj.IDLuogo === 0 && obj.Attivo >= 3);
           if (oggettiInInventario.length >= 5) {
-            return { accepted: true, resultType: 'OK', message: 'Non puoi trasportare più di 5 oggetti.', effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.inventoryFull', gameState.currentLingua), effects: [] };
           }
           // Trova l'oggetto nel luogo corrente
           const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
@@ -628,13 +631,13 @@ export function executeCommand(parseResult) {
           if (oggetto) {
             if (oggetto.Attivo < 3) {
               // Oggetto scenico (1) o spostabile (2), non raccoglibile
-              return { accepted: true, resultType: 'OK', message: 'Questo oggetto non può essere preso.', effects: [] };
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.cannotTake', gameState.currentLingua), effects: [] };
             }
             // Attivo >= 3: oggetto raccoglibile
             oggetto.IDLuogo = 0; // Sposta nell'inventario
-            return { accepted: true, resultType: 'OK', message: `Hai preso ${oggetto.Oggetto}.`, effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
           }
-          return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
         }
         if (verb === 'POSA' || verb === 'LASCIA') {
           // Trova l'oggetto nell'inventario
@@ -646,27 +649,27 @@ export function executeCommand(parseResult) {
           );
           if (oggetto) {
             oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente
-            return { accepted: true, resultType: 'OK', message: `Hai posato ${oggetto.Oggetto}.`, effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
           }
-          return { accepted: true, resultType: 'OK', message: `Non hai ${noun.toLowerCase().replace(/_/g, ' ')} con te.`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.notInInventory', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
         }
         // Altri verbi: verifica se richiedono oggetto
         if (!noun) {
-          return { accepted: true, resultType: 'OK', message: `Cosa vuoi ${verb.toLowerCase()}?`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.action.whatDoYouWant', gameState.currentLingua, [verb.toLowerCase()]), effects: [] };
         }
         // PRIORITÀ: Verifica esistenza oggetto prima di dire che l'azione non è possibile
         if (!oggetto) {
-          return { accepted: true, resultType: 'OK', message: `Non vedi ${noun.toLowerCase().replace(/_/g, ' ')} qui.`, effects: [] };
+          return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
         }
         // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
         return {
           accepted: true,
           resultType: 'OK',
-          message: `Non puoi ${verb.toLowerCase()} ${noun.toLowerCase().replace(/_/g, ' ')}.`,
+          message: getSystemMessage('engine.action.cannotDo', gameState.currentLingua, [verb.toLowerCase(), noun.toLowerCase().replace(/_/g, ' ')]),
           effects: [],
         };
       }
     default:
-      return { accepted: false, resultType: 'ERROR', message: 'Tipo comando sconosciuto' };
+      return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.unknownCommandType', gameState.currentLingua) };
   }
 }
