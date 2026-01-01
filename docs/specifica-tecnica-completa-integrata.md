@@ -68,23 +68,59 @@ I **misteri** sono effetti strutturali automatici che premiano la prima volta ch
 
 Il gioco introduce tre meccaniche di "morte a tempo" per aumentare la tensione e il realismo.
 
-### 1.2.1 Evento A: Torcia Difettosa (6 mosse)
-- **Contesto:** Il giocatore inizia con una torcia che sta per rompersi.
-- **Regola:** Dopo **6 mosse** (comandi di azione/movimento), se il giocatore non ha acceso una fonte di luce alternativa (Lampada), la torcia muore.
-- **Comandi che contano:** NAVIGATION (NORD, SUD...), ACTION (PRENDI, LASCIA, USA...), EXAMINE
-- **Comandi esclusi:** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro)
-- **Conseguenza:** Game Over con messaggio "Oscurità Fatale"
-- **Soluzione:** Trovare la Lampada (Luogo 6), prendere i Fiammiferi, e usare comando `ACCENDI LAMPADA` entro 6 mosse.
+### 1.2.1 Evento A: Sistema di Illuminazione (Torcia → Buio → Morte)
+
+Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi sequenziali:
+
+#### Fase 1: Torcia Attiva (6 turni)
+- **Contesto:** Il giocatore inizia con una torcia elettrica difettosa in inventario.
+- **Durata:** La torcia resta accesa per **6 turni** dall'inizio del gioco.
+- **Comandi che incrementano il timer:** NAVIGATION (NORD, SUD...), ACTION (PRENDI, LASCIA, ESAMINA...), EXAMINE
+- **Comandi di sistema esclusi (NON incrementano timer):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+- **Spegnimento automatico:** Dopo 6 turni, la torcia si spegne automaticamente (anche se in inventario).
+- **Spegnimento anticipato:** Se il giocatore posa la torcia (comando POSA/LASCIA), questa si spegne immediatamente.
+- **Messaggio spegnimento:**
+  - Con lampada accesa: "La tua torcia si spegne di colpo: deve essere difettosa."
+  - Senza lampada accesa: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
+
+#### Fase 2: Buio (3 turni di tolleranza)
+- **Trigger:** Torcia spenta E lampada NON accesa in inventario.
+- **Countdown:** Il giocatore ha **3 turni** per trovare una fonte di luce.
+- **Reset automatico:** Se il giocatore accende la lampada entro i 3 turni, il countdown si resetta.
+- **Comandi che incrementano il countdown:** NAVIGATION (NORD, SUD...), ACTION (PRENDI, LASCIA, ESAMINA...), EXAMINE
+- **Comandi di sistema esclusi (NON incrementano countdown):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+- **Nessun warning:** Non ci sono messaggi di avviso durante i 3 turni.
+
+#### Fase 3: Morte per Buio
+- **Trigger:** 3 turni consecutivi senza fonte di luce attiva.
+- **Messaggio:** "Muoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!"
+- **Gestione:** Identica a luogo terminale (game over definitivo).
 
 #### Comando ACCENDI LAMPADA
 - **Sintassi:** `ACCENDI LAMPADA`, `ILLUMINA LAMPADA`, `USA LAMPADA`
-- **Prerequisito:** Fiammiferi in inventario (Oggetto ID=4)
-- **Effetto:** Lampada diventa fonte di luce principale, timer torcia disattivato
-- **Messaggio successo:** "Accendi la lampada con i fiammiferi. Ora hai una fonte di luce affidabile!"
-- **Messaggio senza fiammiferi:** "Non hai niente per accendere la lampada."
-- **Nota:** I fiammiferi sono riutilizzabili (non si consumano)
+- **Prerequisiti:**
+  - Lampada in inventario (Oggetto ID=27, trovabile al Luogo 6)
+  - Fiammiferi in inventario (Oggetto ID=4)
+- **Effetto:** Lampada diventa fonte di luce principale, timer torcia ignorato, countdown buio resettato.
+- **Messaggio successo:** "Accendi la lampada. Una luce calda e stabile illumina l'ambiente."
+- **Messaggi errore:**
+  - Lampada non in inventario: "Non hai la lampada!"
+  - Fiammiferi mancanti: "Non hai i fiammiferi per accendere la lampada!"
+  - Lampada già accesa: "La lampada è già accesa."
+- **Nota:** I fiammiferi sono riutilizzabili (non si consumano).
 
-### 1.2.2 Evento B: Intercettazione (3 turni in zona pericolosa)
+#### Condizione di Luce (Funzione Centrale)
+La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
+- **TRUE:** (Torcia accesa E in inventario) OPPURE (Lampada accesa E in inventario)
+- **FALSE:** Tutte le altre condizioni → attiva countdown buio
+
+#### Casi Speciali
+1. **Posa torcia dopo 3 turni + nessuna lampada** → Torcia si spegne → Start countdown buio (3 turni)
+2. **Posa lampada accesa** → Lampada resta accesa nel luogo, giocatore al buio → Start countdown (3 turni)
+3. **Torna a prendere lampada entro 3 turni** → Countdown resettato
+4. **Accende lampada durante countdown** → Countdown resettato, gioco prosegue normalmente
+
+### 1.2.2 Evento B: Intercettazione (3 comandi + 1 in zona pericolosa)
 - **Contesto:** Alcuni luoghi esterni sono sorvegliati da pattuglie sovietiche.
 - **Luoghi Pericolosi:** ID=51, 52, 53, 55, 56, 58 (vedi Tabella Luoghi Critici sotto per dettagli completi)
   - **Nota:** ID=54 (Posto di blocco - Fine) è un **luogo terminale** raggiungibile da ID=53 tramite direzione Sud. Causa Game Over immediato all'ingresso (morte istantanea), NON tramite timer. Gestione identica a ID=40 (Dentro pozzo). Non è incluso in costante implementativa `LUOGHI_PERICOLOSI`.
@@ -93,16 +129,16 @@ Il gioco introduce tre meccaniche di "morte a tempo" per aumentare la tensione e
 **Tabella Completa Luoghi Critici:**
 
 | ID | Nome | Tipo | Campo Terminale | Timer | Comportamento | Game Over |
-|----|------|------|----------------|-------|---------------|-----------||
+|----|------|------|----------------|-------|---------------|-----------|
 | 8 | Cima ascensore | Terminale | -1 | ❌ | Morte all'ingresso | Immediato |
 | 40 | Dentro pozzo | Terminale | -1 | ❌ | Morte all'ingresso | Immediato |
 | 54 | Posto di blocco - Fine | Terminale | -1 | ❌ | Morte all'ingresso | Immediato |
-| 51 | Grossa piazza | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
-| 52 | Filo spinato (nord) | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
-| 53 | Posto di blocco | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
-| 55 | Strada | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
-| 56 | Filo spinato (est) | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
-| 58 | Filo spinato (sud) | Pericoloso | 0 | ✅ | 3 azioni consecutive | "Catturato!" |
+| 51 | Grossa piazza | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
+| 52 | Filo spinato (nord) | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
+| 53 | Posto di blocco | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
+| 55 | Strada | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
+| 56 | Filo spinato (est) | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
+| 58 | Filo spinato (sud) | Pericoloso | 0 | ✅ | 4° comando in zona | Intercettato |
 | 57 | Capanno attrezzi | Rifugio | 0 | ❌ | Zona sicura | Nessuno |
 
 **Note Implementative:**
@@ -110,10 +146,28 @@ Il gioco introduce tre meccaniche di "morte a tempo" per aumentare la tensione e
 - Esclude ID=54 (terminale, gestito separatamente) e ID=57 (rifugio sicuro)
 - ID=53 è pericoloso, ma la direzione Sud verso ID=54 causa morte istantanea senza timer
 
-- **Regola:** Eseguire **3 azioni consecutive** mentre si è in un luogo pericoloso attiva l'intercettazione.
-- **Reset:** Il counter si azzera **solo** uscendo dalla zona pericolosa. Spostarsi tra luoghi pericolosi **NON resetta** il counter.
-- **Esempio:** Luogo 51 (3 azioni) → Game Over. Luogo 51 → Luogo 55 → counter continua. Luogo 51 → Luogo 47 → counter resettato.
-- **Conseguenza:** Game Over con messaggio "Catturato!"
+#### Meccanica Dettagliata
+
+**Regole:**
+1. **Arrivo** in luogo pericoloso da luogo sicuro → **NO incremento counter** (è solo posizionamento)
+2. **Comando eseguito** mentre sei in luogo pericoloso → **incremento counter DOPO esecuzione**
+3. **Counter accumula** fino a 3: 1°cmd→1, 2°cmd→2, 3°cmd→3
+4. **4° comando tentato** in zona pericolosa → **Game Over PRIMA dell'esecuzione** (check pre-comando)
+5. **Comandi di sistema esclusi (NON incrementano counter):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+
+**Reset:** Il counter si azzera **solo** uscendo dalla zona pericolosa. Spostarsi tra luoghi pericolosi **NON resetta** il counter.
+
+**Esempio Completo:**
+- Atrio (1) → NORD → Grossa piazza (51): counter=0 (arrivo, no increment)
+- Piazza (51) → EST → Filo spinato (52): counter=1 (1° comando da pericoloso)
+- Filo (52) → OVEST → Piazza (51): counter=2 (2° comando da pericoloso)
+- Piazza (51) → SUD → Strada (55): counter=3 (3° comando da pericoloso)
+- Strada (55) → qualsiasi comando → **GAME OVER prima esecuzione** (4° tentativo)
+
+**Esempio Reset:**
+- Piazza (51) → OVEST → Atrio (47, sicuro): counter=0 (reset immediato)
+
+**Conseguenza:** Game Over con messaggio "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!"
 
 ### 1.2.3 Evento C: Lampada Abbandonata
 - **Contesto:** La lampada è l'unica fonte di luce affidabile dopo che la torcia si esaurisce.
@@ -124,23 +178,19 @@ Il gioco introduce tre meccaniche di "morte a tempo" per aumentare la tensione e
 ### 1.2.4 Messaggi Game Over
 Ogni evento di morte mostra un messaggio narrativo dettagliato con suggerimenti:
 
-**Torcia Esaurita:**
+**Morte per Buio:**
 ```
-💀 OSCURITÀ FATALE
+💀 MORTE AL BUIO
 
-La tua torcia emette un ultimo tremulo bagliore, poi si spegne definitivamente. 
-
-Nell'oscurità totale, inciampi su una trave marcescente e cadi pesantemente: 
-il tonfo sordo è seguito da un dolore lancinante alla testa. 
-
-Lentamente, perdi i sensi mentre la casa ti inghiotte nel buio eterno...
+Muoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, 
+rompendoti il collo. Sei morto!
 
 *** SEI MORTO ***
 
-Motivo: Torcia difettosa esaurita
-Mosse effettuate: [N]
-Suggerimento: Cerca la lampada nel ripostiglio e accendila con i fiammiferi 
-entro le prime 6 mosse.
+Motivo: Movimento senza fonte di luce
+Turni al buio: [N]
+Suggerimento: Accendi la lampada con i fiammiferi prima che la torcia si spenga. 
+La torcia dura solo 6 turni!
 ```
 
 **Intercettazione:**
@@ -203,19 +253,22 @@ La vittoria non è istantanea ma richiede una sequenza narrativa specifica.
 
 ### 1.3.1 Prerequisiti di Innesco
 La sequenza finale si attiva entrando nell'**Atrio (Luogo ID=1)** solo se:
-1.  **Documenti** in inventario (ID=35).
+1.  **Fascicolo** in inventario (ID=16).
 2.  **Lista di servizio** in inventario (ID=6). *Nota: ID=28 è un duplicato da rimuovere.*
 3.  **Dossier** in inventario (ID=34).
 4.  **Stato:** Il giocatore è vivo (implicito).
 
+**Nota Importante:** I **Documenti** (ID=35) NON sono prerequisito per l'innesco della sequenza. Tuttavia, sono necessari per completare la vittoria al Luogo 59 (comando PORGI DOCUMENTI). Se il giocatore arriva all'Atrio senza i Documenti, la sequenza si attiva comunque, ma non potrà vincere alla barriera.
+
 ### 1.3.2 Flusso Narrativo (5 Fasi)
 1.  **Fase 1A (Atrio):** Incontro con Ferenc. Dialogo automatico. Input: `BARRA SPAZIO`.
 2.  **Fase 1B (Viaggio):** Descrizione del cammino verso il confine. Input: `BARRA SPAZIO` -> Teletrasporto automatico al Luogo 59.
-3.  **Fase 2_WAIT (Barriera):** Il giocatore è bloccato davanti alla guardia.
-    *   Tutti i movimenti sono disabilitati.
-    *   Unico comando corretto: `PORGI DOCUMENTI`.
-    *   **Meccanica "Guardia Sospetta":** Se il giocatore inserisce >3 comandi inappropriati (es. "Prendi sasso"), scatta un Game Over alternativo.
-    *   *Eccezione:* I comandi di sistema (INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA) non contano come inappropriati.
+3.  **Fase 2_WAIT (Barriera):** Il giocatore è alla barriera con la guardia.
+    *   Tutti i comandi sono permessi (nessuna limitazione di movimento o azione).
+    *   Comando risolutivo: `PORGI DOCUMENTI` (se Documenti in inventario).
+    *   **Meccanica "Guardia Sospetta":** Ogni comando diverso da PORGI DOCUMENTI (con successo) incrementa un counter. Al **5° comando inappropriato** → Game Over.
+    *   Il giocatore ha quindi **5 tentativi** per dare il comando corretto.
+    *   Se tenta PORGI DOCUMENTI senza avere i Documenti (ID=35) → messaggio errore "Non hai documenti da porgere" (NON incrementa counter).
 4.  **Fase 2A/2B (Controllo):** La guardia controlla e approva.
 5.  **Fase 2C (Vittoria):** Schermata finale e statistiche.
 
@@ -231,13 +284,16 @@ La sequenza finale si attiva entrando nell'**Atrio (Luogo ID=1)** solo se:
   - **Oggetto sbagliato:** "La guardia non è interessata a questo. Vuole vedere i documenti."
 
 ### 1.3.4 Teleport e Rimozione Oggetti
-Durante il teleport da Luogo 1 a Luogo 59:
+Durante il teleport da Luogo 1 a Luogo 59, Ferenc prende i 3 oggetti prerequisito:
+- **Fascicolo (ID=16):** Rimosso dall'inventario (Ferenc lo prende)
 - **Lista di servizio (ID=6):** Rimossa dall'inventario (Ferenc la prende)
 - **Dossier (ID=34):** Rimosso dall'inventario (Ferenc lo prende)
 - **Documenti (ID=35):** **Rimangono** in inventario (necessari per la guardia)
 - **Altri oggetti:** Conservati nell'inventario
 
-**Importante:** Il Luogo 59 è **accessibile solo via teleport**. Nel database Luoghi.json, il Luogo 1 ha `Ovest: 0` per impedire l'accesso diretto. Questo garantisce che la sequenza vittoria possa essere attivata solo quando i prerequisiti sono soddisfatti (presenza di Documenti, Lista e Dossier in inventario al Luogo 1).
+**Importante:** Il Luogo 59 è **accessibile solo via teleport**. Nel database Luoghi.json, il Luogo 1 ha `Ovest: 0` per impedire l'accesso diretto. Questo garantisce che la sequenza vittoria possa essere attivata solo quando i prerequisiti sono soddisfatti (presenza di Fascicolo, Lista e Dossier in inventario al Luogo 1).
+
+**Scenario senza Documenti:** Se il giocatore triggera la sequenza senza avere i Documenti (ID=35) in inventario, arriverà al Luogo 59 ma non potrà completare la vittoria. Dopo 5 tentativi di comandi diversi da PORGI DOCUMENTI, la guardia diventerà sospetta (Game Over). Non è possibile tornare indietro a recuperare i Documenti.
 
 ---
 
@@ -391,7 +447,8 @@ gameState = {
 #### D) Fase Finale (+7 punti totali)
 La fase finale è cruciale per raggiungere il punteggio massimo di 132.
 1. **Incontro Ferenc (+4 punti):**
-   - **Condizione:** Entrare in Atrio (ID 1) avendo nell'inventario: `fascicolo` (16), `lista` (6), `dossier` (34).
+   - **Condizione:** Entrare in Atrio (ID 1) avendo nell'inventario: Fascicolo (16), Lista (6), Dossier (34).
+   - **Nota:** Documenti (35) NON richiesti per trigger Ferenc.
    - **Effetto:** Ferenc appare, assegna **4 punti** (Vittoria tecnica), e teletrasporta il giocatore al luogo finale.
 2. **Accesso Bunker (+1 punto):**
    - **Condizione:** Arrivo al luogo ID 59 (via teletrasporto o movimento).
@@ -596,7 +653,7 @@ function verificaPrerequisito(prerequisito) {
 // ID=54 causa morte immediata all'ingresso (gestito come ID=8, ID=40), NON tramite timer intercettazione
 const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
-// System commands che NON incrementano timer
+// System commands che NON incrementano timer (illuminazione e intercettazione)
 const SYSTEM_COMMANDS = [
   'INVENTARIO', 'INV', 'I', 'COSA', '?',
   'AIUTO', 'HELP',
@@ -608,125 +665,375 @@ const SYSTEM_COMMANDS = [
   'QUIT', 'ESCI'
 ];
 
+/**
+ * Verifica se il comando è di sistema (non incrementa timer)
+ * @param {string} comando - Comando upper-case
+ * @returns {boolean} - true se è comando di sistema
+ */
 function isSystemCommand(comando) {
   return SYSTEM_COMMANDS.includes(comando.toUpperCase());
 }
+
+/**
+ * Verifica se il comando corrente incrementa timer
+ * Da chiamare PRIMA di incrementare turniConTorcia, turniBuio, azioniInLuogoPericoloso
+ * @param {Object} parseResult - Risultato del parser
+ * @returns {boolean} - true se il comando incrementa timer
+ */
+function shouldIncrementTimers(parseResult) {
+  // Comandi di sistema non incrementano timer
+  if (parseResult.CommandType === 'SYSTEM') return false;
+  
+  // GUARDA senza parametro è considerato sistema
+  if (parseResult.CommandType === 'EXAMINE' && !parseResult.NounId) return false;
+  
+  // Tutti gli altri comandi incrementano timer
+  return true;
+}
 ```
 
-### 2.3.2 Funzioni di Check
-Le funzioni devono essere chiamate in ordine di priorità dentro `executeCommand`.
+### 2.3.2 Estensione gameState
 
-**1. checkTorciaEsaurita():**
 ```javascript
-function checkTorciaEsaurita() {
-  if (!gameState.timers.torciaDifettosa) return null;
+// Aggiungere a gameState esistente
+gameState.illuminazione = {
+  // Timer torcia (6 turni dall'inizio)
+  turniConTorcia: 0,
+  torciaSpenta: false,
   
-  if (gameState.timers.movementCounter >= 6) {
-    return {
-      resultType: 'GAME_OVER',
-      deathReason: 'TORCIA_ESAURITA',
-      message: GAME_OVER_MESSAGES.TORCIA_ESAURITA,
-      stats: {
-        mosse: gameState.timers.movementCounter,
-        punteggio: gameState.punteggio.totale
+  // Timer buio (morte dopo 3 turni senza luce)
+  turniBuio: 0,
+  
+  // Stato lampada
+  lampadaAccesa: false
+};
+```
+
+### 2.3.3 Funzione Centrale: hasFonteLuceAttiva()
+
+Unica fonte di verità per determinare se il giocatore ha luce:
+
+```javascript
+/**
+ * Verifica se il giocatore ha una fonte di luce attiva
+ * @returns {boolean} - true se ha luce (torcia O lampada), false altrimenti
+ */
+function hasFonteLuceAttiva() {
+  const TORCIA_ID = 26; // Verificare ID esatto nel JSON
+  const LAMPADA_ID = 27;
+  
+  // Check torcia: in inventario E non spenta
+  const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
+  const torciaInInventario = torcia && torcia.IDLuogo === 0;
+  const torciaAccesa = torciaInInventario && !gameState.illuminazione.torciaSpenta;
+  
+  // Check lampada: in inventario E accesa
+  const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
+  const lampadaInInventario = lampada && lampada.IDLuogo === 0;
+  const lampadaAccesa = lampadaInInventario && gameState.illuminazione.lampadaAccesa;
+  
+  return torciaAccesa || lampadaAccesa;
+}
+```
+
+### 2.3.4 Check Functions (Ordine di Esecuzione)
+
+**1. checkTorciaSpegnimento(parseResult):**
+
+Gestisce spegnimento torcia dopo 6 turni o se posata.
+
+```javascript
+/**
+ * Check spegnimento torcia (automatico o manuale)
+ * @param {Object} parseResult - Comando parsato
+ * @returns {Object|null} - Messaggio torcia spenta, o null
+ */
+function checkTorciaSpegnimento(parseResult) {
+  const TORCIA_ID = 26;
+  
+  // Skip se torcia già spenta o lampada accesa
+  if (gameState.illuminazione.torciaSpenta || 
+      gameState.illuminazione.lampadaAccesa) {
+    return null;
+  }
+  
+  const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
+  const torciaInInventario = torcia && torcia.IDLuogo === 0;
+  
+  // CASO A: Torcia posata (spegnimento immediato)
+  if (parseResult.CommandType === 'ACTION' && 
+      parseResult.Verb === 'POSA' && 
+      parseResult.NounId === TORCIA_ID) {
+    
+    gameState.illuminazione.torciaSpenta = true;
+    
+    // Messaggio dipende da lampada
+    if (gameState.illuminazione.lampadaAccesa) {
+      return {
+        message: getSystemMessage('timer.torch.defective', gameState.currentLingua)
+      };
+    } else {
+      // Start countdown buio
+      gameState.illuminazione.turniBuio = 0;
+      return {
+        message: getSystemMessage('timer.torch.defective.warning', gameState.currentLingua),
+        warningBuio: true
+      };
+    }
+  }
+  
+  // CASO B: 6 turni trascorsi (solo se torcia in inventario)
+  if (torciaInInventario) {
+    gameState.illuminazione.turniConTorcia++;
+    
+    if (gameState.illuminazione.turniConTorcia >= 6) {
+      gameState.illuminazione.torciaSpenta = true;
+      
+      if (gameState.illuminazione.lampadaAccesa) {
+        return {
+          message: getSystemMessage('timer.torch.defective', gameState.currentLingua)
+        };
+      } else {
+        gameState.illuminazione.turniBuio = 0;
+        return {
+          message: getSystemMessage('timer.torch.defective.warning', gameState.currentLingua),
+          warningBuio: true
+        };
       }
-    };
+    }
   }
+  
   return null;
 }
 ```
 
-**2. checkLampadaAbbandonata():**
+**2. checkLampadaPosata(parseResult):**
+
+Gestisce caso lampada accesa posata (start countdown buio).
+
 ```javascript
-function checkLampadaAbbandonata() {
-  if (!gameState.timers.lampadaAccesa) return null;
+/**
+ * Check se giocatore posa lampada accesa
+ * @param {Object} parseResult - Comando parsato
+ * @returns {Object|null} - Messaggio warning, o null
+ */
+function checkLampadaPosata(parseResult) {
+  const LAMPADA_ID = 27;
   
-  // Check se lampada in inventario
-  const lampadaInInventario = gameState.Oggetti.some(obj => 
-    obj.Oggetto === 'Lampada' && obj.IDLuogo === 0 && obj.Attivo >= 3
-  );
+  // Skip se lampada non accesa
+  if (!gameState.illuminazione.lampadaAccesa) {
+    return null;
+  }
   
-  if (!lampadaInInventario) {
+  // Check comando POSA LAMPADA
+  if (parseResult.CommandType === 'ACTION' && 
+      parseResult.Verb === 'POSA' && 
+      parseResult.NounId === LAMPADA_ID) {
+    
+    // Lampada resta accesa nel luogo, start countdown
+    gameState.illuminazione.turniBuio = 0;
+    
     return {
-      resultType: 'GAME_OVER',
-      deathReason: 'LAMPADA_ABBANDONATA',
-      message: GAME_OVER_MESSAGES.LAMPADA_ABBANDONATA
+      message: "Hai posato la lampada. Resta accesa, ma ora sei al buio.",
+      warningBuio: true
     };
   }
+  
   return null;
 }
 ```
 
-**3. checkIntercettazione():**
+**3. checkMortePerBuio():**
+
+Gestisce countdown finale (3 turni) e morte.
+
 ```javascript
-function checkIntercettazione() {
+/**
+ * Check morte per buio (3 turni senza luce)
+ * @returns {Object|null} - Game Over, o null
+ */
+function checkMortePerBuio() {
+  // Check se ha luce
+  if (hasFonteLuceAttiva()) {
+    // Reset countdown se torna ad avere luce
+    gameState.illuminazione.turniBuio = 0;
+    return null;
+  }
+  
+  // Incrementa turni al buio
+  gameState.illuminazione.turniBuio++;
+  
+  // Morte dopo 3 turni
+  if (gameState.illuminazione.turniBuio >= 3) {
+    gameState.ended = true;
+    
+    return {
+      accepted: true,
+      resultType: 'GAME_OVER',
+      message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
+      deathReason: 'MORTE_BUIO',
+      showLocation: false
+    };
+  }
+  
+  return null;
+}
+```
+
+**4. checkIntercettazionePre():**
+
+Check PRIMA dell'esecuzione comando (4° tentativo in zona pericolosa).
+
+```javascript
+/**
+ * Check intercettazione PRIMA di eseguire comando
+ * Se sei in luogo pericoloso con counter >= 3 → GAME OVER
+ * @returns {Object|null} - Game Over, o null
+ */
+function checkIntercettazionePre() {
+  const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
+  const luogoAttuale = gameState.currentLocationId;
+  const isPericoloso = LUOGHI_PERICOLOSI.includes(luogoAttuale);
+  
+  // Game over al 4° comando tentato in zona pericolosa
+  if (isPericoloso && gameState.timers.azioniInLuogoPericoloso >= 3) {
+    gameState.ended = true;
+    return {
+      accepted: true,
+      resultType: 'GAME_OVER',
+      message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
+      deathReason: 'INTERCETTAZIONE',
+      showLocation: false
+    };
+  }
+  
+  return null;
+}
+```
+
+**5. checkIntercettazionePost():**
+
+Incrementa/reset counter DOPO esecuzione comando.
+
+```javascript
+/**
+ * Aggiorna counter intercettazione DOPO esecuzione comando
+ * Incrementa se in zona pericolosa, reset se uscito
+ */
+function checkIntercettazionePost() {
+  const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
   const luogoAttuale = gameState.currentLocationId;
   const isPericoloso = LUOGHI_PERICOLOSI.includes(luogoAttuale);
   
   if (isPericoloso) {
-    // Incrementa counter
+    // Incrementa dopo aver eseguito comando in zona pericolosa
     gameState.timers.azioniInLuogoPericoloso++;
-    
-    // Check limite
-    if (gameState.timers.azioniInLuogoPericoloso >= 3) {
-      return {
-        resultType: 'GAME_OVER',
-        deathReason: 'INTERCETTAZIONE',
-        message: GAME_OVER_MESSAGES.INTERCETTAZIONE,
-        stats: {
-          azioni: gameState.timers.azioniInLuogoPericoloso
-        }
-      };
-    }
   } else {
-    // Reset solo se esci dalla zona pericolosa
+    // Reset quando esci da zona pericolosa
     gameState.timers.azioniInLuogoPericoloso = 0;
   }
-  
-  return null;
 }
 ```
 
-### 2.3.3 Implementazione Comando ACCENDI LAMPADA
+### 2.3.5 Implementazione Comando ACCENDI LAMPADA
 
 ```javascript
-// In executeCommand - case ACTION
-if (verbo === 'ACCENDI' && oggetto === 'LAMPADA') {
-  // Check lampada in inventario
-  const lampadaInInventario = gameState.Oggetti.some(obj => 
-    obj.Oggetto === 'Lampada' && obj.IDLuogo === 0 && obj.Attivo >= 3
-  );
+// In executeCommand - case 'ACTION'
+case 'ACCENDI':
+  if (parseResult.NounId === 27) { // Lampada
+    const LAMPADA_ID = 27;
+    const FIAMMIFERI_ID = 4;
+    
+    const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
+    const lampadaInInventario = lampada && lampada.IDLuogo === 0;
+    
+    const fiammiferi = gameState.Oggetti.find(o => o.ID === FIAMMIFERI_ID);
+    const fiammiferiInInventario = fiammiferi && fiammiferi.IDLuogo === 0;
+    
+    // Validazioni
+    if (!lampadaInInventario) {
+      return {
+        accepted: true,
+        resultType: 'ERROR',
+        message: getSystemMessage('action.light.lamp.not_have', gameState.currentLingua),
+        effects: []
+      };
+    }
+    
+    if (!fiammiferiInInventario) {
+      return {
+        accepted: true,
+        resultType: 'ERROR',
+        message: getSystemMessage('action.light.lamp.no_matches', gameState.currentLingua),
+        effects: []
+      };
+    }
+    
+    if (gameState.illuminazione.lampadaAccesa) {
+      return {
+        accepted: true,
+        resultType: 'INFO',
+        message: getSystemMessage('action.light.lamp.already_lit', gameState.currentLingua),
+        effects: []
+      };
+    }
+    
+    // Successo
+    gameState.illuminazione.lampadaAccesa = true;
+    gameState.illuminazione.turniBuio = 0; // Reset countdown se attivo
+    
+    return {
+      accepted: true,
+      resultType: 'OK',
+      message: getSystemMessage('action.light.lamp.success', gameState.currentLingua),
+      effects: ['LAMP_LIT']
+    };
+  }
+  break;
+```
+
+### 2.3.6 Integrazione in executeCommand
+
+Ordine completo di esecuzione con check Pre e Post:
+
+```javascript
+async function executeCommand(comando) {
+  // 1. Parse comando
+  const parseResult = parseCommand(comando);
   
-  if (!lampadaInInventario) {
-    return { message: "Non hai la lampada con te." };
+  // 2. Check intercettazione PRE (prima di eseguire)
+  const gameOverIntercettazione = checkIntercettazionePre();
+  if (gameOverIntercettazione) {
+    return gameOverIntercettazione; // Morte al 4° comando tentato
   }
   
-  // Check lampada già accesa
-  if (gameState.timers.lampadaAccesa) {
-    return { message: "La lampada è già accesa." };
+  // 3. Esegui comando normale
+  let result = executeNormalCommand(parseResult);
+  
+  // 4. Check sistema luce
+  const checkTorcia = checkTorciaSpegnimento(parseResult);
+  if (checkTorcia && checkTorcia.message) {
+    result.message += "\n\n" + checkTorcia.message;
   }
   
-  // Check fiammiferi in inventario
-  const fiammiferiInInventario = gameState.Oggetti.some(obj => 
-    obj.ID === 4 && obj.IDLuogo === 0 && obj.Attivo >= 3
-  );
-  
-  if (!fiammiferiInInventario) {
-    return { message: "Non hai niente per accendere la lampada." };
+  const checkLampada = checkLampadaPosata(parseResult);
+  if (checkLampada && checkLampada.message) {
+    result.message += "\n\n" + checkLampada.message;
   }
   
-  // Accendi lampada
-  gameState.timers.lampadaAccesa = true;
-  gameState.timers.torciaDifettosa = false;
+  const gameOverBuio = checkMortePerBuio();
+  if (gameOverBuio) {
+    return gameOverBuio; // Termina gioco
+  }
   
-  return { 
-    message: "Accendi la lampada con i fiammiferi. Ora hai una fonte di luce affidabile!",
-    accepted: true 
-  };
+  // 5. Update counter intercettazione POST (dopo esecuzione)
+  checkIntercettazionePost();
+  
+  return result;
 }
 ```
 
-### 2.3.4 Strutture Dati Game Over
+### 2.3.7 Strutture Dati Game Over
 
 ```javascript
 const GAME_OVER_MESSAGES = {
@@ -822,11 +1129,11 @@ function checkVictoryConditions() {
     obj.IDLuogo === 0 && obj.Attivo >= 3
   );
   
-  const hasDocumenti = inventario.some(obj => obj.ID === 35);
+  const hasFascicolo = inventario.some(obj => obj.ID === 16);  // CAMBIATO da Documenti (35)
   const hasLista = inventario.some(obj => obj.ID === 6);  // Solo ID=6!
   const hasDossier = inventario.some(obj => obj.ID === 34);
   
-  return hasDocumenti && hasLista && hasDossier;
+  return hasFascicolo && hasLista && hasDossier;
 }
 ```
 
@@ -837,31 +1144,31 @@ function checkVictoryConditions() {
 if (gameState.currentLocationId === 59 && 
     gameState.narrativeState === 'ENDING_PHASE_2_WAIT') {
   
+  // Check comando vittoria
   if (verbo === 'PORGI' && oggettoTarget === 'DOCUMENTI') {
-    // Check presenza documenti in inventario
     const hasDocumenti = gameState.Oggetti.some(obj => 
       obj.ID === 35 && obj.IDLuogo === 0 && obj.Attivo >= 3
     );
     
     if (hasDocumenti) {
+      // Successo! Avanza a fase vittoria
       return avanzaNarrativaFase2A();
     } else {
+      // Errore ma NON incrementa counter (giocatore ha capito cosa fare)
       return { message: "Non hai documenti da porgere." };
     }
   }
   
-  // System commands permessi
-  if (isSystemCommand(comando)) {
-    return eseguiComandoSistema();
-  }
-  
-  // Altri comandi: incrementa counter inappropriati
+  // TUTTI gli altri comandi sono permessi ma incrementano counter
   gameState.unusefulCommandsCounter++;
-  if (gameState.unusefulCommandsCounter >= 3) {
+  
+  // Game Over dopo 5 comandi inappropriati
+  if (gameState.unusefulCommandsCounter >= 5) {
     return gameOverGuardiaSospetta();
   }
   
-  return { message: "Non vedo alcuna utilità in questo." };
+  // Esegui comando normalmente (movimento, azioni, sistema, etc.)
+  return executeNormalCommand(parseResult);
 }
 ```
 
@@ -881,6 +1188,12 @@ if (gameState.currentLocationId === 59 &&
 
 ```javascript
 function teleportaALuogo59() {
+  // Ferenc prende i 3 oggetti prerequisito
+  rimuoviDaInventario(16);  // Fascicolo
+  rimuoviDaInventario(6);   // Lista
+  rimuoviDaInventario(34);  // Dossier
+  
+  // Documenti (35) e altri oggetti rimangono in inventario
   // 1. Cambia luogo corrente
   gameState.currentLocationId = 59;
   
@@ -1171,32 +1484,245 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 - ✅ Testing incrementale (più facile identificare regressioni)
 - ✅ 3 commit chiari nella history invece di 1 monolitico
 
-## 3.3 Sistema di Temporizzazione (Medio Rischio)
-*   **Obiettivo:** Introdurre le condizioni di morte.
-*   **Task:**
-    1.  Estendere `gameState.timers` con campi per 3 timer.
-    2.  Implementare check functions (`checkTorciaEsaurita`, `checkIntercettazione`, `checkLampadaAbbandonata`).
-    3.  Integrare check nel flusso `executeCommand`.
-    4.  Implementare comando `ACCENDI LAMPADA`.
-*   **Test:**
-    - Trigger manuale dei 3 game over (30 min)
-    - Verificare messaggi dettagliati
-    - Test E2E: morte torcia, morte intercettazione, morte lampada
+## 3.3.A Sistema di Illuminazione (Medio Rischio - Priorità Alta)
 
-## 3.4 Sequenza Vittoria (Alto Rischio)
-*   **Obiettivo:** Implementare il finale di gioco completo.
-*   **Task:**
-    1.  Estendere `gameState` per narrativa (state machine ENDING_PHASE_*).
-    2.  Implementare check condizioni vittoria (3 oggetti in Luogo 1).
-    3.  Implementare sequenze Fase 1A/1B con BARRA SPAZIO.
-    4.  Implementare teleport Luogo 59 + rimozione Lista/Dossier.
-    5.  Implementare comando PORGI DOCUMENTI.
-    6.  Implementare fasi 2A/2B/2C con schermata vittoria.
-*   **Test:**
-    - Playtest completo inizio→fine (45 min)
-    - Verificare prerequisiti (mancanza Documenti = no trigger)
-    - Test comandi inappropriati al Luogo 59 (game over)
-    - Verificare statistiche finali
+**Obiettivo:** Implementare sistema unificato torcia → buio → morte con gestione lampada.
+
+**Prerequisiti:** § 3.1 e § 3.2 completati (gameState stabile, i18n attivo).
+
+**Task:**
+
+1. **Estendere `gameState.illuminazione`** (20 min)
+   - Aggiungere campi: `turniConTorcia`, `torciaSpenta`, `turniBuio`, `lampadaAccesa`
+   - Aggiungere costante `SYSTEM_COMMANDS` (INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA_STANZA, RESTART, QUIT)
+   - Implementare funzioni `isSystemCommand(comando)` e `shouldIncrementTimers(parseResult)`
+   - Inizializzare in `initGameState()`: tutti a 0/false
+   - Test: verificare struttura JSON e funzioni filtro comandi
+
+2. **Implementare `hasFonteLuceAttiva()`** (20 min)
+   - Logica: (torcia accesa E in inventario) OR (lampada accesa E in inventario)
+   - Identificare ID torcia (presumibilmente 26) e lampada (27) da Oggetti.json
+   - Test: simulare vari stati (torcia spenta, lampada accesa, entrambi, nessuno)
+
+3. **Implementare `checkTorciaSpegnimento(parseResult)`** (35 min)
+   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
+   - Caso A: 6 turni trascorsi → spegni torcia
+   - Caso B: comando POSA TORCIA → spegni torcia immediatamente
+   - Determinare messaggio (neutro vs warning) in base a `lampadaAccesa`
+   - Test: arrivare a turno 6, posare torcia prima, con/senza lampada, verificare INVENTARIO non conta
+
+4. **Implementare `checkLampadaPosata(parseResult)`** (15 min)
+   - Intercettare comando POSA LAMPADA se `lampadaAccesa === true`
+   - Start `turniBuio = 0`
+   - Test: posare lampada, verificare messaggio warning
+
+5. **Implementare `checkMortePerBuio()`** (30 min)
+   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
+   - Se `hasFonteLuceAttiva() === false` → incrementa `turniBuio`
+   - Se `hasFonteLuceAttiva() === true` → reset `turniBuio = 0`
+   - Se `turniBuio >= 3` → GAME_OVER
+   - Test: spegnere torcia, muoversi 3 turni senza lampada, verificare morte (INVENTARIO non incrementa)
+
+6. **Implementare comando `ACCENDI LAMPADA`** (30 min)
+   - Validazioni: lampada in inventario, fiammiferi presenti, non già accesa
+   - Effetto: `lampadaAccesa = true`, reset `turniBuio`
+   - Messaggi i18n: successo, errori (no lampada, no fiammiferi, già accesa)
+   - Test: sequenza completa (prendi lampada, prendi fiammiferi, accendi)
+
+7. **Integrare check luce in `executeCommand`** (20 min)
+   - Ordine: checkTorcia → checkLampada → checkBuio
+   - Concatenare messaggi torcia/lampada al risultato comando
+   - Return immediato su game over buio
+   - Test: eseguire flusso completo con logging
+
+8. **Aggiungere messaggi i18n** (20 min)
+   - `timer.torch.defective` (IT/EN)
+   - `timer.torch.defective.warning` (IT/EN)
+   - `timer.darkness.death` (IT/EN)
+   - `action.light.lamp.*` (success, not_have, no_matches, already_lit) (IT/EN)
+   - Test: verificare messaggi in entrambe le lingue
+
+**Test di Integrazione:**
+- **T1:** Partenza → 6 turni senza lampada → torcia spenta → 3 turni → morte (15 min)
+- **T2:** Partenza → prendi lampada/fiammiferi → accendi → posare torcia → gioco prosegue (10 min)
+- **T3:** Partenza → 5 turni → accendi lampada → posare torcia → gioco prosegue (10 min)
+- **T4:** Partenza → accendi lampada → posa lampada → 3 turni → riprendi lampada prima morte → reset (15 min)
+
+**Tempo stimato totale:** ~3.5 ore (185 min task + 50 min test)
+
+---
+
+## 3.3.B Sistema di Intercettazione (Medio Rischio - Priorità Media)
+
+**Obiettivo:** Implementare morte per permanenza in luoghi pericolosi esterni (meccanica Pre-check + Post-increment).
+
+**Prerequisiti:** § 3.3.A completato (sistema check già integrato in executeCommand).
+
+**Task:**
+
+1. **Verificare costante `LUOGHI_PERICOLOSI`** (10 min)
+   - Confermare array: [51, 52, 53, 55, 56, 58]
+   - Escludere ID=54 (terminale) e ID=57 (rifugio sicuro)
+   - Verificare funzione `shouldIncrementTimers()` già implementata in § 3.3.A
+   - Test: verificare presenza nel codice esistente
+
+2. **Estendere `gameState.timers`** (10 min)
+   - Aggiungere campo: `azioniInLuogoPericoloso: 0`
+   - Inizializzare in `initGameState()`
+   - Test: verificare struttura JSON
+
+3. **Implementare `checkIntercettazionePre()`** (15 min)
+   - Check se counter >= 3 E sei in luogo pericoloso
+   - Ritorna GAME_OVER (blocca esecuzione 4° comando)
+   - Test: arrivare a counter=3, verificare morte al comando successivo
+
+4. **Implementare `checkIntercettazionePost()`** (15 min)
+   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
+   - Incrementa counter se in luogo pericoloso DOPO esecuzione
+   - Reset counter se esci da zona pericolosa
+   - Test: verificare incremento dopo ogni comando (INVENTARIO non incrementa)
+
+5. **Integrare in `executeCommand`** (15 min)
+   - Pre-check PRIMA di eseguire comando
+   - Post-update DOPO check luce
+   - Test: verificare ordine completo (Pre→Esegui→Luce→Post)
+
+6. **Aggiungere messaggi i18n** (10 min)
+   - `timer.intercept.death` (IT/EN): "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!"
+   - Test: verificare messaggio in entrambe le lingue
+
+**Test di Integrazione:**
+- **T5:** Arrivo luogo 51 + 4 comandi → morte al 4° (no arrivo=0, cmd1=1, cmd2=2, cmd3=3, cmd4=morte) (10 min)
+- **T6:** 2 comandi luogo 51 → esci verso sicuro → counter reset a 0 (5 min)
+- **T7:** Luogo 51→52→51→55 (4 spostamenti tra pericolosi) → morte al 4° (10 min)
+- **T8:** 3 comandi luogo 51 → esci verso sicuro → torna 51 → counter resettato (5 min)
+
+**Tempo stimato totale:** ~1.5 ore (75 min task + 30 min test)
+
+---
+
+## 3.4.A Sequenza Vittoria - Fase Atrio e Teleport (Alto Rischio - Priorità Alta)
+
+**Obiettivo:** Implementare trigger Ferenc, sequenza narrativa e teleport a Barriera.
+
+**Prerequisiti:** § 3.3 completato (timer e intercettazione attivi).
+
+**Task:**
+
+1. **Estendere `gameState` per narrativa** (20 min)
+   - Aggiungere state machine: `ENDING_PHASE_1A`, `1B`, `2_WAIT`, `2A`, `2B`, `2C`
+   - Aggiungere campo `awaitingContinue: boolean` per BARRA SPAZIO
+   - Inizializzare in `initGameState()`: `narrativeState: null`
+   - Test: verificare struttura JSON
+
+2. **Implementare `checkVictoryConditions()`** (20 min)
+   - Verifica: Luogo ID=1 E Fascicolo (16) E Lista (6) E Dossier (34) in inventario
+   - Chiamare da `executeCommand` dopo ogni movimento
+   - Se true → avvia Fase 1A
+   - Test: simulare arrivo Atrio con/senza oggetti
+
+3. **Implementare Fase 1A/1B con BARRA SPAZIO** (30 min)
+   - Fase 1A: mostra speech Ferenc parte 1, `awaitingContinue = true`
+   - Input qualsiasi → avanza Fase 1B (speech parte 2)
+   - Input qualsiasi → chiama `teleportaALuogo59()`
+   - Test: verificare flusso narrativo completo
+
+4. **Implementare `teleportaALuogo59()`** (30 min)
+   - Rimuovi da inventario: Fascicolo (16), Lista (6), Dossier (34)
+   - Cambia `currentLocationId = 59`
+   - Assegna +4 punti Ferenc (se non già assegnati)
+   - Assegna +1 punto visita Luogo 59
+   - Incrementa `visitedPlaces.add(59)`
+   - Cambia stato `narrativeState = 'ENDING_PHASE_2_WAIT'`
+   - Messaggi i18n per teleport e arrivo barriera
+   - Test: verificare rimozione oggetti, punteggio, stato
+
+5. **Aggiungere messaggi i18n** (15 min)
+   - `victory.ferenc.speech_1a` (IT/EN)
+   - `victory.ferenc.speech_1b` (IT/EN)
+   - `victory.teleport.message` (IT/EN)
+   - `victory.barrier.arrival` (IT/EN)
+   - Test: verificare messaggi in entrambe le lingue
+
+**Test di Integrazione:**
+- **T1:** Arrivo Atrio senza tutti oggetti → nessun trigger (5 min)
+- **T2:** Arrivo Atrio con Fascicolo+Lista+Dossier → Ferenc appare, +4 punti (10 min)
+- **T3:** Sequenza 1A → BARRA → 1B → BARRA → Teleport a 59, +1 punto (10 min)
+- **T4:** Verifica rimozione Fascicolo/Lista/Dossier dopo teleport (5 min)
+- **T5:** Arrivo Atrio senza Documenti (35) → Ferenc appare comunque (5 min)
+
+**Tempo stimato totale:** ~2.5 ore (115 min task + 35 min test)
+
+---
+
+## 3.4.B Sequenza Vittoria - Fase Barriera e Finale (Alto Rischio - Priorità Alta)
+
+**Obiettivo:** Implementare comando finale, counter guardia e schermata vittoria.
+
+**Prerequisiti:** § 3.4.A completato (giocatore può arrivare a Luogo 59).
+
+**Task:**
+
+1. **Estendere `gameState` per counter guardia** (10 min)
+   - Aggiungere campo: `unusefulCommandsCounter: 0`
+   - Inizializzare in `initGameState()`
+   - Test: verificare campo presente
+
+2. **Implementare verbo PORGI nel parser** (15 min)
+   - Aggiungere a Lessico.json: verbo "PORGI", sinonimi ("DAI", "CONSEGNA", "MOSTRA")
+   - Aggiungere caso nel parser per "PORGI DOCUMENTI"
+   - Test: verificare parsing comando
+
+3. **Implementare logica Luogo 59** (30 min)
+   - Intercettare comandi quando `narrativeState === 'ENDING_PHASE_2_WAIT'`
+   - PORGI DOCUMENTI (con Documenti) → `avanzaNarrativaFase2A()`
+   - PORGI DOCUMENTI (senza Documenti) → messaggio errore (NO increment counter)
+   - Tutti gli altri comandi → increment `unusefulCommandsCounter`
+   - Se counter >= 5 → `gameOverGuardiaSospetta()`
+   - Altrimenti → esegui comando normalmente
+   - Test: provare vari comandi, verificare counter
+
+4. **Implementare Fase 2A/2B/2C** (30 min)
+   - Fase 2A: guardia controlla documenti, `awaitingContinue = true`
+   - Input → Fase 2B: guardia approva
+   - Input → Fase 2C: schermata vittoria
+   - Assegna +2 punti PORGI DOCUMENTI
+   - Cambia `gameState.ended = true`, `gameState.won = true`
+   - Test: sequenza completa fino a vittoria
+
+5. **Implementare schermata vittoria finale** (20 min)
+   - Mostra statistiche: punteggio finale, rank, luoghi visitati, interazioni, misteri
+   - Messaggio congratulazioni basato su punteggio (132 = perfetto, <100 = discreto, etc.)
+   - Opzione RICOMINCIA o ESCI
+   - Test: verificare tutte statistiche corrette
+
+6. **Implementare Game Over "Guardia Sospetta"** (15 min)
+   - Messaggio: "Il tuo comportamento strano e esitante ha insospettito la guardia..."
+   - `gameState.ended = true`, `gameState.won = false`
+   - Gestione identica a luoghi terminali
+   - Test: triggerare con 5 comandi inappropriati
+
+7. **Aggiungere messaggi i18n** (15 min)
+   - `victory.porgi.success` (IT/EN)
+   - `victory.porgi.no_documents` (IT/EN)
+   - `victory.phase2a.checking` (IT/EN)
+   - `victory.phase2b.approved` (IT/EN)
+   - `victory.phase2c.final` (IT/EN)
+   - `victory.gameover.guard_suspicious` (IT/EN)
+   - Test: verificare messaggi in entrambe le lingue
+
+**Test di Integrazione:**
+- **T6:** Luogo 59 con Documenti → PORGI DOCUMENTI → vittoria +2 punti (10 min)
+- **T7:** Luogo 59 senza Documenti → PORGI DOCUMENTI → errore (no counter) (5 min)
+- **T8:** Luogo 59 → 5 comandi diversi → Game Over guardia (10 min)
+- **T9:** Luogo 59 → 3 comandi → PORGI → vittoria (counter non raggiunge 5) (5 min)
+- **T10:** Playtest completo inizio→fine con punteggio perfetto 132 (30 min)
+
+**Tempo stimato totale:** ~2.5 ore (135 min task + 60 min test)
+
+---
+
+**Totale § 3.4 (A+B):** ~5 ore
 
 ---
 
