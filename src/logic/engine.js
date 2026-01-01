@@ -433,6 +433,40 @@ function verificaPrerequisiti(prerequisiti) {
   return true;
 }
 
+// === SISTEMA PUNTEGGIO MISTERI ===
+// Assegna +3 punti quando un mistero viene risolto automaticamente tramite effetti
+function assegnaPunteggioMistero(effetto) {
+  let misteroId = null;
+  
+  // Task 4a: VISIBILITA - oggetto diventa visibile
+  if (effetto.tipo === 'VISIBILITA') {
+    misteroId = `visibilita_${effetto.target}`;
+  }
+  
+  // Task 4b: SBLOCCA_DIREZIONE - direzione sbloccata permanentemente
+  else if (effetto.tipo === 'SBLOCCA_DIREZIONE') {
+    misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+  }
+  
+  // Task 4c: TOGGLE_DIREZIONE - solo prima apertura (0 → valore)
+  else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
+    const key = `${effetto.luogo}_${effetto.direzione}`;
+    const statoCorrente = gameState.direzioniToggle[key] || false;
+    
+    // Assegna punti solo se sta APRENDO (false → true)
+    // Chiusure (true → false) e riaperture successive: NO +3
+    if (!statoCorrente) {
+      misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+    }
+  }
+  
+  // Assegna +3 punti se il mistero non è già stato risolto
+  if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
+    gameState.punteggio.totale += 3;
+    gameState.punteggio.misteriRisolti.add(misteroId);
+  }
+}
+
 // Funzione per applicare gli effetti di un'interazione
 function applicaEffetti(effetti, luogoCorrente) {
   for (const effetto of effetti) {
@@ -472,6 +506,10 @@ function applicaEffetti(effetti, luogoCorrente) {
       // Questo effetto viene gestito direttamente in cercaEseguiInterazione
       // perché richiede accesso alla risposta e controllo flusso
     }
+    
+    // === SISTEMA PUNTEGGIO MISTERI ===
+    // Assegna +3 punti se questo effetto risolve un mistero
+    assegnaPunteggioMistero(effetto);
   }
 }
 
