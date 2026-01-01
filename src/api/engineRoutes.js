@@ -132,12 +132,13 @@ router.get('/direzioni/:idLuogo', (req, res) => {
   }
 });
 
-// Endpoint per ottenere il punteggio corrente
-router.get('/score', (req, res) => {
+// Endpoint per ottenere statistiche di gioco (luoghi visitati + punteggio)
+router.get('/stats', (req, res) => {
   try {
     const state = getGameStateSnapshot();
+    const visitedPlaces = state.visitedPlaces?.length || 0;
     const score = state.punteggio?.totale || 0;
-    res.json({ ok: true, score });
+    res.json({ ok: true, visitedPlaces, score });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

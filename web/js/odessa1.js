@@ -463,20 +463,26 @@ function updateDynamicPlaceImage() {
   }
 }
 
-function updateScoreDisplay() {
-  const scoreEl = document.getElementById('scoreCount');
-  if (scoreEl) {
-    // Richiedi punteggio dal server
-    fetch(basePath + 'api/engine/score')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok && typeof data.score === 'number') {
+function updateGameStats() {
+  // Recupera entrambi i contatori dal server (source of truth)
+  fetch(basePath + 'api/engine/stats')
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        // Aggiorna luoghi visitati
+        const visitedEl = document.getElementById('visitedCount');
+        if (visitedEl && typeof data.visitedPlaces === 'number') {
+          visitedEl.textContent = `Luoghi visitati: ${data.visitedPlaces}`;
+        }
+        // Aggiorna punteggio
+        const scoreEl = document.getElementById('scoreCount');
+        if (scoreEl && typeof data.score === 'number') {
           currentScore = data.score;
           scoreEl.textContent = `Punteggio: ${currentScore}`;
         }
-      })
-      .catch(err => console.error('Errore recupero punteggio:', err));
-  }
+      }
+    })
+    .catch(err => console.error('Errore recupero statistiche:', err));
 }
 
 function showCurrent() {
@@ -509,13 +515,8 @@ function showCurrent() {
   updateDirectionUI(current);
   updateDynamicPlaceImage();
 
-  // Aggiorna luoghi visitati
-  visitedPlaces.add(current.ID);
-  const visitedEl = document.getElementById('visitedCount');
-  if (visitedEl) visitedEl.textContent = `Luoghi visitati: ${visitedPlaces.size}`;
-  
-  // Aggiorna punteggio (se disponibile nel gameState)
-  updateScoreDisplay();
+  // Aggiorna statistiche (luoghi visitati + punteggio) dal server
+  updateGameStats();
 
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
@@ -1063,8 +1064,8 @@ inputForm.addEventListener('submit', async function(e) {
               })
               .catch(err => console.error('Errore aggiornamento direzioni:', err));
           }
-          // Aggiorna punteggio dopo comando
-          updateScoreDisplay();
+          // Aggiorna statistiche dopo comando
+          updateGameStats();
         } else {
           // Messaggio di errore
           const feed = document.getElementById('placeFeed');
