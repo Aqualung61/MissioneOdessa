@@ -343,5 +343,10 @@
     "ID_Termine": 70,
     "Concetto": "TAVOLO",
     "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 71,
+    "Concetto": "PORGERE",
+    "ID_TipoLessico": 2
   }
 ]

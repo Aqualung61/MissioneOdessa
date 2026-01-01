@@ -677,5 +677,53 @@
     "Voce": "Tavolo",
     "ID_Termine": 70,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 119,
+    "Voce": "PORGI",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 120,
+    "Voce": "PORGERE",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 121,
+    "Voce": "DAI",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 122,
+    "Voce": "DARE",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 123,
+    "Voce": "CONSEGNA",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 124,
+    "Voce": "CONSEGNARE",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 125,
+    "Voce": "MOSTRA",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 126,
+    "Voce": "MOSTRARE",
+    "ID_Termine": 71,
+    "ID_Lingua": 1
   }
 ]

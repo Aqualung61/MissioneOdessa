@@ -1,9 +1,9 @@
 # Considerazioni su Architettura Applicativa e Interventi
 
-**Versione:** 1.0  
-**Data:** 30 dicembre 2025  
+**Versione:** 1.1  
+**Data:** 01 gennaio 2026  
 **Contesto:** Analisi post-sviluppo per valutazione refactoring e strategia testing  
-**Riferimenti:** `specifica-tecnica-completa-integrata.md`
+**Riferimenti:** `specifica-tecnica-completa-integrata.md` v2.0
 
 ---
 
@@ -18,8 +18,8 @@ Questo documento raccoglie le considerazioni sull'architettura applicativa attua
 - ✅ Focus raccomandato: **implementazione feature mancanti** + **E2E testing critico**
 
 **Riferimenti Chiave:**
-- **Sezione 5.1.2 - HLD:** Tabella completa luoghi pericolosi/terminali con requisiti comportamentali
-- **Sezione 5.1.2 - TD:** Verifica costante `LUOGHI_PERICOLOSI` e test mancanti
+- **§ 5.2 (Fase 2):** Dettagli implementazione timer intercettazione e luoghi pericolosi/terminali
+- **§ 5.2 - TD:** Verifica costante `LUOGHI_PERICOLOSI` e test mancanti
 
 ---
 
@@ -236,7 +236,7 @@ test('save and load state', async ({ page }) => {
 
 ### 5.2 Roadmap Implementazione
 
-#### **Fase 1: Fondamenta e Pulizia Dati (Settimana 1)**
+#### 5.2.1 Fondamenta e Pulizia Dati (Settimana 1)
 **Effort:** 10-12h
 
 **Task:**
@@ -265,7 +265,7 @@ test('save and load state', async ({ page }) => {
 
 ---
 
-#### **Fase 2: Sistema Temporizzazione (Settimana 2)**
+#### 5.2.2 Sistema Temporizzazione (Settimana 2)
 **Effort:** 10-12h
 
 **Task:**
@@ -330,13 +330,13 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 **Azioni Raccomandate:**
 - [ ] Verificare costante `LUOGHI_PERICOLOSI` in `src/logic/engine.js`
 - [ ] Se non presente, implementare come da specifica tecnica § 2.3.1
-- [ ] Aggiungere test E2E per timer intercettazione (Fase 2, vedi sotto)
+- [ ] Aggiungere test E2E per timer intercettazione (§ 5.2.2, vedi sotto)
 
 **Riferimento:** Per tabella completa luoghi pericolosi/terminali, vedere `specifica-tecnica-completa-integrata.md` § 1.2.2 (HLD) e § 2.3.1 (TD).
 
 ---
 
-#### **Fase 3: Sistema Vittoria (Settimana 3)**
+#### 5.2.3 Sistema Vittoria (Settimana 3)
 **Effort:** 12-15h
 
 **Task:**
@@ -369,7 +369,7 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-#### **Fase 4: Stabilizzazione e Testing (Settimana 4)**
+#### 5.2.4 Stabilizzazione e Testing (Settimana 4)
 **Effort:** 10-15h
 
 **Task:**
@@ -402,10 +402,10 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 | Fase | Attività | Effort | Priorità |
 |------|----------|--------|----------|
-| 1 | Punteggio + Misteri | 10-12h | 🔴 Critica |
-| 2 | Temporizzazione (3 timer) | 10-12h | 🔴 Critica |
-| 3 | Sequenza Vittoria | 12-15h | 🔴 Critica |
-| 4 | Testing + Deploy | 10-15h | 🔴 Critica |
+| § 5.2.1 | Punteggio + Misteri | 10-12h | 🔴 Critica |
+| § 5.2.2 | Temporizzazione (3 timer) | 10-12h | 🔴 Critica |
+| § 5.2.3 | Sequenza Vittoria | 12-15h | 🔴 Critica |
+| § 5.2.4 | Testing + Deploy | 10-15h | 🔴 Critica |
 | **TOTALE** | | **42-54h** | |
 
 **vs. Piano Originale (Refactoring + Unit Test):**
@@ -637,14 +637,14 @@ Refactoring diventa prioritario SE:
 
 ## 8. Metriche di Successo
 
-### 8.1 Criteri Completamento Fase
+### 8.1 Criteri Completamento per Fase Implementativa
 
 | Fase | Criterio Successo | Metrica |
 |------|-------------------|---------|
-| **Fase 1** | Sistema punteggio funzionante | Playtest 30min: punteggio aumenta correttamente |
-| **Fase 2** | 3 Timer attivi | Trigger manuali di 3 game over (100% success) |
-| **Fase 3** | Vittoria completa | Playtest: inizio→fine senza crash |
-| **Fase 4** | Stabilità garantita | E2E tests: 10/10 pass + smoke test completo |
+| **§ 5.2.1** | Sistema punteggio funzionante | Playtest 30min: punteggio aumenta correttamente |
+| **§ 5.2.2** | 3 Timer attivi | Trigger manuali di 3 game over (100% success) |
+| **§ 5.2.3** | Vittoria completa | Playtest: inizio→fine senza crash |
+| **§ 5.2.4** | Stabilità garantita | E2E tests: 10/10 pass + smoke test completo |
 
 ### 8.2 Criteri Produzione
 
@@ -738,7 +738,7 @@ Refactoring diventa prioritario SE:
 - [ ] Conferma priorità feature
 - [ ] Approva budget 45-52h
 
-#### **Step 2: Kickoff Fase 1 (Giorno 1)**
+#### **Step 2: Kickoff § 5.2.1 (Giorno 1)**
 - [ ] Crea branch `feature/punteggio-misteri`
 - [ ] Elimina oggetto duplicato ID=28
 - [ ] Crea `Misteri.json` schema
@@ -787,14 +787,16 @@ Refactoring diventa prioritario SE:
 
 ## 11. Riferimenti
 
-- **Specifica Tecnica:** `specifica-tecnica-completa-integrata.md`
+- **Specifica Tecnica:** `specifica-tecnica-completa-integrata.md` v2.0
 - **Codebase:** `src/logic/engine.js`, `src/logic/parser.js`
 - **Test Framework:** Vitest (unit), Playwright (E2E)
 - **Issue Tracker:** GitHub Issues (se attivato)
 
 ---
 
-**Fine Documento**
+**Fine Documento**  
+**Ultima revisione:** 01 gennaio 2026  
+**Versione:** 1.1
 
 **Approvazione:**
 - [ ] Sviluppatore: ______________________

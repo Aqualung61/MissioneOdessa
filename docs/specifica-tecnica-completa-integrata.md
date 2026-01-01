@@ -1,7 +1,7 @@
 # Specifica Tecnica Unificata - Missione Odessa
 
-**Versione:** 1.1  
-**Data:** 30 dicembre 2025  
+**Versione:** 2.0  
+**Data:** 01 gennaio 2026  
 **Status:** Approved for Implementation - Integrata  
 **Riferimenti:** `sistema-punteggio.md`, `sistema-temporizzazione.md`, `sistema-vittoria.md`
 
@@ -16,13 +16,14 @@ Questo capitolo descrive le logiche funzionali, l'esperienza utente e le regole 
 L'obiettivo è incentivare l'esplorazione completa e premiare la risoluzione di enigmi, senza imporre grinding.
 
 ### 1.1.1 Categorie di Punteggio
-Il punteggio totale (stimato ~122 punti) è la somma di quattro categorie:
+Il punteggio totale (massimo 132 punti) è la somma di quattro categorie:
 
 | Categoria | Valore | Condizione di Assegnazione | Note |
 |-----------|--------|----------------------------|------|
 | **Esplorazione** | 1 pto | Primo ingresso in un nuovo luogo | Totale 57 luoghi. Backtracking non premia. |
-| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Es. Spostare un quadro, aprire una botola. |
-| **Misteri** | 3 pti | Risoluzione di obiettivi narrativi complessi | Es. Trovare la combinazione, accedere al bunker. |
+| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 15 interazioni. Anche ripetibili contano alla prima esecuzione. |
+| **Misteri** | 3 pti | Effetti strutturali automatici (oggetto visibile, direzione sbloccata) | Totale 13 misteri. Assegnati automaticamente al verificarsi dell'effetto. |
+| **Sequenza Cassaforte** | 2 pti | Completamento pattern D-S-S-D-S (5 rotazioni) | Award al completamento della sequenza completa. |
 | **Completamento** | 4 pti | Raggiungimento del finale di gioco | Assegnato alla vittoria. |
 
 ### 1.1.2 Feedback Utente
@@ -35,27 +36,31 @@ Il giocatore ottiene un rango in base al punteggio totale accumulato:
 
 | Punteggio | Rango | Descrizione |
 |-----------|-------|-------------|
-| 0-30 | Apprendista | Hai appena iniziato |
-| 31-60 | Agente Novizio | Stai imparando le basi |
-| 61-90 | Agente Capace | Buone capacità investigative |
-| 91-110 | Agente Esperto | Ottima esplorazione |
-| 111-122 | Agente Eccellente | Hai scoperto quasi tutto! |
-| 122 | Perfezionista | Completamento al 100%! |
+| 0-33 | Novizio | Hai appena iniziato |
+| 34-66 | Esploratore | Stai imparando le basi |
+| 67-99 | Investigatore | Buone capacità investigative |
+| 100-131 | Maestro | Ottima esplorazione |
+| 132 | Perfezionista | Completamento al 100%! |
 
-**Punteggio massimo:** 122 punti (57 luoghi + ~34 interazioni + 27 misteri + 4 completamento)
+**Punteggio massimo:** 132 punti (57 luoghi + 30 interazioni + 39 misteri + 2 sequenza + 4 completamento)
 
 ### 1.1.4 Definizione Misteri
-I **misteri** sono obiettivi narrativi complessi che premiano milestone significative del gioco:
+I **misteri** sono effetti strutturali automatici che premiano la prima volta che si verificano eventi significativi:
 
-1. **Il Segreto della Cassaforte** - Aprire la cassaforte nascosta
-2. **La Stanza Segreta Sud** - Scoprire la stanza del Gauleiter
-3. **La Stanza delle Torture** - Trovare la sala di torture
-4. **Il Passaggio Liberato** - Scavare le macerie
-5. **Il Dossier ODESSA** - Recuperare il dossier segreto
-6. **I Documenti di Identità** - Trovare i documenti falsi
-7. **La Lista delle SS** - Scoprire la lista di servizio
-8. **Il Fascicolo B-B** - Trovare il piano di fuga Brema-Bari
-9. **La Via d'Uscita** - Trovare l'uscita dal bunker
+**Tipi di Mistero:**
+
+1. **VISIBILITA (9 misteri)**: Oggetto diventa visibile/prendibile
+   - Cassaforte, Forma circolare, Scomparto segreto, Foglio (Documenti), Porta aperta, Botola, Dossier, Bastone comando, Medaglione
+
+2. **SBLOCCA_DIREZIONE (4 misteri)**: Passaggio bidirezionale permanente si apre
+   - Passaggio 20↔21 (Stanza segreta sud), Passaggio 27↔28, Passaggio 36↔37 (Torture), Passaggio 49↔50
+   - **Nota:** Direzioni bidirezionali contano come 1 mistero unico
+
+3. **TOGGLE_DIREZIONE (2 misteri)**: Passaggio toggle si apre per la prima volta
+   - Passaggio 44↔45 (pulsante), Passaggio 42↔43 (sedile)
+   - **Nota:** Solo prima apertura (0→valore) dà punti, chiusure/riaperture successive ignorate
+
+**Totale:** 13 misteri × +3 = 39 punti massimi
 
 ---
 
@@ -81,14 +86,8 @@ Il gioco introduce tre meccaniche di "morte a tempo" per aumentare la tensione e
 
 ### 1.2.2 Evento B: Intercettazione (3 turni in zona pericolosa)
 - **Contesto:** Alcuni luoghi esterni sono sorvegliati da pattuglie sovietiche.
-- **Luoghi Pericolosi:** 
-  - ID=51: Grossa piazza
-  - ID=52: Filo spinato (nord)
-  - ID=53: Posto di blocco
-  - ID=55: Strada
-  - ID=56: Filo spinato (est)
-  - ID=58: Filo spinato (sud)
-  - **Nota:** ID=54 (Posto di blocco - Fine) è un **luogo terminale** raggiungibile da ID=53 tramite direzione Sud. Causa Game Over immediato all'ingresso (morte istantanea), NON tramite timer. Gestione identica a ID=40 (Dentro pozzo). Non è incluso in `LUOGHI_PERICOLOSI`.
+- **Luoghi Pericolosi:** ID=51, 52, 53, 55, 56, 58 (vedi Tabella Luoghi Critici sotto per dettagli completi)
+  - **Nota:** ID=54 (Posto di blocco - Fine) è un **luogo terminale** raggiungibile da ID=53 tramite direzione Sud. Causa Game Over immediato all'ingresso (morte istantanea), NON tramite timer. Gestione identica a ID=40 (Dentro pozzo). Non è incluso in costante implementativa `LUOGHI_PERICOLOSI`.
   - **Nota:** ID=57 (Capanno attrezzi) è intenzionalmente **sicuro** (rifugio)
 
 **Tabella Completa Luoghi Critici:**
@@ -250,16 +249,19 @@ Questo capitolo dettaglia le modifiche al codice, le strutture dati e gli algori
 
 Estensione dell'oggetto `gameState` in `src/logic/engine.js` per supportare tutti i sistemi.
 
+**⚠️ DESIGN DECISION:** Durante l'analisi del codice esistente (post § 3.1) è emerso che esiste già un sistema `visitedPlaces: Set` funzionante che traccia i luoghi visitati con prevenzione automatica dei doppi conteggi. Per evitare duplicazione, **riutilizzeremo `visitedPlaces`** invece di creare `punteggio.luoghiVisitati`. Vedere § 2.1.1 per dettagli.
+
 ```javascript
 gameState = {
   // ... campi esistenti ...
+  visitedPlaces: new Set([1]),     // ✅ ESISTENTE - Riutilizzato per punteggio luoghi
 
   // === SISTEMA PUNTEGGIO ===
   punteggio: {
     totale: 0,
-    luoghiVisitati: new Set(),       // ID luoghi (Set per unicità)
-    interazioniPunteggio: new Set(), // ID interazioni completate
-    misteriRisolti: new Set()        // ID misteri completati
+    // luoghiVisitati: RIMOSSO - usa visitedPlaces esistente
+    interazioniPunteggio: new Set(), // ID interazioni completate (per +2)
+    misteriRisolti: new Set()        // ID misteri risolti (per +3 automatico su effetti)
   },
 
   // === SISTEMA TEMPORIZZAZIONE ===
@@ -284,12 +286,136 @@ gameState = {
 
 **Nota sulla Persistenza:** I `Set` del punteggio devono essere convertiti in `Array` durante il salvataggio (JSON.stringify) e riconvertiti in `Set` al caricamento.
 
+### 2.1.1 Design Decision: Riuso visitedPlaces e Misteri Automatici
+
+#### Decisione 1: Riuso visitedPlaces
+
+**Contesto:** L'applicazione possiede già un sistema `visitedPlaces` implementato e funzionante:
+- **Lato client:** `web/js/odessa1.js` mantiene `let visitedPlaces = new Set()` aggiornato automaticamente ad ogni movimento
+- **Lato server:** `src/logic/engine.js` ha `visitedPlaces: new Set([1])` nel gameState
+- **Serializzazione:** Save/load già gestiscono correttamente Set ↔ Array conversion
+- **UI:** Già visualizza contatore "Luoghi visitati: N" nell'interfaccia
+- **Prevenzione doppi conteggi:** Il `Set` nativo JavaScript impedisce automaticamente duplicati
+
+**Problema identificato:** Il server non sincronizza `visitedPlaces` quando cambia location (funzione `setCurrentLocation()` non aggiorna il Set).
+
+**Decisione implementativa:**
+1. ✅ **Riutilizzare `visitedPlaces`** per il calcolo punteggio luoghi (eliminare `punteggio.luoghiVisitati`)
+2. ✅ Aggiornare `setCurrentLocation()` per sincronizzare il Set server con cambio location
+3. ✅ Calcolare punti luoghi con `visitedPlaces.size` invece di gestire Set separato
+
+**Rationale:**
+- Elimina duplicazione dati (un solo Set invece di due)
+- Riutilizza codice esistente, testato e funzionante
+- UI già mostra il conteggio senza modifiche
+- Serializzazione già implementata e validata
+- Semplifica implementazione § 3.2 (da 30 min a 5 min per logica luoghi)
+
+**Impatto:** Riduzione effort § 3.2 da ~1.5h a ~1h totale.
+
+#### Decisione 2: Misteri come Effetti Automatici
+
+**Contesto:** Originariamente Misteri.json conteneva 9 definizioni di "obiettivi narrativi" da +3 punti ciascuno. L'analisi ha rivelato che 8 su 9 erano conseguenze automatiche di altre azioni già premiate (es. "trova dossier" +3 dopo "esamina botola" +2 = +5 per stessa azione).
+
+**Problema:**
+- Doppio conteggio: interazione +2 + mistero automatico +3 = +5 per singola azione
+- Ambiguità su cosa è "mistero" vs "interazione"
+- File Misteri.json ridondante con sistema effetti già esistente
+
+**Soluzione adottata:**
+- **Mistero = effetto strutturale automatico** (VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE)
+- Award +3 inline quando effetto si verifica per la prima volta
+- Tracking in `punteggio.misteriRisolti` per evitare duplicati
+- Eliminazione completa di Misteri.json
+
+**Vantaggi:**
+- Logica unificata: 1 interazione → 1 effetto → punti correlati
+- Coerenza UX: giocatore capisce perché riceve punti (oggetto appare, porta si apre)
+- Manutenibilità: modifiche agli effetti aggiornano automaticamente i misteri
+
+**Caso speciale 1:** Direzioni bidirezionali (es. 20↔21) contano come 1 mistero unico nonostante creino 2 effetti SBLOCCA_DIREZIONE. Tracking su direzione primaria (es. "direzione_20_Sud").
+
+**Caso speciale 2:** TOGGLE_DIREZIONE assegna mistero solo alla prima apertura (0→valore), ignorando chiusure e riaperture successive.
+
+**Caso speciale 3:** Sequenza cassaforte gestita separatamente, assegna +2 (non +3) al completamento D-S-S-D-S.
+
+---
+
 ## 2.2 Implementazione Punteggio
 
-### 2.2.1 Logica
-*   **Luoghi:** Inserire check nel case `NAVIGATION` di `executeCommand`. Se `destinazione` non è nel Set, +1 punto.
-*   **Interazioni:** Modificare `applicaEffetti`. Se l'interazione ha metadata `punteggio: 2`, aggiungere al Set e incrementare totale.
-*   **Misteri:** Nuova funzione `verificaMisteriRisolti()` chiamata alla fine di ogni ciclo di comando. Controlla `src/data-internal/Misteri.json`.
+### 2.2.1 Componenti e Logica
+
+#### A) Luoghi Visitati (+1 ciascuno)
+- **Massimo:** 57 punti
+- **Tracking:** Set `gameState.visitedPlaces` (riuso esistente)
+- **Award:** Automatico alla prima visita del luogo
+- **Implementazione:** Modificare `setCurrentLocation(locationId)` aggiungendo `gameState.visitedPlaces.add(locationId)` per sincronizzazione server. Calcolo punti: `visitedPlaces.size × 1`.
+- **Effort:** 5 min (una riga di codice)
+
+#### B) Interazioni Eseguite (+2 ciascuna)
+- **Massimo:** 30 punti (15 interazioni)
+- **Tracking:** Set `gameState.punteggio.interazioniPunteggio`
+- **Award:** Immediato alla prima esecuzione
+- **Ripetibili:** Anche interazioni ripetibili contano +2 alla prima esecuzione
+- **Implementazione:** Modificare `cercaEseguiInterazione()` per controllare se ID già in Set, altrimenti aggiungere e incrementare totale di +2.
+- **Effort:** 20 min
+
+**Elenco 15 Interazioni:**
+1. sposta_quadro_24
+2. sposta_arazzo_20
+3. muovi_fermacarte_25
+4. esamina_scomparto_25
+5. infila_medaglione_forma_20
+6. infila_statuetta_nicchia_27
+7. infila_medaglione_forma_36
+8. carica_pesa_57
+9. esamina_botola_57 (ripetibile, conta prima volta)
+10. premi_pulsante_44 (ripetibile, conta prima volta)
+11. ruota_sedile_42 (ripetibile, conta prima volta)
+12. scava_macerie_11 (ripetibile, conta prima volta)
+13. scava_macerie_49
+14. esamina_cassaforte_con_medaglione_24 (ripetibile, conta prima volta)
+15. porgi_documenti_59
+
+#### C) Misteri Risolti (+3 ciascuno)
+- **Massimo:** 39 punti (13 misteri)
+- **Tracking:** Set `gameState.punteggio.misteriRisolti`
+- **Award:** Automatico quando interazione produce effetto strutturale
+- **Definizione:** Mistero = effetto VISIBILITA, SBLOCCA_DIREZIONE, o TOGGLE_DIREZIONE (solo prima apertura)
+- **Implementazione:** Nuova funzione `assegnaPunteggioMistero(effetto, gameState)` chiamata per ogni effetto applicato. Controlla tipo effetto e assegna +3 se prima volta.
+- **Effort:** 40 min
+
+**Tipi di Mistero:**
+
+1. **VISIBILITA (9 misteri):** Oggetto diventa visibile/prendibile
+   - ID formato: `"visibilita_NomeOggetto"`
+   - Esempi: "visibilita_Cassaforte", "visibilita_Medaglione", "visibilita_Dossier"
+   - Logica: `const misteroId = \`visibilita_${effetto.target}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); }`
+   
+2. **SBLOCCA_DIREZIONE (4 misteri):** Passaggio bidirezionale permanente
+   - ID formato: `"direzione_Luogo_Direzione"`
+   - Conta come 1 mistero unico anche se crea 2 direzioni (andata+ritorno)
+   - Esempi: "direzione_20_Sud" (rappresenta 20↔21), "direzione_36_Ovest" (36↔37)
+   - Logica: `const misteroId = \`direzione_${effetto.luogo}_${effetto.direzione}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); }`
+   
+3. **TOGGLE_DIREZIONE (2 misteri):** Passaggio toggle alla prima apertura
+   - ID formato: `"direzione_Luogo_Direzione"`
+   - Award solo quando direzione passa da 0 a valore (apertura)
+   - Chiusure/riaperture successive NON danno punti
+   - Esempi: "direzione_44_Est" (pulsante), "direzione_42_Est" (sedile)
+   - Logica: `const direzionePrima = luoghi[effetto.luogo][effetto.direzione]; if (direzionePrima === 0 && effetto.destinazione > 0) { const misteroId = \`direzione_${effetto.luogo}_${effetto.direzione}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); } }`
+
+#### D) Sequenza Cassaforte (+2)
+- **Tracking:** Verifica `SEQUENZA_COMPLETATA` per "cassaforte_24"
+- **Award:** Al completamento pattern D-S-S-D-S (5 rotazioni corrette)
+- **Implementazione:** Quando sequenza completata, verificare se "sequenza_cassaforte" già in `misteriRisolti`, altrimenti aggiungere e incrementare totale di +2.
+- **Nota:** Gestione separata dalle interazioni normali tramite sistema SEQUENZA esistente
+- **Effort:** 15 min
+
+#### E) Completamento Gioco (+4)
+- Award al comando `PORGI DOCUMENTI` al luogo 59
+
+**Punteggio Massimo Totale:** 57 + 30 + 39 + 2 + 4 = **132 punti**
 
 ### 2.2.2 File Dati e Definizioni
 
@@ -309,7 +435,7 @@ Le seguenti interazioni devono avere `"punteggio": 2` in Interazioni.json:
 
 **Nota:** Identificare 7-12 interazioni aggiuntive da Interazioni.json analizzando effetti `SBLOCCA_DIREZIONE` e `VISIBILITA`.
 
-**⚠️ OPEN POINT #1:** Lista completa interazioni con punteggio da completare durante Fase 2 (analisi Interazioni.json). Target: 15-20 interazioni totali per raggiungere ~34 punti. Questo open point non blocca l'avvio della Fase 1.
+**⚠️ OPEN POINT #1:** Lista completa interazioni con punteggio da completare durante § 3.2 (analisi Interazioni.json). Target: 15-20 interazioni totali per raggiungere ~34 punti. Questo open point non blocca l'avvio della § 3.1 (Setup). Dettagli: vedere § 3.6 OP-01.
 
 #### Struttura Misteri.json
 **File:** `src/data-internal/Misteri.json`
@@ -452,7 +578,7 @@ function verificaPrerequisito(prerequisito) {
       );
     
     case 'LUOGO_VISITATO':
-      return gameState.punteggio.luoghiVisitati.has(prerequisito.target);
+      return gameState.visitedPlaces.has(prerequisito.target); // ✅ Usa visitedPlaces esistente
     
     case 'OGGETTO_IN_INVENTARIO':
       return gameState.Oggetti.some(obj => 
@@ -870,32 +996,176 @@ export function executeCommand(parseResult) {
 
 Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testing.
 
-## Fase 1: Fondamenta e Pulizia Dati (Basso Rischio)
+## 3.1 Fondamenta e Pulizia Dati (Basso Rischio) ✅ **COMPLETATO**
 *   **Obiettivo:** Preparare il terreno senza alterare la logica di gioco attuale.
 *   **Task:**
-    1.  Eliminare oggetto ID=28 da `Oggetti.json`.
-    2.  Estendere `gameState` in `engine.js` con tutte le nuove strutture (punteggio, timers, narrative).
-    3.  Aggiornare `saveGame`/`loadGame` per gestire i nuovi campi (inclusa serializzazione Set).
-    4.  Creare file `Misteri.json` in `src/data-internal/`.
-    5.  Aggiungere verbo PORGI al `Lessico.json`.
-*   **Test:** Verificare che il gioco carichi, salvi e ricarichi senza errori.
+    1.  ✅ Eliminare oggetto ID=28 da `Oggetti.json`.
+    2.  ✅ Estendere `gameState` in `engine.js` con tutte le nuove strutture (punteggio, timers, narrative).
+    3.  ✅ Aggiornare `saveGame`/`loadGame` per gestire i nuovi campi (inclusa serializzazione Set).
+    4.  ✅ Creare file `Misteri.json` in `src/data-internal/`.
+    5.  ✅ Aggiungere verbo PORGI al `VociLessico.json` e `TerminiLessico.json`.
+*   **Test:** ✅ Verificato che il gioco carichi, salvi e ricarichi senza errori.
+*   **Note post-implementazione:** Durante l'analisi è emerso che `visitedPlaces` esiste già e funziona correttamente. La struttura `punteggio.luoghiVisitati` aggiunta in questo sprint è **ridondante** e verrà **eliminata in § 3.2** a favore del riuso di `visitedPlaces` esistente. Vedere § 2.1.1 per design decision completa.
 
-## Fase 2: Sistema di Punteggio (Basso Rischio)
-*   **Obiettivo:** Implementare il sistema di reward (non bloccante).
+## 3.2 Sistema di Punteggio Unificato +2/+3 (Basso Rischio)
+*   **Obiettivo:** Implementare il sistema di reward con misteri automatici inline.
+*   **Effort totale:** ~90 min (1.5 ore)
+*   **Strategia:** Suddivisione in 3 sottosprint per isolare task critico e garantire checkpoint testabili.
+
+---
+
+### 3.2.1 Fondamenta Punteggio (25 min) - **SOTTOSPRINT 1**
+*   **Obiettivo:** Sistema base luoghi + interazioni funzionante
+*   **Effort:** 25 min
 *   **Task:**
-    1.  Identificare e marcare 15-20 interazioni in `Interazioni.json` con `"punteggio": 2`.
-    2.  Implementare logica punteggio in `engine.js`:
-        - Luoghi: incremento al primo accesso
-        - Interazioni: incremento se metadata presente
-        - Misteri: funzione `verificaMisteriRisolti()`
-    3.  Implementare comando `PUNTI` con visualizzazione ranghi.
-*   **Test:** 
-    - Visitare 10 luoghi → Verificare +10 punti
-    - Eseguire interazione con punteggio → Verificare +2 punti
-    - Prendere oggetto per mistero → Verificare +3 punti
-    - Comando PUNTI → Verificare output corretto
+    1.  **Pulizia gameState** (5 min): Rimuovere campo `punteggio.luoghiVisitati` da definizione gameState e funzione resetGameState. Verificare serializzazione corretta di `punteggio.misteriRisolti` in `getGameStateSnapshot()` e `setGameState()`.
+    
+    2.  **Sincronizzazione Luoghi** (10 min): Modificare `setCurrentLocation(locationId)` aggiungendo:
+        ```javascript
+        if (!gameState.visitedPlaces.has(locationId)) {
+          gameState.visitedPlaces.add(locationId);
+          gameState.punteggio.totale += 1;
+        }
+        ```
+    
+    3.  **Logica Interazioni** (10 min): Modificare `cercaEseguiInterazione()` per aggiungere dopo esecuzione interazione:
+        ```javascript
+        if (!gameState.punteggio.interazioniPunteggio.has(interazioneId)) {
+          gameState.punteggio.totale += 2;
+          gameState.punteggio.interazioniPunteggio.add(interazioneId);
+          // Feedback: "+2 punti: interazione completata!"
+        }
+        ```
 
-## Fase 3: Sistema di Temporizzazione (Medio Rischio)
+*   **Test Sottosprint 1:**
+    - [ ] Visitare 3 luoghi nuovi → Verificare +3 punti totali
+    - [ ] Eseguire interazione → Verificare +2 punti
+    - [ ] Rieseguire stessa interazione → Verificare NO +2 (già contata)
+    - [ ] Salva/Carica → Verificare persistenza punteggio base
+
+*   **Deliverable:** Sistema punteggio base (57 luoghi + 30 interazioni) funzionante
+*   **Git Commit:** `feat: implement base scoring system (locations + interactions)`
+
+---
+
+### 3.2.2 Misteri Automatici (45 min) - **SOTTOSPRINT 2 ⚠️ CRITICO**
+*   **Obiettivo:** Implementare logica misteri inline con 3 tipi effetti
+*   **Effort:** 45 min
+*   **Task:**
+    4.  **Logica Misteri Automatici** (40 min): Creare funzione `assegnaPunteggioMistero(effetto, gameState)` che analizza tipo effetto:
+        
+        **Sottotask 4a - VISIBILITA** (10 min):
+        ```javascript
+        if (effetto.tipo === "VISIBILITA") {
+          const misteroId = `visibilita_${effetto.target}`;
+          if (!gameState.punteggio.misteriRisolti.has(misteroId)) {
+            gameState.punteggio.totale += 3;
+            gameState.punteggio.misteriRisolti.add(misteroId);
+          }
+        }
+        ```
+        
+        **Sottotask 4b - SBLOCCA_DIREZIONE** (10 min):
+        ```javascript
+        if (effetto.tipo === "SBLOCCA_DIREZIONE") {
+          const misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+          if (!gameState.punteggio.misteriRisolti.has(misteroId)) {
+            gameState.punteggio.totale += 3;
+            gameState.punteggio.misteriRisolti.add(misteroId);
+          }
+        }
+        ```
+        **Nota:** Direzioni bidirezionali (es. 20↔21) contano come 1 mistero unico perché tracking è su direzione primaria.
+        
+        **Sottotask 4c - TOGGLE_DIREZIONE** (20 min):
+        ```javascript
+        if (effetto.tipo === "TOGGLE_DIREZIONE") {
+          // Leggi stato PRIMA dell'applicazione effetto
+          const direzionePrima = gameState.luoghi[effetto.luogo][effetto.direzione];
+          
+          // Solo se sta APRENDO (0 → valore)
+          if (direzionePrima === 0 && effetto.destinazione > 0) {
+            const misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+            if (!gameState.punteggio.misteriRisolti.has(misteroId)) {
+              gameState.punteggio.totale += 3;
+              gameState.punteggio.misteriRisolti.add(misteroId);
+            }
+          }
+          // Chiusure (valore → 0) e riaperture: NO +3
+        }
+        ```
+        
+        Chiamare `assegnaPunteggioMistero()` per ogni effetto in `applicaEffetti()` dopo applicazione effetto.
+
+*   **Test Sottosprint 2 (dettagliati):**
+    - [ ] Interazione con VISIBILITA → +2 (interazione) + +3 (mistero) = +5 totali
+    - [ ] Interazione con SBLOCCA → +2 + +3 = +5 totali
+    - [ ] Direzione bidirezionale (es. 20↔21) → +3 una volta sola (non +6)
+    - [ ] Toggle prima apertura (es. pulsante 44) → +2 (int) + +3 (mist) = +5
+    - [ ] Toggle chiusura → +2 (int), NO +3 mistero ✓
+    - [ ] Toggle riapertura → +2 (int), NO +3 mistero ✓
+    - [ ] Verificare Set `misteriRisolti` contiene ID corretti
+    - [ ] Salva/Carica → Verificare persistenza misteri
+
+*   **Deliverable:** Sistema misteri completo (39 punti massimi da misteri)
+*   **Git Commit:** `feat: implement automatic mysteries scoring system`
+
+---
+
+### 3.2.3 Sequenza, UI e Polish (20 min) - **SOTTOSPRINT 3**
+*   **Obiettivo:** Completare feature con sequenza cassaforte e interfaccia utente
+*   **Effort:** 20 min (task 8 già completato)
+*   **Task:**
+    5.  **Logica Sequenza Cassaforte** (10 min): Dopo completamento sequenza "cassaforte_24":
+        ```javascript
+        const misteroId = "sequenza_cassaforte";
+        if (!gameState.punteggio.misteriRisolti.has(misteroId)) {
+          gameState.punteggio.totale += 2;  // +2 per sequenza (non +3)
+          gameState.punteggio.misteriRisolti.add(misteroId);
+        }
+        ```
+    
+    6.  **Comando PUNTI** (5 min): Implementare comando che mostra:
+        ```
+        Punteggio totale: X/132
+        - Luoghi visitati: X/57
+        - Interazioni eseguite: X/15
+        - Misteri risolti: X/13
+        - Sequenza cassaforte: [completata/da completare]
+        - Completamento: [sì/no]
+        
+        Rango: [Novizio/Esploratore/Investigatore/Maestro/Perfezionista]
+        ```
+        Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-131 Maestro, 132 Perfezionista.
+    
+    7.  **UI Punteggio** (5 min): Aggiungere sotto `visitedCount` in `web/odessa_main.html`:
+        ```html
+        <div id="scoreCount" style="color: gold; font-weight: bold;">Punteggio: 0</div>
+        ```
+        Aggiornare `scoreCount.textContent = gameState.punteggio.totale` dopo ogni azione in client.
+    
+    8.  ~~**Eliminazione Misteri.json**~~ ✅ **GIÀ COMPLETATO** (2026-01-01): File eliminato, nessun riferimento nel codice.
+
+*   **Test Sottosprint 3 (finali):**
+    - [ ] Completare sequenza D-S-S-D-S → Verificare +2 una sola volta
+    - [ ] Comando PUNTI mostra dettaglio corretto e rango appropriato
+    - [ ] UI mostra punteggio aggiornato in tempo reale
+    - [ ] Test E2E: Visitare 5 luoghi, fare 3 interazioni con misteri → Verificare calcolo corretto (es. 5+6+9=20 punti)
+    - [ ] Salva/Carica → Verificare persistenza completa (totale, Set, UI sincronizzata)
+
+*   **Deliverable:** Feature § 3.2 completa con UI e comando PUNTI
+*   **Git Commit:** `feat: add cassaforte sequence + PUNTI command + UI scoring display`
+
+---
+
+**Vantaggi Suddivisione:**
+- ✅ Checkpoint intermedi testabili e deployabili
+- ✅ Isolamento task critico (3.2.2) per massima attenzione
+- ✅ Rollback granulare (puoi tornare a 3.2.1 stabile se 3.2.2 fallisce)
+- ✅ Testing incrementale (più facile identificare regressioni)
+- ✅ 3 commit chiari nella history invece di 1 monolitico
+
+## 3.3 Sistema di Temporizzazione (Medio Rischio)
 *   **Obiettivo:** Introdurre le condizioni di morte.
 *   **Task:**
     1.  Estendere `gameState.timers` con campi per 3 timer.
@@ -907,7 +1177,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     - Verificare messaggi dettagliati
     - Test E2E: morte torcia, morte intercettazione, morte lampada
 
-## Fase 4: Sequenza Vittoria (Alto Rischio)
+## 3.4 Sequenza Vittoria (Alto Rischio)
 *   **Obiettivo:** Implementare il finale di gioco completo.
 *   **Task:**
     1.  Estendere `gameState` per narrativa (state machine ENDING_PHASE_*).
@@ -928,7 +1198,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 
 **Status:** Non prioritario per v1.0 - Da valutare post-release  
 **Effort stimato:** 5-7 ore  
-**Prerequisito:** Completamento Fasi 1-4 (feature implementation) + Deploy v1.0  
+**Prerequisito:** Completamento §§ 3.1-3.4 (feature implementation) + Deploy v1.0  
 **Riferimento decisionale:** Vedere `considerazioni-architettura-interventi.md` § 6.4 per analisi costo/beneficio strategico
 
 ---
@@ -1074,7 +1344,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ### 4.3.2 Sotto-Sprint Dettagliati
 
-#### SS0: Foundation & Router (1 ora)
+#### 4.3.2.0 - Sprint 0: Foundation & Router (1 ora)
 
 **Obiettivo:** Creare architettura base con zero regression
 
@@ -1119,7 +1389,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS1: Navigation Handler (30 min)
+#### 4.3.2.1 - Sprint 1: Navigation Handler (30 min)
 
 **Obiettivo:** Estrarre e integrare gestione NAVIGATION
 
@@ -1160,7 +1430,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS2: System Commands Handler (1.5 ore)
+#### 4.3.2.2 - Sprint 2: System Commands Handler (1.5 ore)
 
 **Obiettivo:** Estrarre gestione SYSTEM + 7 sub-handler
 
@@ -1209,7 +1479,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS3: Action - Examine (45 min)
+#### 4.3.2.3 - Sprint 3: Action - Examine (45 min)
 
 **Obiettivo:** Estrarre ESAMINA/GUARDA + skeleton ACTION dispatcher
 
@@ -1249,7 +1519,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS4: Action - Open/Close (30 min)
+#### 4.3.2.4 - Sprint 4: Action - Open/Close (30 min)
 
 **Obiettivo:** Estrarre APRI/CHIUDI
 
@@ -1269,7 +1539,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS5: Action - Take/Drop (45 min)
+#### 4.3.2.5 - Sprint 5: Action - Take/Drop (45 min)
 
 **Obiettivo:** Estrarre PRENDI/POSA/LASCIA
 
@@ -1290,7 +1560,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS6: Action - Completion (30 min)
+#### 4.3.2.6 - Sprint 6: Action - Completion (30 min)
 
 **Obiettivo:** Completare dispatcher ACTION + cleanup legacy
 
@@ -1313,7 +1583,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 
 ---
 
-#### SS7: Manipulation Stub + Final Verification (20 min)
+#### 4.3.2.7 - Sprint 7: Manipulation Stub + Final Verification (20 min)
 
 **Obiettivo:** Stub MANIPULATION + verifica finale metriche
 
@@ -1361,7 +1631,7 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 ### 4.4.1 Pre-condizioni
 
 **Bloccanti:**
-- ✅ Fasi 1-4 implementazione feature complete (punteggio, timer, vittoria)
+- ✅ §§ 3.1-3.4 implementazione feature complete (punteggio, timer, vittoria)
 - ✅ Suite E2E testing validata (10 scenari passing)
 - ✅ Deploy v1.0 in produzione
 - ✅ Smoke testing post-release (0 bug critici)
@@ -1378,10 +1648,10 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
 ```
 Ora → v1.0 Release → +1 settimana → +2 settimane → Refactoring
 │                    │                │              │
-│                    │                │              └─ SS0-SS7 (5-7h)
+│                    │                │              └─ Sprint 0-7 (5-7h)
 │                    │                └─ Raccolta feedback utenti
 │                    └─ Monitoring stabilità
-└─ Completamento Fasi 1-4
+└─ Completamento §§ 3.1-3.4
 ```
 
 **Rationale postponimento:**
@@ -1612,73 +1882,18 @@ git reset --hard refactor-ss{N-1}
 **Riferimento decisionale:** Vedere `considerazioni-architettura-interventi.md` § 6.4 per contesto strategico e analisi ROI completa.
 
 **Status corrente:** Debt tecnico documentato, non prioritario per v1.0, rivalutare post-release.
-    1.  Implementare costanti `LUOGHI_PERICOLOSI` e `SYSTEM_COMMANDS`.
-    2.  Implementare funzione `isSystemCommand()`.
-    3.  Implementare le 3 funzioni di check con messaggi Game Over:
-        - `checkTorciaEsaurita()`
-        - `checkLampadaAbbandonata()`
-        - `checkIntercettazione()`
-    4.  Implementare comando `ACCENDI LAMPADA`.
-    5.  Integrare i check in `executeCommand` rispettando l'ordine di priorità.
-    6.  Gestire incremento `movementCounter` (esclusi system commands).
-*   **Test:**
-    - Aspettare 6 turni senza accendere lampada → Morte torcia
-    - Stare 3 turni in luogo 51 → Morte intercettazione
-    - Spostarsi tra luoghi 51 e 55 → Counter NON resetta
-    - Spostarsi da 51 a 47 → Counter resetta
-    - Lasciare lampada accesa e uscire → Morte buio
-    - Accendere lampada con fiammiferi → Timer torcia disattivato
-    - System commands → NON incrementano counter
-
-## Fase 4: Sistema di Vittoria (Alto Rischio)
-*   **Obiettivo:** Implementare il finale e la state machine.
-*   **Task:**
-    1.  Implementare enum `NARRATIVE_STATE` completo.
-    2.  Implementare `checkVictoryConditions()` (oggetti ID=6, 34, 35).
-    3.  Implementare logica `awaitingContinue` e bypass parser.
-    4.  Implementare sequenza narrativa (Fase 1A, 1B, Teleport):
-        - Dialoghi Ferenc
-        - Meccanica BARRA SPAZIO
-        - Funzione `teleportaALuogo59()`
-    5.  Implementare logica Luogo 59:
-        - Blocco movimento (`movementBlocked`)
-        - Comando PORGI DOCUMENTI
-        - Counter comandi inappropriati
-        - Game Over guardia sospetta
-    6.  Implementare fasi finali (2A, 2B, 2C) e schermata vittoria.
-*   **Test:**
-    - Arrivare al luogo 1 senza oggetti → Nulla accade
-    - Arrivare con solo 2 oggetti → Nulla accade
-    - Arrivare con 3 oggetti (6, 34, 35) → Parte sequenza 1A
-    - Premere BARRA in fase 1A → Avanza a 1B
-    - Premere BARRA in fase 1B → Teleport a luogo 59
-    - Al luogo 59: verificare Lista e Dossier rimossi, Documenti rimasti
-    - Tentare movimento al luogo 59 → Bloccato
-    - Provare 3 comandi inutili al luogo 59 → Game Over guardia
-    - System commands al luogo 59 → NON incrementano counter
-    - PORGI DOCUMENTI al luogo 59 → Avanza a 2A
-    - Completare sequenza → Vittoria e statistiche
-
-## Fase 5: UI e Polish (Basso Rischio)
-*   **Obiettivo:** Migliorare l'esperienza utente.
-*   **Task:**
-    1.  (Opzionale) Aggiungere barra punteggio in HTML/CSS.
-    2.  Rifinire testi e messaggi Game Over.
-    3.  Bilanciamento finale punteggi.
-    4.  Playtest completo con utenti esterni.
-    5.  Documentare achievement nascosti.
 
 ---
 
-## 3.1 Open Points e Decisioni Rinviate
+## 3.5 Open Points e Decisioni Rinviate
 
 Questioni identificate durante la stesura della specifica che richiedono ulteriore analisi o implementazione successiva:
 
-### OP-01: Interazioni con Punteggio (Priorità: Alta)
-**Status:** Da completare in Fase 2  
-**Descrizione:** Identificare 7-12 interazioni aggiuntive oltre alle 8 già mappate per raggiungere il target di 15-20 interazioni totali (~34 punti).  
-**Azione richiesta:** Analizzare `Interazioni.json` completo cercando effetti `SBLOCCA_DIREZIONE`, `VISIBILITA`, `AGGIUNGI_OGGETTO`.  
-**Blocca:** Nessuna fase (non bloccante per Fase 1).
+### OP-01: Lista Completa Interazioni con Punteggio (Priorità: Alta) ✅ **RISOLTO**
+**Status:** ✅ Completato (2026-01-01)  
+**Descrizione:** Identificare tutte le interazioni che assegnano +2 punti.  
+**Risoluzione:** Lista completa di 15 interazioni identificata e documentata in § 2.2.1. Tutte le interazioni (incluse ripetibili) danno +2 alla prima esecuzione. Nessuna modifica necessaria a Interazioni.json (punteggio gestito via tracking Set, non metadata file).  
+**Lista finale:** sposta_quadro_24, sposta_arazzo_20, muovi_fermacarte_25, esamina_scomparto_25, infila_medaglione_forma_20, infila_statuetta_nicchia_27, infila_medaglione_forma_36, carica_pesa_57, esamina_botola_57, premi_pulsante_44, ruota_sedile_42, scava_macerie_11, scava_macerie_49, esamina_cassaforte_con_medaglione_24, porgi_documenti_59.
 
 ### OP-02: Casi Limite Testing (Priorità: Media)
 **Status:** Parzialmente risolto (punto 2 implementato)  
@@ -1691,51 +1906,65 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 
 ### OP-03: Bilanciamento Punteggio Finale (Priorità: Bassa)
 **Status:** Da validare post-implementazione  
-**Descrizione:** Verificare che il punteggio massimo di 122 punti sia effettivamente raggiungibile completando tutte le interazioni identificate in OP-01.  
-**Azione richiesta:** Playtest completo in Fase 5 con utente che tenta 100% completion.  
-**Blocca:** Solo Fase 5 (Polish).
+**Descrizione:** Verificare che il punteggio massimo di 132 punti sia effettivamente raggiungibile completando tutte le 15 interazioni, risolvendo i 13 misteri automatici, e completando la sequenza cassaforte.  
+**Azione richiesta:** Playtest completo con utente che tenta 100% completion.  
+**Calcolo teorico:** 57 luoghi + 15 interazioni×2 + 13 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 57+30+39+2+4 = 132 punti.  
+**Blocca:** Solo polish finale (post-implementazione).
 
 ---
 
-## 3.2 Raccomandazioni Implementative
+## 3.6 Raccomandazioni Implementative
 
-### 3.2.1 Priorità di Sviluppo
-1.  **Fase 1 (Setup):** Essenziale - blocca tutte le altre fasi
-2.  **Fase 2 (Punteggio):** Alta priorità - migliora UX senza rischi
-3.  **Fase 3 (Timer):** Media priorità - richiede testing accurato
-4.  **Fase 4 (Vittoria):** Alta priorità - core feature
-5.  **Fase 5 (Polish):** Bassa priorità - post-release
+### 3.6.1 Priorità di Sviluppo
+1.  **§ 3.1 (Setup):** Essenziale - blocca tutte le altre fasi
+2.  **§ 3.2 (Punteggio):** Alta priorità - migliora UX senza rischi
+3.  **§ 3.3 (Timer):** Media priorità - richiede testing accurato
+4.  **§ 3.4 (Vittoria):** Alta priorità - core feature
+5.  **Polish finale:** Bassa priorità - post-release
 
-### 3.2.2 Gestione Rischi
+### 3.6.2 Gestione Rischi
 - **Regressioni:** Creare branch Git separato per ogni fase
 - **Testing:** Eseguire test manuali completi dopo ogni fase
 - **Rollback:** Mantenere backup di `Oggetti.json` e `Interazioni.json`
 - **Debugging:** Aggiungere console.log strategici per tracciare stato
 
-### 3.2.3 Note Tecniche
+### 3.6.3 Note Tecniche
 - **Performance:** I `Set` sono O(1) per check membership - preferibili ad Array
 - **Memoria:** Limite 9 misteri × 3pt = 27pt - non eccedere per bilanciamento
 - **Serializzazione:** Testare save/load dopo ogni modifica a `gameState`
 - **Compatibilità:** Verificare funzionamento su Chrome, Firefox, Safari, Edge
 
-### 3.2.4 Chiarimenti Finali Risolti
+### 3.6.4 Chiarimenti Finali Risolti
 - ✅ Luogo 54: Luogo terminale raggiungibile da ID=53 via direzione Sud (morte istantanea, gestito come ID=8/ID=40)
 - ✅ Luogo 57 (Capanno attrezzi): intenzionalmente **non pericoloso** (rifugio)
-- ✅ Mistero cassaforte: Richiede ENTRAMBE le azioni (sposta quadro + sequenza ruota destra/sinistra)
-- ✅ Interazioni con punteggio: 8 identificate + 7-12 da completare (vedi OP-01)
-- ✅ Numero misteri: 9 totali per bilanciamento (27 punti)
-- ✅ Punteggio massimo: **122 punti** (57 + 34 + 27 + 4)
+- ✅ Sequenza cassaforte: Pattern D-S-S-D-S (5 rotazioni), award +2 al completamento
+- ✅ Interazioni con punteggio: 15 identificate complete, tutte danno +2 alla prima esecuzione
+- ✅ Misteri automatici: 13 totali (9 VISIBILITA + 4 SBLOCCA + 2 TOGGLE prima apertura), danno +3 inline quando effetto si verifica
+- ✅ Punteggio massimo: **132 punti** (57 luoghi + 30 interazioni + 39 misteri + 2 sequenza + 4 completamento)
+- ✅ Direzioni bidirezionali: contano come 1 mistero unico (+3), non 2
+- ✅ TOGGLE_DIREZIONE: mistero solo prima apertura (0→valore), chiusure/riaperture non danno punti
+- ✅ Eliminazione Misteri.json: file obsoleto, logica misteri ora inline negli effetti
 - ✅ Reset intercettazione: solo uscendo da zone pericolose (opzione A)
 - ✅ System commands: whitelist completa definita (non contano per timer)
 - ✅ Teleport: Lista e Dossier rimossi, Documenti conservati
 - ✅ Verbo PORGI: solo luogo 59, sintassi "PORGI DOCUMENTI"
+- ✅ **visitedPlaces:** Sistema esistente riutilizzato per punteggio luoghi invece di creare `punteggio.luoghiVisitati` duplicato (decisione post-§ 3.1, vedere § 2.1.1)
+- ✅ **2026-01-01:** Sistema punteggio unificato +2/+3 con definizione automatica misteri (VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE). Molte interazioni producono entrambi: +2 (azione) + +3 (effetto) = +5 totali. Vedere § 2.1.1 per design decision completa.
 
 ---
 
-# FINE SPECIFICA TECNICA INTEGRATA
+# PROSSIMI STEP
 
-**Prossimi Step:**
+**Roadmap implementativa:**
 1. Review finale con stakeholder
-2. Approval per implementazione
-3. Creazione task Jira/GitHub Issues per ogni fase
-4. Kickoff sviluppo Fase 1
+2. Approval per implementazione  
+3. Creazione task Jira/GitHub Issues per §§ 3.1-3.4
+4. Kickoff sviluppo § 3.1 (Setup)
+5. Iterazione sequenziale §§ 3.2 → 3.3 → 3.4
+6. Valutazione Capitolo 4 (Refactoring) post-release v1.0
+
+---
+
+**Fine Documento**  
+**Ultima revisione:** 01 gennaio 2026  
+**Versione:** 2.0

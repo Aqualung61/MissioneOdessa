@@ -46,7 +46,33 @@ let gameState = {
   direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
   direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
   sequenze: {}, // Stato delle sequenze (es. cassaforte)
-  currentLingua: 1 // Lingua corrente (default: italiano)
+  currentLingua: 1, // Lingua corrente (default: italiano)
+  
+  // === SISTEMA PUNTEGGIO ===
+  punteggio: {
+    totale: 1, // Luogo iniziale (ID=1) già visitato
+    interazioniPunteggio: new Set(), // ID interazioni completate
+    misteriRisolti: new Set()        // ID misteri completati
+    // NOTA: usa visitedPlaces esistente per punteggio luoghi (no duplicazione)
+  },
+  
+  // === SISTEMA TEMPORIZZAZIONE ===
+  timers: {
+    movementCounter: 0,              // Contatore globale mosse (per Torcia)
+    torciaDifettosa: true,           // True all'inizio, False se accendi lampada
+    lampadaAccesa: false,            // Stato della lampada
+    azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
+    ultimoLuogoPericoloso: null      // ID per reset al cambio stanza
+  },
+  
+  // === SISTEMA VITTORIA ===
+  narrativeState: null,              // Enum: ENDING_PHASE_1A, etc.
+  narrativePhase: 0,                 // Progressivo numerico (opzionale)
+  victory: false,                    // Flag vittoria finale
+  movementBlocked: false,            // Blocca NAVIGATION (per luogo 59)
+  unusefulCommandsCounter: 0,        // Counter comandi errati al luogo 59
+  awaitingContinue: false,           // Se true, engine aspetta solo BARRA SPAZIO
+  continueCallback: null             // Funzione da eseguire alla pressione di BARRA
 };
 
 // Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
@@ -58,6 +84,11 @@ export function initializeOriginalData() {
     originalOggetti = JSON.parse(JSON.stringify(global.odessaData.Oggetti));
     console.log('Dati originali salvati: ' + originalOggetti.length + ' oggetti');
   }
+}
+
+// Funzione per ottenere riferimento allo stato di gioco (per test)
+export function getGameState() {
+  return gameState;
 }
 
 // Funzione per resettare lo stato di gioco
@@ -74,7 +105,32 @@ export function resetGameState(idLingua = 1) {
     direzioniSbloccate: {},
     direzioniToggle: {},
     sequenze: {},
-    currentLingua: idLingua
+    currentLingua: idLingua,
+    
+    // === SISTEMA PUNTEGGIO ===
+    punteggio: {
+      totale: 1, // Luogo iniziale (ID=1) già visitato
+      interazioniPunteggio: new Set(),
+      misteriRisolti: new Set()
+    },
+    
+    // === SISTEMA TEMPORIZZAZIONE ===
+    timers: {
+      movementCounter: 0,
+      torciaDifettosa: true,
+      lampadaAccesa: false,
+      azioniInLuogoPericoloso: 0,
+      ultimoLuogoPericoloso: null
+    },
+    
+    // === SISTEMA VITTORIA ===
+    narrativeState: null,
+    narrativePhase: 0,
+    victory: false,
+    movementBlocked: false,
+    unusefulCommandsCounter: 0,
+    awaitingContinue: false,
+    continueCallback: null
   };
   // Aggiungi Oggetti a gameState dai dati originali
   if (originalOggetti.length > 0) {
@@ -252,12 +308,28 @@ export function setGameState(newState) {
   gameState = { 
     ...newState, 
     visitedPlaces: new Set(newState.visitedPlaces || []),
-    Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : []
+    Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : [],
+    // Deserializzazione Set del punteggio
+    punteggio: newState.punteggio ? {
+      totale: newState.punteggio.totale || 0,
+      interazioniPunteggio: new Set(newState.punteggio.interazioniPunteggio || []),
+      misteriRisolti: new Set(newState.punteggio.misteriRisolti || [])
+    } : {
+      totale: 0,
+      interazioniPunteggio: new Set(),
+      misteriRisolti: new Set()
+    }
   };
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
   gameState.currentLocationId = locationId;
+  
+  // Sincronizzazione visitedPlaces e assegnazione punteggio
+  if (!gameState.visitedPlaces.has(locationId)) {
+    gameState.visitedPlaces.add(locationId);
+    gameState.punteggio.totale += 1;
+  }
 }
 
 export function getGameStateSnapshot() {
@@ -269,10 +341,28 @@ export function getGameStateSnapshot() {
     ended: gameState.ended,
     visitedPlaces: Array.from(gameState.visitedPlaces || []),
     Oggetti: JSON.parse(JSON.stringify(gameState.Oggetti || [])),
+    interazioniEseguite: [...(gameState.interazioniEseguite || [])],
+    direzioniSbloccate: { ...gameState.direzioniSbloccate },
+    direzioniToggle: { ...gameState.direzioniToggle },
+    sequenze: { ...gameState.sequenze },
+    currentLingua: gameState.currentLingua,
+    // Serializzazione nuove strutture
+    punteggio: {
+      totale: gameState.punteggio.totale,
+      interazioniPunteggio: Array.from(gameState.punteggio.interazioniPunteggio),
+      misteriRisolti: Array.from(gameState.punteggio.misteriRisolti)
+    },
+    timers: { ...gameState.timers },
+    narrativeState: gameState.narrativeState,
+    narrativePhase: gameState.narrativePhase,
+    victory: gameState.victory,
+    movementBlocked: gameState.movementBlocked,
+    unusefulCommandsCounter: gameState.unusefulCommandsCounter,
+    awaitingContinue: gameState.awaitingContinue,
     // Metadata per chiarezza
     currentLocationName: currentLocation ? currentLocation.Nome : 'Sconosciuto',
     timestamp: new Date().toISOString(),
-    version: '1.3.0',
+    version: '1.4.0',
   };
   return snapshot;
 }
@@ -481,6 +571,12 @@ function cercaEseguiInterazione(verb, noun) {
       // Segna come eseguita
       if (!interazione.ripetibile) {
         gameState.interazioniEseguite.push(interazione.id);
+      }
+      
+      // === SISTEMA PUNTEGGIO: Assegna +2 punti alla prima esecuzione ===
+      if (!gameState.punteggio.interazioniPunteggio.has(interazione.id)) {
+        gameState.punteggio.totale += 2;
+        gameState.punteggio.interazioniPunteggio.add(interazione.id);
       }
       
       // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
