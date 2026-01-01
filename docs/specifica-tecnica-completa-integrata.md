@@ -100,7 +100,7 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 - **Sintassi:** `ACCENDI LAMPADA`, `ILLUMINA LAMPADA`, `USA LAMPADA`
 - **Prerequisiti:**
   - Lampada in inventario (Oggetto ID=27, trovabile al Luogo 6)
-  - Fiammiferi in inventario (Oggetto ID=4)
+  - Fiammiferi in inventario (Oggetto ID=36)
 - **Effetto:** Lampada diventa fonte di luce principale, timer torcia ignorato, countdown buio resettato.
 - **Messaggio successo:** "Accendi la lampada. Una luce calda e stabile illumina l'ambiente."
 - **Messaggi errore:**
@@ -719,7 +719,7 @@ Unica fonte di verità per determinare se il giocatore ha luce:
  * @returns {boolean} - true se ha luce (torcia O lampada), false altrimenti
  */
 function hasFonteLuceAttiva() {
-  const TORCIA_ID = 26; // Verificare ID esatto nel JSON
+  const TORCIA_ID = 37; // Torcia elettrica
   const LAMPADA_ID = 27;
   
   // Check torcia: in inventario E non spenta
@@ -942,7 +942,7 @@ function checkIntercettazionePost() {
 case 'ACCENDI':
   if (parseResult.NounId === 27) { // Lampada
     const LAMPADA_ID = 27;
-    const FIAMMIFERI_ID = 4;
+    const FIAMMIFERI_ID = 36; // Fiammiferi
     
     const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
     const lampadaInInventario = lampada && lampada.IDLuogo === 0;
@@ -1157,6 +1157,19 @@ if (gameState.currentLocationId === 59 &&
       // Errore ma NON incrementa counter (giocatore ha capito cosa fare)
       return { message: "Non hai documenti da porgere." };
     }
+  }
+  
+  // Check PORGI con oggetto diverso da DOCUMENTI
+  if (verbo === 'PORGI' && oggettoTarget !== 'DOCUMENTI') {
+    gameState.unusefulCommandsCounter++;
+    
+    if (gameState.unusefulCommandsCounter >= 5) {
+      return gameOverGuardiaSospetta();
+    }
+    
+    return { 
+      message: "La guardia non è interessata a questo. Vuole vedere i documenti." 
+    };
   }
   
   // TUTTI gli altri comandi sono permessi ma incrementano counter
@@ -1677,10 +1690,11 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
    - Intercettare comandi quando `narrativeState === 'ENDING_PHASE_2_WAIT'`
    - PORGI DOCUMENTI (con Documenti) → `avanzaNarrativaFase2A()`
    - PORGI DOCUMENTI (senza Documenti) → messaggio errore (NO increment counter)
+   - PORGI [altro oggetto] → messaggio "La guardia non è interessata a questo. Vuole vedere i documenti." + increment counter
    - Tutti gli altri comandi → increment `unusefulCommandsCounter`
    - Se counter >= 5 → `gameOverGuardiaSospetta()`
    - Altrimenti → esegui comando normalmente
-   - Test: provare vari comandi, verificare counter
+   - Test: provare vari comandi, verificare counter, PORGI FASCICOLO
 
 4. **Implementare Fase 2A/2B/2C** (30 min)
    - Fase 2A: guardia controlla documenti, `awaitingContinue = true`
