@@ -20,9 +20,9 @@ Il punteggio totale (massimo 132 punti) è la somma di quattro categorie:
 
 | Categoria | Valore | Condizione di Assegnazione | Note |
 |-----------|--------|----------------------------|------|
-| **Esplorazione** | 1 pto | Primo ingresso in un nuovo luogo | Totale 57 luoghi. Backtracking non premia. |
-| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 15 interazioni. Anche ripetibili contano alla prima esecuzione. |
-| **Misteri** | 3 pti | Effetti strutturali automatici (oggetto visibile, direzione sbloccata) | Totale 13 misteri. Assegnati automaticamente al verificarsi dell'effetto. |
+| **Esplorazione** | 1 pto | Primo ingresso in un nuovo luogo | Totale 56 luoghi. Backtracking non premia. |
+| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 14 interazioni. Anche ripetibili contano alla prima esecuzione. |
+| **Misteri** | 3 pti | Effetti strutturali automatici (oggetto visibile, direzione sbloccata) | Totale 14 misteri + 1 cassaforte. Assegnati automaticamente al verificarsi dell'effetto. |
 | **Sequenza Cassaforte** | 2 pti | Completamento pattern D-S-S-D-S (5 rotazioni) | Award al completamento della sequenza completa. |
 | **Completamento** | 4 pti | Raggiungimento del finale di gioco | Assegnato alla vittoria. |
 
@@ -42,7 +42,7 @@ Il giocatore ottiene un rango in base al punteggio totale accumulato:
 | 100-131 | Maestro | Ottima esplorazione |
 | 132 | Perfezionista | Completamento al 100%! |
 
-**Punteggio massimo:** 132 punti (57 luoghi + 30 interazioni + 39 misteri + 2 sequenza + 4 completamento)
+**Punteggio massimo:** 132 punti (56 luoghi + 28 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 
 ### 1.1.4 Definizione Misteri
 I **misteri** sono effetti strutturali automatici che premiano la prima volta che si verificano eventi significativi:
@@ -60,7 +60,9 @@ I **misteri** sono effetti strutturali automatici che premiano la prima volta ch
    - Passaggio 44↔45 (pulsante), Passaggio 42↔43 (sedile)
    - **Nota:** Solo prima apertura (0→valore) dà punti, chiusure/riaperture successive ignorate
 
-**Totale:** 13 misteri × +3 = 39 punti massimi
+**Totale:** 14 misteri × +3 + 1 cassaforte × +2 = 44 punti massimi
+
+**Nota:** La sequenza cassaforte (pattern D-S-S-D-S) è trattata come mistero speciale con reward di 2 punti al completamento.
 
 ---
 
@@ -1362,7 +1364,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     - [x] ✅ Salva/Carica → Verificare persistenza punteggio base (già gestito correttamente da getGameStateSnapshot/setGameState)
     - **Note:** 5/8 test passano in scoring.base.test.ts; 3 test skippati richiedono prerequisiti specifici (saranno risolti in § 3.2.2)
 
-*   **Deliverable:** Sistema punteggio base (57 luoghi + 30 interazioni) funzionante
+*   **Deliverable:** Sistema punteggio base (56 luoghi + 28 interazioni) funzionante
 *   **Git Commit:** `feat: implement base scoring system (locations + interactions)`
 
 ---
@@ -1426,7 +1428,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     - [ ] Verificare Set `misteriRisolti` contiene ID corretti
     - [ ] Salva/Carica → Verificare persistenza misteri
 
-*   **Deliverable:** Sistema misteri completo (39 punti massimi da misteri)
+*   **Deliverable:** Sistema misteri completo (44 punti massimi da misteri: 42 standard + 2 cassaforte)
 *   **Git Commit:** `feat: implement automatic mysteries scoring system`
 
 ---
@@ -2438,8 +2440,8 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 ### OP-01: Lista Completa Interazioni con Punteggio (Priorità: Alta) ✅ **RISOLTO**
 **Status:** ✅ Completato (2026-01-01)  
 **Descrizione:** Identificare tutte le interazioni che assegnano +2 punti.  
-**Risoluzione:** Lista completa di 15 interazioni identificata e documentata in § 2.2.1. Tutte le interazioni (incluse ripetibili) danno +2 alla prima esecuzione. Nessuna modifica necessaria a Interazioni.json (punteggio gestito via tracking Set, non metadata file).  
-**Lista finale:** sposta_quadro_24, sposta_arazzo_20, muovi_fermacarte_25, esamina_scomparto_25, infila_medaglione_forma_20, infila_statuetta_nicchia_27, infila_medaglione_forma_36, carica_pesa_57, esamina_botola_57, premi_pulsante_44, ruota_sedile_42, scava_macerie_11, scava_macerie_49, esamina_cassaforte_con_medaglione_24, porgi_documenti_59.
+**Risoluzione:** Lista completa di 14 interazioni identificata e documentata in § 2.2.1. Tutte le interazioni (incluse ripetibili) danno +2 alla prima esecuzione. Nessuna modifica necessaria a Interazioni.json (punteggio gestito via tracking Set, non metadata file).  
+**Lista finale:** sposta_quadro_24, sposta_arazzo_20, muovi_fermacarte_25, esamina_scomparto_25, infila_medaglione_forma_20, infila_statuetta_nicchia_27, infila_medaglione_forma_36, carica_pesa_57, esamina_botola_57, premi_pulsante_44, ruota_sedile_42, scava_macerie_49, esamina_cassaforte_con_medaglione_24, porgi_documenti_59.
 
 ### OP-02: Casi Limite Testing (Priorità: Media)
 **Status:** Parzialmente risolto (punto 2 implementato)  
@@ -2452,9 +2454,9 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 
 ### OP-03: Bilanciamento Punteggio Finale (Priorità: Bassa)
 **Status:** Da validare post-implementazione  
-**Descrizione:** Verificare che il punteggio massimo di 132 punti sia effettivamente raggiungibile completando tutte le 15 interazioni, risolvendo i 13 misteri automatici, e completando la sequenza cassaforte.  
+**Descrizione:** Verificare che il punteggio massimo di 132 punti sia effettivamente raggiungibile completando tutte le 14 interazioni, risolvendo i 14 misteri automatici (+ 1 cassaforte), e completando il gioco.  
 **Azione richiesta:** Playtest completo con utente che tenta 100% completion.  
-**Calcolo teorico:** 57 luoghi + 15 interazioni×2 + 13 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 57+30+39+2+4 = 132 punti.  
+**Calcolo teorico:** 56 luoghi + 14 interazioni×2 + 14 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 56+28+42+2+4 = 132 punti.  
 **Blocca:** Solo polish finale (post-implementazione).
 
 ---
@@ -2484,9 +2486,9 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 - ✅ Luogo 54: Luogo terminale raggiungibile da ID=53 via direzione Sud (morte istantanea, gestito come ID=8/ID=40)
 - ✅ Luogo 57 (Capanno attrezzi): intenzionalmente **non pericoloso** (rifugio)
 - ✅ Sequenza cassaforte: Pattern D-S-S-D-S (5 rotazioni), award +2 al completamento
-- ✅ Interazioni con punteggio: 15 identificate complete, tutte danno +2 alla prima esecuzione
-- ✅ Misteri automatici: 13 totali (9 VISIBILITA + 4 SBLOCCA + 2 TOGGLE prima apertura), danno +3 inline quando effetto si verifica
-- ✅ Punteggio massimo: **132 punti** (57 luoghi + 30 interazioni + 39 misteri + 2 sequenza + 4 completamento)
+- ✅ Interazioni con punteggio: 14 identificate complete, tutte danno +2 alla prima esecuzione
+- ✅ Misteri automatici: 14 totali (9 VISIBILITA + 4 SBLOCCA + 2 TOGGLE prima apertura), danno +3 inline quando effetto si verifica, più 1 sequenza cassaforte +2
+- ✅ Punteggio massimo: **132 punti** (56 luoghi + 28 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 - ✅ Direzioni bidirezionali: contano come 1 mistero unico (+3), non 2
 - ✅ TOGGLE_DIREZIONE: mistero solo prima apertura (0→valore), chiusure/riaperture non danno punti
 - ✅ Eliminazione Misteri.json: file obsoleto, logica misteri ora inline negli effetti
