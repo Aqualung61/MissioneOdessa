@@ -346,21 +346,24 @@ gameState = {
 ### 2.2.1 Componenti e Logica
 
 #### A) Luoghi Visitati (+1 ciascuno)
-- **Massimo:** 57 punti
-- **Tracking:** Set `gameState.visitedPlaces` (riuso esistente)
-- **Award:** Automatico alla prima visita del luogo
-- **Implementazione:** Modificare `setCurrentLocation(locationId)` aggiungendo `gameState.visitedPlaces.add(locationId)` per sincronizzazione server. Calcolo punti: `visitedPlaces.size × 1`.
-- **Effort:** 5 min (una riga di codice)
+- **Massimo:** 56 punti
+- **Tracking:** Set `gameState.visitedPlaces`
+- **Award:** Automatico alla prima visita del luogo.
+- **Dettaglio:**
+  - 55 Luoghi Standard (tutti eccetto terminali e finale).
+  - 1 Luogo Finale (ID 59).
+  - **Esclusi:** Luoghi Terminali (ID 8, 40, 54) che portano alla morte.
 
 #### B) Interazioni Eseguite (+2 ciascuna)
-- **Massimo:** 30 punti (15 interazioni)
+- **Massimo:** 28 punti (14 interazioni valide)
 - **Tracking:** Set `gameState.punteggio.interazioniPunteggio`
-- **Award:** Immediato alla prima esecuzione
-- **Ripetibili:** Anche interazioni ripetibili contano +2 alla prima esecuzione
-- **Implementazione:** Modificare `cercaEseguiInterazione()` per controllare se ID già in Set, altrimenti aggiungere e incrementare totale di +2.
-- **Effort:** 20 min
+- **Award:** Immediato alla prima esecuzione.
+- **Dettaglio:**
+  - 13 Interazioni Standard (vedi elenco sotto).
+  - 1 Interazione Finale (`porgi_documenti_59`).
+  - **Nota:** L'interazione `scava_macerie_11` presente nel codice è obsoleta/buggata e non viene conteggiata.
 
-**Elenco 15 Interazioni:**
+**Elenco Interazioni Standard (13):**
 1. sposta_quadro_24
 2. sposta_arazzo_20
 3. muovi_fermacarte_25
@@ -369,53 +372,40 @@ gameState = {
 6. infila_statuetta_nicchia_27
 7. infila_medaglione_forma_36
 8. carica_pesa_57
-9. esamina_botola_57 (ripetibile, conta prima volta)
-10. premi_pulsante_44 (ripetibile, conta prima volta)
-11. ruota_sedile_42 (ripetibile, conta prima volta)
-12. scava_macerie_11 (ripetibile, conta prima volta)
-13. scava_macerie_49
-14. esamina_cassaforte_con_medaglione_24 (ripetibile, conta prima volta)
-15. porgi_documenti_59
+9. esamina_botola_57
+10. premi_pulsante_44
+11. ruota_sedile_42
+12. scava_macerie_49
+13. esamina_cassaforte_con_medaglione_24
 
-#### C) Misteri Risolti (+3 ciascuno)
-- **Massimo:** 39 punti (13 misteri)
+#### C) Misteri Risolti (+3 ciascuno, eccetto speciale)
+- **Massimo:** 44 punti
 - **Tracking:** Set `gameState.punteggio.misteriRisolti`
-- **Award:** Automatico quando interazione produce effetto strutturale
-- **Definizione:** Mistero = effetto VISIBILITA, SBLOCCA_DIREZIONE, o TOGGLE_DIREZIONE (solo prima apertura)
-- **Implementazione:** Nuova funzione `assegnaPunteggioMistero(effetto, gameState)` chiamata per ogni effetto applicato. Controlla tipo effetto e assegna +3 se prima volta.
-- **Effort:** 40 min
+- **Award:** Automatico quando interazione produce effetto strutturale (Visibilità/Direzione).
+- **Dettaglio:**
+  - **14 Misteri Standard** (+3 punti ciascuno) = 42 punti.
+    - Include effetti di tipo VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE.
+  - **1 Mistero Speciale "Sequenza Cassaforte"** (+2 punti) = 2 punti.
+    - **Nota Importante:** Questo evento assegna solo 2 punti (non 3) al completamento della sequenza D-S-S-D-S.
 
-**Tipi di Mistero:**
+#### D) Fase Finale (+7 punti totali)
+La fase finale è cruciale per raggiungere il punteggio massimo di 132.
+1. **Incontro Ferenc (+4 punti):**
+   - **Condizione:** Entrare in Atrio (ID 1) avendo nell'inventario: `fascicolo` (16), `lista` (6), `dossier` (34).
+   - **Effetto:** Ferenc appare, assegna **4 punti** (Vittoria tecnica), e teletrasporta il giocatore al luogo finale.
+2. **Accesso Bunker (+1 punto):**
+   - **Condizione:** Arrivo al luogo ID 59 (via teletrasporto o movimento).
+   - **Effetto:** **+1 punto** (conteggiato come visita luogo).
+3. **Consegna Documenti (+2 punti):**
+   - **Condizione:** Eseguire comando `PORGI DOCUMENTI` (interazione `porgi_documenti_59`).
+   - **Effetto:** **+2 punti** e termine corretto del gioco.
 
-1. **VISIBILITA (9 misteri):** Oggetto diventa visibile/prendibile
-   - ID formato: `"visibilita_NomeOggetto"`
-   - Esempi: "visibilita_Cassaforte", "visibilita_Medaglione", "visibilita_Dossier"
-   - Logica: `const misteroId = \`visibilita_${effetto.target}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); }`
-   
-2. **SBLOCCA_DIREZIONE (4 misteri):** Passaggio bidirezionale permanente
-   - ID formato: `"direzione_Luogo_Direzione"`
-   - Conta come 1 mistero unico anche se crea 2 direzioni (andata+ritorno)
-   - Esempi: "direzione_20_Sud" (rappresenta 20↔21), "direzione_36_Ovest" (36↔37)
-   - Logica: `const misteroId = \`direzione_${effetto.luogo}_${effetto.direzione}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); }`
-   
-3. **TOGGLE_DIREZIONE (2 misteri):** Passaggio toggle alla prima apertura
-   - ID formato: `"direzione_Luogo_Direzione"`
-   - Award solo quando direzione passa da 0 a valore (apertura)
-   - Chiusure/riaperture successive NON danno punti
-   - Esempi: "direzione_44_Est" (pulsante), "direzione_42_Est" (sedile)
-   - Logica: `const direzionePrima = luoghi[effetto.luogo][effetto.direzione]; if (direzionePrima === 0 && effetto.destinazione > 0) { const misteroId = \`direzione_${effetto.luogo}_${effetto.direzione}\`; if (!misteriRisolti.has(misteroId)) { totale += 3; misteriRisolti.add(misteroId); } }`
-
-#### D) Sequenza Cassaforte (+2)
-- **Tracking:** Verifica `SEQUENZA_COMPLETATA` per "cassaforte_24"
-- **Award:** Al completamento pattern D-S-S-D-S (5 rotazioni corrette)
-- **Implementazione:** Quando sequenza completata, verificare se "sequenza_cassaforte" già in `misteriRisolti`, altrimenti aggiungere e incrementare totale di +2.
-- **Nota:** Gestione separata dalle interazioni normali tramite sistema SEQUENZA esistente
-- **Effort:** 15 min
-
-#### E) Completamento Gioco (+4)
-- Award al comando `PORGI DOCUMENTI` al luogo 59
-
-**Punteggio Massimo Totale:** 57 + 30 + 39 + 2 + 4 = **132 punti**
+**Riepilogo Punteggio Massimo:**
+- Luoghi: 56
+- Interazioni: 28
+- Misteri: 44
+- Vittoria/Ferenc: 4
+- **TOTALE: 132 punti**
 
 ### 2.2.2 File Dati e Definizioni
 
@@ -1115,11 +1105,12 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 
 ---
 
-### 3.2.3 Sequenza, UI e Polish (20 min) - **SOTTOSPRINT 3**
+### 3.2.3 Sequenza, UI e Polish (20 min) - **SOTTOSPRINT 3** ✅ **COMPLETATO** (2026-01-01)
 *   **Obiettivo:** Completare feature con sequenza cassaforte e interfaccia utente
 *   **Effort:** 20 min (task 8 già completato)
+*   **Commit:** Implementazione completa con scoring cassaforte e comando PUNTI
 *   **Task:**
-    5.  **Logica Sequenza Cassaforte** (10 min): Dopo completamento sequenza "cassaforte_24":
+    5.  ✅ **Logica Sequenza Cassaforte** (10 min): Dopo completamento sequenza "cassaforte_24":
         ```javascript
         const misteroId = "sequenza_cassaforte";
         if (!gameState.punteggio.misteriRisolti.has(misteroId)) {
@@ -1127,8 +1118,9 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
           gameState.punteggio.misteriRisolti.add(misteroId);
         }
         ```
+        **Implementazione:** Aggiunto check in `cercaEseguiInterazione()` quando `seq.completata = true`
     
-    6.  **Comando PUNTI** (5 min): Implementare comando che mostra:
+    6.  ✅ **Comando PUNTI** (5 min): Implementare comando che mostra:
         ```
         Punteggio totale: X/132
         - Luoghi visitati: X/57
@@ -1139,7 +1131,10 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
         
         Rango: [Novizio/Esploratore/Investigatore/Maestro/Perfezionista]
         ```
-        Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-131 Maestro, 132 Perfezionista.
+        **Implementazione:** Comando PUNTI in `executeCommand()` mostra:
+        - Totale su 132 con rango dinamico
+        - Breakdown: visitedPlaces.size, interazioniPunteggio.size, misteriRisolti.size
+        - Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-131 Maestro, 132 Perfezionista
     
     7.  ~~**UI Punteggio**~~ ✅ **COMPLETATO ANTICIPATAMENTE** (2026-01-01): 
         - **Commit:** `0abea54` + `02a46c0` - feat(ui): add score display + refactor(ui): unify stats logic
@@ -1153,14 +1148,19 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     8.  ~~**Eliminazione Misteri.json**~~ ✅ **GIÀ COMPLETATO** (2026-01-01): File eliminato, nessun riferimento nel codice.
 
 *   **Test Sottosprint 3 (finali):**
-    - [ ] Completare sequenza D-S-S-D-S → Verificare +2 una sola volta
-    - [ ] Comando PUNTI mostra dettaglio corretto e rango appropriato
+    - [x] ✅ Completare sequenza D-S-S-D-S → +2 punti assegnati correttamente
+    - [x] ✅ Comando PUNTI mostra dettaglio corretto e rango appropriato
     - [x] ✅ UI mostra punteggio aggiornato in tempo reale (anticipato, già testato)
-    - [ ] Test E2E: Visitare 5 luoghi, fare 3 interazioni con misteri → Verificare calcolo corretto (es. 5+6+9=20 punti)
-    - [ ] Salva/Carica → Verificare persistenza completa (totale, Set, UI sincronizzata)
+    - [x] ✅ Test statuetta: +2 (interazione) + +3 (VISIBILITA) + +3 (SBLOCCA bidirezionale) = +8 punti
+    - [x] ✅ Fix direzioni bidirezionali: Math.min/max normalizzazione impedisce doppio conteggio
+    - [x] ✅ Salva/Carica → Persistenza completa verificata (totale, Set, UI sincronizzata)
+    - [x] ✅ 47 test passano, nessuna regressione
 
 *   **Deliverable:** Feature § 3.2 completa con UI e comando PUNTI
-*   **Git Commit:** `feat: add cassaforte sequence + PUNTI command + UI scoring display`
+*   **Note Tecniche:**
+    - Cassaforte sequence usa misteroId "sequenza_cassaforte" (non sistema +3 misteri standard)
+    - SBLOCCA_DIREZIONE normalizza coppie bidirezionali: direzione_{min}_{max}
+    - Comando PUNTI usa gameState.punteggio per calcoli real-time senza query aggiuntive
 
 ---
 

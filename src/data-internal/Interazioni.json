@@ -338,32 +338,6 @@
     "IDLingua": 1
   },
   {
-    "id": "scava_macerie_11",
-    "trigger": {
-      "verbo": "SCAVARE",
-      "oggetto": "MACERIE"
-    },
-    "condizioni": {
-      "luogo": 11,
-      "prerequisiti": [
-        {
-          "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Badile arruginito"
-        }
-      ]
-    },
-    "risposta": "Rimuovi le macerie che impediscono di prendere il bastone.",
-    "effetti": [
-      {
-        "tipo": "VISIBILITA",
-        "target": "Bastone di comando",
-        "valore": 3
-      }
-    ],
-    "ripetibile": false,
-    "IDLingua": 1
-  },
-  {
     "id": "scava_macerie_49",
     "trigger": {
       "verbo": "SCAVARE",
