@@ -449,19 +449,31 @@ function assegnaPunteggioMistero(effetto) {
   }
   
   // Task 4b: SBLOCCA_DIREZIONE - direzione sbloccata permanentemente
+  // IMPORTANTE: Direzioni bidirezionali (A↔B) contano come 1 solo mistero
+  // Usiamo sempre la coppia (min, max) per normalizzare
   else if (effetto.tipo === 'SBLOCCA_DIREZIONE') {
-    misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+    const luogoA = effetto.luogo;
+    const luogoB = effetto.destinazione;
+    // Normalizza: usa sempre coppia ordinata (min, max)
+    const min = Math.min(luogoA, luogoB);
+    const max = Math.max(luogoA, luogoB);
+    misteroId = `direzione_${min}_${max}`;
   }
   
   // Task 4c: TOGGLE_DIREZIONE - solo prima apertura (0 → valore)
   else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
-    const key = `${effetto.luogo}_${effetto.direzione}`;
-    const statoCorrente = gameState.direzioniToggle[key] || false;
+    // Usa stato PRE-toggle salvato in applicaEffetti()
+    const statoPreToggle = effetto._statoPreToggle;
     
     // Assegna punti solo se sta APRENDO (false → true)
     // Chiusure (true → false) e riaperture successive: NO +3
-    if (!statoCorrente) {
-      misteroId = `direzione_${effetto.luogo}_${effetto.direzione}`;
+    if (statoPreToggle === false) {
+      // Normalizza come SBLOCCA_DIREZIONE: usa coppia ordinata (min, max)
+      const luogoA = effetto.luogo;
+      const luogoB = effetto.destinazione;
+      const min = Math.min(luogoA, luogoB);
+      const max = Math.max(luogoA, luogoB);
+      misteroId = `direzione_${min}_${max}`;
     }
   }
   
@@ -503,6 +515,8 @@ function applicaEffetti(effetti, luogoCorrente) {
       if (!gameState.direzioniToggle[key]) {
         gameState.direzioniToggle[key] = false;
       }
+      // Salva stato PRIMA del toggle per assegnaPunteggioMistero
+      effetto._statoPreToggle = gameState.direzioniToggle[key];
       gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
     } else if (effetto.tipo === 'VITTORIA') {
       gameState.ended = true;
@@ -588,6 +602,13 @@ function cercaEseguiInterazione(verb, noun) {
           // Sequenza completata?
           if (seq.progressione.length === seq.pattern.length) {
             seq.completata = true;
+            
+            // § 3.2.3 Task 5: Award +2 points for cassaforte sequence completion
+            if (!gameState.punteggio.misteriRisolti.has('sequenza_cassaforte')) {
+              gameState.punteggio.misteriRisolti.add('sequenza_cassaforte');
+              gameState.punteggio.totale += 2;
+            }
+            
             applicaEffetti(effettoSequenza.effetti_completamento, interazione.condizioni.luogo);
             risposta = interazione.risposta_completa;
             
@@ -687,8 +708,30 @@ export function executeCommand(parseResult) {
           }
           case 'CARICARE':
             return { accepted: true, resultType: 'LOAD_GAME', message: getSystemMessage('engine.load.inProgress', gameState.currentLingua), effects: [] };
-          case 'PUNTI':
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.score.display', gameState.currentLingua, ['0 (stub)']), effects: [], showLocation: true };
+          case 'PUNTI': {
+            // § 3.2.3 Task 6: Display score with rank and breakdown (i18n ready)
+            const totale = gameState.punteggio.totale;
+            const visitedPlaces = gameState.visitedPlaces.size;
+            const interazioni = gameState.punteggio.interazioniPunteggio.size;
+            const misteri = gameState.punteggio.misteriRisolti.size;
+            
+            // Ranghi basati su punteggio massimo 132 (localizzati)
+            let rangoKey = 'engine.rank.novice';
+            if (totale >= 100) rangoKey = 'engine.rank.master';
+            else if (totale >= 67) rangoKey = 'engine.rank.investigator';
+            else if (totale >= 34) rangoKey = 'engine.rank.explorer';
+            if (totale === 132) rangoKey = 'engine.rank.perfectionist';
+            
+            const rango = getSystemMessage(rangoKey, gameState.currentLingua);
+            const breakdown = getSystemMessage('engine.score.breakdown', gameState.currentLingua, [
+              totale.toString(),
+              rango,
+              visitedPlaces.toString(),
+              interazioni.toString(),
+              misteri.toString()
+            ]);
+            return { accepted: true, resultType: 'OK', message: breakdown, effects: [], showLocation: true };
+          }
           case 'FINE':
             return { accepted: true, resultType: 'CONFIRM_END', message: getSystemMessage('engine.end.confirm', gameState.currentLingua), effects: [] };
           default:

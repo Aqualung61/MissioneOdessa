@@ -110,6 +110,66 @@
     "Messaggio": "Score: {0}."
   },
   {
+    "Chiave": "engine.score.breakdown",
+    "IDLingua": 1,
+    "Messaggio": "Punteggio totale: {0}/132\nRango: {1}\n\nDettaglio:\n- Luoghi visitati: {2}\n- Interazioni: {3}\n- Misteri risolti: {4}"
+  },
+  {
+    "Chiave": "engine.score.breakdown",
+    "IDLingua": 2,
+    "Messaggio": "Total score: {0}/132\nRank: {1}\n\nBreakdown:\n- Visited places: {2}\n- Interactions: {3}\n- Solved mysteries: {4}"
+  },
+  {
+    "Chiave": "engine.rank.novice",
+    "IDLingua": 1,
+    "Messaggio": "Novizio"
+  },
+  {
+    "Chiave": "engine.rank.novice",
+    "IDLingua": 2,
+    "Messaggio": "Novice"
+  },
+  {
+    "Chiave": "engine.rank.explorer",
+    "IDLingua": 1,
+    "Messaggio": "Esploratore"
+  },
+  {
+    "Chiave": "engine.rank.explorer",
+    "IDLingua": 2,
+    "Messaggio": "Explorer"
+  },
+  {
+    "Chiave": "engine.rank.investigator",
+    "IDLingua": 1,
+    "Messaggio": "Investigatore"
+  },
+  {
+    "Chiave": "engine.rank.investigator",
+    "IDLingua": 2,
+    "Messaggio": "Investigator"
+  },
+  {
+    "Chiave": "engine.rank.master",
+    "IDLingua": 1,
+    "Messaggio": "Maestro"
+  },
+  {
+    "Chiave": "engine.rank.master",
+    "IDLingua": 2,
+    "Messaggio": "Master"
+  },
+  {
+    "Chiave": "engine.rank.perfectionist",
+    "IDLingua": 1,
+    "Messaggio": "Perfezionista"
+  },
+  {
+    "Chiave": "engine.rank.perfectionist",
+    "IDLingua": 2,
+    "Messaggio": "Perfectionist"
+  },
+  {
     "Chiave": "engine.end.confirm",
     "IDLingua": 1,
     "Messaggio": "Vuoi davvero finire il gioco? (s/n)"
