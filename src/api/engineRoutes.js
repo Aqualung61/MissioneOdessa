@@ -132,4 +132,15 @@ router.get('/direzioni/:idLuogo', (req, res) => {
   }
 });
 
+// Endpoint per ottenere il punteggio corrente
+router.get('/score', (req, res) => {
+  try {
+    const state = getGameStateSnapshot();
+    const score = state.punteggio?.totale || 0;
+    res.json({ ok: true, score });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 export default router;

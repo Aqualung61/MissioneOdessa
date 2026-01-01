@@ -442,6 +442,7 @@ let awaitingRestart = false;
 let awaitingConfirmEnd = false;
 let gameEnded = false;
 let visitedPlaces = new Set();
+let currentScore = 0; // Punteggio corrente dal server
 
 function updateDynamicPlaceImage() {
   const dynamicImage = document.getElementById('dynamicPlaceImage');
@@ -459,6 +460,22 @@ function updateDynamicPlaceImage() {
   } else {
     if (dynamicImage) dynamicImage.style.display = 'none';
     if (overlay) overlay.style.display = 'none';
+  }
+}
+
+function updateScoreDisplay() {
+  const scoreEl = document.getElementById('scoreCount');
+  if (scoreEl) {
+    // Richiedi punteggio dal server
+    fetch(basePath + 'api/engine/score')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok && typeof data.score === 'number') {
+          currentScore = data.score;
+          scoreEl.textContent = `Punteggio: ${currentScore}`;
+        }
+      })
+      .catch(err => console.error('Errore recupero punteggio:', err));
   }
 }
 
@@ -496,6 +513,9 @@ function showCurrent() {
   visitedPlaces.add(current.ID);
   const visitedEl = document.getElementById('visitedCount');
   if (visitedEl) visitedEl.textContent = `Luoghi visitati: ${visitedPlaces.size}`;
+  
+  // Aggiorna punteggio (se disponibile nel gameState)
+  updateScoreDisplay();
 
   const placeFeed = document.getElementById('placeFeed');
   if (placeFeed) {
@@ -1043,6 +1063,8 @@ inputForm.addEventListener('submit', async function(e) {
               })
               .catch(err => console.error('Errore aggiornamento direzioni:', err));
           }
+          // Aggiorna punteggio dopo comando
+          updateScoreDisplay();
         } else {
           // Messaggio di errore
           const feed = document.getElementById('placeFeed');
