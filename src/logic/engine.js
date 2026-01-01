@@ -325,10 +325,15 @@ export function setGameState(newState) {
 export function setCurrentLocation(locationId) {
   gameState.currentLocationId = locationId;
   
-  // Sincronizzazione visitedPlaces e assegnazione punteggio
+  // Sincronizzazione visitedPlaces
   if (!gameState.visitedPlaces.has(locationId)) {
     gameState.visitedPlaces.add(locationId);
-    gameState.punteggio.totale += 1;
+    
+    // Assegna +1 punto SOLO se NON è luogo terminale
+    const luogo = global.odessaData.Luoghi.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
+    if (luogo && luogo.Terminale !== -1) {
+      gameState.punteggio.totale += 1;
+    }
   }
 }
 
