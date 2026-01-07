@@ -118,9 +118,10 @@ Quattro gruppi di endpoint REST:
 - **turnEffects/** - Middleware pattern per effetti temporali (torch, darkness, intercettazione, misteri)
   - **index.js** - Registry e coordinatore effetti (TURN_EFFECTS array)
   - **torchEffect.js** - Logica countdown torcia (6 turni → difettosa)
-  - **darknessEffect.js** - *(TODO Sprint 3.3.5.B)* Countdown buio (3 turni → morte)
-  - **interceptEffect.js** - *(TODO Sprint 3.3.5.C)* Countdown intercettazione (3 turni → morte)
-  - **mysteryEffect.js** - *(TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
+  - **darknessEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B** Countdown buio (3 turni → morte)
+  - **gameOverEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B** Game over centralizzato (darkness, terminal, intercettazione, guardia)
+  - **interceptEffect.js** - *(⏳ TODO Sprint 3.3.5.C)* Countdown intercettazione (3 turni → morte)
+  - **mysteryEffect.js** - *(⏳ TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
 
 ### 💾 Data Layer
 Architettura dati ibrida:
@@ -632,20 +633,23 @@ sequenceDiagram
     participant API as API /engine/execute
     participant Parser as parser.js
     participant Engine as engine.js
+    participant TurnEffects as turnEffects/*
     participant GS as gameState
     participant Global as global.odessaData
 
     C->>API: POST {input: "prendi torcia"}
     API->>Parser: parseCommand(input, gameState)
     Parser->>Global: Legge VociLessico, TerminiLessico
-    Parser-->>API: ParseResult {IsValid, NormVerb, NormNoun}
+    Parser-->>API: ParseResult {IsValid, CommandType, NormVerb, NormNoun}
     
     API->>Engine: prepareTurnContext(parseResult)
     Engine->>GS: Salva turn.previous, aggiorna turn.current
     Engine->>GS: Incrementa globalTurnNumber
+    Engine->>GS: Calcola hasLight iniziale
+    Engine-->>API: Snapshot creato
     
     API->>Engine: runPreExecutionChecks(parseResult)
-    Engine->>GS: Verifica turnsInDarkness, movementBlocked
+    Engine->>GS: Verifica movementBlocked, awaitingContinue
     Engine-->>API: null (OK) o {resultType: ERROR/GAME_OVER}
     
     API->>Engine: executeCommandLegacy(parseResult)
@@ -654,8 +658,16 @@ sequenceDiagram
     Engine-->>API: Result {accepted, message, effects}
     
     API->>Engine: applyTurnEffects(result, parseResult)
-    Engine->>GS: Aggiorna turnsWithTorch, torciaDifettosa
-    Engine-->>API: Result modificato con messaggi
+    Engine->>GS: Ricalcola hasLight DOPO comando
+    Engine->>TurnEffects: torchEffect(gameState, result)
+    TurnEffects->>GS: Aggiorna turnsWithTorch, torciaDifettosa
+    Engine->>TurnEffects: darknessEffect(gameState, result)
+    TurnEffects->>GS: Aggiorna turnsInDarkness (o reset se hasLight)
+    Engine->>TurnEffects: gameOverEffect(gameState, result)
+    TurnEffects->>GS: Verifica darkness≥3, Terminale===-1
+    TurnEffects->>GS: Se game over: awaitingRestart=true
+    TurnEffects-->>Engine: Result modificato con messaggi
+    Engine-->>API: Result finale con turn effects
     
     API-->>C: JSON {ok, parseResult, engine: result}
 ```
@@ -694,27 +706,39 @@ sequenceDiagram
 
 ## Logiche Avanzate
 
-### Sistema Turn v3.0 (Middleware Architecture)
+### Sistema Turn v3.0 (Middleware Architecture) - ✅ Sprint 3.3.5.B
 **Obiettivo**: Gestire effetti temporali (torcia, buio, intercettazione) in modo scalabile e manutenibile.
 
 **Architettura**: Plugin/Middleware pattern con registry centralizzato.
 
 **Fasi Esecuzione Comando**:
-1. **prepareTurnContext()**: Snapshot stato pre-esecuzione, incremento contatori
-2. **runPreExecutionChecks()**: Valida condizioni (game over, blocchi) - *attualmente disabilitato*
+1. **prepareTurnContext()**: Snapshot stato pre-esecuzione, incremento contatori, calcolo hasLight
+2. **runPreExecutionChecks()**: ✅ **ATTIVO** Valida condizioni (game over, movementBlocked, awaitingContinue)
 3. **executeCommandLegacy()**: Esegue comando specifico
-4. **applyTurnEffects()**: Delega a `applyAllTurnEffects()` che itera il registry TURN_EFFECTS
+4. **applyTurnEffects()**: 
+   - Ricalcola hasLight DOPO esecuzione comando (per ACCENDI LAMPADA immediato)
+   - Delega a `applyAllTurnEffects()` che itera il registry TURN_EFFECTS
 
 **Filtro Comandi** (basato su `parseResult.CommandType`):
 - **CommandType === 'SYSTEM'**: NON consumano turno (INVENTARIO, AIUTO, PUNTI, SALVA, GUARDA)
 - **CommandType === 'NAVIGATION'**: Consumano turno (NORD, SUD, EST, OVEST...)
 - **CommandType === 'ACTION'**: Consumano turno (PRENDI, LASCIA, ESAMINA, USA...)
 
-**Turn Effects Implementati**:
-- ✅ **torchEffect**: Countdown 6 turni → torcia difettosa (completato)
-- ⏳ **darknessEffect**: Countdown 3 turni al buio → morte (TODO Sprint 3.3.5.B - 80% infrastruttura pronta)
-- ⏳ **interceptEffect**: Countdown 3 turni zone pericolose → morte (TODO Sprint 3.3.5.C)
-- ⏳ **mysteryEffect**: Auto-assegnazione misteri (TODO Sprint 3.3.5.D)
+**Turn Effects Implementati** (ordine esecuzione critico):
+1. ✅ **torchEffect**: Countdown 6 turni → torcia difettosa
+2. ✅ **darknessEffect**: Countdown 3 turni senza luce → traccia turnsInDarkness
+3. ✅ **gameOverEffect**: Game over centralizzato per TUTTE le condizioni di morte:
+   - **Darkness death**: turnsInDarkness ≥ 3
+   - **Terminal location**: Terminale === -1
+   - **Intercettazione**: *(⏳ TODO Sprint 3.3.5.C)* turnsInDangerZone ≥ 3
+   - **Guardia**: *(⏳ TODO Sprint 3.3.5.D)* unusefulCommandsCounter al luogo 59
+4. ⏳ **interceptEffect**: *(TODO Sprint 3.3.5.C)* Countdown zone pericolose
+5. ⏳ **mysteryEffect**: *(TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
+
+**hasLight Recalculation** (✅ Sprint 3.3.5.B):
+- Calcolo iniziale in `prepareTurnContext()` (snapshot pre-comando)
+- **Ricalcolo in `applyTurnEffects()`** DOPO esecuzione comando
+- Permette salvezza immediata: ACCENDI LAMPADA → hasLight=true stesso turno → resetta turnsInDarkness
 
 **Vantaggi Architettura**:
 - Separazione responsabilità: ogni effetto in file dedicato
@@ -722,6 +746,167 @@ sequenceDiagram
 - Manutenibilità: modificare un effetto non impatta altri
 - Testabilità: ogni effect testabile in isolamento
 - Priorità esecuzione: controllata dall'ordine nel TURN_EFFECTS array
+
+### Sistema Game Over Unificato - ✅ Sprint 3.3.5.B
+
+**Architettura Centralizzata**:
+Il sistema game over è stato completamente unificato in `gameOverEffect.js` come punto centrale per TUTTE le condizioni di morte:
+
+```mermaid
+flowchart TB
+    Start[Comando Eseguito] --> TurnEffects[applyTurnEffects]
+    
+    TurnEffects --> Torch[torchEffect<br/>Aggiorna torcia]
+    Torch --> Dark[darknessEffect<br/>Aggiorna turnsInDarkness]
+    Dark --> GameOver[gameOverEffect<br/>CHECK Game Over]
+    
+    GameOver --> Check1{turnsInDarkness >= 3?}
+    Check1 -->|YES| Death1[🏴 DARKNESS DEATH<br/>Messaggio: timer.darkness.death]
+    Check1 -->|NO| Check2{Terminale === -1?}
+    
+    Check2 -->|YES| Death2[🏴 TERMINAL LOCATION<br/>Messaggio: game.terminal.location]
+    Check2 -->|NO| Check3{turnsInDangerZone >= 3?<br/>TODO Sprint 3.3.5.C}
+    
+    Check3 -->|YES| Death3[🏴 INTERCETTAZIONE<br/>Messaggio: TBD]
+    Check3 -->|NO| Check4{unusefulCommands<br/>al luogo 59?<br/>TODO Sprint 3.3.5.D}
+    
+    Check4 -->|YES| Death4[🏴 GUARDIA<br/>Messaggio: TBD]
+    Check4 -->|NO| Continue[✅ Continua gioco]
+    
+    Death1 --> SetRestart[awaitingRestart = true<br/>gameOver = true<br/>gameOverReason = message]
+    Death2 --> SetRestart
+    Death3 --> SetRestart
+    Death4 --> SetRestart
+    
+    SetRestart --> ReturnServer[Return to Server]
+    Continue --> ReturnServer
+    
+    ReturnServer --> Client[Response to Client]
+    
+    Client --> CheckGO{response.engine.gameOver?}
+    CheckGO -->|YES| Display[displayGameOverMessage<br/>reason, linguaId]
+    CheckGO -->|NO| ShowCurrent[showCurrent]
+    
+    Display --> CreateDivs[Crea 2 div:<br/>1. Messaggio morte blu<br/>2. Prompt riavvio blu]
+    CreateDivs --> SetFlag[awaitingRestart = true]
+    SetFlag --> BlockInput[Blocca comandi<br/>Accetta solo SI/NO]
+    
+    BlockInput --> UserInput{User digita}
+    UserInput -->|SI/SÌ/YES| Restart[POST /engine/execute<br/>Bypass parser]
+    UserInput -->|NO| End[Fine partita]
+    
+    Restart --> Reset[resetGameState]
+    Reset --> Reload[Ricarica interfaccia]
+    
+    style Death1 fill:#ff6b6b
+    style Death2 fill:#ff6b6b
+    style Death3 fill:#ffa07a
+    style Death4 fill:#ffa07a
+    style SetRestart fill:#ff9999
+    style Display fill:#4dabf7
+    style CreateDivs fill:#74c0fc
+    style Continue fill:#51cf66
+```
+
+**Dettaglio Componenti**:
+
+1. **Server-Side Detection** (`gameOverEffect.js`):
+   - **CHECK 1 - Darkness Death**: `turnsInDarkness >= 3`
+     - Messaggio i18n: `getSystemMessage('timer.darkness.death')`
+   - **CHECK 2 - Terminal Location**: `currentLuogo.Terminale === -1`
+     - Messaggio i18n: `getSystemMessage('game.terminal.location')`
+   - **CHECK 3 - Intercettazione** (TODO Sprint 3.3.5.C): `turnsInDangerZone >= 3`
+   - **CHECK 4 - Guardia** (TODO Sprint 3.3.5.D): `unusefulCommandsCounter` al luogo 59
+   - **Azione**: Imposta `awaitingRestart = true`, ritorna `{gameOver: true, gameOverReason, message}`
+
+2. **Client-Side Handling** (`odessa1.js`):
+   - **Helper Unificato**: `displayGameOverMessage(reason, lingualId)`
+     - Crea 2 div separati: messaggio morte (reason) + prompt riavvio
+     - Style: blu `#0066cc`, grassetto per entrambi
+     - Usa `window.i18n.msg()` con fallback
+     - Imposta `awaitingRestart = true`
+     - Sostituisce ~100 righe di codice duplicato in 8 call sites
+   
+   - **8 Call Sites**:
+     1. Livello0 destinazione -1
+     2. Livello0 pending showCurrent
+     3. Livello0 set-location if direzioni complete
+     4. handleDirectionClick pending showCurrent
+     5. handleDirectionClick set-location if direzioni complete
+     6. NAVIGATION testuale fallback
+     7. SYSTEM commands game over
+     8. ACTION commands game over
+   
+   - **Dual Navigation Paths**:
+     - `handleDirectionClick()`: Stella/arrow navigation (ha awaitingRestart check)
+     - `Livello0 NAVIGATION`: Textual command parsing (check aggiunto Sprint 3.3.5.B)
+     - Entrambi gestiscono `nextId === -1` (terminal destination) prima di `luoghi.find()`
+   
+   - **Timing Coordination**:
+     - Variabili: `pendingGameOver`, `direzioniComplete`
+     - Problema: async fetch direzioni vs set-location race condition
+     - Soluzione: memorizza gameOver, mostra DOPO `showCurrent()` completo
+
+3. **i18n Compliance** ✅:
+   - **MessaggiSistema.json**:
+     - `timer.darkness.death` (IT + EN)
+     - `game.terminal.location` (IT + EN)
+   - **MessaggiFrontend.json**:
+     - `ui.game.terminal` (IT + EN)
+     - `ui.game.restart` (IT + EN - "Vuoi ripartire? (SI/SÌ per confermare)")
+     - `ui.game.awaitingRestart` (IT + EN - per blocco comandi)
+
+4. **Restart Flow**:
+   - User digita "SI" o "SÌ" (o "YES" in inglese)
+   - `/api/engine/execute` bypassa parser, chiama direttamente `resetGameState()`
+   - Response: `{ok: true, restarted: true}`
+   - Client ricarica interfaccia con luogo iniziale
+
+### Sistema i18n (Internazionalizzazione) - ✅ Sprint 3.3.5.B
+
+**Compliance Completa**: Tutti i messaggi di sistema e UI supportano IT + EN senza hardcoded strings.
+
+**Struttura Dati**:
+
+1. **MessaggiSistema.json** (server-side):
+   ```json
+   [
+     {
+       "Chiave": "timer.darkness.death",
+       "IDLingua": 1,
+       "Messaggio": "💀 MORTE NEL BUIO\n\nMuoversi al buio è pericoloso..."
+     },
+     {
+       "Chiave": "timer.darkness.death",
+       "IDLingua": 2,
+       "Messaggio": "💀 DEATH IN THE DARK\n\nMoving in the dark is dangerous..."
+     }
+   ]
+   ```
+   - Accesso: `getSystemMessage('chiave', idLingua)`
+
+2. **MessaggiFrontend.json** (client-side):
+   ```json
+   [
+     {
+       "Chiave": "ui.game.restart",
+       "IDLingua": 1,
+       "Messaggio": "Vuoi ripartire? (SI/SÌ per confermare)"
+     },
+     {
+       "Chiave": "ui.game.restart",
+       "IDLingua": 2,
+       "Messaggio": "Do you want to restart? (YES to confirm)"
+     }
+   ]
+   ```
+   - Accesso: `window.i18n.msg('chiave')` con fallback
+
+**Pattern Implementazione**:
+- Server: `getSystemMessage(key, lingua) || 'fallback'`
+- Client: `window.i18n.msg(key) || 'fallback'`
+- Nessun hardcoded string in production code (solo test/comments)
+- Tutte le lingue caricate in memoria all'avvio
 
 ### Sistema Oggetti Attivo
 Ogni oggetto ha campo `Attivo`:
