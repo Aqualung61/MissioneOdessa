@@ -75,9 +75,9 @@
     "ID": 10,
     "IDLingua": 1,
     "Oggetto": "Fermacarte",
-    "Attivo": 3,
+    "Attivo": 2,
     "IDLuogo": 25,
-    "descrizione": "Raffigura una ragazzo che lancia. Non sembra avere qualche valore artistico né essere fatto di un metallo prezioso, ma sembra fissato ad una specie di guida sul tavolo."
+    "descrizione": "Raffigura un ragazzo che lancia. Non sembra avere qualche valore artistico né essere fatto di un metallo prezioso, ma sembra fissato ad una specie di guida sul tavolo."
   },
   {
     "ID": 11,
@@ -173,15 +173,7 @@
     "Oggetto": "Pesa",
     "Attivo": 1,
     "IDLuogo": 57,
-    "descrizione": "E' una vecchia pesa ad un piatto con un peso scorrevola ad una estremità: è fissa su un vecchio tavolo tarlato e ingombro di detriti. Il piatto, non caricato da pesi, è alto rispetto al peso scorrevole."
-  },
-  {
-    "ID": 24,
-    "IDLingua": 1,
-    "Oggetto": "Foglio",
-    "Attivo": 3,
-    "IDLuogo": null,
-    "descrizione": "Non noto nulla di particolare"
+    "descrizione": "E' una vecchia pesa ad un piatto con un peso scorrevole ad una estremità: è fissa su un vecchio tavolo tarlato e ingombro di detriti. Il piatto, non caricato da pesi, è alto rispetto al peso scorrevole."
   },
   {
     "ID": 25,
@@ -213,7 +205,7 @@
     "Oggetto": "Medaglione",
     "Attivo": 0,
     "IDLuogo": 24,
-    "descrizione": "E' alquanto massiccio, bronzeo, di forma circolare: all'interno della corona esterna intarsiata a mò di alloro spicca una svastica di rilievo."
+    "descrizione": "E' alquanto massiccio, bronzeo, di forma circolare: all'interno della corona esterna intarsiata a mo' di alloro spicca una svastica di rilievo."
   },
   {
     "ID": 31,
@@ -245,7 +237,7 @@
     "Oggetto": "Dossier",
     "Attivo": 0,
     "IDLuogo": 57,
-    "descrizione": "E' un voluminoso dossier. Aprendolo trovi una serie di documenti ancora da compilare, una lista di nomi presumibilmente di gerachi nazisti, delle carte geografiche del Sud America con sottolineate le località dell'Argentina. Un breve rapporto indica la costituzione di centri di controllo ogni 60-70km dal tragitto da compiere e fornisce nomi e indirizzi sul percorso Brema-Genoa. Su tutti i fogli c'è un timbro: ODESSA."
+    "descrizione": "E' un voluminoso dossier. Aprendolo trovi una serie di documenti ancora da compilare, una lista di nomi presumibilmente di gerarchi nazisti, delle carte geografiche del Sud America con sottolineate le località dell'Argentina. Un breve rapporto indica la costituzione di centri di controllo ogni 60-70km dal tragitto da compiere e fornisce nomi e indirizzi sul percorso Brema-Genova. Su tutti i fogli c'è un timbro: ODESSA."
   },
   {
     "ID": 35,
@@ -283,7 +275,7 @@
     "ID": 39,
     "IDLingua": 1,
     "Oggetto": "Foglio",
-    "Attivo": 2,
+    "Attivo": 0,
     "IDLuogo": 25,
     "descrizione": "Il foglio contiene solo delle lettere scritte a macchina: D S S D S. Sembra essere una combinazione di una cassaforte."
   },

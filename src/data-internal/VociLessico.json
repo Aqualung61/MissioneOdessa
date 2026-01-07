@@ -725,5 +725,29 @@
     "Voce": "MOSTRARE",
     "ID_Termine": 71,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 127,
+    "Voce": "PUNTI",
+    "ID_Termine": 72,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 128,
+    "Voce": "PUNTEGGIO",
+    "ID_Termine": 72,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 129,
+    "Voce": "ILLUMINA",
+    "ID_Termine": 61,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 130,
+    "Voce": "ILLUMINARE",
+    "ID_Termine": 61,
+    "ID_Lingua": 1
   }
 ]

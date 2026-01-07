@@ -112,12 +112,12 @@
   {
     "Chiave": "engine.score.breakdown",
     "IDLingua": 1,
-    "Messaggio": "Punteggio totale: {0}/132\nRango: {1}\n\nDettaglio:\n- Luoghi visitati: {2}\n- Interazioni: {3}\n- Misteri risolti: {4}"
+    "Messaggio": "Punteggio totale: {0}/134\nRango: {1}\n\nDettaglio:\n- Luoghi visitati: {2}\n- Interazioni: {3}\n- Misteri risolti: {4}"
   },
   {
     "Chiave": "engine.score.breakdown",
     "IDLingua": 2,
-    "Messaggio": "Total score: {0}/132\nRank: {1}\n\nBreakdown:\n- Visited places: {2}\n- Interactions: {3}\n- Solved mysteries: {4}"
+    "Messaggio": "Total score: {0}/134\nRank: {1}\n\nBreakdown:\n- Visited places: {2}\n- Interactions: {3}\n- Solved mysteries: {4}"
   },
   {
     "Chiave": "engine.rank.novice",
@@ -338,5 +338,125 @@
     "Chiave": "engine.safeAlreadyOpen",
     "IDLingua": 2,
     "Messaggio": "The safe is already open."
+  },
+  {
+    "Chiave": "timer.torch.defective",
+    "IDLingua": 1,
+    "Messaggio": "La tua torcia si spegne di colpo: deve essere difettosa."
+  },
+  {
+    "Chiave": "timer.torch.defective",
+    "IDLingua": 2,
+    "Messaggio": "Your torch suddenly goes out: it must be defective."
+  },
+  {
+    "Chiave": "timer.torch.defective.warning",
+    "IDLingua": 1,
+    "Messaggio": "La tua torcia si spegne di colpo: deve essere difettosa. È pericoloso muoversi al buio."
+  },
+  {
+    "Chiave": "timer.torch.defective.warning",
+    "IDLingua": 2,
+    "Messaggio": "Your torch suddenly goes out: it must be defective. It's dangerous to move in the dark."
+  },
+  {
+    "Chiave": "timer.lamp.dropped",
+    "IDLingua": 1,
+    "Messaggio": "Hai posato la lampada. Resta accesa, ma ora sei al buio."
+  },
+  {
+    "Chiave": "timer.lamp.dropped",
+    "IDLingua": 2,
+    "Messaggio": "You dropped the lamp. It stays lit, but now you're in the dark."
+  },
+  {
+    "Chiave": "timer.darkness.death",
+    "IDLingua": 1,
+    "Messaggio": "💀 MORTE AL BUIO\n\nMuoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!"
+  },
+  {
+    "Chiave": "timer.darkness.death",
+    "IDLingua": 2,
+    "Messaggio": "💀 DEATH IN THE DARK\n\nMoving in the dark is dangerous: you stumble on debris and fall, breaking your neck. You are dead!"
+  },
+  {
+    "Chiave": "game.terminal.location",
+    "IDLingua": 1,
+    "Messaggio": "Hai raggiunto un luogo terminale."
+  },
+  {
+    "Chiave": "game.terminal.location",
+    "IDLingua": 2,
+    "Messaggio": "You have reached a terminal location."
+  },
+  {
+    "Chiave": "action.light.lamp.success",
+    "IDLingua": 1,
+    "Messaggio": "Accendi la lampada con i fiammiferi. La fiamma illumina il luogo con luce calda e costante."
+  },
+  {
+    "Chiave": "action.light.lamp.success",
+    "IDLingua": 2,
+    "Messaggio": "You light the lamp with the matches. The flame illuminates the place with warm, steady light."
+  },
+  {
+    "Chiave": "action.light.lamp.not_have",
+    "IDLingua": 1,
+    "Messaggio": "Non hai la lampada."
+  },
+  {
+    "Chiave": "action.light.lamp.not_have",
+    "IDLingua": 2,
+    "Messaggio": "You don't have the lamp."
+  },
+  {
+    "Chiave": "action.light.lamp.no_matches",
+    "IDLingua": 1,
+    "Messaggio": "Non hai i fiammiferi per accendere la lampada."
+  },
+  {
+    "Chiave": "action.light.lamp.no_matches",
+    "IDLingua": 2,
+    "Messaggio": "You don't have matches to light the lamp."
+  },
+  {
+    "Chiave": "action.light.lamp.already_lit",
+    "IDLingua": 1,
+    "Messaggio": "La lampada è già accesa."
+  },
+  {
+    "Chiave": "action.light.lamp.already_lit",
+    "IDLingua": 2,
+    "Messaggio": "The lamp is already lit."
+  },
+  {
+    "Chiave": "timer.intercept.death",
+    "IDLingua": 1,
+    "Messaggio": "💀 INTERCETTATO DALLE GUARDIE\n\nSei rimasto troppo tempo fermo all'aperto. Una pattuglia ti ha notato e ti intercetta: sei stato catturato come spia!\n\n*** SEI MORTO ***\n\nMotivo: Intercettazione (3+ turni in zona pericolosa)\nSuggerimento: Muoviti velocemente attraverso le zone aperte. Non restare fermo!"
+  },
+  {
+    "Chiave": "timer.intercept.death",
+    "IDLingua": 2,
+    "Messaggio": "💀 INTERCEPTED BY GUARDS\n\nYou stayed too long in the open. A patrol spotted you and intercepts you: you've been captured as a spy!\n\n*** YOU ARE DEAD ***\n\nReason: Interception (3+ turns in danger zone)\nSuggestion: Move quickly through open areas. Don't stay still!"
+  },
+  {
+    "Chiave": "narrative.movement.blocked",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi muoverti. La guardia ti sta osservando attentamente."
+  },
+  {
+    "Chiave": "narrative.movement.blocked",
+    "IDLingua": 2,
+    "Messaggio": "You cannot move. The guard is watching you carefully."
+  },
+  {
+    "Chiave": "narrative.awaiting.continue",
+    "IDLingua": 1,
+    "Messaggio": "Premi BARRA SPAZIO per continuare..."
+  },
+  {
+    "Chiave": "narrative.awaiting.continue",
+    "IDLingua": 2,
+    "Messaggio": "Press SPACEBAR to continue..."
   }
 ]

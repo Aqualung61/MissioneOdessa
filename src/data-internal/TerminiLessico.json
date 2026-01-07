@@ -348,5 +348,10 @@
     "ID_Termine": 71,
     "Concetto": "PORGERE",
     "ID_TipoLessico": 2
+  },
+  {
+    "ID_Termine": 72,
+    "Concetto": "PUNTI",
+    "ID_TipoLessico": 3
   }
 ]

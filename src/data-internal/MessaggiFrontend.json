@@ -328,5 +328,35 @@
     "Chiave": "ui.welcome",
     "IDLingua": 2,
     "Messaggio": "Welcome to Mission Odessa"
+  },
+  {
+    "Chiave": "ui.game.terminal",
+    "IDLingua": 1,
+    "Messaggio": "Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)"
+  },
+  {
+    "Chiave": "ui.game.terminal",
+    "IDLingua": 2,
+    "Messaggio": "You have reached a terminal location. Do you want to restart? (YES to confirm)"
+  },
+  {
+    "Chiave": "ui.game.awaitingRestart",
+    "IDLingua": 1,
+    "Messaggio": "Gioco in attesa di riavvio. Digita SI per riavviare o NO per terminare."
+  },
+  {
+    "Chiave": "ui.game.awaitingRestart",
+    "IDLingua": 2,
+    "Messaggio": "Game awaiting restart. Type YES to restart or NO to quit."
+  },
+  {
+    "Chiave": "ui.game.restart",
+    "IDLingua": 1,
+    "Messaggio": "Vuoi ripartire? (SI/SÌ per confermare)"
+  },
+  {
+    "Chiave": "ui.game.restart",
+    "IDLingua": 2,
+    "Messaggio": "Do you want to restart? (YES to confirm)"
   }
 ]

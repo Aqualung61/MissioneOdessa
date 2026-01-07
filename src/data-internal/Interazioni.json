@@ -537,5 +537,46 @@
     ],
     "ripetibile": true,
     "IDLingua": 1
+  },
+  {
+    "id": "accendi_lampada",
+    "trigger": {
+      "verbo": "ACCENDERE",
+      "oggetto": "LAMPADA"
+    },
+    "condizioni": {
+      "luogo": null,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Lampada"
+        },
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Fiammiferi"
+        },
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "timers.lampadaAccesa"
+        }
+      ]
+    },
+    "risposta": "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente.",
+    "risposta_no_lampada": "Non hai la lampada.",
+    "risposta_no_fiammiferi": "Non hai i fiammiferi per accendere la lampada.",
+    "risposta_gia_eseguita": "La lampada è già accesa.",
+    "effetti": [
+      {
+        "tipo": "SET_FLAG",
+        "flag": "timers.lampadaAccesa",
+        "valore": true
+      },
+      {
+        "tipo": "RESET_COUNTER",
+        "counter": "turn.turnsInDarkness"
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 1
   }
 ]

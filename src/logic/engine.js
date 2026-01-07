@@ -1,6 +1,9 @@
 // Sprint 1: i18n - importa helper per messaggi di sistema
 import { getSystemMessage } from './systemMessages.js';
 
+// Sprint 3.3.5: Sistema Turn Effects (middleware per effetti temporali)
+import { applyAllTurnEffects } from './turnEffects/index.js';
+
 // Stub: entra in luogo terminale (da implementare secondo logica app)
 export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
@@ -59,10 +62,30 @@ let gameState = {
   // === SISTEMA TEMPORIZZAZIONE ===
   timers: {
     movementCounter: 0,              // Contatore globale mosse (per Torcia)
-    torciaDifettosa: true,           // True all'inizio, False se accendi lampada
+    torciaDifettosa: false,          // False all'inizio (funzionante), True dopo 6 turni
     lampadaAccesa: false,            // Stato della lampada
     azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
     ultimoLuogoPericoloso: null      // ID per reset al cambio stanza
+  },
+  
+  // === SISTEMA TURN (v3.0) ===
+  turn: {
+    globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
+    totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
+    turnsInDarkness: 0,          // Turni al buio senza luce
+    turnsInDangerZone: 0,        // Turni in zona pericolosa
+    current: {
+      parseResult: null,         // Comando corrente
+      consumesTurn: false,       // Se questo comando consuma turno
+      location: 1,               // Luogo attuale
+      hasLight: false,           // Se ha fonte di luce attiva
+      inDangerZone: false        // Se in zona pericolosa
+    },
+    previous: {
+      location: 1,               // Luogo precedente
+      hasLight: false,           // Se aveva luce
+      consumedTurn: false        // Se turno precedente fu consumato
+    }
   },
   
   // === SISTEMA VITTORIA ===
@@ -117,10 +140,30 @@ export function resetGameState(idLingua = 1) {
     // === SISTEMA TEMPORIZZAZIONE ===
     timers: {
       movementCounter: 0,
-      torciaDifettosa: true,
+      torciaDifettosa: false,
       lampadaAccesa: false,
       azioniInLuogoPericoloso: 0,
       ultimoLuogoPericoloso: null
+    },
+    
+    // === SISTEMA TURN (v3.0) ===
+    turn: {
+      globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
+      totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
+      turnsInDarkness: 0,          // Turni al buio senza luce
+      turnsInDangerZone: 0,        // Turni in zona pericolosa
+      current: {
+        parseResult: null,         // Comando corrente
+        consumesTurn: false,       // Se questo comando consuma turno
+        location: 1,               // Luogo attuale
+        hasLight: false,           // Se ha fonte di luce attiva
+        inDangerZone: false        // Se in zona pericolosa
+      },
+      previous: {
+        location: 1,               // Luogo precedente
+        hasLight: false,           // Se aveva luce
+        consumedTurn: false        // Se turno precedente fu consumato
+      }
     },
     
     // === SISTEMA VITTORIA ===
@@ -140,6 +183,222 @@ export function resetGameState(idLingua = 1) {
     console.log('Caricamento Oggetti in gameState: No');
     gameState.Oggetti = [];
   }
+}
+
+// === HELPER FUNCTIONS PER SISTEMA TURN (v3.0) ===
+
+/**
+ * Imposta una proprietà nested in un oggetto usando un percorso (es. "timers.lampadaAccesa").
+ * @param {Object} obj - Oggetto target (es. gameState)
+ * @param {string} path - Percorso separato da punti (es. "turn.turnsInDarkness")
+ * @param {*} value - Valore da impostare
+ */
+function setNestedProperty(obj, path, value) {
+  const keys = path.split('.');
+  let current = obj;
+  
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (!current[key] || typeof current[key] !== 'object') {
+      console.warn(`[setNestedProperty] Percorso "${path}" non valido: "${key}" non esiste o non è un oggetto`);
+      return;
+    }
+    current = current[key];
+  }
+  
+  const lastKey = keys[keys.length - 1];
+  current[lastKey] = value;
+}
+
+/**
+ * Determina se un comando consuma un turno temporale.
+ * Solo i comandi SYSTEM (informativi) non consumano turno.
+ * NAVIGATION e ACTION consumano turno.
+ * @param {Object} parseResult - Risultato del parsing del comando
+ * @returns {boolean} - true se il comando consuma turno
+ */
+export function shouldConsumeTurn(parseResult) {
+  if (!parseResult || !parseResult.IsValid) {
+    return false;
+  }
+
+  // Solo i comandi SYSTEM non consumano turno
+  if (parseResult.CommandType === 'SYSTEM') {
+    return false;
+  }
+
+  // NAVIGATION e ACTION consumano turno
+  return true;
+}
+
+/**
+ * Verifica se il giocatore ha una fonte di luce attiva.
+ * Controlla sia la torcia (Oggetto ID=2) che la lampada (ID=9).
+ * @returns {boolean} - true se ha luce attiva
+ */
+export function hasFonteLuceAttiva() {
+  // Verifica torcia elettrica (ID=37) nell'inventario e non spenta
+  const torcia = gameState.Oggetti.find(o => o.ID === 37);
+  if (torcia && torcia.IDLuogo === 0 && !gameState.timers.torciaDifettosa) {
+    return true;
+  }
+
+  // Verifica lampada (ID=27) accesa
+  if (gameState.timers.lampadaAccesa) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Crea uno snapshot immutabile del mondo per il turno corrente.
+ * Salva lo stato precedente e aggiorna i contatori globali.
+ * @param {Object} parseResult - Risultato del parsing del comando
+ */
+export function prepareTurnContext(parseResult) {
+  // Luoghi pericolosi (zona intercettazione): 51, 52, 53, 55, 56, 58
+  const dangerZones = [51, 52, 53, 55, 56, 58];
+  
+  // Salva stato precedente (shallow copy di current, con fallback per prima esecuzione)
+  const prev = gameState.turn.current || {};
+  gameState.turn.previous = {
+    location: prev.location || gameState.currentLocationId,
+    hasLight: prev.hasLight || false,
+    consumedTurn: prev.consumesTurn || false
+  };
+
+  // Determina proprietà turno corrente
+  const consumesTurn = shouldConsumeTurn(parseResult);
+  const hasLight = hasFonteLuceAttiva();
+  const inDangerZone = dangerZones.includes(gameState.currentLocationId);
+
+  // Aggiorna stato corrente
+  gameState.turn.current = {
+    parseResult: parseResult,
+    consumesTurn: consumesTurn,
+    location: gameState.currentLocationId,
+    hasLight: hasLight,
+    inDangerZone: inDangerZone
+  };
+
+  // Incrementa contatore globale (sempre, anche per comandi non-consuming)
+  gameState.turn.globalTurnNumber += 1;
+
+  // Incrementa contatore turni consumati (solo se shouldConsumeTurn)
+  if (consumesTurn) {
+    gameState.turn.totalTurnsConsumed += 1;
+  }
+}
+
+/**
+ * Valida condizioni pre-esecuzione su snapshot statico.
+ * Verifica intercettazione, movement block, narrative state.
+ * 
+ * NOTA: awaitingRestart NON è verificato qui perché gestito direttamente
+ * in engineRoutes.js che bypassa il parser quando awaitingRestart = true.
+ * 
+ * @param {Object} parseResult - Risultato del parsing del comando
+ * @returns {Object|null} - Oggetto risultato se bloccato, null se ok
+ */
+export function runPreExecutionChecks(parseResult) {
+  const { current } = gameState.turn;
+  
+  // Check intercettazione: 3+ turni in danger zone → GAME OVER
+  if (current.inDangerZone && current.consumesTurn) {
+    if (gameState.turn.turnsInDangerZone >= 3) {
+      gameState.ended = true;
+      return {
+        accepted: false,
+        resultType: 'GAME_OVER',
+        message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
+        deathReason: 'INTERCETTAZIONE',
+        effects: []
+      };
+    }
+  }
+  
+  // Check movement block: guardia blocca movimento (Sprint 3.4.B)
+  if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: getSystemMessage('narrative.movement.blocked', gameState.currentLingua),
+      effects: []
+    };
+  }
+  
+  // Check awaiting continue: narrativa richiede BARRA SPAZIO (Sprint 3.4.A)
+  if (gameState.awaitingContinue) {
+    // Delega a processContinueNarrative (implementato in Sprint 3.4)
+    // Per ora: blocca comandi diversi da SPACEBAR
+    const verbConcept = parseResult.VerbConcept || parseResult.CanonicalVerb || '';
+    if (verbConcept !== 'CONTINUA') {
+      return {
+        accepted: false,
+        resultType: 'ERROR',
+        message: getSystemMessage('narrative.awaiting.continue', gameState.currentLingua),
+        effects: []
+      };
+    }
+  }
+  
+  return null; // Nessun blocco, esecuzione può procedere
+}
+
+// === POST-EXECUTION EFFECTS (v3.0) ===
+
+/**
+ * Applica effetti temporali dopo l'esecuzione del comando.
+ * Delega l'applicazione degli effetti al sistema turnEffects (middleware pattern).
+ * 
+ * @param {Object} result - Risultato comando da executeCommandLegacy
+ * @param {Object} parseResult - Comando parsato originale
+ * @returns {Object} - Risultato modificato con eventuali effetti
+ */
+export function applyTurnEffects(result, parseResult) {
+  const { current } = gameState.turn;
+  
+  // === RICALCOLO hasLight dopo esecuzione comando ===
+  // Se il comando ha modificato lo stato dell'illuminazione (es. ACCENDI LAMPADA),
+  // dobbiamo ricalcolare hasLight PRIMA di applicare gli effetti
+  const updatedHasLight = hasFonteLuceAttiva();
+  gameState.turn.current.hasLight = updatedHasLight;
+  
+  // === APPLICA EFFETTI TEMPORALI REGISTRATI (Sprint 3.3.5) ===
+  // Delega al sistema middleware: ogni effetto modifica gameState e result
+  applyAllTurnEffects(gameState, result, parseResult);
+  
+  // TODO Sprint 3.3.5.B: Sistema Buio (morte dopo 3 turni senza luce)
+  // TODO Sprint 3.3.5.C: Sistema Intercettazione (incremento/reset counter)
+  // TODO Sprint 3.3.5.D: Assegnazione Misteri Automatici
+  
+  // === DEBUG: Monitor stato turni ===
+  // Logica incremento:
+  // - globalTurnNumber: incrementato SEMPRE (anche per comandi SYSTEM)
+  // - totalTurnsConsumed: incrementato SOLO per comandi consuming (NAVIGATION, ACTION)
+  // Logica torcia:
+  // - torciaDifettosa = true se: totalTurnsConsumed >= 6 OR torcia.IDLuogo != 0
+  try {
+    console.log('\n=== TURN STATE ===');
+    console.log('CommandType:', current.parseResult.CommandType);
+    console.log('consumesTurn:', current.consumesTurn);
+    console.log('globalTurnNumber:', gameState.turn.globalTurnNumber, '(sempre incrementato)');
+    console.log('totalTurnsConsumed:', gameState.turn.totalTurnsConsumed, '(solo comandi consuming)');
+    console.log('turnsInDarkness:', gameState.turn.turnsInDarkness, '(countdown buio)');
+    console.log('hasLight:', current.hasLight);
+    console.log('torciaDifettosa:', gameState.timers.torciaDifettosa);
+    console.log('lampadaAccesa:', gameState.timers.lampadaAccesa);
+    const torcia = gameState.Oggetti.find(o => o.ID === 37);
+    const lampada = gameState.Oggetti.find(o => o.ID === 27);
+    console.log('torcia.IDLuogo:', torcia ? torcia.IDLuogo : 'N/A', '(0=inventario)');
+    console.log('lampada.IDLuogo:', lampada ? lampada.IDLuogo : 'N/A', '(0=inventario)');
+    console.log('==================\n');
+  } catch (err) {
+    console.error('ERRORE in applyTurnEffects log:', err);
+  }
+  
+  return result;
 }
 
 // Funzione helper per capitalizzare comandi
@@ -224,9 +483,9 @@ export function generaDescrizioneLuogoConOggetti(idLuogo) {
   
   let messaggio = `<span style="color: black;">${luogo.Descrizione}</span>\n`;
   
-  // Aggiungi lista oggetti presenti (esclusi contenuti: Attivo=2)
+  // Aggiungi lista oggetti presenti (include scenici spostabili: Attivo=2)
   const oggettiPresenti = gameState.Oggetti.filter(o => 
-    o.IDLuogo === idLuogo && (o.Attivo === 1 || o.Attivo >= 3)
+    o.IDLuogo === idLuogo && o.Attivo >= 1
   );
   
   if (oggettiPresenti.length > 0) {
@@ -524,6 +783,12 @@ function applicaEffetti(effetti, luogoCorrente) {
       // Gestione sequenze (es. combinazione cassaforte)
       // Questo effetto viene gestito direttamente in cercaEseguiInterazione
       // perché richiede accesso alla risposta e controllo flusso
+    } else if (effetto.tipo === 'SET_FLAG') {
+      // Imposta un flag in gameState usando percorso nested (es. "timers.lampadaAccesa")
+      setNestedProperty(gameState, effetto.flag, effetto.valore);
+    } else if (effetto.tipo === 'RESET_COUNTER') {
+      // Resetta un counter in gameState a 0 (es. "turn.turnsInDarkness")
+      setNestedProperty(gameState, effetto.counter, 0);
     }
     
     // === SISTEMA PUNTEGGIO MISTERI ===
@@ -660,7 +925,11 @@ function cercaEseguiInterazione(verb, noun) {
   return null;
 }
 
-export function executeCommand(parseResult) {
+// === LEGACY COMMAND EXECUTION (Preserved for backward compatibility) ===
+// This function contains the original 173 LOC command execution logic.
+// It is called by the new executeCommand wrapper which adds turn-based pipeline.
+
+function executeCommandLegacy(parseResult) {
   if (!parseResult) {
     return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
   }
@@ -715,12 +984,12 @@ export function executeCommand(parseResult) {
             const interazioni = gameState.punteggio.interazioniPunteggio.size;
             const misteri = gameState.punteggio.misteriRisolti.size;
             
-            // Ranghi basati su punteggio massimo 132 (localizzati)
+            // Ranghi basati su punteggio massimo 134 (localizzati)
             let rangoKey = 'engine.rank.novice';
             if (totale >= 100) rangoKey = 'engine.rank.master';
             else if (totale >= 67) rangoKey = 'engine.rank.investigator';
             else if (totale >= 34) rangoKey = 'engine.rank.explorer';
-            if (totale === 132) rangoKey = 'engine.rank.perfectionist';
+            if (totale === 134) rangoKey = 'engine.rank.perfectionist';
             
             const rango = getSystemMessage(rangoKey, gameState.currentLingua);
             const breakdown = getSystemMessage('engine.score.breakdown', gameState.currentLingua, [
@@ -854,4 +1123,39 @@ export function executeCommand(parseResult) {
     default:
       return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.unknownCommandType', gameState.currentLingua) };
   }
+}
+// === NEW TURN-BASED PIPELINE WRAPPER (v3.0) ===
+// This wrapper adds turn-based mechanics around the legacy command execution.
+// Pipeline phases: Snapshot → Pre-checks → Core (legacy) → Post-effects
+// Sprint 3.3.5.A: PARTIAL activation (prepareTurnContext + applyTurnEffects TORCH only)
+
+export function executeCommand(parseResult) {
+  // Phase 0: Validation (preserved from original)
+  if (!parseResult) {
+    return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
+  }
+  if (parseResult.IsValid !== true) {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: `Parse non valido: ${parseResult.Error || 'UNKNOWN'}`,
+    };
+  }
+
+  // Phase 1: Create turn snapshot (ACTIVE - Sprint 3.3.2)
+  prepareTurnContext(parseResult);
+
+  // Phase 2: Run pre-execution checks (ACTIVE - Sprint 3.3.5.B: awaitingRestart)
+  const preCheck = runPreExecutionChecks(parseResult);
+  if (preCheck) return preCheck;
+
+  // Phase 3: Execute core command logic (ACTIVE - unchanged legacy)
+  const result = executeCommandLegacy(parseResult);
+
+  // Phase 4: Apply turn effects (ACTIVE - Sprint 3.3.5.A: torch, 3.3.5.B: darkness)
+  if (result.accepted && shouldConsumeTurn(parseResult)) {
+    return applyTurnEffects(result, parseResult);
+  }
+
+  return result;
 }

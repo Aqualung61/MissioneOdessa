@@ -112,6 +112,36 @@ function updateDirectionUI(cur) {
   });
 }
 
+// === HELPER FUNCTIONS ===
+
+/**
+ * Mostra messaggio di game over e blocca ulteriori input
+ * @param {string} message - Messaggio da mostrare (opzionale, usa i18n se non fornito)
+ */
+function displayGameOverMessage(message) {
+  awaitingRestart = true;
+  const feed = document.getElementById('placeFeed');
+  if (feed) {
+    // Messaggio principale (morte specifica)
+    const gameOverMsg = document.createElement('div');
+    gameOverMsg.className = 'feed-msg system';
+    gameOverMsg.style.fontWeight = 'bold';
+    gameOverMsg.style.color = '#0066cc';
+    gameOverMsg.textContent = message || (window.i18n ? window.i18n.msg('ui.game.terminal') : 'Hai raggiunto un luogo terminale.');
+    feed.appendChild(gameOverMsg);
+    
+    // Domanda riavvio (sempre aggiunta)
+    const restartMsg = document.createElement('div');
+    restartMsg.className = 'feed-msg system';
+    restartMsg.style.fontWeight = 'bold';
+    restartMsg.style.color = '#0066cc';
+    restartMsg.textContent = window.i18n ? window.i18n.msg('ui.game.restart') : 'Vuoi ripartire? (SI/SÌ per confermare)';
+    feed.appendChild(restartMsg);
+    
+    feed.scrollTop = feed.scrollHeight;
+  }
+}
+
 // Funzione di gestione click direzione
 function handleDirectionClick(dir) {
   if (awaitingRestart) return;
@@ -172,8 +202,12 @@ function handleDirectionClick(dir) {
   }
   current = next;
   
+  // Variabili per coordinare timing tra direzioni e set-location
+  let pendingGameOver = null;
+  let direzioniComplete = false;
+  
   // Aggiorna direzioni dinamiche del nuovo luogo prima di mostrarlo
-  console.log(`Navigazione: aggiornamento direzioni per luogo ${current.ID}`);
+  console.log(`Navigazione stella: aggiornamento direzioni per luogo ${current.ID}`);
   fetch(basePath + `api/engine/direzioni/${current.ID}`)
     .then(res => res.json())
     .then(direzioniResult => {
@@ -188,22 +222,80 @@ function handleDirectionClick(dir) {
         }
         console.log(`Direzioni aggiornate. current.Sud = ${current.Sud}`);
       }
+      
+      // Mostra messaggi turn system se presenti
+      if (direzioniResult.turnMessages && direzioniResult.turnMessages.length > 0) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          direzioniResult.turnMessages.forEach(msgText => {
+            const msg = document.createElement('div');
+            msg.className = 'feed-msg system';
+            msg.innerHTML = msgText;
+            feed.appendChild(msg);
+          });
+          feed.scrollTop = feed.scrollHeight;
+        }
+      }
+      
       showCurrent();
+      
+      // Segna che direzioni sono complete
+      direzioniComplete = true;
+      
+      // Se c'è un gameOver pending, mostralo ORA dopo showCurrent()
+      if (pendingGameOver) {
+        console.log('[CLIENT] Mostrando game over DOPO showCurrent() - stella');
+        displayGameOverMessage(pendingGameOver.message);
+      }
     })
     .catch(err => {
       console.error('Errore aggiornamento direzioni navigazione:', err);
       showCurrent(); // Mostra comunque il luogo
+      direzioniComplete = true;
     });
   
-  // Aggiorna luogo corrente nel server
+  // Notifica server del cambio location + trigger turn system
   fetch(basePath + 'api/engine/set-location', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ locationId: current.ID })
+    body: JSON.stringify({ locationId: current.ID, consumeTurn: true })
   })
   .then(response => {
     if (!response.ok) {
       console.error('set-location failed:', response.status);
+    }
+    return response.json();
+  })
+  .then(result => {
+    console.log('[CLIENT] Stella set-location result:', result);
+    
+    // Check game over - ma NON mostrarlo subito, aspetta che showCurrent() sia stato chiamato
+    if (result.gameOver === true || !result.ok) {
+      if (result.gameOver) {
+        console.log('[CLIENT] GAME OVER rilevato in stella set-location - memorizzato per dopo showCurrent()');
+        pendingGameOver = result;
+        
+        // Se direzioni sono già complete, mostra subito
+        if (direzioniComplete) {
+          console.log('[CLIENT] Direzioni già complete (stella), mostrando game over subito');
+          displayGameOverMessage(result.message);
+        }
+      }
+      return; // Non processare altri messaggi
+    }
+    
+    // Mostra eventuali messaggi dal turn system
+    if (result.ok && result.turnMessages && result.turnMessages.length > 0) {
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        result.turnMessages.forEach(msgText => {
+          const msg = document.createElement('div');
+          msg.className = 'feed-msg system';
+          msg.innerHTML = msgText;
+          feed.appendChild(msg);
+        });
+        feed.scrollTop = feed.scrollHeight;
+      }
     }
   })
   .catch(err => console.error('Errore set-location:', err));
@@ -474,11 +566,26 @@ function updateGameStats() {
         if (visitedEl && typeof data.visitedPlaces === 'number') {
           visitedEl.textContent = `Luoghi visitati: ${data.visitedPlaces}`;
         }
+        // Aggiorna interazioni
+        const interactionsEl = document.getElementById('interactionsCount');
+        if (interactionsEl && typeof data.interactions === 'number') {
+          interactionsEl.textContent = `Interazioni: ${data.interactions}`;
+        }
+        // Aggiorna misteri
+        const mysteriesEl = document.getElementById('mysteriesCount');
+        if (mysteriesEl && typeof data.mysteries === 'number') {
+          mysteriesEl.textContent = `Misteri risolti: ${data.mysteries}`;
+        }
         // Aggiorna punteggio
         const scoreEl = document.getElementById('scoreCount');
         if (scoreEl && typeof data.score === 'number') {
           currentScore = data.score;
-          scoreEl.textContent = `Punteggio: ${currentScore}`;
+          scoreEl.textContent = `Punteggio: ${currentScore}/134`;
+        }
+        // Aggiorna rango
+        const rankEl = document.getElementById('rankCount');
+        if (rankEl && data.rank) {
+          rankEl.textContent = `Livello: ${data.rank}`;
         }
       }
     })
@@ -554,14 +661,9 @@ function showCurrent() {
       })
       .catch(err => console.error('Errore nel caricamento oggetti:', err));
 
-    if (current.Terminale === -1) {
-      const endMsg = document.createElement('div');
-      endMsg.className = 'feed-msg system';
-      endMsg.innerHTML = '<b>Hai raggiunto un luogo terminale. Vuoi ripartire? (SI/SÌ per confermare)</b>';
-      placeFeed.appendChild(endMsg);
-      placeFeed.scrollTop = placeFeed.scrollHeight;
-      awaitingRestart = true;
-    }
+    // RIMOSSO: Check Terminale === -1 lato client
+    // Ora gestito uniformemente da gameOverEffect.js lato server
+    // Il client reagisce solo a result.gameOver dalla risposta API
   }
 }
 inputForm.addEventListener('submit', async function(e) {
@@ -666,6 +768,21 @@ inputForm.addEventListener('submit', async function(e) {
 
     // Se NAVIGATION valido, gestisci localmente senza API
     if (level0Result.IsValid && level0Result.CommandType === 'NAVIGATION') {
+      console.log('Entrato in NAVIGATION livello0');
+      
+      // CHECK: blocca comandi se in attesa riavvio
+      if (awaitingRestart) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const msg = document.createElement('div');
+          msg.className = 'feed-msg system';
+          msg.textContent = window.i18n ? window.i18n.msg('ui.game.awaitingRestart') : 'Gioco in attesa di riavvio. Digita SI per riavviare o NO per terminare.';
+          feed.appendChild(msg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+        return;
+      }
+      
       // Determina il field basato su VerbConcept
       let field = null;
       const concept = level0Result.VerbConcept;
@@ -700,6 +817,49 @@ inputForm.addEventListener('submit', async function(e) {
         }
         return;
       }
+      
+      // === GESTIONE DESTINAZIONE TERMINALE (-1) ===
+      if (nextId === -1) {
+        console.log('[CLIENT] Livello0 NAVIGATION - destinazione terminale (-1), fetch al server');
+        
+        // Fai fetch al server con locationId ATTUALE per triggerare game over
+        fetch(basePath + 'api/engine/set-location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locationId: current.ID, consumeTurn: true })
+        })
+        .then(response => {
+          console.log('[CLIENT] Response terminale livello0, status:', response.status);
+          if (!response.ok) {
+            console.error('[CLIENT] set-location failed:', response.status);
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log('[CLIENT] Livello0 terminale - risposta server:', result);
+          
+          // Il server DEVE restituire gameOver per destinazioni -1
+          if (result && result.gameOver === true) {
+            console.log('[CLIENT] GAME OVER rilevato da destinazione terminale (livello0)');
+            displayGameOverMessage(result.message);
+            console.log('[CLIENT] Game over message appended (livello0):', result.message);
+          }
+        })
+        .catch(err => {
+          console.error('[CLIENT] ERRORE fetch destinazione terminale (livello0):', err);
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const errMsg = document.createElement('div');
+            errMsg.className = 'feed-msg error';
+            errMsg.textContent = 'Errore comunicazione: ' + err.message;
+            feed.appendChild(errMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+        });
+        return; // Esce dal handler - non prosegue con il flusso normale
+      }
+      
+      // === FLUSSO NORMALE per destinazioni valide ===
       const next = luoghi.find(l => l.ID === nextId);
       if (!next) {
         const feed = document.getElementById('placeFeed');
@@ -713,6 +873,10 @@ inputForm.addEventListener('submit', async function(e) {
         return;
       }
       current = next;
+      
+      // Variabile per coordinare timing tra direzioni e set-location
+      let pendingGameOver = null;
+      let direzioniComplete = false;
       
       // Aggiorna direzioni dinamiche del nuovo luogo prima di mostrarlo
       console.log(`Livello0 NAVIGATION: aggiornamento direzioni per luogo ${current.ID}`);
@@ -731,21 +895,76 @@ inputForm.addEventListener('submit', async function(e) {
             console.log(`Direzioni aggiornate. current.Sud = ${current.Sud}, current.Nord = ${current.Nord}`);
           }
           showCurrent();
+          
+          // Segna che direzioni sono complete
+          direzioniComplete = true;
+          
+          // Se c'è un gameOver pending, mostralo ORA dopo showCurrent()
+          if (pendingGameOver) {
+            console.log('[CLIENT] Mostrando game over DOPO showCurrent()');
+            displayGameOverMessage(pendingGameOver.message);
+          }
+          
+          // Gestisci messaggi turn system DOPO showCurrent (altrimenti vengono cancellati)
+          if (direzioniResult.messages && direzioniResult.messages.length > 0) {
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              direzioniResult.messages.forEach(msgText => {
+                const msg = document.createElement('div');
+                msg.className = 'feed-msg system';
+                msg.textContent = msgText;
+                feed.appendChild(msg);
+              });
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
         })
         .catch(err => {
           console.error('Errore aggiornamento direzioni navigazione livello0:', err);
           showCurrent(); // Mostra comunque il luogo
         });
       
-      // Aggiorna luogo corrente nel server
+      // Aggiorna luogo corrente nel server + trigger turn system
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId: current.ID })
+        body: JSON.stringify({ locationId: current.ID, consumeTurn: true })
       })
       .then(response => {
+        console.log('[CLIENT] Livello0 set-location response status:', response.status);
         if (!response.ok) {
           console.error('set-location failed:', response.status);
+        }
+        return response.json();
+      })
+      .then(result => {
+        console.log('[CLIENT] Livello0 set-location result:', result);
+        
+        // CHECK GAME OVER - ma NON mostrarlo subito, aspetta che showCurrent() sia stato chiamato
+        if (result && result.gameOver === true) {
+          console.log('[CLIENT] GAME OVER rilevato in livello0 set-location - memorizzato per dopo showCurrent()');
+          pendingGameOver = result;
+          
+          // Se direzioni sono già complete, mostra subito
+          if (direzioniComplete) {
+            console.log('[CLIENT] Direzioni già complete, mostrando game over subito');
+            displayGameOverMessage(result.message);
+          }
+          return; // Non processare turn messages se è game over
+        }
+        
+        // Mostra eventuali messaggi dal turn system
+        if (result.ok && result.turnMessages && result.turnMessages.length > 0) {
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            result.turnMessages.forEach(msgText => {
+              const msg = document.createElement('div');
+              msg.className = 'feed-msg system';
+              msg.innerHTML = msgText;
+              feed.appendChild(msg);
+            });
+            feed.scrollTop = feed.scrollHeight;
+          }
         }
       })
       .catch(err => console.error('Errore set-location:', err));
@@ -821,6 +1040,65 @@ inputForm.addEventListener('submit', async function(e) {
         }
         return;
       }
+      
+      // Se nextId === -1 (luogo terminale), il server gestirà il game over
+      // Non cercare il luogo localmente, vai diretto al fetch
+      if (nextId === -1) {
+        console.log('[CLIENT] NAVIGATION testuale - destinazione terminale (-1), fetch al server');
+        
+        // Fai fetch SENZA cambiare current localmente
+        fetch(basePath + 'api/engine/set-location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locationId: current.ID, consumeTurn: true })
+        })
+        .then(response => {
+          console.log('[CLIENT] Response ricevuto (terminale), status:', response.status, 'ok:', response.ok);
+          if (!response.ok) {
+            console.error('[CLIENT] set-location failed:', response.status);
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log('[CLIENT] NAVIGATION testuale (terminale) - risposta server:', result);
+          
+          // Il server DEVE restituire gameOver per destinazioni -1
+          if (result && result.gameOver === true) {
+            console.log('[CLIENT] GAME OVER rilevato da destinazione terminale');
+            awaitingRestart = true;
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              const gameOverMsg = document.createElement('div');
+              gameOverMsg.className = 'feed-msg system';
+              gameOverMsg.style.fontWeight = 'bold';
+              gameOverMsg.style.color = '#d60000';
+              gameOverMsg.textContent = result.message || 'Game Over';
+              feed.appendChild(gameOverMsg);
+              console.log('[CLIENT] Game over message appended:', result.message);
+              
+              const restartMsg = document.createElement('div');
+              restartMsg.className = 'feed-msg system';
+              restartMsg.innerHTML = '<b>Vuoi ripartire? (SI/SÌ per confermare)</b>';
+              feed.appendChild(restartMsg);
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
+        })
+        .catch(err => {
+          console.error('[CLIENT] ERRORE fetch destinazione terminale:', err);
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const errMsg = document.createElement('div');
+            errMsg.className = 'feed-msg error';
+            errMsg.textContent = 'Errore comunicazione: ' + err.message;
+            feed.appendChild(errMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+        });
+        return; // Esce dal handler
+      }
+      
+      // Caso normale: nextId è un ID valido
       const next = luoghi.find(l => l.ID === nextId);
       if (!next) {
         const feed = document.getElementById('placeFeed');
@@ -834,20 +1112,65 @@ inputForm.addEventListener('submit', async function(e) {
         return;
       }
       current = next;
-      showCurrent();
       
-      // Aggiorna luogo corrente nel server
+      console.log('[CLIENT] NAVIGATION testuale - inizio fetch a luogo ID:', current.ID);
+      
+      // NON chiamare showCurrent() ancora - aspetta la risposta del server per sapere se è game over
+      // Aggiorna luogo corrente nel server CON turn system
       fetch(basePath + 'api/engine/set-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId: current.ID })
+        body: JSON.stringify({ locationId: current.ID, consumeTurn: true })
       })
       .then(response => {
+        console.log('[CLIENT] Response ricevuto, status:', response.status, 'ok:', response.ok);
         if (!response.ok) {
-          console.error('set-location failed:', response.status);
+          console.error('[CLIENT] set-location failed:', response.status);
+        }
+        return response.json();
+      })
+      .then(result => {
+        console.log('[CLIENT] NAVIGATION testuale - risposta server:', result);
+        
+        // Check game over da NAVIGATION testuale (darkness, terminale, ecc.)
+        if (result && (result.gameOver === true || !result.ok)) {
+          if (result.gameOver) {
+            console.log('[CLIENT] GAME OVER rilevato - awaitingRestart=true');
+            displayGameOverMessage(result.message);
+            console.log('[CLIENT] Game over message appended:', result.message);
+            // NON chiamare showCurrent() - è game over
+            return; // Esce senza mostrare il luogo
+          }
+        }
+        
+        // Se NON è game over, mostra il nuovo luogo
+        showCurrent();
+        
+        // Mostra eventuali turn messages (torcia, ecc.)
+        if (result && result.turnMessages && result.turnMessages.length > 0) {
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            result.turnMessages.forEach(msg => {
+              const msgDiv = document.createElement('div');
+              msgDiv.className = 'feed-msg system';
+              msgDiv.innerHTML = msg;
+              feed.appendChild(msgDiv);
+            });
+            feed.scrollTop = feed.scrollHeight;
+          }
         }
       })
-      .catch(err => console.error('Errore set-location:', err));
+      .catch(err => {
+        console.error('[CLIENT] ERRORE fetch set-location:', err);
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const errMsg = document.createElement('div');
+          errMsg.className = 'feed-msg error';
+          errMsg.textContent = 'Errore comunicazione: ' + err.message;
+          feed.appendChild(errMsg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+      });
     } else if (parseResult.CommandType === 'SYSTEM') {
       // Esegui comando SYSTEM via API engine
       fetch(basePath + 'api/engine/execute', {
@@ -859,6 +1182,13 @@ inputForm.addEventListener('submit', async function(e) {
       .then(executeResult => {
         if (executeResult.ok && executeResult.engine) {
           const engine = executeResult.engine;
+          
+          // Gestione GAME OVER unificata (darkness, terminale, intercettazione, ecc.)
+          if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
+            displayGameOverMessage(engine.message);
+            return; // Non eseguire altre logiche
+          }
+          
           if (engine.resultType === 'CONFIRM_END') {
             awaitingConfirmEnd = true;
           }
@@ -1034,6 +1364,13 @@ inputForm.addEventListener('submit', async function(e) {
       .then(executeResult => {
         if (executeResult.ok && executeResult.engine) {
           const engine = executeResult.engine;
+          
+          // Gestione GAME OVER unificata (darkness, terminale, intercettazione, ecc.)
+          if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
+            displayGameOverMessage(engine.message);
+            return; // Non eseguire altre logiche
+          }
+          
           if (engine.message) {
             // Mostra il messaggio nel feed
             const feed = document.getElementById('placeFeed');

@@ -1,9 +1,10 @@
 # Specifica Tecnica Unificata - Missione Odessa
 
-**Versione:** 2.0  
-**Data:** 01 gennaio 2026  
-**Status:** Approved for Implementation - Integrata  
-**Riferimenti:** `sistema-punteggio.md`, `sistema-temporizzazione.md`, `sistema-vittoria.md`
+**Versione:** 3.0 (Turn-Based Architecture)  
+**Data:** 02 gennaio 2026  
+**Status:** Revised - Ready for Implementation  
+**Riferimenti:** `sistema-punteggio.md`, `sistema-temporizzazione.md`, `sistema-vittoria.md`  
+**Changelog v3.0:** Adottata architettura turn-based con pipeline Pre/Core/Post per eliminare duplicazione codice e migliorare testabilità
 
 ---
 
@@ -16,12 +17,12 @@ Questo capitolo descrive le logiche funzionali, l'esperienza utente e le regole 
 L'obiettivo è incentivare l'esplorazione completa e premiare la risoluzione di enigmi, senza imporre grinding.
 
 ### 1.1.1 Categorie di Punteggio
-Il punteggio totale (massimo 132 punti) è la somma di quattro categorie:
+Il punteggio totale (massimo 134 punti) è la somma di quattro categorie:
 
 | Categoria | Valore | Condizione di Assegnazione | Note |
 |-----------|--------|----------------------------|------|
 | **Esplorazione** | 1 pto | Primo ingresso in un nuovo luogo | Totale 56 luoghi. Backtracking non premia. |
-| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 14 interazioni. Anche ripetibili contano alla prima esecuzione. |
+| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 15 interazioni. Anche ripetibili contano alla prima esecuzione. |
 | **Misteri** | 3 pti | Effetti strutturali automatici (oggetto visibile, direzione sbloccata) | Totale 14 misteri + 1 cassaforte. Assegnati automaticamente al verificarsi dell'effetto. |
 | **Sequenza Cassaforte** | 2 pti | Completamento pattern D-S-S-D-S (5 rotazioni) | Award al completamento della sequenza completa. |
 | **Completamento** | 4 pti | Raggiungimento del finale di gioco | Assegnato alla vittoria. |
@@ -39,10 +40,10 @@ Il giocatore ottiene un rango in base al punteggio totale accumulato:
 | 0-33 | Novizio | Hai appena iniziato |
 | 34-66 | Esploratore | Stai imparando le basi |
 | 67-99 | Investigatore | Buone capacità investigative |
-| 100-131 | Maestro | Ottima esplorazione |
-| 132 | Perfezionista | Completamento al 100%! |
+| 100-133 | Maestro | Ottima esplorazione |
+| 134 | Perfezionista | Completamento al 100%! |
 
-**Punteggio massimo:** 132 punti (56 luoghi + 28 interazioni + 42 misteri + 2 sequenza + 4 completamento)
+**Punteggio massimo:** 134 punti (56 luoghi + 30 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 
 ### 1.1.4 Definizione Misteri
 I **misteri** sono effetti strutturali automatici che premiano la prima volta che si verificano eventi significativi:
@@ -89,8 +90,11 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 - **Trigger:** Torcia spenta E lampada NON accesa in inventario.
 - **Countdown:** Il giocatore ha **3 turni** per trovare una fonte di luce.
 - **Reset automatico:** Se il giocatore accende la lampada entro i 3 turni, il countdown si resetta.
-- **Comandi che incrementano il countdown:** NAVIGATION (NORD, SUD...), ACTION (PRENDI, LASCIA, ESAMINA...), EXAMINE
-- **Comandi di sistema esclusi (NON incrementano countdown):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+- **Comandi che incrementano il countdown:** Tutti i comandi con `CommandType === 'NAVIGATION'` o `CommandType === 'ACTION'`
+  - Include: spostamenti (NORD, SUD, EST, OVEST...), azioni (PRENDI, LASCIA, ESAMINA, USA...)
+- **Comandi di sistema esclusi (NON incrementano countdown):** Tutti i comandi con `CommandType === 'SYSTEM'`
+  - Include: INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+  - Determinazione automatica dal parser in base al verbo, non lista hardcoded
 - **Nessun warning:** Non ci sono messaggi di avviso durante i 3 turni.
 
 #### Fase 3: Morte per Buio
@@ -98,18 +102,26 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 - **Messaggio:** "Muoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!"
 - **Gestione:** Identica a luogo terminale (game over definitivo).
 
-#### Comando ACCENDI LAMPADA
-- **Sintassi:** `ACCENDI LAMPADA`, `ILLUMINA LAMPADA`, `USA LAMPADA`
+#### Interazione ACCENDI LAMPADA
+- **Pattern:** Interazione data-driven gestita tramite `Interazioni.json` (ID: `accendi_lampada`)
+- **Trigger:** Comando `ACCENDI LAMPADA`, `ILLUMINA LAMPADA` riconosciuto dal parser e indirizzato a `cercaEseguiInterazione()`
 - **Prerequisiti:**
   - Lampada in inventario (Oggetto ID=27, trovabile al Luogo 6)
   - Fiammiferi in inventario (Oggetto ID=36)
-- **Effetto:** Lampada diventa fonte di luce principale, timer torcia ignorato, countdown buio resettato.
-- **Messaggio successo:** "Accendi la lampada. Una luce calda e stabile illumina l'ambiente."
+  - Lampada NON già accesa (`gameState.timers.lampadaAccesa === false`)
+- **Effetti:**
+  - `SET_FLAG`: Imposta `gameState.timers.lampadaAccesa = true` (lampada diventa fonte di luce attiva)
+  - `RESET_COUNTER`: Azzera `gameState.turn.turnsInDarkness = 0` (annulla countdown buio se in corso)
+- **Punteggio:** +2 punti interazione (totale 15 interazioni nel gioco)
+- **Messaggio successo:** "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente."
 - **Messaggi errore:**
-  - Lampada non in inventario: "Non hai la lampada!"
-  - Fiammiferi mancanti: "Non hai i fiammiferi per accendere la lampada!"
+  - Lampada non in inventario: "Non hai la lampada."
+  - Fiammiferi mancanti: "Non hai i fiammiferi per accendere la lampada."
   - Lampada già accesa: "La lampada è già accesa."
-- **Nota:** I fiammiferi sono riutilizzabili (non si consumano).
+- **Note:** 
+  - I fiammiferi sono riutilizzabili (non si consumano)
+  - Gestione identica a `sposta_fermacarte`, `muovi_fermacarte` (pattern consolidato)
+  - Richiede estensione `applicaEffetti()` per supportare tipi effetto `SET_FLAG` e `RESET_COUNTER`
 
 #### Condizione di Luce (Funzione Centrale)
 La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
@@ -307,7 +319,7 @@ Questo capitolo dettaglia le modifiche al codice, le strutture dati e gli algori
 
 Estensione dell'oggetto `gameState` in `src/logic/engine.js` per supportare tutti i sistemi.
 
-**⚠️ DESIGN DECISION:** Durante l'analisi del codice esistente (post § 3.1) è emerso che esiste già un sistema `visitedPlaces: Set` funzionante che traccia i luoghi visitati con prevenzione automatica dei doppi conteggi. Per evitare duplicazione, **riutilizzeremo `visitedPlaces`** invece di creare `punteggio.luoghiVisitati`. Vedere § 2.1.1 per dettagli.
+**⚠️ DESIGN DECISION v3.0:** Adottata architettura **turn-based** con `TurnContext` come entità centrale. Ogni turno è uno snapshot immutabile dello stato del mondo, permettendo check pre-esecuzione deterministici e post-processing centralizzato senza modificare logica core dei comandi.
 
 ```javascript
 gameState = {
@@ -317,18 +329,43 @@ gameState = {
   // === SISTEMA PUNTEGGIO ===
   punteggio: {
     totale: 0,
-    // luoghiVisitati: RIMOSSO - usa visitedPlaces esistente
     interazioniPunteggio: new Set(), // ID interazioni completate (per +2)
     misteriRisolti: new Set()        // ID misteri risolti (per +3 automatico su effetti)
   },
 
-  // === SISTEMA TEMPORIZZAZIONE ===
+  // === SISTEMA TURNO (Architettura v3.0) ===
+  turn: {
+    // Contatori assoluti (statistiche)
+    globalTurnNumber: 0,           // N-esimo comando ricevuto (anche SYSTEM)
+    totalTurnsConsumed: 0,         // Turni "veri" (esclusi SYSTEM)
+    
+    // Stati temporizzati (reset a condizioni specifiche)
+    turnsWithTorch: 0,             // Turni con torcia attiva
+    turnsInDarkness: 0,            // Turni consecutivi al buio
+    turnsInDangerZone: 0,          // Turni in zona pericolosa
+    
+    // Snapshot turno corrente (read-only durante parsing)
+    current: {
+      parseResult: null,           // Comando parsato
+      consumesTurn: false,         // Questo comando consuma turno?
+      location: 1,                 // Luogo attuale (prima movimento)
+      hasLight: true,              // Fonte di luce disponibile?
+      inDangerZone: false          // In zona pericolosa?
+    },
+    
+    // Snapshot turno precedente (per confronti)
+    previous: {
+      location: 1,
+      hasLight: true,
+      consumedTurn: false
+    }
+  },
+
+  // === SISTEMA TEMPORIZZAZIONE (Legacy, deprecato v3.0) ===
+  // NOTA: Campi mantenuti per compatibilità backward durante migrazione
   timers: {
-    movementCounter: 0,              // Contatore globale mosse (per Torcia)
-    torciaDifettosa: true,           // True all'inizio, False se accendi lampada
-    lampadaAccesa: false,            // Stato della lampada
-    azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
-    ultimoLuogoPericoloso: null      // ID per reset al cambio stanza
+    lampadaAccesa: false,            // Stato della lampada (ancora usato)
+    torciaSpenta: false              // Stato torcia (ancora usato)
   },
 
   // === SISTEMA VITTORIA ===
@@ -447,7 +484,7 @@ gameState = {
     - **Nota Importante:** Questo evento assegna solo 2 punti (non 3) al completamento della sequenza D-S-S-D-S.
 
 #### D) Fase Finale (+7 punti totali)
-La fase finale è cruciale per raggiungere il punteggio massimo di 132.
+La fase finale è cruciale per raggiungere il punteggio massimo di 134.
 1. **Incontro Ferenc (+4 punti):**
    - **Condizione:** Entrare in Atrio (ID 1) avendo nell'inventario: Fascicolo (16), Lista (6), Dossier (34).
    - **Nota:** Documenti (35) NON richiesti per trigger Ferenc.
@@ -461,10 +498,11 @@ La fase finale è cruciale per raggiungere il punteggio massimo di 132.
 
 **Riepilogo Punteggio Massimo:**
 - Luoghi: 56
-- Interazioni: 28
-- Misteri: 44
-- Vittoria/Ferenc: 4
-- **TOTALE: 132 punti**
+- Interazioni: 30 (15 interazioni × 2)
+- Misteri: 42 (14 misteri × 3)
+- Sequenza Cassaforte: 2
+- Completamento/Ferenc: 4
+- **TOTALE: 134 punti**
 
 ### 2.2.2 File Dati e Definizioni
 
@@ -490,349 +528,268 @@ Le seguenti interazioni devono avere `"punteggio": 2` in Interazioni.json:
 
 ---
 
-## 2.3 Implementazione Temporizzazione
+## 2.3 Implementazione Temporizzazione (Architettura Turn-Based v3.0)
+
+**PRINCIPIO ARCHITETTURALE:** Il sistema temporizzato opera su **snapshot immutabili** dello stato del mondo. Ogni turno è un'entità atomica con 3 fasi:
+1. **Snapshot** (prepareTurnContext): cattura stato statico PRE-esecuzione
+2. **Pre-checks** (runPreExecutionChecks): valida condizioni su snapshot
+3. **Post-effects** (applyTurnEffects): aggiorna counter e applica conseguenze
+
+Questa architettura **elimina side effects sparsi** e **preserva logica core dei comandi ACTION invariata**.
 
 ### 2.3.1 Costanti e Configurazione
 
-**IMPORTANTE:** Verificare che la costante sia correttamente definita nel codice esistente. La lista deve escludere:
-- ID=54 (luogo terminale con morte istantanea, vedi tabella HLD 1.2.2)
-- ID=57 (rifugio sicuro)
-
 ```javascript
-// Luoghi pericolosi (esclude ID=54 che è luogo terminale raggiungibile da ID=53 Sud, e ID=57 che è rifugio)
-// ID=54 causa morte immediata all'ingresso (gestito come ID=8, ID=40), NON tramite timer intercettazione
+// Luoghi pericolosi (esclude ID=54 terminale, ID=57 rifugio sicuro)
 const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
-// System commands che NON incrementano timer (illuminazione e intercettazione)
-const SYSTEM_COMMANDS = [
-  'INVENTARIO', 'INV', 'I', 'COSA', '?',
-  'AIUTO', 'HELP',
-  'PUNTI', 'PUNTEGGIO', 'SCORE',
-  'SALVA', 'SAVE',
-  'CARICA', 'LOAD',
-  'GUARDA_STANZA',  // GUARDA senza parametro
-  'RESTART', 'RICOMINCIA',
-  'QUIT', 'ESCI'
-];
-
 /**
- * Verifica se il comando è di sistema (non incrementa timer)
- * @param {string} comando - Comando upper-case
- * @returns {boolean} - true se è comando di sistema
- */
-function isSystemCommand(comando) {
-  return SYSTEM_COMMANDS.includes(comando.toUpperCase());
-}
-
-/**
- * Verifica se il comando corrente incrementa timer
- * Da chiamare PRIMA di incrementare turniConTorcia, turniBuio, azioniInLuogoPericoloso
+ * Determina se un comando consuma turno (incrementa counter temporizzati)
  * @param {Object} parseResult - Risultato del parser
- * @returns {boolean} - true se il comando incrementa timer
+ * @returns {boolean} - true se consuma turno
  */
-function shouldIncrementTimers(parseResult) {
-  // Comandi di sistema non incrementano timer
-  if (parseResult.CommandType === 'SYSTEM') return false;
+function shouldConsumeTurn(parseResult) {
+  // Comandi di sistema NON consumano turno
+  if (parseResult.CommandType === 'SYSTEM') {
+    return false;
+  }
   
-  // GUARDA senza parametro è considerato sistema
-  if (parseResult.CommandType === 'EXAMINE' && !parseResult.NounId) return false;
+  // GUARDA/ESAMINA senza oggetto NON consuma turno (solo descrizione luogo)
+  if (parseResult.CommandType === 'ACTION') {
+    const concept = parseResult.VerbConcept || '';
+    if ((concept === 'GUARDARE' || concept === 'ESAMINARE') && !parseResult.NounConcept) {
+      return false;
+    }
+  }
   
-  // Tutti gli altri comandi incrementano timer
+  // NAVIGATION sempre consuma turno
+  if (parseResult.CommandType === 'NAVIGATION') {
+    return true;
+  }
+  
+  // Altri ACTION consumano turno (PRENDI, POSA, ESAMINA oggetto, interazioni)
   return true;
 }
-```
 
-### 2.3.2 Estensione gameState
-
-```javascript
-// Aggiungere a gameState esistente
-gameState.illuminazione = {
-  // Timer torcia (6 turni dall'inizio)
-  turniConTorcia: 0,
-  torciaSpenta: false,
-  
-  // Timer buio (morte dopo 3 turni senza luce)
-  turniBuio: 0,
-  
-  // Stato lampada
-  lampadaAccesa: false
-};
-```
-
-### 2.3.3 Funzione Centrale: hasFonteLuceAttiva()
-
-Unica fonte di verità per determinare se il giocatore ha luce:
-
-```javascript
 /**
- * Verifica se il giocatore ha una fonte di luce attiva
- * @returns {boolean} - true se ha luce (torcia O lampada), false altrimenti
+ * Verifica se il giocatore ha fonte di luce attiva
+ * @returns {boolean} - true se ha luce (torcia O lampada)
  */
 function hasFonteLuceAttiva() {
-  const TORCIA_ID = 37; // Torcia elettrica
+  const TORCIA_ID = 37;
   const LAMPADA_ID = 27;
   
   // Check torcia: in inventario E non spenta
   const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
   const torciaInInventario = torcia && torcia.IDLuogo === 0;
-  const torciaAccesa = torciaInInventario && !gameState.illuminazione.torciaSpenta;
+  const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
   
   // Check lampada: in inventario E accesa
   const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
   const lampadaInInventario = lampada && lampada.IDLuogo === 0;
-  const lampadaAccesa = lampadaInInventario && gameState.illuminazione.lampadaAccesa;
+  const lampadaAccesa = lampadaInInventario && gameState.timers.lampadaAccesa;
   
   return torciaAccesa || lampadaAccesa;
 }
 ```
 
-### 2.3.4 Check Functions (Ordine di Esecuzione)
+### 2.3.2 Pipeline Turn-Based: Funzioni Core
 
-**1. checkTorciaSpegnimento(parseResult):**
+**Architettura:** Separazione completa tra lettura stato (snapshot), validazione (pre-checks) e aggiornamento (post-effects).
 
-Gestisce spegnimento torcia dopo 6 turni o se posata.
+#### **Fase 1: prepareTurnContext** (Snapshot Immutabile)
 
 ```javascript
 /**
- * Check spegnimento torcia (automatico o manuale)
+ * Crea snapshot immutabile dello stato del mondo PRE-esecuzione
  * @param {Object} parseResult - Comando parsato
- * @returns {Object|null} - Messaggio torcia spenta, o null
  */
-function checkTorciaSpegnimento(parseResult) {
-  const TORCIA_ID = 26;
+function prepareTurnContext(parseResult) {
+  // Salva stato precedente
+  gameState.turn.previous = { ...gameState.turn.current };
   
-  // Skip se torcia già spenta o lampada accesa
-  if (gameState.illuminazione.torciaSpenta || 
-      gameState.illuminazione.lampadaAccesa) {
-    return null;
-  }
+  // Snapshot stato attuale
+  const snapshot = snapshotTurnState();
   
-  const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
-  const torciaInInventario = torcia && torcia.IDLuogo === 0;
+  // Aggiorna contesto turno corrente
+  gameState.turn.current = {
+    parseResult: parseResult,
+    consumesTurn: shouldConsumeTurn(parseResult),
+    location: snapshot.location,
+    hasLight: snapshot.hasLight,
+    inDangerZone: snapshot.inDangerZone
+  };
   
-  // CASO A: Torcia posata (spegnimento immediato)
-  if (parseResult.CommandType === 'ACTION' && 
-      parseResult.Verb === 'POSA' && 
-      parseResult.NounId === TORCIA_ID) {
-    
-    gameState.illuminazione.torciaSpenta = true;
-    
-    // Messaggio dipende da lampada
-    if (gameState.illuminazione.lampadaAccesa) {
+  // Incrementa contatore globale (statistiche)
+  gameState.turn.globalTurnNumber++;
+}
+
+/**
+ * Genera snapshot dello stato del mondo
+ * @returns {Object} - Stato statico corrente
+ */
+function snapshotTurnState() {
+  return {
+    location: gameState.currentLocationId,
+    hasLight: hasFonteLuceAttiva(),
+    inDangerZone: LUOGHI_PERICOLOSI.includes(gameState.currentLocationId)
+  };
+}
+```
+
+#### **Fase 2: runPreExecutionChecks** (Validazione su Snapshot)
+
+```javascript
+/**
+ * Esegue check pre-esecuzione basati su snapshot statico
+ * @param {Object} parseResult - Comando parsato
+ * @returns {Object|null} - Result bloccante (GAME_OVER/ERROR) o null (procedi)
+ */
+function runPreExecutionChecks(parseResult) {
+  const { current } = gameState.turn;
+  
+  // CHECK 1: Intercettazione (4° turno in zona pericolosa)
+  if (current.inDangerZone && current.consumesTurn) {
+    if (gameState.turn.turnsInDangerZone >= 3) {
+      gameState.ended = true;
       return {
-        message: getSystemMessage('timer.torch.defective', gameState.currentLingua)
-      };
-    } else {
-      // Start countdown buio
-      gameState.illuminazione.turniBuio = 0;
-      return {
-        message: getSystemMessage('timer.torch.defective.warning', gameState.currentLingua),
-        warningBuio: true
+        accepted: false,
+        resultType: 'GAME_OVER',
+        message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
+        deathReason: 'INTERCETTAZIONE',
+        showLocation: false
       };
     }
   }
   
-  // CASO B: 6 turni trascorsi (solo se torcia in inventario)
-  if (torciaInInventario) {
-    gameState.illuminazione.turniConTorcia++;
+  // CHECK 2: Movement Block (narrativa, luogo 59)
+  if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: "Non puoi muoverti. La guardia ti sta osservando."
+    };
+  }
+  
+  // CHECK 3: Awaiting Continue (narrativa BARRA SPAZIO)
+  if (gameState.awaitingContinue) {
+    return processContinueNarrative();
+  }
+  
+  // Nessun blocco: procedi con esecuzione
+  return null;
+}
+```
+
+#### **Fase 3: applyTurnEffects** (Post-Processing Centralizzato)
+
+```javascript
+/**
+ * Applica effetti post-esecuzione (solo se turno consumato)
+ * @param {Object} result - Result da executeCommandCore
+ * @param {Object} parseResult - Comando parsato
+ * @returns {Object} - Result arricchito o sovrascritto (GAME_OVER)
+ */
+function applyTurnEffects(result, parseResult) {
+  const { current } = gameState.turn;
+  
+  // === UPDATE 1: Sistema Illuminazione ===
+  if (current.hasLight) {
+    // Ha luce: incrementa turni con torcia (se torcia attiva)
+    const TORCIA_ID = 37;
+    const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
+    const torciaInInventario = torcia && torcia.IDLuogo === 0;
+    const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
     
-    if (gameState.illuminazione.turniConTorcia >= 6) {
-      gameState.illuminazione.torciaSpenta = true;
+    if (torciaAccesa) {
+      gameState.turn.turnsWithTorch++;
       
-      if (gameState.illuminazione.lampadaAccesa) {
-        return {
-          message: getSystemMessage('timer.torch.defective', gameState.currentLingua)
-        };
-      } else {
-        gameState.illuminazione.turniBuio = 0;
-        return {
-          message: getSystemMessage('timer.torch.defective.warning', gameState.currentLingua),
-          warningBuio: true
-        };
+      // Spegnimento dopo 6 turni
+      if (gameState.turn.turnsWithTorch >= 6) {
+        gameState.timers.torciaSpenta = true;
+        result.message += '\n\n' + getSystemMessage('timer.torch.defective', gameState.currentLingua);
+        
+        // Start countdown buio se nessuna lampada
+        if (!gameState.timers.lampadaAccesa) {
+          gameState.turn.turnsInDarkness = 0;
+          result.message += ' ' + getSystemMessage('timer.torch.warning', gameState.currentLingua);
+        }
       }
     }
-  }
-  
-  return null;
-}
-```
-
-**2. checkLampadaPosata(parseResult):**
-
-Gestisce caso lampada accesa posata (start countdown buio).
-
-```javascript
-/**
- * Check se giocatore posa lampada accesa
- * @param {Object} parseResult - Comando parsato
- * @returns {Object|null} - Messaggio warning, o null
- */
-function checkLampadaPosata(parseResult) {
-  const LAMPADA_ID = 27;
-  
-  // Skip se lampada non accesa
-  if (!gameState.illuminazione.lampadaAccesa) {
-    return null;
-  }
-  
-  // Check comando POSA LAMPADA
-  if (parseResult.CommandType === 'ACTION' && 
-      parseResult.Verb === 'POSA' && 
-      parseResult.NounId === LAMPADA_ID) {
     
-    // Lampada resta accesa nel luogo, start countdown
-    gameState.illuminazione.turniBuio = 0;
+    // Reset countdown buio
+    gameState.turn.turnsInDarkness = 0;
     
-    return {
-      message: "Hai posato la lampada. Resta accesa, ma ora sei al buio.",
-      warningBuio: true
-    };
-  }
-  
-  return null;
-}
-```
-
-**3. checkMortePerBuio():**
-
-Gestisce countdown finale (3 turni) e morte.
-
-```javascript
-/**
- * Check morte per buio (3 turni senza luce)
- * @returns {Object|null} - Game Over, o null
- */
-function checkMortePerBuio() {
-  // Check se ha luce
-  if (hasFonteLuceAttiva()) {
-    // Reset countdown se torna ad avere luce
-    gameState.illuminazione.turniBuio = 0;
-    return null;
-  }
-  
-  // Incrementa turni al buio
-  gameState.illuminazione.turniBuio++;
-  
-  // Morte dopo 3 turni
-  if (gameState.illuminazione.turniBuio >= 3) {
-    gameState.ended = true;
-    
-    return {
-      accepted: true,
-      resultType: 'GAME_OVER',
-      message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
-      deathReason: 'MORTE_BUIO',
-      showLocation: false
-    };
-  }
-  
-  return null;
-}
-```
-
-**4. checkIntercettazionePre():**
-
-Check PRIMA dell'esecuzione comando (4° tentativo in zona pericolosa).
-
-```javascript
-/**
- * Check intercettazione PRIMA di eseguire comando
- * Se sei in luogo pericoloso con counter >= 3 → GAME OVER
- * @returns {Object|null} - Game Over, o null
- */
-function checkIntercettazionePre() {
-  const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
-  const luogoAttuale = gameState.currentLocationId;
-  const isPericoloso = LUOGHI_PERICOLOSI.includes(luogoAttuale);
-  
-  // Game over al 4° comando tentato in zona pericolosa
-  if (isPericoloso && gameState.timers.azioniInLuogoPericoloso >= 3) {
-    gameState.ended = true;
-    return {
-      accepted: true,
-      resultType: 'GAME_OVER',
-      message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
-      deathReason: 'INTERCETTAZIONE',
-      showLocation: false
-    };
-  }
-  
-  return null;
-}
-```
-
-**5. checkIntercettazionePost():**
-
-Incrementa/reset counter DOPO esecuzione comando.
-
-```javascript
-/**
- * Aggiorna counter intercettazione DOPO esecuzione comando
- * Incrementa se in zona pericolosa, reset se uscito
- */
-function checkIntercettazionePost() {
-  const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
-  const luogoAttuale = gameState.currentLocationId;
-  const isPericoloso = LUOGHI_PERICOLOSI.includes(luogoAttuale);
-  
-  if (isPericoloso) {
-    // Incrementa dopo aver eseguito comando in zona pericolosa
-    gameState.timers.azioniInLuogoPericoloso++;
   } else {
-    // Reset quando esci da zona pericolosa
-    gameState.timers.azioniInLuogoPericoloso = 0;
+    // Nessuna luce: incrementa countdown buio
+    gameState.turn.turnsInDarkness++;
+    
+    // Morte dopo 3 turni al buio
+    if (gameState.turn.turnsInDarkness >= 3) {
+      gameState.ended = true;
+      return {
+        accepted: true,
+        resultType: 'GAME_OVER',
+        message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
+        deathReason: 'MORTE_BUIO',
+        showLocation: false
+      };
+    }
   }
+  
+  // === UPDATE 2: Sistema Intercettazione ===
+  if (current.inDangerZone) {
+    gameState.turn.turnsInDangerZone++;
+  } else {
+    gameState.turn.turnsInDangerZone = 0;
+  }
+  
+  // === UPDATE 3: Punteggio Misteri Automatici ===
+  if (result.effects && result.effects.length > 0) {
+    result.effects.forEach(effect => {
+      const misteroId = generateMisteroId(effect);
+      if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
+        gameState.punteggio.totale += 3;
+        gameState.punteggio.misteriRisolti.add(misteroId);
+      }
+    });
+  }
+  
+  // === UPDATE 4: Contatore Turni Consumati ===
+  gameState.turn.totalTurnsConsumed++;
+  
+  return result;
 }
 ```
 
-### 2.3.5 Implementazione Comando ACCENDI LAMPADA
+### 2.3.3 Gestione Data-Driven: Interazione ACCENDI LAMPADA
 
-```javascript
-// In executeCommand - case 'ACTION'
-case 'ACCENDI':
-  if (parseResult.NounId === 27) { // Lampada
-    const LAMPADA_ID = 27;
-    const FIAMMIFERI_ID = 36; // Fiammiferi
-    
-    const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
-    const lampadaInInventario = lampada && lampada.IDLuogo === 0;
-    
-    const fiammiferi = gameState.Oggetti.find(o => o.ID === FIAMMIFERI_ID);
-    const fiammiferiInInventario = fiammiferi && fiammiferi.IDLuogo === 0;
-    
-    // Validazioni
-    if (!lampadaInInventario) {
-      return {
-        accepted: true,
-        resultType: 'ERROR',
-        message: getSystemMessage('action.light.lamp.not_have', gameState.currentLingua),
-        effects: []
-      };
-    }
-    
-    if (!fiammiferiInInventario) {
-      return {
-        accepted: true,
-        resultType: 'ERROR',
-        message: getSystemMessage('action.light.lamp.no_matches', gameState.currentLingua),
-        effects: []
-      };
-    }
-    
-    if (gameState.illuminazione.lampadaAccesa) {
-      return {
-        accepted: true,
-        resultType: 'INFO',
-        message: getSystemMessage('action.light.lamp.already_lit', gameState.currentLingua),
-        effects: []
-      };
-    }
-    
-    // Successo
-    gameState.illuminazione.lampadaAccesa = true;
-    gameState.illuminazione.turniBuio = 0; // Reset countdown se attivo
-    
-    return {
+**Pattern Implementativo:** ACCENDI LAMPADA è gestita come interazione data-driven in `Interazioni.json` (ID: `accendi_lampada`), analogamente a `sposta_fermacarte`, `muovi_fermacarte`, `carica_pesa`.
+
+**Entry Interazioni.json:**
+```json
+{
+  "ID_Interazione": "accendi_lampada",
+  "TipoCommand": "ACTION",
+  "Verb": ["ACCENDERE", "ILLUMINARE"],
+  "Target": [27],
+  "Prerequisiti": [
+    {"Tipo": "HAS_OBJECT", "ID_Oggetto": 27, "Luogo": 0},
+    {"Tipo": "HAS_OBJECT", "ID_Oggetto": 36, "Luogo": 0},
+    {"Tipo": "FLAG_FALSE", "Flag": "timers.lampadaAccesa"}
+  ],
+  "Effetti": [
+    {"Tipo": "SET_FLAG", "Flag": "timers.lampadaAccesa", "Valore": true},
+    {"Tipo": "RESET_COUNTER", "Counter": "turn.turnsInDarkness"}
+  ],
+  "MessaggioSuccesso": "action.light.lamp.success",
+  "MessaggiErrore": {
+    "action.light.lamp.not_have": {"Condizione": "Prerequisito HAS_OBJECT(27) fallito"},
+    "action.light.lamp.no_matches": {"Condizione": "Prerequisito HAS_OBJECT(36) fallito"},
+    "action.light.lamp.already_lit": {"Condizione": "Prerequisito FLAG_FALSE fallito"}
+  },
+  "Punteggio": 2
+}
       accepted: true,
       resultType: 'OK',
       message: getSystemMessage('action.light.lamp.success', gameState.currentLingua),
@@ -842,106 +799,73 @@ case 'ACCENDI':
   break;
 ```
 
-### 2.3.6 Integrazione in executeCommand
+### 2.3.4 Integrazione Finale: executeCommand Pipeline
 
-Ordine completo di esecuzione con check Pre e Post:
+**Architettura a 4 Fasi:** Nessuna modifica alla logica core dei comandi (executeCommandCore invariato).
 
 ```javascript
-async function executeCommand(comando) {
-  // 1. Parse comando
-  const parseResult = parseCommand(comando);
-  
-  // 2. Check intercettazione PRE (prima di eseguire)
-  const gameOverIntercettazione = checkIntercettazionePre();
-  if (gameOverIntercettazione) {
-    return gameOverIntercettazione; // Morte al 4° comando tentato
+export function executeCommand(parseResult) {
+  // === FASE 0: Validazione Input ===
+  if (!parseResult || !parseResult.IsValid) {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: getSystemMessage('engine.error.invalidCommand', gameState.currentLingua)
+    };
   }
   
-  // 3. Esegui comando normale
-  let result = executeNormalCommand(parseResult);
+  // === FASE 1: SNAPSHOT (Stato Statico Pre-Esecuzione) ===
+  prepareTurnContext(parseResult);
   
-  // 4. Check sistema luce
-  const checkTorcia = checkTorciaSpegnimento(parseResult);
-  if (checkTorcia && checkTorcia.message) {
-    result.message += "\n\n" + checkTorcia.message;
+  // === FASE 2: PRE-CHECKS (Validazione su Snapshot) ===
+  const preCheckResult = runPreExecutionChecks(parseResult);
+  if (preCheckResult) {
+    return preCheckResult; // Blocco (intercettazione, movement block, narrativa)
   }
   
-  const checkLampada = checkLampadaPosata(parseResult);
-  if (checkLampada && checkLampada.message) {
-    result.message += "\n\n" + checkLampada.message;
-  }
+  // === FASE 3: ESECUZIONE CORE (Logica Invariata) ===
+  let result = executeCommandCore(parseResult);
   
-  const gameOverBuio = checkMortePerBuio();
-  if (gameOverBuio) {
-    return gameOverBuio; // Termina gioco
+  // === FASE 4: POST-EFFECTS (Solo se Turno Consumato) ===
+  const turnConsumed = result.accepted && gameState.turn.current.consumesTurn;
+  if (turnConsumed) {
+    result = applyTurnEffects(result, parseResult);
   }
-  
-  // 5. Update counter intercettazione POST (dopo esecuzione)
-  checkIntercettazionePost();
   
   return result;
 }
-```
 
-### 2.3.7 Strutture Dati Game Over
-
-```javascript
-const GAME_OVER_MESSAGES = {
-  TORCIA_ESAURITA: {
-    titolo: "💀 OSCURITÀ FATALE",
-    testo: `La tua torcia emette un ultimo tremulo bagliore, poi si spegne definitivamente. 
-
-Nell'oscurità totale, inciampi su una trave marcescente e cadi pesantemente: il tonfo sordo è seguito da un dolore lancinante alla testa. 
-
-Lentamente, perdi i sensi mentre la casa ti inghiotte nel buio eterno...
-
-*** SEI MORTO ***
-
-Motivo: Torcia difettosa esaurita
-Suggerimento: Cerca la lampada nel ripostiglio e accendila con i fiammiferi entro le prime 6 mosse.`
-  },
+/**
+ * Esecuzione core comandi (logica esistente estratta, INVARIATA)
+ * ⚠️ IMPORTANTE: Questa funzione contiene il codice attuale di executeCommand
+ * senza alcuna modifica. Tutti i return() esistenti funzionano come prima.
+ */
+function executeCommandCore(parseResult) {
+  // === COPIA ESATTA DEL CODICE ATTUALE DI executeCommand ===
+  // (switch NAVIGATION/SYSTEM/ACTION con tutti i return multipli)
+  // Vedere implementazione corrente in src/logic/engine.js:663
   
-  INTERCETTAZIONE: {
-    titolo: "💀 CATTURATO!",
-    testo: `Rimanere fermi in una zona pattugliata è stato fatale. 
-
-Una pattuglia sovietica ti ha individuato e circondato: non c'è via di fuga. 
-
-Vieni trascinato al comando locale dove, dopo un breve interrogatorio, sei fucilato come spia occidentale.
-
-*** SEI MORTO ***
-
-Motivo: Intercettazione da pattuglia
-Suggerimento: Non restare più di 2 azioni consecutive nello stesso luogo pericoloso. Continua a muoverti!`
-  },
-  
-  LAMPADA_ABBANDONATA: {
-    titolo: "💀 BUIO MORTALE",
-    testo: `Lasciare la lampada accesa in un'altra stanza è stato un errore imperdonabile. 
-
-Nel momento in cui varchi la soglia, l'oscurità ti avvolge completamente. Perdi l'equilibrio, cadi in una botola nascosta e precipiti fino al piano inferiore: l'impatto è fatale.
-
-*** SEI MORTO ***
-
-Motivo: Movimento senza fonte di luce
-Suggerimento: La lampada deve essere sempre con te quando ti muovi al buio. PRENDI LAMPADA prima di lasciare una stanza.`
-  },
-  
-  GUARDIA_SOSPETTA: {
-    titolo: "💀 SOSPETTI FATALI",
-    testo: `Il tuo comportamento strano e esitante ha insospettito la guardia di frontiera. 
-
-Con un gesto secco, ordina ad altri soldati di circonderti. Sei stato identificato come agente nemico e portato via per essere giustiziato.
-
-*** SEI MORTO ***
-
-Motivo: Comportamento sospetto alla barriera
-Suggerimento: Usa il comando PORGI DOCUMENTI alla barriera per superare il controllo.`
+  switch (parseResult.CommandType) {
+    case 'NAVIGATION':
+      return { /* ... logica invariata ... */ };
+    
+    case 'SYSTEM':
+      return { /* ... logica invariata ... */ };
+    
+    case 'ACTION':
+      // Priorità interazioni custom
+      const interazioneResult = cercaEseguiInterazione(verb, noun);
+      if (interazioneResult) {
+        return interazioneResult; // ← Return multipli preservati
+      }
+      
+      // Gestione standard oggetti
+      if (verb === 'PRENDI') return { /* ... */ };
+      if (verb === 'POSA') return { /* ... */ };
+      // ... altri return invariati ...
   }
-};
+}
 ```
-
----
 
 ## 2.4 Implementazione Vittoria
 
@@ -1093,68 +1017,87 @@ function teleportaALuogo59() {
 
 ---
 
-## 2.5 Integrazione Core: Flusso di Esecuzione
+## 2.5 Integrazione Core: Architettura Turn-Based Pipeline
 
-Il cuore del sistema sarà la funzione `executeCommand` rivisitata:
+**Principio:** L'architettura turn-based **elimina la necessità di modificare executeCommand esistente** con check sparsi. Ogni turno è processato attraverso una pipeline standardizzata.
+
+### 2.5.1 Flusso Esecuzione Completo
 
 ```javascript
 export function executeCommand(parseResult) {
-  // 1. Check Awaiting Continue
-  if (gameState.awaitingContinue) {
-    return processContinue();
+  // ====================================================================
+  // FASE 1: SNAPSHOT (Read-Only)
+  // ====================================================================
+  // Cattura stato del mondo PRIMA dell'esecuzione
+  // - Luogo corrente
+  // - Fonti di luce disponibili (torcia/lampada)
+  // - Zona pericolosa?
+  // - Counter temporizzati (turni buio, turni in zona pericolosa)
+  
+  prepareTurnContext(parseResult);
+  // Risultato: gameState.turn.current contiene snapshot immutabile
+  
+  // ====================================================================
+  // FASE 2: PRE-CHECKS (Validazione)
+  // ====================================================================
+  // Valida condizioni PRIMA di eseguire comando
+  // Basato su snapshot statico (nessun side effect)
+  
+  const preCheckResult = runPreExecutionChecks(parseResult);
+  if (preCheckResult) {
+    // Check fallito: return early senza modificare gameState
+    // Casi: intercettazione (counter >= 3), movement block, narrativa
+    return preCheckResult;
   }
   
-  // 2. Check System Commands (NON incrementano timer)
-  if (isSystemCommand(parseResult.comando)) {
-    return eseguiComandoSistema(parseResult);
+  // ====================================================================
+  // FASE 3: ESECUZIONE CORE (Logica Invariata)
+  // ====================================================================
+  // ⚠️ IMPORTANTE: Nessuna modifica alla logica esistente
+  // - Tutti i return() di NAVIGATION/SYSTEM/ACTION preservati
+  // - cercaEseguiInterazione() funziona come prima
+  // - Gestione oggetti (PRENDI/POSA/ESAMINA) invariata
+  
+  let result = executeCommandCore(parseResult);
+  
+  // ====================================================================
+  // FASE 4: POST-EFFECTS (Update & Consequences)
+  // ====================================================================
+  // Applica conseguenze SOLO se:
+  // - Comando accettato (result.accepted === true)
+  // - Turno consumato (non SYSTEM, non GUARDA senza parametro)
+  
+  const turnConsumed = result.accepted && gameState.turn.current.consumesTurn;
+  
+  if (turnConsumed) {
+    // Aggiorna counter temporizzati
+    gameState.turn.totalTurnsConsumed++;
+    
+    // Applica effetti (torcia, buio, intercettazione, misteri)
+    result = applyTurnEffects(result, parseResult);
+    
+    // applyTurnEffects può:
+    // - Arricchire result.message ("\n\nLa torcia si spegne...")
+    // - Sovrascrivere result (GAME_OVER se morte buio)
+    // - Aggiornare punteggio misteri automatici
   }
-  
-  // 3. Incrementa movement counter (esclusi system commands)
-  if (!isSystemCommand(parseResult.comando)) {
-    gameState.timers.movementCounter++;
-  }
-  
-  // 4. Check Torcia Esaurita
-  const gameOverTorcia = checkTorciaEsaurita();
-  if (gameOverTorcia) return gameOverTorcia;
-  
-  // 5. Check Movement Block (Luogo 59)
-  if (gameState.movementBlocked && parseResult.tipo === 'NAVIGATION') {
-    return { message: "Non puoi muoverti. La guardia ti sta osservando." };
-  }
-  
-  // 6. Check Vittoria (NAVIGATION verso Luogo 1)
-  if (parseResult.tipo === 'NAVIGATION' && parseResult.destinazione === 1) {
-    if (checkVictoryConditions()) {
-      return avviaNarrativaVittoria();
-    }
-  }
-  
-  // 7. Check Luogo 59 - Logica "Guardia Sospetta"
-  if (gameState.currentLocationId === 59 && 
-      gameState.narrativeState === 'ENDING_PHASE_2_WAIT') {
-    return handleLuogo59Commands(parseResult);
-  }
-  
-  // 8. Esecuzione Standard
-  const result = eseguiComandoStandard(parseResult);
-  
-  // 9. Post-esecuzione: Check Lampada Abbandonata (solo dopo NAVIGATION)
-  if (parseResult.tipo === 'NAVIGATION' && result.accepted) {
-    const gameOverLampada = checkLampadaAbbandonata();
-    if (gameOverLampada) return gameOverLampada;
-  }
-  
-  // 10. Check Intercettazione
-  const gameOverIntercettazione = checkIntercettazione();
-  if (gameOverIntercettazione) return gameOverIntercettazione;
-  
-  // 11. Update Punteggio - Verifica Misteri
-  verificaMisteriRisolti();
   
   return result;
 }
 ```
+
+### 2.5.2 Vantaggi Architetturali
+
+| Aspetto | Approccio Precedente (TD v2) | Approccio Turn-Based (TD v3) |
+|---------|------------------------------|------------------------------|
+| **Modifiche executeCommand** | 10+ check inline sparsi | 4 chiamate funzione (wrapper) |
+| **Modifiche cercaEseguiInterazione** | Necessarie per check luce | ✅ Zero modifiche |
+| **Modifiche comandi ACTION** | Return multipli da wrappare | ✅ Zero modifiche |
+| **Testabilità** | Mock completo gameState | Mock solo gameState.turn |
+| **Side effects** | Sparsi in 5+ funzioni | Centralizzati in applyTurnEffects |
+| **Rollback** | Difficile (stato già modificato) | Facile (snapshot pre-esecuzione) |
+| **Effort implementazione** | ~5-6 ore | ~4 ore |
+| **Rischio regressione** | Alto (tocca logica core) | Basso (logica core invariata) |
 
 ---
 
@@ -1298,7 +1241,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     
     6.  ✅ **Comando PUNTI** (5 min): Implementare comando che mostra:
         ```
-        Punteggio totale: X/132
+        Punteggio totale: X/134
         - Luoghi visitati: X/57
         - Interazioni eseguite: X/15
         - Misteri risolti: X/13
@@ -1308,7 +1251,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
         Rango: [Novizio/Esploratore/Investigatore/Maestro/Perfezionista]
         ```
         **Implementazione:** Comando PUNTI in `executeCommand()` mostra:
-        - Totale su 132 con rango dinamico
+        - Totale su 134 con rango dinamico
         - Breakdown: visitedPlaces.size, interazioniPunteggio.size, misteriRisolti.size
         - Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-131 Maestro, 132 Perfezionista
     
@@ -1347,120 +1290,736 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 - ✅ Testing incrementale (più facile identificare regressioni)
 - ✅ 3 commit chiari nella history invece di 1 monolitico
 
-## 3.3.A Sistema di Illuminazione (Medio Rischio - Priorità Alta)
+## 3.3 Sistema Temporizzazione: Illuminazione + Intercettazione (Medio Rischio - Priorità Alta)
 
-**Obiettivo:** Implementare sistema unificato torcia → buio → morte con gestione lampada.
+**Obiettivo:** Implementare sistema unificato torcia → buio → morte e intercettazione con architettura turn-based pipeline.
 
-**Prerequisiti:** § 3.1 e § 3.2 completati (gameState stabile, i18n attivo).
+**Prerequisiti:** § 3.1 e § 3.2 completati (gameState stabile, punteggio funzionante).
+
+**Strategia v3.0:** Refactoring minimale con **zero modifiche alla logica ACTION esistente**. Pipeline a 4 fasi preserva tutti i return() correnti.
+
+### 3.3.1 Estensione gameState.turn (30 min)
 
 **Task:**
+1. Aggiungere campi a `gameState.turn` in `resetGameState()` e `initGameState()`
+2. Implementare `shouldConsumeTurn(parseResult)` con test unit
+3. Implementare `hasFonteLuceAttiva()` con test unit
 
-1. **Estendere `gameState.illuminazione`** (20 min)
-   - Aggiungere campi: `turniConTorcia`, `torciaSpenta`, `turniBuio`, `lampadaAccesa`
-   - Aggiungere costante `SYSTEM_COMMANDS` (INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA_STANZA, RESTART, QUIT)
-   - Implementare funzioni `isSystemCommand(comando)` e `shouldIncrementTimers(parseResult)`
-   - Inizializzare in `initGameState()`: tutti a 0/false
-   - Test: verificare struttura JSON e funzioni filtro comandi
+**Codice:**
+```javascript
+// In resetGameState() e initGameState()
+gameState.turn = {
+  globalTurnNumber: 0,
+  totalTurnsConsumed: 0,
+  turnsWithTorch: 0,
+  turnsInDarkness: 0,
+  turnsInDangerZone: 0,
+  current: {
+    parseResult: null,
+    consumesTurn: false,
+    location: 1,
+    hasLight: true,
+    inDangerZone: false
+  },
+  previous: {
+    location: 1,
+    hasLight: true,
+    consumedTurn: false
+  }
+};
+```
 
-2. **Implementare `hasFonteLuceAttiva()`** (20 min)
-   - Logica: (torcia accesa E in inventario) OR (lampada accesa E in inventario)
-   - Identificare ID torcia (presumibilmente 26) e lampada (27) da Oggetti.json
-   - Test: simulare vari stati (torcia spenta, lampada accesa, entrambi, nessuno)
+**Test:**
+- `shouldConsumeTurn(NAVIGATION)` → true
+- `shouldConsumeTurn(SYSTEM)` → false
+- `shouldConsumeTurn(ACTION PRENDI)` → true
+- `shouldConsumeTurn(ACTION GUARDA senza oggetto)` → false
+- `hasFonteLuceAttiva()` con torcia accesa → true
+- `hasFonteLuceAttiva()` con lampada accesa → true
+- `hasFonteLuceAttiva()` senza luce → false
 
-3. **Implementare `checkTorciaSpegnimento(parseResult)`** (35 min)
-   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
-   - Caso A: 6 turni trascorsi → spegni torcia
-   - Caso B: comando POSA TORCIA → spegni torcia immediatamente
-   - Determinare messaggio (neutro vs warning) in base a `lampadaAccesa`
-   - Test: arrivare a turno 6, posare torcia prima, con/senza lampada, verificare INVENTARIO non conta
-
-4. **Implementare `checkLampadaPosata(parseResult)`** (15 min)
-   - Intercettare comando POSA LAMPADA se `lampadaAccesa === true`
-   - Start `turniBuio = 0`
-   - Test: posare lampada, verificare messaggio warning
-
-5. **Implementare `checkMortePerBuio()`** (30 min)
-   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
-   - Se `hasFonteLuceAttiva() === false` → incrementa `turniBuio`
-   - Se `hasFonteLuceAttiva() === true` → reset `turniBuio = 0`
-   - Se `turniBuio >= 3` → GAME_OVER
-   - Test: spegnere torcia, muoversi 3 turni senza lampada, verificare morte (INVENTARIO non incrementa)
-
-6. **Implementare comando `ACCENDI LAMPADA`** (30 min)
-   - Validazioni: lampada in inventario, fiammiferi presenti, non già accesa
-   - Effetto: `lampadaAccesa = true`, reset `turniBuio`
-   - Messaggi i18n: successo, errori (no lampada, no fiammiferi, già accesa)
-   - Test: sequenza completa (prendi lampada, prendi fiammiferi, accendi)
-
-7. **Integrare check luce in `executeCommand`** (20 min)
-   - Ordine: checkTorcia → checkLampada → checkBuio
-   - Concatenare messaggi torcia/lampada al risultato comando
-   - Return immediato su game over buio
-   - Test: eseguire flusso completo con logging
-
-8. **Aggiungere messaggi i18n** (20 min)
-   - `timer.torch.defective` (IT/EN)
-   - `timer.torch.defective.warning` (IT/EN)
-   - `timer.darkness.death` (IT/EN)
-   - `action.light.lamp.*` (success, not_have, no_matches, already_lit) (IT/EN)
-   - Test: verificare messaggi in entrambe le lingue
-
-**Test di Integrazione:**
-- **T1:** Partenza → 6 turni senza lampada → torcia spenta → 3 turni → morte (15 min)
-- **T2:** Partenza → prendi lampada/fiammiferi → accendi → posare torcia → gioco prosegue (10 min)
-- **T3:** Partenza → 5 turni → accendi lampada → posare torcia → gioco prosegue (10 min)
-- **T4:** Partenza → accendi lampada → posa lampada → 3 turni → riprendi lampada prima morte → reset (15 min)
-
-**Tempo stimato totale:** ~3.5 ore (185 min task + 50 min test)
+**Effort:** 30 min (20 min implementazione + 10 min test)
 
 ---
 
-## 3.3.B Sistema di Intercettazione (Medio Rischio - Priorità Media)
-
-**Obiettivo:** Implementare morte per permanenza in luoghi pericolosi esterni (meccanica Pre-check + Post-increment).
-
-**Prerequisiti:** § 3.3.A completato (sistema check già integrato in executeCommand).
+### 3.3.2 Pipeline Fase 1: prepareTurnContext (45 min)
 
 **Task:**
+1. Implementare `snapshotTurnState()` che legge gameState corrente
+2. Implementare `prepareTurnContext(parseResult)` che crea snapshot
+3. Integrare chiamata in `executeCommand` (prima linea dopo validazione)
 
-1. **Verificare costante `LUOGHI_PERICOLOSI`** (10 min)
-   - Confermare array: [51, 52, 53, 55, 56, 58]
-   - Escludere ID=54 (terminale) e ID=57 (rifugio sicuro)
-   - Verificare funzione `shouldIncrementTimers()` già implementata in § 3.3.A
-   - Test: verificare presenza nel codice esistente
+**Codice:**
+```javascript
+function snapshotTurnState() {
+  return {
+    location: gameState.currentLocationId,
+    hasLight: hasFonteLuceAttiva(),
+    inDangerZone: LUOGHI_PERICOLOSI.includes(gameState.currentLocationId)
+  };
+}
 
-2. **Estendere `gameState.timers`** (10 min)
-   - Aggiungere campo: `azioniInLuogoPericoloso: 0`
-   - Inizializzare in `initGameState()`
-   - Test: verificare struttura JSON
+function prepareTurnContext(parseResult) {
+  gameState.turn.previous = { ...gameState.turn.current };
+  const snapshot = snapshotTurnState();
+  gameState.turn.current = {
+    parseResult: parseResult,
+    consumesTurn: shouldConsumeTurn(parseResult),
+    location: snapshot.location,
+    hasLight: snapshot.hasLight,
+    inDangerZone: snapshot.inDangerZone
+  };
+  gameState.turn.globalTurnNumber++;
+}
+```
 
-3. **Implementare `checkIntercettazionePre()`** (15 min)
-   - Check se counter >= 3 E sei in luogo pericoloso
-   - Ritorna GAME_OVER (blocca esecuzione 4° comando)
-   - Test: arrivare a counter=3, verificare morte al comando successivo
+**Test:**
+- Partenza (luogo 1) → snapshot.location = 1, hasLight = true, inDangerZone = false
+- Movimento a luogo pericoloso (51) → snapshot.inDangerZone = true
+- Dopo 6 turni con torcia → snapshot.hasLight = false (se torcia spenta)
+- Comando INVENTARIO → current.consumesTurn = false
 
-4. **Implementare `checkIntercettazionePost()`** (15 min)
-   - Check `shouldIncrementTimers(parseResult)` → se false, skip incremento
-   - Incrementa counter se in luogo pericoloso DOPO esecuzione
-   - Reset counter se esci da zona pericolosa
-   - Test: verificare incremento dopo ogni comando (INVENTARIO non incrementa)
+**Effort:** 45 min (30 min implementazione + 15 min test)
 
-5. **Integrare in `executeCommand`** (15 min)
-   - Pre-check PRIMA di eseguire comando
-   - Post-update DOPO check luce
-   - Test: verificare ordine completo (Pre→Esegui→Luce→Post)
+---
 
-6. **Aggiungere messaggi i18n** (10 min)
-   - `timer.intercept.death` (IT/EN): "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!"
-   - Test: verificare messaggio in entrambe le lingue
+### 3.3.3 Pipeline Fase 2: runPreExecutionChecks (60 min)
 
-**Test di Integrazione:**
-- **T5:** Arrivo luogo 51 + 4 comandi → morte al 4° (no arrivo=0, cmd1=1, cmd2=2, cmd3=3, cmd4=morte) (10 min)
-- **T6:** 2 comandi luogo 51 → esci verso sicuro → counter reset a 0 (5 min)
-- **T7:** Luogo 51→52→51→55 (4 spostamenti tra pericolosi) → morte al 4° (10 min)
-- **T8:** 3 comandi luogo 51 → esci verso sicuro → torna 51 → counter resettato (5 min)
+**Task:**
+1. Implementare check intercettazione (counter >= 3 → GAME_OVER)
+2. Implementare check movement block (narrativa luogo 59)
+3. Implementare check awaiting continue (narrativa BARRA SPAZIO)
+4. Integrare in `executeCommand` dopo `prepareTurnContext`
 
-**Tempo stimato totale:** ~1.5 ore (75 min task + 30 min test)
+**Codice:**
+```javascript
+function runPreExecutionChecks(parseResult) {
+  const { current } = gameState.turn;
+  
+  // Check intercettazione
+  if (current.inDangerZone && current.consumesTurn) {
+    if (gameState.turn.turnsInDangerZone >= 3) {
+      gameState.ended = true;
+      return {
+        accepted: false,
+        resultType: 'GAME_OVER',
+        message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
+        deathReason: 'INTERCETTAZIONE'
+      };
+    }
+  }
+  
+  // Check movement block
+  if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: "Non puoi muoverti. La guardia ti sta osservando."
+    };
+  }
+  
+  // Check awaiting continue
+  if (gameState.awaitingContinue) {
+    return processContinueNarrative();
+  }
+  
+  return null; // Nessun blocco
+}
+```
+
+**Test:**
+- 3 turni in luogo pericoloso → 4° comando bloccato con GAME_OVER
+- Comando INVENTARIO in luogo pericoloso → NO incremento counter
+- Movement block attivo → NAVIGATION bloccata
+- Movement block inattivo → NAVIGATION permessa
+
+**Effort:** 60 min (40 min implementazione + 20 min test)
+
+---
+
+### 3.3.4 Estrazione executeCommandCore (30 min) ⚠️ CRITICO
+
+**Task:**
+1. Creare funzione `executeCommandCore(parseResult)` vuota
+2. **Copia-incolla ESATTA** del codice switch esistente da `executeCommand`
+3. Sostituire body di `executeCommand` con chiamata a `executeCommandCore`
+4. **Zero modifiche logiche** (test regressione devono passare tutti)
+
+**Codice:**
+```javascript
+// PRIMA (attuale)
+export function executeCommand(parseResult) {
+  // ... validazione ...
+  switch (parseResult.CommandType) {
+    case 'NAVIGATION': /* ... */
+    case 'SYSTEM': /* ... */
+    case 'ACTION': /* ... */
+  }
+}
+
+// DOPO (estratto)
+function executeCommandCore(parseResult) {
+  // === COPIA ESATTA DEL CODICE ATTUALE ===
+  switch (parseResult.CommandType) {
+    case 'NAVIGATION': /* ... stesso codice ... */
+    case 'SYSTEM': /* ... stesso codice ... */
+    case 'ACTION': /* ... stesso codice ... */
+  }
+}
+
+export function executeCommand(parseResult) {
+  if (!parseResult.IsValid) return errorResponse();
+  return executeCommandCore(parseResult); // Wrapper temporaneo
+}
+```
+
+**Test:**
+- **Tutti i test esistenti devono passare** (nessuna regressione)
+- PRENDI LAMPADA → stesso comportamento
+- NORD → stesso comportamento
+- INVENTARIO → stesso comportamento
+- Interazioni custom → stesso comportamento
+
+**Effort:** 30 min (15 min refactoring + 15 min test regressione)
+
+---
+
+### 3.3.5 Pipeline Fase 4: applyTurnEffects (90 min) ⚠️ CRITICO
+
+**Task:**
+1. Implementare logica torcia (incremento, spegnimento dopo 6 turni)
+2. Implementare logica buio (countdown 3 turni, morte)
+3. Implementare logica intercettazione (incremento/reset counter)
+4. Implementare assegnazione misteri automatici
+5. Integrare in `executeCommand` dopo `executeCommandCore`
+
+**Codice:**
+```javascript
+function applyTurnEffects(result, parseResult) {
+  const { current } = gameState.turn;
+  
+  // === Sistema Illuminazione ===
+  if (current.hasLight) {
+    const TORCIA_ID = 37;
+    const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
+    const torciaInInventario = torcia && torcia.IDLuogo === 0;
+    const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
+    
+    if (torciaAccesa) {
+      gameState.turn.turnsWithTorch++;
+      
+      if (gameState.turn.turnsWithTorch >= 6) {
+        gameState.timers.torciaSpenta = true;
+        result.message += '\n\n' + getSystemMessage('timer.torch.defective', gameState.currentLingua);
+        
+        if (!gameState.timers.lampadaAccesa) {
+          gameState.turn.turnsInDarkness = 0;
+          result.message += ' ' + getSystemMessage('timer.torch.warning', gameState.currentLingua);
+        }
+      }
+    }
+    
+    gameState.turn.turnsInDarkness = 0;
+    
+  } else {
+    gameState.turn.turnsInDarkness++;
+    
+    if (gameState.turn.turnsInDarkness >= 3) {
+      gameState.ended = true;
+      return {
+        accepted: true,
+        resultType: 'GAME_OVER',
+        message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
+        deathReason: 'MORTE_BUIO'
+      };
+    }
+  }
+  
+  // === Sistema Intercettazione ===
+  if (current.inDangerZone) {
+    gameState.turn.turnsInDangerZone++;
+  } else {
+    gameState.turn.turnsInDangerZone = 0;
+  }
+  
+  // === Punteggio Misteri ===
+  if (result.effects && result.effects.length > 0) {
+    result.effects.forEach(effect => {
+      const misteroId = generateMisteroId(effect);
+      if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
+        gameState.punteggio.totale += 3;
+        gameState.punteggio.misteriRisolti.add(misteroId);
+      }
+    });
+  }
+  
+  gameState.turn.totalTurnsConsumed++;
+  return result;
+}
+```
+
+**Test:**
+- 6 turni con torcia → torcia si spegne con messaggio
+- 3 turni al buio → GAME_OVER
+- Accendi lampada dopo 2 turni buio → reset countdown
+- 3 turni in luogo pericoloso → counter = 3 (morte al 4° in pre-check)
+- Esci da zona pericolosa → counter reset a 0
+- Comando INVENTARIO → NO incremento counter
+
+**Effort:** 90 min (60 min implementazione + 30 min test)
+
+---
+
+### 3.3.6 Integrazione Pipeline Completa (45 min)
+
+**Task:**
+1. Modificare `executeCommand` con chiamate alle 4 fasi
+2. Implementare gestione `turnConsumed` flag
+3. Test integrazione end-to-end
+
+**Codice:**
+```javascript
+export function executeCommand(parseResult) {
+  // Validazione
+  if (!parseResult || !parseResult.IsValid) {
+    return errorResponse();
+  }
+  
+  // FASE 1: Snapshot
+  prepareTurnContext(parseResult);
+  
+  // FASE 2: Pre-checks
+  const preCheckResult = runPreExecutionChecks(parseResult);
+  if (preCheckResult) return preCheckResult;
+  
+  // FASE 3: Core execution
+  let result = executeCommandCore(parseResult);
+  
+  // FASE 4: Post-effects (solo se turno consumato)
+  const turnConsumed = result.accepted && gameState.turn.current.consumesTurn;
+  if (turnConsumed) {
+    result = applyTurnEffects(result, parseResult);
+  }
+  
+  return result;
+}
+```
+
+**Test Integrazione Completa:**
+- **T1:** Partenza → 6 comandi (non SYSTEM) → torcia spenta → 3 comandi → morte buio (25 min)
+- **T2:** Partenza → PRENDI LAMPADA → ACCENDI LAMPADA → 100 comandi → gioco prosegue (15 min)
+- **T3:** Arrivo luogo 51 → 3 comandi → 4° comando → morte intercettazione (10 min)
+- **T4:** 2 comandi luogo 51 → OVEST (esci) → torna 51 → counter reset (10 min)
+- **T5:** Comando INVENTARIO non incrementa counter torcia/intercettazione (5 min)
+
+**Effort:** 45 min (20 min integrazione + 25 min test)
+
+---
+
+### 3.3.7 Sprint 3.3.5.B - Sistema Buio e Interazione ACCENDI LAMPADA
+
+Sprint suddiviso in **7 sottosprint atomici** per garantire implementazione incrementale e testabilità continua.
+
+---
+
+#### **3.3.7.1 - Estensione applicaEffetti() per SET_FLAG/RESET_COUNTER** (30 min)
+
+**Obiettivo:** Supportare nuovi tipi effetto necessari per `accendi_lampada`.
+
+**File:** `src/logic/interactionEngine.js`
+
+**Codice:**
+```javascript
+// In applicaEffetti() - estendere switch statement
+case 'SET_FLAG':
+  setNestedProperty(gameState, effetto.Flag, effetto.Valore);
+  break;
+
+case 'RESET_COUNTER':
+  setNestedProperty(gameState, effetto.Counter, 0);
+  break;
+```
+
+**Test Unit:**
+- `applicaEffetti([{Tipo: 'SET_FLAG', Flag: 'timers.lampadaAccesa', Valore: true}])` → `gameState.timers.lampadaAccesa === true`
+- `applicaEffetti([{Tipo: 'RESET_COUNTER', Counter: 'turn.turnsInDarkness'}])` → `gameState.turn.turnsInDarkness === 0`
+- `applicaEffetti([{Tipo: 'SET_FLAG', Flag: 'nested.deep.value', Valore: 42}])` → percorsi nested funzionanti
+- Validazione `setNestedProperty()` con percorsi inesistenti → warning ma no crash
+
+**Test Manuale:** ❌ Nulla (solo infrastruttura interna, eseguire `npm test`)
+
+**Effort:** 30 min (20 min implementazione + 10 min test)
+
+---
+
+#### **3.3.7.2 - Aggiunta interazione accendi_lampada in Interazioni.json** (15 min)
+
+**Obiettivo:** Definire interazione data-driven per ACCENDI LAMPADA.
+
+**File:** `src/data-internal/Interazioni.json`
+
+**Entry JSON:**
+```json
+{
+  "ID_Interazione": "accendi_lampada",
+  "TipoCommand": "ACTION",
+  "Verb": ["ACCENDERE", "ILLUMINARE"],
+  "Target": [27],
+  "Prerequisiti": [
+    {"Tipo": "HAS_OBJECT", "ID_Oggetto": 27, "Luogo": 0},
+    {"Tipo": "HAS_OBJECT", "ID_Oggetto": 36, "Luogo": 0},
+    {"Tipo": "FLAG_FALSE", "Flag": "timers.lampadaAccesa"}
+  ],
+  "Effetti": [
+    {"Tipo": "SET_FLAG", "Flag": "timers.lampadaAccesa", "Valore": true},
+    {"Tipo": "RESET_COUNTER", "Counter": "turn.turnsInDarkness"}
+  ],
+  "MessaggioSuccesso": "action.light.lamp.success",
+  "MessaggiErrore": {
+    "action.light.lamp.not_have": {"Condizione": "!HAS_OBJECT(27)"},
+    "action.light.lamp.no_matches": {"Condizione": "!HAS_OBJECT(36)"},
+    "action.light.lamp.already_lit": {"Condizione": "FLAG_TRUE(timers.lampadaAccesa)"}
+  },
+  "Punteggio": 2
+}
+```
+
+**Test Unit:**
+- Validazione schema JSON (15° interazione, totale 15)
+- Parser riconosce `ACCENDI LAMPADA` → indirizzato a `cercaEseguiInterazione()`
+
+**Test Manuale:** ⚠️ Parziale (comando riconosciuto, attendere B.3 per messaggi completi)
+```
+> ACCENDI LAMPADA
+Atteso: Non più "Non capisco" (potrebbero mancare messaggi errore se B.3 non completato)
+```
+
+**Effort:** 15 min (10 min implementazione + 5 min validazione)
+
+---
+
+#### **3.3.7.3 - Aggiunta messaggi i18n per lampada** (10 min)
+
+**Obiettivo:** Completare messaggi mancanti per errori ACCENDI LAMPADA.
+
+**File:** `src/data-internal/MessaggiSistema.json`
+
+**Messaggi da aggiungere/verificare:**
+```json
+{
+  "action.light.lamp.success": {
+    "1": "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente.",
+    "2": "You light the lamp with the matches. A warm and steady light illuminates the surroundings."
+  },
+  "action.light.lamp.not_have": {
+    "1": "Non hai la lampada.",
+    "2": "You don't have the lamp."
+  },
+  "action.light.lamp.no_matches": {
+    "1": "Non hai i fiammiferi per accendere la lampada.",
+    "2": "You don't have matches to light the lamp."
+  },
+  "action.light.lamp.already_lit": {
+    "1": "La lampada è già accesa.",
+    "2": "The lamp is already lit."
+  }
+}
+```
+
+**Test Unit:**
+- Chiavi presenti in JSON
+- Traduzioni IT/EN complete (4 chiavi × 2 lingue = 8 stringhe)
+
+**Test Manuale:** ✅ **ACCENDI LAMPADA completo**
+
+**Scenario 1 - Successo:**
+```
+> PRENDI LAMPADA (al luogo 6)
+> PRENDI FIAMMIFERI (al luogo appropriato)
+> ACCENDI LAMPADA
+✅ Atteso: "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente."
+✅ Verifica: gameState.timers.lampadaAccesa === true (visibile via console o comando PUNTI)
+```
+
+**Scenario 2 - Senza lampada:**
+```
+> ACCENDI LAMPADA (senza avere lampada in inventario)
+✅ Atteso: "Non hai la lampada."
+```
+
+**Scenario 3 - Senza fiammiferi:**
+```
+> PRENDI LAMPADA
+> ACCENDI LAMPADA (senza fiammiferi)
+✅ Atteso: "Non hai i fiammiferi per accendere la lampada."
+```
+
+**Scenario 4 - Lampada già accesa:**
+```
+> ACCENDI LAMPADA (prima volta - successo)
+> ACCENDI LAMPADA (seconda volta)
+✅ Atteso: "La lampada è già accesa."
+```
+
+**Effort:** 10 min (7 min aggiunta + 3 min validazione)
+
+---
+
+#### **3.3.7.4 - Implementazione countdown buio in applyTurnEffects()** (40 min)
+
+**Obiettivo:** Countdown 3 turni senza luce → morte.
+
+**File:** `src/logic/engine.js`
+
+**Codice (estensione applyTurnEffects()):**
+```javascript
+// Dopo la sezione torcia, aggiungere:
+
+// === Sistema Countdown Buio ===
+if (hasFonteLuceAttiva()) {
+  // Luce attiva: reset countdown
+  gameState.turn.turnsInDarkness = 0;
+} else {
+  // Nessuna luce: incrementa countdown
+  gameState.turn.turnsInDarkness++;
+  
+  // Morte dopo 3 turni al buio
+  if (gameState.turn.turnsInDarkness >= 3) {
+    gameState.ended = true;
+    return {
+      accepted: true,
+      resultType: 'GAME_OVER',
+      message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
+      deathReason: 'MORTE_BUIO',
+      showLocation: false
+    };
+  }
+}
+```
+
+**Messaggio da aggiungere a MessaggiSistema.json:**
+```json
+{
+  "timer.darkness.death": {
+    "1": "💀 MORTE AL BUIO\n\nMuoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!\n\n*** SEI MORTO ***",
+    "2": "💀 DEATH IN THE DARK\n\nMoving in the dark can be dangerous: you trip over debris and fall, breaking your neck. You're dead!\n\n*** YOU ARE DEAD ***"
+  }
+}
+```
+
+**Test Unit:**
+- `turnsInDarkness = 0, hasFonteLuceAttiva() = false` → `turnsInDarkness = 1`
+- `turnsInDarkness = 2, hasFonteLuceAttiva() = false` → `turnsInDarkness = 3, GAME_OVER`
+- `turnsInDarkness = 2, hasFonteLuceAttiva() = true` → `turnsInDarkness = 0` (reset)
+
+**Test Manuale:** ✅ **Morte per buio**
+
+**Scenario 1 - Morte dopo torcia spenta:**
+```
+> (Esegui 6 comandi qualsiasi - esempio: NORD, SUD, EST, OVEST, PRENDI TORCIA, POSA TORCIA)
+Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
+> NORD (1° turno buio)
+> SUD (2° turno buio)
+> NORD (3° turno buio)
+✅ Atteso: "💀 MORTE AL BUIO - Muoversi al buio può essere pericoloso..."
+✅ Verifica: gameState.ended === true, impossibile eseguire altri comandi
+```
+
+**Scenario 2 - Salvataggio con lampada:**
+```
+> (Esegui 6 comandi - torcia spenta)
+> NORD (1° turno buio)
+> PRENDI LAMPADA (non resetta countdown, serve accenderla)
+> ACCENDI LAMPADA (countdown resettato)
+> (Continua a giocare normalmente)
+✅ Atteso: Gioco prosegue senza morte, turnsInDarkness = 0
+```
+
+**Scenario 3 - Posa lampada accesa:**
+```
+> PRENDI LAMPADA
+> ACCENDI LAMPADA
+> POSA LAMPADA (lasci a terra)
+> NORD (1° turno buio - lampada non più in inventario)
+> SUD (2° turno buio)
+> OVEST (3° turno buio)
+✅ Atteso: Morte per buio (lampada accesa ma non in inventario = no luce)
+```
+
+**Scenario 4 - Recupero lampada in tempo:**
+```
+> (Accendi lampada, poi posa)
+> NORD (1° turno buio)
+> SUD (2° turno buio, torni dove hai lasciato lampada)
+> PRENDI LAMPADA (countdown resettato)
+✅ Atteso: Gioco prosegue, turnsInDarkness = 0
+```
+
+**Effort:** 40 min (25 min implementazione + 15 min test)
+
+---
+
+#### **3.3.7.5 - Test integrazione interazione accendi_lampada** (25 min)
+
+**Obiettivo:** Validare flusso completo ACCENDI LAMPADA via `cercaEseguiInterazione()`.
+
+**Test Unit:**
+1. Comando senza lampada → errore `not_have`
+2. Comando senza fiammiferi → errore `no_matches`
+3. Comando con prerequisiti → successo, `timers.lampadaAccesa = true`, `turnsInDarkness = 0`
+4. Comando lampada già accesa → messaggio `already_lit`
+5. Verifica +2 punti interazione (prima esecuzione), 0 punti successive
+
+**Test Manuale:** ❌ Nulla di nuovo (valida B.1+B.2+B.3 già testati in B.3)
+
+**Effort:** 25 min (15 min test + 10 min validazione copertura)
+
+---
+
+#### **3.3.7.6 - Test countdown buio con morte** (30 min)
+
+**Obiettivo:** Validare morte dopo 3 turni senza luce (test E2E).
+
+**Test E2E:**
+1. Torcia spenta (6 turni) → 3 movimenti senza luce → morte buio
+2. Torcia spenta → 2 movimenti → ACCENDI LAMPADA → countdown reset, gioco prosegue
+3. Posa lampada accesa → 3 movimenti → morte buio
+4. Posa lampada → 2 movimenti → PRENDI LAMPADA → countdown reset
+
+**Test Manuale:** ❌ Nulla di nuovo (valida B.4 già testato)
+
+**Effort:** 30 min (20 min test + 10 min edge cases)
+
+---
+
+#### **3.3.7.7 - Test regressione sistema torcia** (15 min)
+
+**Obiettivo:** Verificare che Sprint 3.3.5.A non sia rotto.
+
+**Test Regressione:**
+- Eseguire suite completa `npm test` → 105/105 passing (+ nuovi test B.1-B.6)
+- Torcia si spegne dopo 6 turni (conteggio corretto)
+- Messaggio differenziato (con/senza lampada)
+- Posa torcia → spegnimento immediato
+- Counter `turnsWithTorch` incrementato solo da comandi consumanti turno
+
+**Test Manuale:** ✅ **Verifica Sprint 3.3.5.A**
+
+**Scenario 1 - Torcia 6 turni:**
+```
+> NORD (turno 1)
+> SUD (turno 2)
+> EST (turno 3)
+> OVEST (turno 4)
+> NORD (turno 5)
+> SUD (turno 6)
+✅ Atteso: Messaggio "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
+```
+
+**Scenario 2 - Posa torcia anticipata:**
+```
+> NORD (turno 1)
+> SUD (turno 2)
+> EST (turno 3)
+> POSA TORCIA
+✅ Atteso: Torcia si spegne immediatamente (gameState.timers.torciaSpenta = true)
+```
+
+**Scenario 3 - Messaggio differenziato con lampada:**
+```
+> (Esegui PRENDI LAMPADA, PRENDI FIAMMIFERI, ACCENDI LAMPADA)
+> (Esegui 6 comandi per spegnere torcia)
+✅ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa." (SENZA "E' pericoloso...")
+```
+
+**Effort:** 15 min (10 min test + 5 min validazione suite)
+
+---
+
+**Totale Sprint 3.3.5.B:** ~165 min (2h 45min)
+
+**Checkpoint critici per test manuali:**
+- ✅ Dopo **B.3**: Test completo interazione ACCENDI LAMPADA (4 scenari)
+- ✅ Dopo **B.4**: Test completo countdown buio con morte (4 scenari)
+- ✅ Dopo **B.7**: Test regressione torcia (3 scenari)
+
+---
+
+---
+
+### 3.3.8 Aggiornare systemMessages.json (20 min)
+
+**Task:**
+1. Aggiungere messaggi i18n per timer (torcia, buio, intercettazione)
+2. Aggiungere messaggi i18n per comando ACCENDI LAMPADA
+3. Test visualizzazione in IT/EN
+
+**Messaggi da aggiungere:**
+```json
+{
+  "timer.torch.defective": {
+    "1": "La tua torcia si spegne di colpo: deve essere difettosa.",
+    "2": "Your torch suddenly goes out: it must be defective."
+  },
+  "timer.torch.warning": {
+    "1": "È pericoloso muoversi al buio.",
+    "2": "It's dangerous to move in the dark."
+  },
+  "timer.darkness.death": {
+    "1": "Muoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!",
+    "2": "Moving in the dark can be dangerous: you trip over debris and fall, breaking your neck. You're dead!"
+  },
+  "timer.intercept.death": {
+    "1": "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!",
+    "2": "You've been spotted by a Russian patrol that arrests you as a spy. An inglorious end!"
+  },
+  "action.light.lamp.success": {
+    "1": "Accendi la lampada. Una luce calda e stabile illumina l'ambiente.",
+    "2": "You light the lamp. A warm and steady light illuminates the surroundings."
+  },
+  "action.light.lamp.not_have": {
+    "1": "Non hai la lampada!",
+    "2": "You don't have the lamp!"
+  },
+  "action.light.lamp.no_matches": {
+    "1": "Non hai i fiammiferi per accendere la lampada!",
+    "2": "You don't have matches to light the lamp!"
+  },
+  "action.light.lamp.already_lit": {
+    "1": "La lampada è già accesa.",
+    "2": "The lamp is already lit."
+  }
+}
+```
+
+**Effort:** 20 min (15 min aggiunta + 5 min test)
+
+---
+
+## **Riepilogo Effort Totale § 3.3**
+
+| Task | Effort | Rischio |
+|------|--------|--------|
+| 3.3.1 Estensione gameState.turn | 30 min | Basso |
+| 3.3.2 prepareTurnContext | 45 min | Basso |
+| 3.3.3 runPreExecutionChecks | 60 min | Medio |
+| 3.3.4 Estrazione executeCommandCore | 30 min | ⚠️ Alto (regressione) |
+| 3.3.5 applyTurnEffects | 90 min | ⚠️ Alto (logica critica) |
+| 3.3.6 Integrazione pipeline | 45 min | Medio |
+| 3.3.7 Comando ACCENDI LAMPADA | 30 min | Basso |
+| 3.3.8 Messaggi i18n | 20 min | Basso |
+| **TOTALE** | **350 min (~5.8 ore)** | Medio-Alto |
+
+**Note:**
+- ✅ **Zero modifiche a cercaEseguiInterazione** (logica interazioni preservata)
+- ✅ **Zero modifiche ai return() di ACTION** (logica esistente invariata)
+- ⚠️ **Task 3.3.4 critico:** Test regressione completi obbligatori
+- ⚠️ **Task 3.3.5 critico:** Logica temporizzata complessa, test granulari
+
+**Strategia Rollback:**
+- Dopo 3.3.4: commit "refactor: extract executeCommandCore (no logic change)"
+- Dopo 3.3.6: commit "feat: implement turn-based pipeline (illumination + intercept)"
+- Se problemi in 3.3.5: rollback a 3.3.4 (core funzionante, pipeline disabilitata)
 
 ---
 
@@ -1556,7 +2115,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 
 5. **Implementare schermata vittoria finale** (20 min)
    - Mostra statistiche: punteggio finale, rank, luoghi visitati, interazioni, misteri
-   - Messaggio congratulazioni basato su punteggio (132 = perfetto, <100 = discreto, etc.)
+   - Messaggio congratulazioni basato su punteggio (134 = perfetto, <100 = discreto, etc.)
    - Opzione RICOMINCIA o ESCI
    - Test: verificare tutte statistiche corrette
 
@@ -1580,7 +2139,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 - **T7:** Luogo 59 senza Documenti → PORGI DOCUMENTI → errore (no counter) (5 min)
 - **T8:** Luogo 59 → 5 comandi diversi → Game Over guardia (10 min)
 - **T9:** Luogo 59 → 3 comandi → PORGI → vittoria (counter non raggiunge 5) (5 min)
-- **T10:** Playtest completo inizio→fine con punteggio perfetto 132 (30 min)
+- **T10:** Playtest completo inizio→fine con punteggio perfetto 134 (30 min)
 
 **Tempo stimato totale:** ~2.5 ore (135 min task + 60 min test)
 
@@ -2302,9 +2861,9 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 
 ### OP-03: Bilanciamento Punteggio Finale (Priorità: Bassa)
 **Status:** Da validare post-implementazione  
-**Descrizione:** Verificare che il punteggio massimo di 132 punti sia effettivamente raggiungibile completando tutte le 14 interazioni, risolvendo i 14 misteri automatici (+ 1 cassaforte), e completando il gioco.  
+**Descrizione:** Verificare che il punteggio massimo di 134 punti sia effettivamente raggiungibile completando tutte le 15 interazioni (inclusa "Accendi Lampada"), risolvendo i 14 misteri automatici (+ 1 cassaforte), e completando il gioco.  
 **Azione richiesta:** Playtest completo con utente che tenta 100% completion.  
-**Calcolo teorico:** 56 luoghi + 14 interazioni×2 + 14 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 56+28+42+2+4 = 132 punti.  
+**Calcolo teorico:** 56 luoghi + 15 interazioni×2 + 14 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 56+30+42+2+4 = 134 punti.  
 **Blocca:** Solo polish finale (post-implementazione).
 
 ---
@@ -2334,9 +2893,9 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 - ✅ Luogo 54: Luogo terminale raggiungibile da ID=53 via direzione Sud (morte istantanea, gestito come ID=8/ID=40)
 - ✅ Luogo 57 (Capanno attrezzi): intenzionalmente **non pericoloso** (rifugio)
 - ✅ Sequenza cassaforte: Pattern D-S-S-D-S (5 rotazioni), award +2 al completamento
-- ✅ Interazioni con punteggio: 14 identificate complete, tutte danno +2 alla prima esecuzione
+- ✅ Interazioni con punteggio: 15 identificate complete (inclusa "Accendi Lampada"), tutte danno +2 alla prima esecuzione
 - ✅ Misteri automatici: 14 totali (8 VISIBILITA + 4 SBLOCCA + 2 TOGGLE prima apertura), danno +3 inline quando effetto si verifica, più 1 sequenza cassaforte +2
-- ✅ Punteggio massimo: **132 punti** (56 luoghi + 28 interazioni + 42 misteri + 2 sequenza + 4 completamento)
+- ✅ Punteggio massimo: **134 punti** (56 luoghi + 30 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 - ✅ Direzioni bidirezionali: contano come 1 mistero unico (+3), non 2
 - ✅ TOGGLE_DIREZIONE: mistero solo prima apertura (0→valore), chiusure/riaperture non danno punti
 - ✅ Eliminazione Misteri.json: file obsoleto, logica misteri ora inline negli effetti

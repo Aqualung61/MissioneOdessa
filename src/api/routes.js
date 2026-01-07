@@ -62,7 +62,7 @@ router.get('/luogo-oggetti', async (req, res) => {
   }
   const data = getOggetti();
   const filtered = data
-    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua && (item.Attivo === 1 || item.Attivo >= 3));
+    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua && item.Attivo >= 1);
   const oggetti = filtered
     .map(item => {
       return { descrizione: item.Oggetto || '' };

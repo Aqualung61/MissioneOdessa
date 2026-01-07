@@ -111,10 +111,16 @@ Quattro gruppi di endpoint REST:
 - **engineRoutes.js** - Game engine (stato gioco, azioni)
 
 #### Business Logic
-- **engine.js** - Core del gioco: gestisce stato, inventario, logica azioni
+- **engine.js** - Core del gioco: gestisce stato, inventario, logica azioni, coordina turn effects
 - **parser.js** - Interpreta comandi testuali dell'utente
 - **messages.js** - Gestione messaggi e testi dinamici
 - **systemMessages.js** - Caricamento messaggi di sistema
+- **turnEffects/** - Middleware pattern per effetti temporali (torch, darkness, intercettazione, misteri)
+  - **index.js** - Registry e coordinatore effetti (TURN_EFFECTS array)
+  - **torchEffect.js** - Logica countdown torcia (6 turni → difettosa)
+  - **darknessEffect.js** - *(TODO Sprint 3.3.5.B)* Countdown buio (3 turni → morte)
+  - **interceptEffect.js** - *(TODO Sprint 3.3.5.C)* Countdown intercettazione (3 turni → morte)
+  - **mysteryEffect.js** - *(TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
 
 ### 💾 Data Layer
 Architettura dati ibrida:
@@ -688,21 +694,34 @@ sequenceDiagram
 
 ## Logiche Avanzate
 
-### Sistema Turn v3.0
-**Obiettivo**: Gestire effetti temporali (torcia, buio, intercettazione) in modo robusto.
+### Sistema Turn v3.0 (Middleware Architecture)
+**Obiettivo**: Gestire effetti temporali (torcia, buio, intercettazione) in modo scalabile e manutenibile.
 
-**Fasi**:
-1. **prepareTurnContext**: Snapshot stato pre-esecuzione
-2. **runPreExecutionChecks**: Valida condizioni (game over, blocchi)
-3. **executeCommandLegacy**: Esegue comando
-4. **applyTurnEffects**: Applica effetti post-esecuzione
+**Architettura**: Plugin/Middleware pattern con registry centralizzato.
 
-**Regole Temporizzazione**:
-- Comandi informativi (INVENTARIO, AIUTO, PUNTI) **non consumano** turno
-- Altri comandi validi **consumano** turno
-- **Torcia**: Si guasta dopo 6 turni di uso (`torciaDifettosa = true`)
-- **Buio**: Morte dopo 3 turni senza luce in luogo buio
-- **Intercettazione**: Morte dopo 3 turni in zone pericolose (51,52,53,55,56,58)
+**Fasi Esecuzione Comando**:
+1. **prepareTurnContext()**: Snapshot stato pre-esecuzione, incremento contatori
+2. **runPreExecutionChecks()**: Valida condizioni (game over, blocchi) - *attualmente disabilitato*
+3. **executeCommandLegacy()**: Esegue comando specifico
+4. **applyTurnEffects()**: Delega a `applyAllTurnEffects()` che itera il registry TURN_EFFECTS
+
+**Filtro Comandi** (basato su `parseResult.CommandType`):
+- **CommandType === 'SYSTEM'**: NON consumano turno (INVENTARIO, AIUTO, PUNTI, SALVA, GUARDA)
+- **CommandType === 'NAVIGATION'**: Consumano turno (NORD, SUD, EST, OVEST...)
+- **CommandType === 'ACTION'**: Consumano turno (PRENDI, LASCIA, ESAMINA, USA...)
+
+**Turn Effects Implementati**:
+- ✅ **torchEffect**: Countdown 6 turni → torcia difettosa (completato)
+- ⏳ **darknessEffect**: Countdown 3 turni al buio → morte (TODO Sprint 3.3.5.B - 80% infrastruttura pronta)
+- ⏳ **interceptEffect**: Countdown 3 turni zone pericolose → morte (TODO Sprint 3.3.5.C)
+- ⏳ **mysteryEffect**: Auto-assegnazione misteri (TODO Sprint 3.3.5.D)
+
+**Vantaggi Architettura**:
+- Separazione responsabilità: ogni effetto in file dedicato
+- Estensibilità: aggiungere nuovo effetto = nuovo file + 1 riga nel registry
+- Manutenibilità: modificare un effetto non impatta altri
+- Testabilità: ogni effect testabile in isolamento
+- Priorità esecuzione: controllata dall'ordine nel TURN_EFFECTS array
 
 ### Sistema Oggetti Attivo
 Ogni oggetto ha campo `Attivo`:
