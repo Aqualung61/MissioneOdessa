@@ -19,7 +19,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       expect(state.turn).toBeDefined();
       expect(state.turn.globalTurnNumber).toBe(0);
       expect(state.turn.totalTurnsConsumed).toBe(0);
-      expect(state.turn.turnsWithTorch).toBe(0);
+      // turnsWithTorch rimosso - sistema torcia ora usa solo timers.torciaDifettosa
       expect(state.turn.turnsInDarkness).toBe(0);
       expect(state.turn.turnsInDangerZone).toBe(0);
       
@@ -39,47 +39,47 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
 
   describe('shouldConsumeTurn', () => {
     it('INVENTARIO non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'INVENTARIO' };
+      const parseResult = { IsValid: true, CommandType: 'SYSTEM', NormVerb: 'INVENTARIO' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
     it('AIUTO non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'AIUTO' };
+      const parseResult = { IsValid: true, CommandType: 'SYSTEM', NormVerb: 'AIUTO' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
     it('PUNTI non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'PUNTI' };
+      const parseResult = { IsValid: true, CommandType: 'SYSTEM', NormVerb: 'PUNTI' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
     it('SALVARE non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'SALVARE' };
+      const parseResult = { IsValid: true, CommandType: 'SYSTEM', NormVerb: 'SALVARE' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
     it('CARICARE non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'CARICARE' };
+      const parseResult = { IsValid: true, CommandType: 'SYSTEM', NormVerb: 'CARICARE' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
     it('NORD dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'NORD' };
+      const parseResult = { IsValid: true, CommandType: 'NAVIGATION', NormVerb: 'NORD' };
       expect(shouldConsumeTurn(parseResult)).toBe(true);
     });
 
     it('PRENDI dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'PRENDERE', NormNoun: 'CHIAVE' };
+      const parseResult = { IsValid: true, CommandType: 'ACTION', NormVerb: 'PRENDERE', NormNoun: 'CHIAVE' };
       expect(shouldConsumeTurn(parseResult)).toBe(true);
     });
 
     it('ESAMINA dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: true, NormVerb: 'ESAMINARE', NormNoun: 'TAVOLO' };
+      const parseResult = { IsValid: true, CommandType: 'ACTION', NormVerb: 'ESAMINARE', NormNoun: 'TAVOLO' };
       expect(shouldConsumeTurn(parseResult)).toBe(true);
     });
 
     it('parseResult non valido non dovrebbe consumare turno', () => {
-      const parseResult = { IsValid: false, NormVerb: 'INVALID' };
+      const parseResult = { IsValid: false, NormVerb: 'INVALID', CommandType: 'UNKNOWN' };
       expect(shouldConsumeTurn(parseResult)).toBe(false);
     });
 
@@ -218,19 +218,19 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       expect(state.turn.totalTurnsConsumed).toBe(0);
       
       // Comando non-consuming
-      prepareTurnContext({ IsValid: true, NormVerb: 'INVENTARIO' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'INVENTARIO', CommandType: 'SYSTEM' });
       expect(state.turn.totalTurnsConsumed).toBe(0);
       
       // Comando consuming
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.totalTurnsConsumed).toBe(1);
       
       // Altro consuming
-      prepareTurnContext({ IsValid: true, NormVerb: 'PRENDI', NormNoun: 'CHIAVE' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'PRENDI', NormNoun: 'CHIAVE', CommandType: 'ACTION' });
       expect(state.turn.totalTurnsConsumed).toBe(2);
       
       // Non-consuming di nuovo
-      prepareTurnContext({ IsValid: true, NormVerb: 'PUNTI' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'PUNTI', CommandType: 'SYSTEM' });
       expect(state.turn.totalTurnsConsumed).toBe(2); // Non incrementato
     });
 
@@ -238,12 +238,12 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       const state = getGameState();
       
       // Senza luce
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(false);
       
       // Con lampada accesa
       state.timers.lampadaAccesa = true;
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(true);
     });
 
@@ -253,27 +253,27 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       
       // Luogo sicuro (ID=1)
       state.currentLocationId = 1;
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.inDangerZone).toBe(false);
       
       // Luogo pericoloso (ID=51)
       state.currentLocationId = 51;
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.inDangerZone).toBe(true);
       
       // Verifica tutti i luoghi pericolosi
       for (const zoneId of dangerZones) {
         state.currentLocationId = zoneId;
-        prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+        prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
         expect(state.turn.current.inDangerZone).toBe(true);
       }
     });
 
     it('current.consumesTurn dovrebbe riflettere shouldConsumeTurn()', () => {
-      prepareTurnContext({ IsValid: true, NormVerb: 'INVENTARIO' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'INVENTARIO', CommandType: 'SYSTEM' });
       expect(getGameState().turn.current.consumesTurn).toBe(false);
       
-      prepareTurnContext({ IsValid: true, NormVerb: 'NORD' });
+      prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(getGameState().turn.current.consumesTurn).toBe(true);
     });
   });
@@ -391,7 +391,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
         const state = getGameState();
         state.awaitingContinue = true;
         
-        const parseResult = { IsValid: true, NormVerb: 'CONTINUA', CommandType: 'SYSTEM' };
+        const parseResult = { IsValid: true, NormVerb: 'CONTINUA', CommandType: 'SYSTEM', VerbConcept: 'CONTINUA' };
         prepareTurnContext(parseResult);
         
         const result = runPreExecutionChecks(parseResult);

@@ -21,9 +21,10 @@ import { getSystemMessage } from '../systemMessages.js';
  * 
  * @param {Object} gameState - Stato del gioco
  * @param {Object} result - Risultato del comando da modificare
- * @param {Object} parseResult - Comando parsato
+ * @param {Object} _parseResult - Comando parsato (non usato)
  */
-export function gameOverEffect(gameState, result, parseResult) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function gameOverEffect(gameState, result, _parseResult) {
   // Guard: Se già in game over, non verificare altre condizioni
   if (gameState.awaitingRestart || gameState.ended) {
     return;

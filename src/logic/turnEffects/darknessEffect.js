@@ -15,15 +15,14 @@
  * Sprint 3.3.5.B
  */
 
-import { getSystemMessage } from '../systemMessages.js';
-
 /**
  * Applica effetto darkness al turno corrente
  * @param {Object} gameState - Stato del gioco
- * @param {Object} result - Risultato del comando da modificare
- * @param {Object} parseResult - Comando parsato
+ * @param {Object} _result - Risultato del comando (non usato)
+ * @param {Object} _parseResult - Comando parsato (non usato)
  */
-export function darknessEffect(gameState, result, parseResult) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function darknessEffect(gameState, _result, _parseResult) {
   // Usa hasLight già calcolato da torchEffect/prepareTurnContext
   const hasLight = gameState.turn.current.hasLight;
   const hadLightBefore = gameState.turn.previous.hasLight;

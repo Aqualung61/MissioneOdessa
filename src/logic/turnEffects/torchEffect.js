@@ -33,9 +33,10 @@ function hasFonteLuceAttiva(gameState) {
  * Applica effetto torcia al turno corrente
  * @param {Object} gameState - Stato del gioco
  * @param {Object} result - Risultato del comando da modificare
- * @param {Object} parseResult - Comando parsato
+ * @param {Object} _parseResult - Comando parsato (non usato)
  */
-export function torchEffect(gameState, result, parseResult) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function torchEffect(gameState, result, _parseResult) {
   // Guard clause: controlla torcia solo se non ancora difettosa (check una-tantum)
   if (!gameState.timers.torciaDifettosa) {
     const torcia = gameState.Oggetti.find(o => o.ID === 37);

@@ -18,7 +18,8 @@ describe('applicaEffetti - SET_FLAG e RESET_COUNTER', () => {
       const gameState = getGameState();
       
       // Simula esecuzione di applicaEffetti con SET_FLAG
-      const effetto = {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _effetto = {
         tipo: 'SET_FLAG',
         flag: 'timers.lampadaAccesa',
         valore: true

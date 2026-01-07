@@ -14,7 +14,7 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
   });
 
   describe('Contatore turni con torcia', () => {
-    it('dovrebbe incrementare turnsWithTorch ad ogni comando consuming con torcia', () => {
+    it('dovrebbe tracciare turni consuming con torcia funzionante', () => {
       const state = getGameState();
       
       // Simula torcia in inventario e funzionante
@@ -23,18 +23,19 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
         torcia.Inventario = true;
         state.timers.torciaDifettosa = false;
         
-        // Esegui 3 comandi consuming
+        // Esegui 3 comandi consuming - torcia NON dovrebbe spegnersi
         for (let i = 0; i < 3; i++) {
           executeCommand({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
         }
         
-        expect(state.turn.turnsWithTorch).toBe(3);
+        expect(state.timers.torciaDifettosa).toBe(false);
+        expect(state.turn.totalTurnsConsumed).toBe(3);
       } else {
         expect(true).toBe(true); // Torcia non presente nei dati
       }
     });
 
-    it('NON dovrebbe incrementare turnsWithTorch per comandi non-consuming', () => {
+    it('NON dovrebbe contare turni non-consuming per spegnimento torcia', () => {
       const state = getGameState();
       
       const torcia = state.Oggetti.find(o => o.ID === 37);
@@ -42,16 +43,19 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
         torcia.Inventario = true;
         state.timers.torciaDifettosa = false;
         
-        // Comando non-consuming
-        executeCommand({ IsValid: true, NormVerb: 'INVENTARIO', CommandType: 'SYSTEM', VerbConcept: 'INVENTARIO' });
+        // Comandi non-consuming non dovrebbero far avanzare spegnimento torcia
+        for (let i = 0; i < 10; i++) {
+          executeCommand({ IsValid: true, NormVerb: 'INVENTARIO', CommandType: 'SYSTEM', VerbConcept: 'INVENTARIO' });
+        }
         
-        expect(state.turn.turnsWithTorch).toBe(0);
+        expect(state.timers.torciaDifettosa).toBe(false); // Ancora accesa
+        expect(state.turn.totalTurnsConsumed).toBe(0);
       } else {
         expect(true).toBe(true);
       }
     });
 
-    it('NON dovrebbe incrementare turnsWithTorch senza torcia in inventario', () => {
+    it('dovrebbe gestire movimento senza torcia in inventario', () => {
       const state = getGameState();
       
       const torcia = state.Oggetti.find(o => o.ID === 37);
@@ -62,7 +66,9 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
         
         executeCommand({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
         
-        expect(state.turn.turnsWithTorch).toBe(0);
+        // Nessuna luce disponibile
+        expect(state.turn.current.hasLight).toBe(false);
+        expect(state.turn.totalTurnsConsumed).toBe(1);
       } else {
         expect(true).toBe(true);
       }
@@ -70,7 +76,7 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
   });
 
   describe('Spegnimento torcia dopo 6 turni', () => {
-    it('dovrebbe spegnere la torcia al 6° turno', () => {
+    it('dovrebbe spegnere la torcia al 6° turno consuming', () => {
       const state = getGameState();
       
       const torcia = state.Oggetti.find(o => o.ID === 37);
@@ -86,7 +92,7 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
         
         // Verifica che torcia sia spenta
         expect(state.timers.torciaDifettosa).toBe(true);
-        expect(state.turn.turnsWithTorch).toBe(6);
+        expect(state.turn.totalTurnsConsumed).toBe(6);
         
         // Verifica messaggio di warning nel risultato
         expect(lastResult.message).toContain('torcia');
@@ -109,7 +115,7 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
         }
         
         expect(state.timers.torciaDifettosa).toBe(false);
-        expect(state.turn.turnsWithTorch).toBe(5);
+        expect(state.turn.totalTurnsConsumed).toBe(5);
       } else {
         expect(true).toBe(true);
       }
@@ -168,12 +174,13 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
       if (torcia) {
         torcia.Inventario = true;
         state.timers.torciaDifettosa = true; // Già spenta
+        state.timers.lampadaAccesa = false;
         
-        const before = state.turn.turnsWithTorch;
         executeCommand({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
         
-        // Non dovrebbe incrementare se torcia già spenta
-        expect(state.turn.turnsWithTorch).toBe(before);
+        // Nessuna luce disponibile
+        expect(state.turn.current.hasLight).toBe(false);
+        expect(state.timers.torciaDifettosa).toBe(true); // Rimane spenta
       } else {
         expect(true).toBe(true);
       }
@@ -191,8 +198,9 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
       
       executeCommand({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       
-      // turnsWithTorch NON dovrebbe incrementare (luce da lampada, non torcia)
-      expect(state.turn.turnsWithTorch).toBe(0);
+      // Lampada fornisce luce alternativa
+      expect(state.turn.current.hasLight).toBe(true);
+      expect(state.turn.totalTurnsConsumed).toBe(1);
     });
   });
 
