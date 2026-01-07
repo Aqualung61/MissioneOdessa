@@ -150,10 +150,29 @@ Dati mantenuti in memoria durante l'esecuzione:
 - **Port**: 3001 (default) - configurabile via `process.env.PORT`
 - **Base Path**: Supporto deployment in sottocartelle via `process.env.BASE_PATH`
 
+## Deployment & Ambienti
+
+- **Locale sviluppo**: `npm run dev` (porta 3001 di default), caricamento dati da JSON in memoria.
+- **Sorgente**: repository GitHub (branch main) come unica fonte di verita'.
+- **Produzione**: deploy su Railway; same codebase, statici serviti da Express; se usi sottocartelle configura `BASE_PATH`.
+- **Note runtime**: niente database attivo (solo JSON in memoria), single istanza sufficiente per il carico previsto.
+
+## Testing
+
+- **Suite**: Vitest, esecuzione con `npm test` (o `npm run test:watch` in locale).
+- **Copertura**: parser, engine, rotte principali e smoke end-to-end; usata come rete di sicurezza regressioni.
+- **Strategia**: esegui i test prima di deploy su Railway.
+
+## Note Performance/Scalabilita'
+
+- Applicazione single-player, in-memory; carico previsto molto basso.
+- Nessuna esigenza di scaling orizzontale; una singola istanza Railway e' sufficiente.
+- Nessun uso di database esterno; i dati restano in memoria e su file JSON statici.
+
 ## Note Tecniche
 
 - Server single-threaded Node.js con dati in memoria per performance
-- Tutti i dati caricati da file JSON statici (no database)
+- Tutti i dati caricati da file JSON statici (no database attivo; SQLite/DDL legacy deprecati)
 - Frontend completamente statico: può essere servito da qualsiasi web server
 - API RESTful senza autenticazione (single-player locale)
 
