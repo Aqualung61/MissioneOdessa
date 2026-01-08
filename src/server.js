@@ -14,7 +14,7 @@ import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
 import { initOdessa } from './initOdessa.js';
-import { resetGameState, getOggetti, initializeOriginalData } from './logic/engine.js';
+import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
 // import { azioni_setup } from './azioni_setup';
 
@@ -98,21 +98,6 @@ app.use(BASE_PATH + '/api', apiRoutes);
 app.use(BASE_PATH + '/api/lingue', linguaRoutes);
 app.use(BASE_PATH + '/api/parser', parserRoutes);
 app.use(BASE_PATH + '/api/engine', engineRoutes);
-
-// Endpoint per oggetti in un luogo specifico
-app.get(BASE_PATH + '/api/luogo-oggetti', (req, res) => {
-  const { idLuogo, idLingua } = req.query;
-  if (!idLuogo || !idLingua) {
-    return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
-  }
-  const idLuogoNum = parseInt(idLuogo, 10);
-  const idLinguaNum = parseInt(idLingua, 10);
-  const data = getOggetti();
-  const filtered = data
-    .filter(item => item.IDLuogo == idLuogoNum && item.IDLingua == idLinguaNum && item.Attivo >= 1);
-  const fields = Object.keys(data[0] || {});
-  res.json({ fields, filtered, all: data.slice(0, 5) });
-});
 
 // Endpoint di spegnimento "graceful" per pipeline/test (solo in ambiente di test)
 if (process.env.NODE_ENV === 'test') {
