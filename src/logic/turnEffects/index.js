@@ -15,7 +15,7 @@
 import { torchEffect } from './torchEffect.js';
 import { darknessEffect } from './darknessEffect.js';
 import { gameOverEffect } from './gameOverEffect.js';
-// import { interceptEffect } from './interceptEffect.js'; // TODO Sprint 3.3.5.C
+import { interceptEffect } from './interceptEffect.js'; // Sprint 3.3.5.C
 // import { mysteryEffect } from './mysteryEffect.js';     // TODO Sprint 3.3.5.D
 
 /**
@@ -24,14 +24,15 @@ import { gameOverEffect } from './gameOverEffect.js';
  * 
  * IMPORTANTE: 
  * - darkness DEVE essere dopo torch perché dipende da hasLight aggiornato
- * - gameOverEffect DEVE essere ULTIMO perché valuta contatori già aggiornati
+ * - gameOverEffect controlla contatori PRIMA dell'incremento (pre-execution check)
+ * - interceptEffect incrementa contatori DOPO gameOverEffect
  */
 export const TURN_EFFECTS = [
   torchEffect,       // Priorità 1: Sistema illuminazione torcia (aggiorna hasLight)
   darknessEffect,    // Priorità 2: Contatore turni al buio (incrementa turnsInDarkness)
-  gameOverEffect,    // Priorità 3: Verifica condizioni game over (darkness, terminale, ecc.)
-  // interceptEffect,// Priorità 4: Intercettazione in zone pericolose (TODO)
-  // mysteryEffect   // Priorità 5: Assegnazione automatica misteri (TODO)
+  gameOverEffect,    // Priorità 3: Verifica condizioni game over (darkness, terminale, intercept)
+  interceptEffect,   // Priorità 4: Intercettazione in zone pericolose (incrementa turnsInDangerZone)
+  // mysteryEffect   // Priorità 5: Assegnazione automatica misteri (TODO Sprint 3.3.5.D)
 ];
 
 /**

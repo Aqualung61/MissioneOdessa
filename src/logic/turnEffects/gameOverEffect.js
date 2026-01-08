@@ -80,9 +80,21 @@ export function gameOverEffect(gameState, result, _parseResult) {
   }
 
   // === CHECK 3: INTERCETTAZIONE ===
-  // 3 turni in danger zone (luoghi 51,52,53,55,56,58)
-  // TODO Sprint 3.3.5.C - attualmente gestito in runPreExecutionChecks
-  // Considerare spostamento qui per coerenza architetturale
+  // 3 turni consuming in danger zone (luoghi 51,52,53,55,56,58)
+  // Sprint 3.3.5.C: Morte dopo 3 turni in zone pericolose
+  if (gameState.turn.turnsInDangerZone >= 3) {
+    const interceptMsg = getSystemMessage('game.intercept.death', gameState.currentLingua);
+    result.accepted = false;
+    result.resultType = 'GAME_OVER';
+    result.message = interceptMsg;
+    result.gameOver = true;
+    result.gameOverReason = 'INTERCEPT';
+    gameState.awaitingRestart = true;
+    gameState.ended = true;
+    console.log('[gameOverEffect] CHECK 3: Intercettazione - turnsInDangerZone:', gameState.turn.turnsInDangerZone);
+    console.log('[gameOverEffect] Returning from effect - result.gameOver:', result.gameOver);
+    return;
+  }
   
   // === CHECK 4: GUARDIA INSOSPETTITA ===
   // Troppi comandi inutili al luogo 59

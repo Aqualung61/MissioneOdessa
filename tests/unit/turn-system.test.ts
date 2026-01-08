@@ -154,9 +154,8 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       expect(true).toBe(true); // Implementato in Sprint 3.3.5
     });
 
-    it('turnsInDangerZone dovrebbe incrementare in luoghi pericolosi', () => {
-      expect(true).toBe(true); // Implementato in Sprint 3.3.5
-    });
+    // Test eliminato: deprecato - vedere tests/unit/intercept-effect.test.ts
+    // per test completi del sistema intercettazione (Sprint 3.3.5.C)
   });
 
   describe('TurnContext snapshot', () => {
@@ -278,62 +277,11 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
     });
   });
 
+  // Note: Intercettazione check rimosso da runPreExecutionChecks (Sprint 3.3.5.C)
+  // Ora gestito da interceptEffect middleware + gameOverEffect CHECK 3
+  // Vedere tests/unit/intercept-effect.test.ts e tests/unit/gameover-effect.test.ts
+
   describe('runPreExecutionChecks (Sprint 3.3.3)', () => {
-    describe('Intercettazione check', () => {
-      it('dovrebbe bloccare con GAME_OVER dopo 3 turni in danger zone', () => {
-        const state = getGameState();
-        state.currentLocationId = 51; // Danger zone
-        state.turn.turnsInDangerZone = 3;
-        
-        const parseResult = { IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' };
-        prepareTurnContext(parseResult);
-        
-        const result = runPreExecutionChecks(parseResult);
-        
-        expect(result).not.toBeNull();
-        expect(result.accepted).toBe(false);
-        expect(result.resultType).toBe('GAME_OVER');
-        expect(result.deathReason).toBe('INTERCETTAZIONE');
-        expect(state.ended).toBe(true);
-      });
-
-      it('NON dovrebbe bloccare con 2 turni in danger zone', () => {
-        const state = getGameState();
-        state.currentLocationId = 51;
-        state.turn.turnsInDangerZone = 2;
-        
-        const parseResult = { IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' };
-        prepareTurnContext(parseResult);
-        
-        const result = runPreExecutionChecks(parseResult);
-        expect(result).toBeNull();
-      });
-
-      it('NON dovrebbe bloccare comando non-consuming in danger zone', () => {
-        const state = getGameState();
-        state.currentLocationId = 51;
-        state.turn.turnsInDangerZone = 3;
-        
-        const parseResult = { IsValid: true, NormVerb: 'INVENTARIO', CommandType: 'SYSTEM' };
-        prepareTurnContext(parseResult);
-        
-        const result = runPreExecutionChecks(parseResult);
-        expect(result).toBeNull(); // INVENTARIO non consuma, quindi non blocca
-      });
-
-      it('NON dovrebbe bloccare fuori dalla danger zone anche con counter alto', () => {
-        const state = getGameState();
-        state.currentLocationId = 1; // Luogo sicuro
-        state.turn.turnsInDangerZone = 5;
-        
-        const parseResult = { IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' };
-        prepareTurnContext(parseResult);
-        
-        const result = runPreExecutionChecks(parseResult);
-        expect(result).toBeNull();
-      });
-    });
-
     describe('Movement block check', () => {
       it('dovrebbe bloccare NAVIGATION quando movementBlocked=true', () => {
         const state = getGameState();

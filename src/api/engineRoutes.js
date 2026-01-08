@@ -1,6 +1,7 @@
 import express from 'express';
 import { parseCommand } from '../logic/parser.js';
 import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
+import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 
 const router = express.Router();
@@ -92,12 +93,7 @@ router.post('/set-location', (req, res) => {
       const fakeResult = { accepted: true, resultType: 'OK', message: '', effects: [] };
       const resultWithEffects = applyTurnEffects(fakeResult, fakeParseResult);
       
-      console.log('[engineRoutes] set-location dopo applyTurnEffects:', {
-        gameOver: resultWithEffects.gameOver,
-        gameOverReason: resultWithEffects.gameOverReason,
-        resultType: resultWithEffects.resultType,
-        messageLength: resultWithEffects.message?.length || 0
-      });
+      console.log('[engineRoutes] set-location dopo applyTurnEffects - gameOver:', resultWithEffects.gameOver);
       
       // Check game over triggato da turn effects (darkness, terminale, ecc.)
       if (resultWithEffects.gameOver === true) {
@@ -171,6 +167,11 @@ router.post('/load-client-state', (req, res) => {
     if (Array.isArray(odessaData.Oggetti)) {
       global.odessaData.Oggetti = odessaData.Oggetti;
     }
+    
+    // BUGFIX: Reset parser vocabulary cache dopo caricamento
+    // La cache del parser deve essere ricostruita con i nuovi dati
+    resetVocabularyCache();
+    
     res.json({ ok: true, message: 'Stato ripristinato' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

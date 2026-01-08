@@ -390,6 +390,16 @@
     "Messaggio": "You have reached a terminal location."
   },
   {
+    "Chiave": "game.intercept.death",
+    "IDLingua": 1,
+    "Messaggio": "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA\n\nHai trascorso troppo tempo nelle zone pericolose. Una pattuglia sovietica ti ha intercettato e identificato come intruso. Sei stato catturato!"
+  },
+  {
+    "Chiave": "game.intercept.death",
+    "IDLingua": 2,
+    "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\nYou spent too much time in dangerous zones. A Soviet patrol has intercepted and identified you as an intruder. You have been captured!"
+  },
+  {
     "Chiave": "action.light.lamp.success",
     "IDLingua": 1,
     "Messaggio": "Accendi la lampada con i fiammiferi. La fiamma illumina il luogo con luce calda e costante."
