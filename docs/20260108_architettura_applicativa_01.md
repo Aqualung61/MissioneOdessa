@@ -195,7 +195,7 @@ Questo diagramma esplicita le due strutture principali che vivono in RAM:
 
 ```mermaid
 graph TB
-  subgraph GlobalMemory["global.odessaData (static)\nread-only"]
+  subgraph GlobalMemory["global.odessaData (static)<br/>read-only"]
     subgraph StaticTables["tabelle JSON"]
       TLuoghi["Luoghi[]"]
       TOggetti["Oggetti[]"]
@@ -377,10 +377,10 @@ graph TB
     end
 
     subgraph Routers["routers (mount sotto BASE_PATH)"]
-      RGen["src/api/routes.js\n/ api"]
-      RLingua["src/api/linguaRoutes.js\n/ api/lingue"]
-      RParser["src/api/parserRoutes.js\n/ api/parser"]
-      REngine["src/api/engineRoutes.js\n/ api/engine"]
+      RGen["src/api/routes.js<br/>/api"]
+      RLingua["src/api/linguaRoutes.js<br/>/api/lingue"]
+      RParser["src/api/parserRoutes.js<br/>/api/parser"]
+      REngine["src/api/engineRoutes.js<br/>/api/engine"]
     end
 
     subgraph Static["static (mount sotto BASE_PATH)"]
@@ -481,13 +481,13 @@ Diagramma sintetico del flusso “turn effects → game over”: non descrive tu
 ```mermaid
 flowchart TB
   Start["Comando eseguito"] --> Apply["engine.applyTurnEffects()"]
-  Apply --> All["applyAllTurnEffects(...)\n(turnEffects registry)"]
+  Apply --> All["applyAllTurnEffects(...)<br/>(turnEffects registry)"]
   All --> GO["gameOverEffect"]
 
   GO --> Check{ "condizione game over?" }
   Check -->|"no"| Ok["result normal"]
-  Check -->|"sì"| Set["set awaitingRestart=true\nresult.gameOver=true"]
-  Set --> Client["client mostra messaggio e\naccetta solo SI/NO"]
+  Check -->|"sì"| Set["set awaitingRestart=true<br/>result.gameOver=true"]
+  Set --> Client["client mostra messaggio e<br/>accetta solo SI/NO"]
 ```
 
 ---
