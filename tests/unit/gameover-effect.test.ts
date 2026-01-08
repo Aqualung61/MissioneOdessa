@@ -210,15 +210,89 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.gameOver).toBe(false);
     });
 
-    it('TODO: Guardia check - unusefulCommandsCounter al luogo 59', () => {
+    it('NON dovrebbe triggerare con turnsInDangerZone < 3', () => {
       const state = getGameState();
-      state.currentLocationId = 59;
-      state.unusefulCommandsCounter = 3;
+      state.turn.turnsInDangerZone = 2;
       
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
       
       expect(result.gameOver).toBe(false);
+    });
+  });
+
+  describe('CHECK 4: Guardia Insospettita - Sprint 3.3.5.D', () => {
+    it('dovrebbe triggerare game over con 3 comandi inappropriati al luogo 59', () => {
+      const state = getGameState();
+      state.currentLocationId = 59;
+      state.narrativeState = 'ENDING_PHASE_2_WAIT';
+      state.unusefulCommandsCounter = 3;
+      state.awaitingRestart = false;
+      state.ended = false;
+      
+      const result = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+      
+      expect(result.gameOver).toBe(true);
+      expect(result.gameOverReason).toBe('GUARD_SUSPICIOUS');
+      expect(result.message).toBeTruthy();
+      expect(state.awaitingRestart).toBe(true);
+      expect(state.ended).toBe(true);
+    });
+
+    it('NON dovrebbe triggerare con unusefulCommandsCounter = 2', () => {
+      const state = getGameState();
+      state.currentLocationId = 59;
+      state.narrativeState = 'ENDING_PHASE_2_WAIT';
+      state.unusefulCommandsCounter = 2;
+      
+      const result = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+      
+      expect(result.gameOver).toBe(false);
+      expect(state.awaitingRestart).toBe(false);
+    });
+
+    it('dovrebbe richiedere narrativeState === ENDING_PHASE_2_WAIT', () => {
+      const state = getGameState();
+      state.currentLocationId = 59;
+      state.narrativeState = null; // Stato narrativo non attivo
+      state.unusefulCommandsCounter = 3;
+      
+      const result = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+      
+      expect(result.gameOver).toBe(false); // Non triggerare senza stato narrativo
+    });
+
+    it('dovrebbe usare messaggio i18n corretto (lingua IT)', () => {
+      const state = getGameState();
+      state.currentLingua = 1;
+      state.currentLocationId = 59;
+      state.narrativeState = 'ENDING_PHASE_2_WAIT';
+      state.unusefulCommandsCounter = 3;
+      
+      const result = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+      
+      expect(result.gameOverReason).toBe('GUARD_SUSPICIOUS');
+      expect(result.message).toContain('*** GAME OVER ***');
+      expect(result.message).toContain('documenti'); // Verifica testo italiano
+    });
+
+    it('dovrebbe usare messaggio i18n corretto (lingua EN)', () => {
+      const state = getGameState();
+      state.currentLingua = 2;
+      state.currentLocationId = 59;
+      state.narrativeState = 'ENDING_PHASE_2_WAIT';
+      state.unusefulCommandsCounter = 3;
+      
+      const result = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+      
+      expect(result.gameOverReason).toBe('GUARD_SUSPICIOUS');
+      expect(result.message).toContain('*** GAME OVER ***');
+      expect(result.message).toContain('documents'); // Verifica testo inglese
     });
   });
 });

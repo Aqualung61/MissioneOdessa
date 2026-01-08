@@ -7,15 +7,18 @@
  * 
  * L'ordine nell'array TURN_EFFECTS definisce la priorità di esecuzione:
  * 1. Torch effect (luce)
- * 2. Darkness effect (morte per buio) - TODO Sprint 3.3.5.B
- * 3. Intercept effect (intercettazione) - TODO Sprint 3.3.5.C
- * 4. Mystery effect (assegnazione misteri) - TODO Sprint 3.3.5.D
+ * 2. Darkness effect (morte per buio)
+ * 3. Game over effect (controllo condizioni morte)
+ * 4. Intercept effect (intercettazione)
+ * 5. Victory effect (sequenza finale Ferenc + teleport)
+ * 6. Mystery effect (assegnazione misteri) - TODO Sprint 3.3.5.D
  */
 
 import { torchEffect } from './torchEffect.js';
 import { darknessEffect } from './darknessEffect.js';
 import { gameOverEffect } from './gameOverEffect.js';
-import { interceptEffect } from './interceptEffect.js'; // Sprint 3.3.5.C
+import { interceptEffect } from './interceptEffect.js';
+import { victoryEffect } from './victoryEffect.js';
 // import { mysteryEffect } from './mysteryEffect.js';     // TODO Sprint 3.3.5.D
 
 /**
@@ -26,13 +29,15 @@ import { interceptEffect } from './interceptEffect.js'; // Sprint 3.3.5.C
  * - darkness DEVE essere dopo torch perché dipende da hasLight aggiornato
  * - gameOverEffect controlla contatori PRIMA dell'incremento (pre-execution check)
  * - interceptEffect incrementa contatori DOPO gameOverEffect
+ * - victoryEffect controlla vittoria DOPO tutti i check game over
  */
 export const TURN_EFFECTS = [
   torchEffect,       // Priorità 1: Sistema illuminazione torcia (aggiorna hasLight)
   darknessEffect,    // Priorità 2: Contatore turni al buio (incrementa turnsInDarkness)
   gameOverEffect,    // Priorità 3: Verifica condizioni game over (darkness, terminale, intercept)
   interceptEffect,   // Priorità 4: Intercettazione in zone pericolose (incrementa turnsInDangerZone)
-  // mysteryEffect   // Priorità 5: Assegnazione automatica misteri (TODO Sprint 3.3.5.D)
+  victoryEffect,     // Priorità 5: Sequenza finale Ferenc + teleport (trigger vittoria)
+  // mysteryEffect   // Priorità 6: Assegnazione automatica misteri (TODO Sprint 3.3.5.D)
 ];
 
 /**

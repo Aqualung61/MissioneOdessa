@@ -182,7 +182,6 @@ export function resetGameState(idLingua = 1) {
     gameState.Oggetti = JSON.parse(JSON.stringify(originalOggetti)); // Deep copy dai dati originali
     console.log('Caricamento Oggetti in gameState: Sì, numero di record: ' + gameState.Oggetti.length);
   } else {
-    console.log('Caricamento Oggetti in gameState: No');
     gameState.Oggetti = [];
   }
 }
@@ -202,7 +201,6 @@ function setNestedProperty(obj, path, value) {
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
     if (!current[key] || typeof current[key] !== 'object') {
-      console.warn(`[setNestedProperty] Percorso "${path}" non valido: "${key}" non esiste o non è un oggetto`);
       return;
     }
     current = current[key];
@@ -296,12 +294,13 @@ export function prepareTurnContext(parseResult) {
 
 /**
  * Valida condizioni pre-esecuzione su snapshot statico.
- * Verifica movement block e narrative state.
+ * Verifica movement block.
  * 
  * NOTA: 
  * - awaitingRestart NON è verificato qui perché gestito direttamente
  *   in engineRoutes.js che bypassa il parser quando awaitingRestart = true
  * - Intercettazione NON è più qui: migrata a gameOverEffect (Sprint 3.3.5.C)
+ * - awaitingContinue NON è più qui: gestito da victoryEffect middleware
  * 
  * @param {Object} parseResult - Risultato del parsing del comando
  * @returns {Object|null} - Oggetto risultato se bloccato, null se ok
@@ -315,21 +314,6 @@ export function runPreExecutionChecks(parseResult) {
       message: getSystemMessage('narrative.movement.blocked', gameState.currentLingua),
       effects: []
     };
-  }
-  
-  // Check awaiting continue: narrativa richiede BARRA SPAZIO (Sprint 3.4.A)
-  if (gameState.awaitingContinue) {
-    // Delega a processContinueNarrative (implementato in Sprint 3.4)
-    // Per ora: blocca comandi diversi da SPACEBAR
-    const verbConcept = parseResult.VerbConcept || parseResult.CanonicalVerb || '';
-    if (verbConcept !== 'CONTINUA') {
-      return {
-        accepted: false,
-        resultType: 'ERROR',
-        message: getSystemMessage('narrative.awaiting.continue', gameState.currentLingua),
-        effects: []
-      };
-    }
   }
   
   return null; // Nessun blocco, esecuzione può procedere
@@ -346,8 +330,6 @@ export function runPreExecutionChecks(parseResult) {
  * @returns {Object} - Risultato modificato con eventuali effetti
  */
 export function applyTurnEffects(result, parseResult) {
-  const { current } = gameState.turn;
-  
   // === RICALCOLO hasLight dopo esecuzione comando ===
   // Se il comando ha modificato lo stato dell'illuminazione (es. ACCENDI LAMPADA),
   // dobbiamo ricalcolare hasLight PRIMA di applicare gli effetti
@@ -376,24 +358,6 @@ export function applyTurnEffects(result, parseResult) {
   // - totalTurnsConsumed: incrementato SOLO per comandi consuming (NAVIGATION, ACTION)
   // Logica torcia:
   // - torciaDifettosa = true se: totalTurnsConsumed >= 6 OR torcia.IDLuogo != 0
-  try {
-    console.log('\n=== TURN STATE ===');
-    console.log('CommandType:', current.parseResult.CommandType);
-    console.log('consumesTurn:', current.consumesTurn);
-    console.log('globalTurnNumber:', gameState.turn.globalTurnNumber, '(sempre incrementato)');
-    console.log('totalTurnsConsumed:', gameState.turn.totalTurnsConsumed, '(solo comandi consuming)');
-    console.log('turnsInDarkness:', gameState.turn.turnsInDarkness, '(countdown buio)');
-    console.log('hasLight:', current.hasLight);
-    console.log('torciaDifettosa:', gameState.timers.torciaDifettosa);
-    console.log('lampadaAccesa:', gameState.timers.lampadaAccesa);
-    const torcia = gameState.Oggetti.find(o => o.ID === 37);
-    const lampada = gameState.Oggetti.find(o => o.ID === 27);
-    console.log('torcia.IDLuogo:', torcia ? torcia.IDLuogo : 'N/A', '(0=inventario)');
-    console.log('lampada.IDLuogo:', lampada ? lampada.IDLuogo : 'N/A', '(0=inventario)');
-    console.log('==================\n');
-  } catch (err) {
-    console.error('ERRORE in applyTurnEffects log:', err);
-  }
   
   return result;
 }
@@ -844,6 +808,7 @@ function applicaEffetti(effetti, luogoCorrente) {
       gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
     } else if (effetto.tipo === 'VITTORIA') {
       gameState.ended = true;
+      gameState.victory = true;
     } else if (effetto.tipo === 'SEQUENZA') {
       // Gestione sequenze (es. combinazione cassaforte)
       // Questo effetto viene gestito direttamente in cercaEseguiInterazione
@@ -959,18 +924,33 @@ function cercaEseguiInterazione(verb, noun) {
         }
       }
       
-      // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-      applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
+      // === SISTEMA PUNTEGGIO: Assegna +2 punti PRIMA di applicare effetti ===
+      // Importante: deve avvenire PRIMA di applicaEffetti() perché VITTORIA imposta ended=true
+      if (!gameState.punteggio.interazioniPunteggio.has(interazione.id)) {
+        gameState.punteggio.totale += 2;
+        gameState.punteggio.interazioniPunteggio.add(interazione.id);
+      }
       
       // Segna come eseguita
       if (!interazione.ripetibile) {
         gameState.interazioniEseguite.push(interazione.id);
       }
       
-      // === SISTEMA PUNTEGGIO: Assegna +2 punti alla prima esecuzione ===
-      if (!gameState.punteggio.interazioniPunteggio.has(interazione.id)) {
-        gameState.punteggio.totale += 2;
-        gameState.punteggio.interazioniPunteggio.add(interazione.id);
+      // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
+      applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
+      
+      // Verifica se è VITTORIA per aggiungere flag ended nella risposta
+      const hasVittoriaEffect = interazione.effetti.some(e => e.tipo === 'VITTORIA');
+      const resultBase = { 
+        accepted: true, 
+        resultType: 'OK', 
+        effects: interazione.effetti
+      };
+      
+      // Se VITTORIA, aggiungi flag ended e victory alla risposta
+      if (hasVittoriaEffect) {
+        resultBase.ended = true;
+        resultBase.victory = true;
       }
       
       // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
@@ -980,10 +960,10 @@ function cercaEseguiInterazione(verb, noun) {
         const descrizioneCompleta = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
         const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
         
-        return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
+        return { ...resultBase, message: messaggioCompleto };
       }
       
-      return { accepted: true, resultType: 'OK', message: risposta, effects: interazione.effetti };
+      return { ...resultBase, message: risposta };
     }
   }
   
@@ -1177,6 +1157,20 @@ function executeCommandLegacy(parseResult) {
         if (!oggetto) {
           return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
         }
+        // === SISTEMA GUARDIA (Sprint 3.3.5.D) ===
+        // Al luogo 59 in attesa comando corretto, incrementa counter comandi inappropriati
+        if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' && 
+            gameState.currentLocationId === 59) {
+          gameState.unusefulCommandsCounter++;
+          return {
+            accepted: true,
+            resultType: 'OK',
+            message: getSystemMessage('narrative.command.useless', gameState.currentLingua),
+            effects: [],
+            showLocation: false
+          };
+        }
+        
         // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
         return {
           accepted: true,

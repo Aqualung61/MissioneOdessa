@@ -20,7 +20,6 @@ export function getSystemMessage(chiave, idLingua = 1, params = []) {
   const record = messaggiSistema.find(m => m.Chiave === chiave && m.IDLingua === idLingua);
   
   if (!record) {
-    console.warn(`Messaggio di sistema non trovato: ${chiave} (lingua ${idLingua})`);
     return `[Missing: ${chiave}]`;
   }
   

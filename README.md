@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-Applicazione adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici (DB SQLite deprecato).
+**Versione 1.3.0 Beta** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 ## Avvio rapido
 
@@ -27,7 +27,7 @@ Applicazione adventure testuale con backend Node.js/Express, frontend statico e 
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
 - La rotta `/api/version` restituisce un oggetto JSON con la versione attuale, ad esempio:
    ```json
-  { "version": "1.2.5" }
+  { "version": "1.3.0" }
    ```
 - Ogni avvio del server stampa la versione corrente in console.
 
@@ -79,6 +79,17 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 
 ## Stato
 
-- Versione attuale: 1.2.5 (dati JSON statici).
-- Test E2E: Suite completa via Playwright, accessibile da `index.html` > "Esegui test applicazione".
-- Smoke test via API: ~9–10 secondi su ambiente locale.
+- **Versione attuale: 1.3.0 Beta** (8 gennaio 2026)
+- **Test Coverage**: 211 test totali (194 passati, 17 skippati)
+- **Qualità**: ESLint clean, TypeScript strict typing
+- **i18n**: Full compliance IT/EN
+- Test E2E: Suite completa via Playwright, accessibile da `index.html` > "Esegui test applicazione"
+- Smoke test via API: ~9–10 secondi su ambiente locale
+
+### Novità versione 1.3.0
+- Sistema completo di test (unit, integration, E2E)
+- Mystery scoring tests (VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE)
+- Intercettazione pattuglie sovietiche (danger zones)
+- Sistema buio e game over unificato
+- Victory effect con Ferenc scoring
+- Dati JSON statici (migrazione da SQLite completata)

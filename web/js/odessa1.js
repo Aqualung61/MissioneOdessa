@@ -125,9 +125,25 @@ function displayGameOverMessage(message) {
     // Messaggio principale (morte specifica)
     const gameOverMsg = document.createElement('div');
     gameOverMsg.className = 'feed-msg system';
-    gameOverMsg.style.fontWeight = 'bold';
     gameOverMsg.style.color = '#0066cc';
-    gameOverMsg.textContent = message || (window.i18n ? window.i18n.msg('ui.game.terminal') : 'Hai raggiunto un luogo terminale.');
+    
+    // Parsare il messaggio per applicare bold solo a ***** GAME OVER *****
+    const finalMessage = message || (window.i18n ? window.i18n.msg('ui.game.terminal') : 'Hai raggiunto un luogo terminale.');
+    const gameOverPattern = /\*{3,5}\s*GAME OVER\s*\*{3,5}/gi;
+    
+    if (gameOverPattern.test(finalMessage)) {
+      // Se contiene GAME OVER, usa innerHTML con bold
+      const htmlMessage = finalMessage.replace(
+        gameOverPattern,
+        '<strong>$&</strong>'
+      );
+      gameOverMsg.innerHTML = htmlMessage.replace(/\n/g, '<br>');
+    } else {
+      // Altrimenti usa textContent normale
+      gameOverMsg.style.fontWeight = 'bold';
+      gameOverMsg.textContent = finalMessage;
+    }
+    
     feed.appendChild(gameOverMsg);
     
     // Domanda riavvio (sempre aggiunta)
@@ -138,6 +154,29 @@ function displayGameOverMessage(message) {
     restartMsg.textContent = window.i18n ? window.i18n.msg('ui.game.restart') : 'Vuoi ripartire? (SI/SÌ per confermare)';
     feed.appendChild(restartMsg);
     
+    feed.scrollTop = feed.scrollHeight;
+  }
+}
+
+/**
+ * Mostra messaggio di gioco terminato definitivamente (senza possibilità di riavvio)
+ * Usato sia per vittoria che per risposta "NO" al game over
+ */
+function displayGameEndedMessage() {
+  gameEnded = true;
+  awaitingRestart = false;
+  userInput.value = '';
+  userInput.disabled = true;
+  userInput.placeholder = '';
+  
+  const feed = document.getElementById('placeFeed');
+  if (feed) {
+    const msg = document.createElement('div');
+    msg.className = 'feed-msg system';
+    msg.style.fontWeight = 'bold';
+    msg.style.color = '#d60000';
+    msg.textContent = window.i18n ? window.i18n.msg('ui.game.ended') : 'Gioco terminato. Ricarica la pagina per giocare di nuovo.';
+    feed.appendChild(msg);
     feed.scrollTop = feed.scrollHeight;
   }
 }
@@ -268,6 +307,47 @@ function handleDirectionClick(dir) {
   })
   .then(result => {
     console.log('[CLIENT] Stella set-location result:', result);
+    
+    // Check NARRATIVE (Ferenc sequence)
+    if (result.resultType === 'NARRATIVE') {
+      console.log('[CLIENT] NARRATIVE rilevato da stella - phase:', result.narrativePhase);
+      const feed = document.getElementById('placeFeed');
+      if (feed) {
+        const msg = document.createElement('div');
+        msg.className = 'feed-msg system';
+        msg.innerHTML = result.message || '';
+        feed.appendChild(msg);
+        feed.scrollTop = feed.scrollHeight;
+      }
+      // Se awaiting continue, blocca input e aspetta INVIO
+      if (result.awaitingContinue) {
+        awaitingContinue = true;
+        console.log('[CLIENT] Awaiting continue - blocco input fino a INVIO');
+      }
+      return;
+    }
+    
+    // Check TELEPORT (Ferenc finale - spostamento a luogo 59)
+    if (result.resultType === 'TELEPORT') {
+      console.log('[CLIENT] TELEPORT rilevato da stella - destinazione:', result.locationId);
+      const targetLuogo = luoghi.find(l => l.ID === result.locationId);
+      if (targetLuogo) {
+        current = targetLuogo;
+        showCurrent();
+      }
+      // Mostra messaggio teleport se presente
+      if (result.message) {
+        const feed = document.getElementById('placeFeed');
+        if (feed) {
+          const msg = document.createElement('div');
+          msg.className = 'feed-msg system';
+          msg.innerHTML = result.message;
+          feed.appendChild(msg);
+          feed.scrollTop = feed.scrollHeight;
+        }
+      }
+      return;
+    }
     
     // Check game over - ma NON mostrarlo subito, aspetta che showCurrent() sia stato chiamato
     if (result.gameOver === true || !result.ok) {
@@ -733,22 +813,7 @@ inputForm.addEventListener('submit', async function(e) {
       return;
     } else if (/^N(O)?$/.test(risposta)) {
       // Risposta NO: termina gioco definitivamente
-      awaitingRestart = false;
-      gameEnded = true;
-      userInput.value = '';
-      userInput.disabled = true;
-      userInput.placeholder = '';
-      
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const msg = document.createElement('div');
-        msg.className = 'feed-msg system';
-        msg.style.fontWeight = 'bold';
-        msg.style.color = '#d60000';
-        msg.textContent = window.i18n ? window.i18n.msg('ui.game.ended') : 'Gioco terminato. Ricarica la pagina per giocare di nuovo.';
-        feed.appendChild(msg);
-        feed.scrollTop = feed.scrollHeight;
-      }
+      displayGameEndedMessage();
       return;
     }
     // Se risposta non valida, ignora qualsiasi input e rimane sulla descrizione terminale
@@ -798,7 +863,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const err = document.createElement('div');
           err.className = 'feed-msg error';
-          err.textContent = 'Direzione non riconosciuta.';
+          err.textContent = window.i18n.msg('ui.error.direction');
           feed.appendChild(err);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -851,7 +916,7 @@ inputForm.addEventListener('submit', async function(e) {
           if (feed) {
             const errMsg = document.createElement('div');
             errMsg.className = 'feed-msg error';
-            errMsg.textContent = 'Errore comunicazione: ' + err.message;
+            errMsg.textContent = window.i18n.msg('ui.error.communication') + err.message;
             feed.appendChild(errMsg);
             feed.scrollTop = feed.scrollHeight;
           }
@@ -880,6 +945,8 @@ inputForm.addEventListener('submit', async function(e) {
       
       // Aggiorna direzioni dinamiche del nuovo luogo prima di mostrarlo
       console.log(`Livello0 NAVIGATION: aggiornamento direzioni per luogo ${current.ID}`);
+      let skipShowCurrent = false; // Flag per evitare showCurrent() se arriva TELEPORT
+      
       fetch(basePath + `api/engine/direzioni/${current.ID}`)
         .then(res => res.json())
         .then(direzioniResult => {
@@ -894,7 +961,11 @@ inputForm.addEventListener('submit', async function(e) {
             }
             console.log(`Direzioni aggiornate. current.Sud = ${current.Sud}, current.Nord = ${current.Nord}`);
           }
-          showCurrent();
+          
+          // Non chiamare showCurrent se è arrivato un TELEPORT nel frattempo
+          if (!skipShowCurrent) {
+            showCurrent();
+          }
           
           // Segna che direzioni sono complete
           direzioniComplete = true;
@@ -939,6 +1010,72 @@ inputForm.addEventListener('submit', async function(e) {
       })
       .then(result => {
         console.log('[CLIENT] Livello0 set-location result:', result);
+        
+        // CHECK NARRATIVE PHASE (Ferenc victory sequence)
+        if (result && result.resultType === 'NARRATIVE') {
+          console.log('[CLIENT] NARRATIVE phase rilevato (livello0):', result.narrativePhase);
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const narrativeMsg = document.createElement('div');
+            narrativeMsg.className = 'feed-msg system';
+            narrativeMsg.style.color = '#2196F3';
+            narrativeMsg.innerHTML = result.message;
+            feed.appendChild(narrativeMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+          // NON mostrare showCurrent() - siamo in sequenza narrativa
+          // Ma direzioni sono già state fetched, quindi ignora pendingGameOver
+          pendingGameOver = null;
+          return;
+        }
+        
+        // CHECK TELEPORT (Ferenc finale)
+        if (result && result.resultType === 'TELEPORT' && result.locationId) {
+          console.log('[CLIENT] TELEPORT rilevato (livello0) - destinazione:', result.locationId);
+          
+          // Impedisci al fetch direzioni precedente di chiamare showCurrent()
+          skipShowCurrent = true;
+          
+          // Aggiorna location client-side (già fatto sopra ma forziamo la destinazione corretta)
+          const teleportLocation = luoghi.find(l => l.ID === result.locationId);
+          if (teleportLocation) {
+            current = teleportLocation;
+            console.log('[CLIENT] Location forzata a:', result.locationId);
+            
+            // Re-fetch direzioni per il luogo di destinazione
+            fetch(basePath + `api/engine/direzioni/${result.locationId}`)
+              .then(res => res.json())
+              .then(direzioniResult => {
+                if (direzioniResult.ok && direzioniResult.direzioni) {
+                  Object.assign(current, direzioniResult.direzioni);
+                  const luogoInArray = luoghi.find(l => l.ID === result.locationId);
+                  if (luogoInArray) {
+                    Object.assign(luogoInArray, direzioniResult.direzioni);
+                  }
+                }
+                // Mostra il luogo di destinazione
+                showCurrent();
+              })
+              .catch(err => {
+                console.error('Errore fetch direzioni dopo teleport:', err);
+                showCurrent(); // Mostra comunque
+              });
+          }
+          
+          // Mostra messaggio narrativo del teleport
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const teleportMsg = document.createElement('div');
+            teleportMsg.className = 'feed-msg system';
+            teleportMsg.style.color = '#2196F3';
+            teleportMsg.innerHTML = result.message;
+            feed.appendChild(teleportMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+          
+          pendingGameOver = null;
+          return;
+        }
         
         // CHECK GAME OVER - ma NON mostrarlo subito, aspetta che showCurrent() sia stato chiamato
         if (result && result.gameOver === true) {
@@ -1090,7 +1227,7 @@ inputForm.addEventListener('submit', async function(e) {
           if (feed) {
             const errMsg = document.createElement('div');
             errMsg.className = 'feed-msg error';
-            errMsg.textContent = 'Errore comunicazione: ' + err.message;
+            errMsg.textContent = window.i18n.msg('ui.error.communication') + err.message;
             feed.appendChild(errMsg);
             feed.scrollTop = feed.scrollHeight;
           }
@@ -1143,7 +1280,50 @@ inputForm.addEventListener('submit', async function(e) {
           }
         }
         
-        // Se NON è game over, mostra il nuovo luogo
+        // Check narrative phase (Ferenc victory sequence)
+        if (result && result.resultType === 'NARRATIVE') {
+          console.log('[CLIENT] NARRATIVE phase rilevato:', result.narrativePhase);
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const narrativeMsg = document.createElement('div');
+            narrativeMsg.className = 'feed-msg system';
+            narrativeMsg.style.color = '#2196F3';
+            narrativeMsg.innerHTML = result.message;
+            feed.appendChild(narrativeMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+          // NON chiamare showCurrent() - siamo in sequenza narrativa
+          return;
+        }
+        
+        // Check teleport (Ferenc finale)
+        if (result && result.resultType === 'TELEPORT' && result.locationId) {
+          console.log('[CLIENT] TELEPORT rilevato - destinazione:', result.locationId);
+          
+          // Aggiorna location client-side
+          const teleportLocation = luoghi.find(l => l.ID === result.locationId);
+          if (teleportLocation) {
+            current = teleportLocation;
+            console.log('[CLIENT] Location aggiornata a:', result.locationId);
+          }
+          
+          // Mostra messaggio narrativo
+          const feed = document.getElementById('placeFeed');
+          if (feed) {
+            const teleportMsg = document.createElement('div');
+            teleportMsg.className = 'feed-msg system';
+            teleportMsg.style.color = '#2196F3';
+            teleportMsg.innerHTML = result.message;
+            feed.appendChild(teleportMsg);
+            feed.scrollTop = feed.scrollHeight;
+          }
+          
+          // Mostra il nuovo luogo (barriera)
+          showCurrent();
+          return;
+        }
+        
+        // Se NON è game over NÉ narrative, mostra il nuovo luogo
         showCurrent();
         
         // Mostra eventuali turn messages (torcia, ecc.)
@@ -1166,7 +1346,7 @@ inputForm.addEventListener('submit', async function(e) {
         if (feed) {
           const errMsg = document.createElement('div');
           errMsg.className = 'feed-msg error';
-          errMsg.textContent = 'Errore comunicazione: ' + err.message;
+          errMsg.textContent = window.i18n.msg('ui.error.communication') + err.message;
           feed.appendChild(errMsg);
           feed.scrollTop = feed.scrollHeight;
         }
@@ -1368,6 +1548,26 @@ inputForm.addEventListener('submit', async function(e) {
           // Gestione GAME OVER unificata (darkness, terminale, intercettazione, ecc.)
           if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
             displayGameOverMessage(engine.message);
+            return; // Non eseguire altre logiche
+          }
+          
+          // Gestione VITTORIA (ended=true con messaggio)
+          if (engine.ended === true && engine.message) {
+            // Aggiorna statistiche PRIMA di terminare (per mostrare punteggio finale)
+            updateGameStats();
+            
+            const feed = document.getElementById('placeFeed');
+            if (feed) {
+              // Mostra messaggio vittoria
+              const victoryMsg = document.createElement('div');
+              victoryMsg.className = 'feed-msg system';
+              victoryMsg.innerHTML = engine.message;
+              feed.appendChild(victoryMsg);
+              feed.scrollTop = feed.scrollHeight;
+            }
+            
+            // Termina gioco definitivamente
+            displayGameEndedMessage();
             return; // Non eseguire altre logiche
           }
           

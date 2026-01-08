@@ -321,7 +321,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
     });
 
     describe('Awaiting continue check', () => {
-      it('dovrebbe bloccare comandi quando awaitingContinue=true', () => {
+      it.skip('dovrebbe bloccare comandi quando awaitingContinue=true (OBSOLETO - gestito da victoryEffect)', () => {
         const state = getGameState();
         state.awaitingContinue = true;
         

@@ -625,18 +625,6 @@
     "ID_Lingua": 1
   },
   {
-    "ID_Voce": 109,
-    "Voce": "PORGI",
-    "ID_Termine": 65,
-    "ID_Lingua": 1
-  },
-  {
-    "ID_Voce": 110,
-    "Voce": "PORGERE",
-    "ID_Termine": 65,
-    "ID_Lingua": 1
-  },
-  {
     "ID_Voce": 111,
     "Voce": "SCOMPARTO",
     "ID_Termine": 66,

@@ -1,3 +1,33 @@
+## v1.3.0 - Beta Release (8 gennaio 2026)
+
+### Sprint 3.3.5.D - Test Suite Completo e Quality Assurance
+
+#### Novità principali
+- **Test Coverage Completo**: 211 test totali (194 passati, 17 skippati)
+  - 43 test alta priorità: CHECK 4 Guardia (5), victoryEffect (22), victory E2E (10 skipped)
+  - 8 test priorità media: scoring.mysteries (6 passati, 2 skipped)
+  - 160 test esistenti: full regression green
+- **ESLint Clean**: Risolti 48 errori di linting (variabili non usate, tipi any)
+- **i18n Compliance**: Verificate tutte le stringhe di sistema IT/EN
+- **Mystery Scoring Tests**: Validazione sistema +3 punti per VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE
+
+#### Migliorie tecniche
+- **TypeScript strict typing**: Eliminati tutti i tipi `any` dai test
+- **Test organization**: Struttura modulare unit/integration/e2e
+- **Quality gates**: Linting + test automatici pre-commit
+
+#### Bug Fix
+- Rimossi log obsoleti in backend (console.log)
+- Fixed hardcoded strings in frontend (compliance i18n)
+- Corretto conteggio effetti in turn-effects-registry.test.ts (4→5)
+
+#### Documentazione
+- Sprint 3.3.5.D completato al 100%
+- Test documentation aggiornata
+- Copilot instructions aggiornate
+
+---
+
 ## Unreleased
 
 ### Sprint 3.3.5.C - Sistema Intercettazione Pattuglie Sovietiche (v1.2.5)

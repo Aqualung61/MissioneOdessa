@@ -51,21 +51,9 @@ export function gameOverEffect(gameState, result, _parseResult) {
     l => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua
   );
   
-  console.log(`[gameOverEffect] Check luogo terminale: ID=${gameState.currentLocationId}, Terminale=${currentLuogo?.Terminale}`);
-  
   if (currentLuogo && currentLuogo.Terminale === -1) {
-    console.log('[gameOverEffect] LUOGO TERMINALE RILEVATO - triggering game over');
-    
     // Messaggio i18n (senza domanda riavvio, la aggiunge il client)
     const terminalMsg = getSystemMessage('game.terminal.location', gameState.currentLingua) || 'Hai raggiunto un luogo terminale.';
-    
-    console.log('[gameOverEffect] Setting result fields:', {
-      accepted: false,
-      resultType: 'GAME_OVER',
-      gameOver: true,
-      gameOverReason: 'TERMINAL_LOCATION',
-      messageLength: terminalMsg.length
-    });
     
     result.accepted = false;
     result.resultType = 'GAME_OVER';
@@ -74,8 +62,6 @@ export function gameOverEffect(gameState, result, _parseResult) {
     result.gameOverReason = 'TERMINAL_LOCATION';
     
     gameState.awaitingRestart = true;
-    console.log('[gameOverEffect] awaitingRestart set to:', gameState.awaitingRestart);
-    console.log('[gameOverEffect] Returning from effect - result.gameOver:', result.gameOver);
     return;
   }
 
@@ -91,25 +77,21 @@ export function gameOverEffect(gameState, result, _parseResult) {
     result.gameOverReason = 'INTERCEPT';
     gameState.awaitingRestart = true;
     gameState.ended = true;
-    console.log('[gameOverEffect] CHECK 3: Intercettazione - turnsInDangerZone:', gameState.turn.turnsInDangerZone);
-    console.log('[gameOverEffect] Returning from effect - result.gameOver:', result.gameOver);
     return;
   }
   
   // === CHECK 4: GUARDIA INSOSPETTITA ===
-  // Troppi comandi inutili al luogo 59
-  // TODO Sprint 3.4.B
-  /*
-  if (gameState.currentLocationId === 59 && 
-      gameState.unusefulCommandsCounter >= LIMITE_COMANDI_INUTILI) {
-    const guardMsg = getSystemMessage('narrative.guard.gameover', gameState.currentLingua);
+  // Troppi comandi inutili al luogo 59 (Sprint 3.3.5.D)
+  if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' && 
+      gameState.unusefulCommandsCounter >= 3) {
+    const guardMsg = getSystemMessage('game.over.guardia_sospetta', gameState.currentLingua);
     result.accepted = false;
     result.resultType = 'GAME_OVER';
     result.message = guardMsg;
     result.gameOver = true;
     result.gameOverReason = 'GUARD_SUSPICIOUS';
     gameState.awaitingRestart = true;
+    gameState.ended = true;
     return;
   }
-  */
 }

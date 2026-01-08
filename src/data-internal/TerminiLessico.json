@@ -315,11 +315,6 @@
     "ID_TipoLessico": 1
   },
   {
-    "ID_Termine": 65,
-    "Concetto": "PORGERE",
-    "ID_TipoLessico": 1
-  },
-  {
     "ID_Termine": 66,
     "Concetto": "SCOMPARTO_SEGRETO",
     "ID_TipoLessico": 4
@@ -347,7 +342,7 @@
   {
     "ID_Termine": 71,
     "Concetto": "PORGERE",
-    "ID_TipoLessico": 2
+    "ID_TipoLessico": 1
   },
   {
     "ID_Termine": 72,

@@ -26,17 +26,10 @@
 export function interceptEffect(gameState, _result, _parseResult) {
   const { current, previous } = gameState.turn;
 
-  console.log('[interceptEffect] START - Counter:', gameState.turn.turnsInDangerZone, 
-    'Location:', current.location, 
-    'consumesTurn:', current.consumesTurn,
-    'inDangerZone:', current.inDangerZone,
-    'previous.inDangerZone:', previous.inDangerZone);
-
   // === RESET CONTATORE ===
   // Reset: uscita da danger zone (vai in luogo sicuro)
   // Questo include anche l'arrivo al rifugio sicuro (luogo 57)
   if (!current.inDangerZone && previous.inDangerZone) {
-    console.log('[interceptEffect] RESET - Uscito da danger zone');
     gameState.turn.turnsInDangerZone = 0;
   }
 
@@ -45,8 +38,5 @@ export function interceptEffect(gameState, _result, _parseResult) {
   // (dal primo arrivo, senza skip del primo turno come darkness)
   if (current.consumesTurn && current.inDangerZone) {
     gameState.turn.turnsInDangerZone++;
-    console.log('[interceptEffect] INCREMENTO - Counter ora:', gameState.turn.turnsInDangerZone);
   }
-
-  console.log('[interceptEffect] END - Counter finale:', gameState.turn.turnsInDangerZone);
 }

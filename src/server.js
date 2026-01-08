@@ -145,5 +145,4 @@ const server = app.listen(PORT, async () => {
   // Carica messaggi di sistema dopo l'inizializzazione dei dati
   await initOdessa();
   loadMessaggiSistema();
-  console.log('Messaggi di sistema caricati');
 });

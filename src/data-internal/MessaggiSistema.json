@@ -400,6 +400,17 @@
     "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\nYou spent too much time in dangerous zones. A Soviet patrol has intercepted and identified you as an intruder. You have been captured!"
   },
   {
+    "Chiave": "victory.phase1a",
+    "IDLingua": 1,
+    "Messaggio": "\nTi inoltri nell'atrio con la torcia che proietta ombre danzanti sulle pareti di marmo. La tua figura si staglia contro il buio mentre avanzi con determinazione. All'improvviso, una voce familiare ti ferma:\n— «Aspetta! Sei tu... ce l'hai fatta!»\nÈ Ferenc, il tuo contatto segreto. Si avvicina rapidamente, lo sguardo vigile verso le ombre.\n— «Non abbiamo molto tempo. Mi servono i documenti che hai recuperato. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB. Poi devo portarti al confine.»\nGli porgi i tre documenti. Ferenc li nasconde rapidamente sotto il cappotto.\n— «Perfetto. Ora seguimi. Ho una jeep che ci aspetta fuori. Destinazione: settore americano.»\nLa jeep sfreccia nelle strade deserte di Berlino, i fari che tagliano l'oscurità della notte. Ferenc guida con sicurezza, evitando le pattuglie sovietiche con una precisione che tradisce anni di esperienza.\n— «Hai fatto un lavoro incredibile,» dice Ferenc mentre svolta in una strada laterale. «Quei documenti che mi hai consegnato sono fondamentali per l'operazione. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB... con questi possiamo smantellare la rete di spionaggio.»\nLa jeep rallenta. Davanti a voi, illuminata da potenti riflettori, si staglia la barriera del settore americano.\n— «Ci siamo. Ora tocca a te. Hai ancora quei documenti personali che ti ho dato? Mostrali alla guardia. Lei sa cosa fare.»\nFerenc ti stringe la mano con forza.\n— «Buona fortuna, agente. L'America ti aspetta dall'altra parte.»"
+  },
+  {
+    "Chiave": "victory.phase1a",
+    "IDLingua": 2,
+    "Messaggio": "\nYou walk into the lobby with your torch casting dancing shadows on the marble walls. Your figure stands out against the darkness as you advance with determination. Suddenly, a familiar voice stops you:\n— \"Wait! It's you... you made it!\"\nIt's Ferenc, your secret contact. He approaches quickly, his gaze alert to the shadows.\n— \"We don't have much time. I need the documents you recovered. The personnel office file, the service list, and the KGB dossier. Then I must take you to the border.\"\nYou hand him the three documents. Ferenc quickly hides them under his coat.\n— \"Perfect. Now follow me. I have a jeep waiting outside. Destination: American sector.\"\nThe jeep speeds through Berlin's deserted streets, its headlights cutting through the darkness of the night. Ferenc drives confidently, avoiding Soviet patrols with a precision that betrays years of experience.\n— \"You did an incredible job,\" Ferenc says as he turns into a side street. \"Those documents you gave me are fundamental to the operation. The personnel office file, the service list, and the KGB dossier... with these we can dismantle the spy network.\"\nThe jeep slows down. Before you, illuminated by powerful spotlights, stands the American sector barrier.\n— \"We're here. Now it's your turn. Do you still have those personal documents I gave you? Show them to the guard. She knows what to do.\"\nFerenc shakes your hand firmly.\n— \"Good luck, agent. America awaits you on the other side.\""
+  },
+
+  {
     "Chiave": "action.light.lamp.success",
     "IDLingua": 1,
     "Messaggio": "Accendi la lampada con i fiammiferi. La fiamma illumina il luogo con luce calda e costante."
@@ -468,5 +479,25 @@
     "Chiave": "narrative.awaiting.continue",
     "IDLingua": 2,
     "Messaggio": "Press SPACEBAR to continue..."
+  },
+  {
+    "Chiave": "narrative.command.useless",
+    "IDLingua": 1,
+    "Messaggio": "Non vedo alcuna utilità in questo."
+  },
+  {
+    "Chiave": "narrative.command.useless",
+    "IDLingua": 2,
+    "Messaggio": "I don't see any use in that."
+  },
+  {
+    "Chiave": "game.over.guardia_sospetta",
+    "IDLingua": 1,
+    "Messaggio": "La guardia nota il tuo comportamento strano e nervoso.\n- Cosa state facendo? Venite qui! -\nTi fermano per un controllo più approfondito. Quando scoprono i documenti falsi, sei perduto.\nVieni arrestato e avrai un processo come spia occidentale.\n\n*** GAME OVER ***\n\nSuggerimento: Devi porgere i documenti alla guardia!"
+  },
+  {
+    "Chiave": "game.over.guardia_sospetta",
+    "IDLingua": 2,
+    "Messaggio": "The guard notices your strange and nervous behavior.\n- What are you doing? Come here! -\nThey stop you for a thorough check. When they discover the fake documents, you're doomed.\nYou are arrested and will be tried as a Western spy.\n\n*** GAME OVER ***\n\nSuggestion: You must hand over the documents to the guard!"
   }
 ]

@@ -20,8 +20,8 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       expect(Array.isArray(TURN_EFFECTS)).toBe(true);
     });
 
-    it('dovrebbe contenere esattamente 4 effects (Sprint 3.3.5.A-C)', () => {
-      expect(TURN_EFFECTS).toHaveLength(4);
+    it('dovrebbe contenere esattamente 5 effects (Sprint 3.3.5.A-D)', () => {
+      expect(TURN_EFFECTS).toHaveLength(5);
     });
 
     it('ogni effect dovrebbe essere una funzione', () => {

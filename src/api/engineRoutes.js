@@ -93,17 +93,39 @@ router.post('/set-location', (req, res) => {
       const fakeResult = { accepted: true, resultType: 'OK', message: '', effects: [] };
       const resultWithEffects = applyTurnEffects(fakeResult, fakeParseResult);
       
-      console.log('[engineRoutes] set-location dopo applyTurnEffects - gameOver:', resultWithEffects.gameOver);
-      
       // Check game over triggato da turn effects (darkness, terminale, ecc.)
       if (resultWithEffects.gameOver === true) {
-        console.log('[engineRoutes] GAME OVER rilevato - inviando risposta al client');
         return res.json({
           ok: false,
           gameOver: true,
           gameOverReason: resultWithEffects.gameOverReason || 'UNKNOWN',
           message: resultWithEffects.message || 'Game Over',
           turnMessages: [resultWithEffects.message]
+        });
+      }
+      
+      // Check narrative phase (Ferenc victory sequence)
+      if (resultWithEffects.resultType === 'NARRATIVE') {
+        return res.json({
+          ok: true,
+          resultType: 'NARRATIVE',
+          message: resultWithEffects.message,
+          awaitingContinue: resultWithEffects.awaitingContinue || false,
+          narrativePhase: resultWithEffects.narrativePhase,
+          turnMessages: []
+        });
+      }
+      
+      // Check teleport (Ferenc finale)
+      if (resultWithEffects.resultType === 'TELEPORT') {
+        return res.json({
+          ok: true,
+          resultType: 'TELEPORT',
+          message: resultWithEffects.message,
+          locationId: resultWithEffects.locationId,
+          teleport: true,
+          narrativePhase: resultWithEffects.narrativePhase,
+          turnMessages: []
         });
       }
       

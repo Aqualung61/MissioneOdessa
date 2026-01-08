@@ -119,9 +119,10 @@ Quattro gruppi di endpoint REST:
   - **index.js** - Registry e coordinatore effetti (TURN_EFFECTS array)
   - **torchEffect.js** - Logica countdown torcia (6 turni → difettosa)
   - **darknessEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B** Countdown buio (3 turni → morte)
-  - **gameOverEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B/C** Game over centralizzato (darkness, terminal, intercettazione, guardia)
+  - **gameOverEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B/C/D** Game over centralizzato (darkness, terminal, intercettazione, guardia)
   - **interceptEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.C** Countdown intercettazione (danger zones 51,52,53,55,56,58 → 3 turni → morte)
-  - **mysteryEffect.js** - *(⏳ TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
+  - **victoryEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.D** Sequenza Ferenc + teleport + vittoria finale
+  - **mysteryEffect.js** - ✅ **COMPLETATO Sprint 3.2.2** Misteri automatici inline (assegnaPunteggioMistero)
 
 ### 💾 Data Layer
 Architettura dati ibrida:
@@ -728,12 +729,13 @@ sequenceDiagram
 1. ✅ **torchEffect**: Countdown 6 turni → torcia difettosa
 2. ✅ **darknessEffect**: Countdown 3 turni senza luce → traccia turnsInDarkness
 3. ✅ **gameOverEffect**: Game over centralizzato per TUTTE le condizioni di morte:
-   - **Darkness death**: turnsInDarkness ≥ 3
-   - **Terminal location**: Terminale === -1
+   - **Darkness death**: turnsInDarkness ≥ 3 (CHECK 1)
+   - **Terminal location**: Terminale === -1 (CHECK 2)
    - **Intercettazione**: ✅ **COMPLETATO Sprint 3.3.5.C** turnsInDangerZone ≥ 3 (CHECK 3)
-   - **Guardia**: *(⏳ TODO Sprint 3.3.5.D)* unusefulCommandsCounter al luogo 59
+   - **Guardia insospettita**: ✅ **COMPLETATO Sprint 3.3.5.D** unusefulCommandsCounter ≥ 3 al luogo 59 (CHECK 4)
 4. ✅ **interceptEffect** (Sprint 3.3.5.C): Traccia turni in danger zones (51,52,53,55,56,58), reset uscendo, morte via gameOverEffect CHECK 3
-5. ⏳ **mysteryEffect**: *(TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
+5. ✅ **victoryEffect** (Sprint 3.3.5.D): Sequenza Ferenc, teleport luogo 59, gestione PORGI DOCUMENTI finale
+6. ✅ **Misteri automatici** (Sprint 3.2.2): Assegnazione inline via assegnaPunteggioMistero() in applicaEffetti()
 
 **hasLight Recalculation** (✅ Sprint 3.3.5.B):
 - Calcolo iniziale in `prepareTurnContext()` (snapshot pre-comando)
@@ -767,10 +769,10 @@ flowchart TB
     Check2 -->|YES| Death2[🏴 TERMINAL LOCATION<br/>Messaggio: game.terminal.location]
     Check2 -->|NO| Check3{turnsInDangerZone >= 3?<br/>✅ Sprint 3.3.5.C}
     
-    Check3 -->|YES| Death3[🏴 INTERCETTAZIONE<br/>Messaggio: TBD]
-    Check3 -->|NO| Check4{unusefulCommands<br/>al luogo 59?<br/>TODO Sprint 3.3.5.D}
+    Check3 -->|YES| Death3[🏴 INTERCETTAZIONE<br/>Messaggio: game.intercept.death]
+    Check3 -->|NO| Check4{unusefulCommands >= 3<br/>al luogo 59?<br/>✅ Sprint 3.3.5.D}
     
-    Check4 -->|YES| Death4[🏴 GUARDIA<br/>Messaggio: TBD]
+    Check4 -->|YES| Death4[🏴 GUARDIA INSOSPETTITA<br/>Messaggio: game.over.guardia_sospetta]
     Check4 -->|NO| Continue[✅ Continua gioco]
     
     Death1 --> SetRestart[awaitingRestart = true<br/>gameOver = true<br/>gameOverReason = message]
@@ -916,8 +918,9 @@ Il sistema di intercettazione implementa un countdown di 3 turni nelle zone peri
 prepareTurnContext() → executeCommand() → applyTurnEffects():
   1. torchEffect (aggiorna torciaDifettosa)
   2. darknessEffect (aggiorna turnsInDarkness)
-  3. gameOverEffect (CHECK 1,2,3 - verifica PRIMA incremento)
+  3. gameOverEffect (CHECK 1,2,3,4 - verifica condizioni morte)
   4. interceptEffect (incrementa/resetta turnsInDangerZone)
+  5. victoryEffect (verifica prerequisiti Ferenc, gestisce narrative phases)
 ```
 
 **Turn Structure v3.0 Extended**:

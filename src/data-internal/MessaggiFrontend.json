@@ -120,6 +120,16 @@
     "Messaggio": "Unrecognized direction."
   },
   {
+    "Chiave": "ui.error.communication",
+    "IDLingua": 1,
+    "Messaggio": "Errore comunicazione: "
+  },
+  {
+    "Chiave": "ui.error.communication",
+    "IDLingua": 2,
+    "Messaggio": "Communication error: "
+  },
+  {
     "Chiave": "ui.error.unknownCommand",
     "IDLingua": 1,
     "Messaggio": "Comando sconosciuto."

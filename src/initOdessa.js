@@ -20,6 +20,11 @@ export async function initOdessa() {
     try {
       const data = fs.readFileSync(filePath, 'utf8');
       odessaData[tableName] = JSON.parse(data);
+      if (tableName === 'Luoghi') {
+        const luogo59 = odessaData[tableName].find(l => l.ID === 59);
+        console.log(`[initOdessa] Luoghi.json caricato da: ${filePath}`);
+        console.log(`[initOdessa] Luogo 59 Est dal file:`, luogo59?.Est);
+      }
     } catch (err) {
       console.error(`Errore nel caricamento ${tableName}:`, err.message);
       // Continua con le altre tabelle
