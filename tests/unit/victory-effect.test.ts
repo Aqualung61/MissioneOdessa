@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Test Unit per victoryEffect.js (Sprint 3.3.5.D)
  * Test isolato della sequenza Ferenc + Teleport + Vittoria
@@ -21,15 +22,15 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.turn.current.hasLight = true;
       
       // Setup oggetti prerequisito in inventario
-      const fascicolo = state.Oggetti.find(o => o.ID === 16);
-      const lista = state.Oggetti.find(o => o.ID === 6);
-      const dossier = state.Oggetti.find(o => o.ID === 34);
+      const fascicolo = (state.Oggetti as any[]).find((o: any) => o.ID === 16);
+      const lista = (state.Oggetti as any[]).find((o: any) => o.ID === 6);
+      const dossier = (state.Oggetti as any[]).find((o: any) => o.ID === 34);
       if (fascicolo) fascicolo.IDLuogo = 0;
       if (lista) lista.IDLuogo = 0;
       if (dossier) dossier.IDLuogo = 0;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       // Non dovrebbe triggerare Ferenc se non al luogo 1
       expect(result.resultType).toBe('OK');
@@ -41,15 +42,15 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLocationId = 1;
       state.turn.current.hasLight = false; // Buio!
       
-      const fascicolo = state.Oggetti.find(o => o.ID === 16);
-      const lista = state.Oggetti.find(o => o.ID === 6);
-      const dossier = state.Oggetti.find(o => o.ID === 34);
+      const fascicolo = (state.Oggetti as any[]).find((o: any) => o.ID === 16);
+      const lista = (state.Oggetti as any[]).find((o: any) => o.ID === 6);
+      const dossier = (state.Oggetti as any[]).find((o: any) => o.ID === 34);
       if (fascicolo) fascicolo.IDLuogo = 0;
       if (lista) lista.IDLuogo = 0;
       if (dossier) dossier.IDLuogo = 0;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.resultType).toBe('OK');
       expect(state.narrativeState).not.toBe('ENDING_PHASE_2_WAIT');
@@ -60,15 +61,15 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLocationId = 1;
       state.turn.current.hasLight = true;
       
-      const fascicolo = state.Oggetti.find(o => o.ID === 16);
-      const lista = state.Oggetti.find(o => o.ID === 6);
-      const dossier = state.Oggetti.find(o => o.ID === 34);
+      const fascicolo = (state.Oggetti as any[]).find((o: any) => o.ID === 16);
+      const lista = (state.Oggetti as any[]).find((o: any) => o.ID === 6);
+      const dossier = (state.Oggetti as any[]).find((o: any) => o.ID === 34);
       if (fascicolo) fascicolo.IDLuogo = 5; // Non in inventario
       if (lista) lista.IDLuogo = 0;
       if (dossier) dossier.IDLuogo = 0;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.resultType).toBe('OK');
       expect(state.narrativeState).not.toBe('ENDING_PHASE_2_WAIT');
@@ -79,15 +80,15 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLocationId = 1;
       state.turn.current.hasLight = true;
       
-      const fascicolo = state.Oggetti.find(o => o.ID === 16);
-      const lista = state.Oggetti.find(o => o.ID === 6);
-      const dossier = state.Oggetti.find(o => o.ID === 34);
+      const fascicolo = (state.Oggetti as any[]).find((o: any) => o.ID === 16);
+      const lista = (state.Oggetti as any[]).find((o: any) => o.ID === 6);
+      const dossier = (state.Oggetti as any[]).find((o: any) => o.ID === 34);
       if (fascicolo) fascicolo.IDLuogo = 0;
       if (lista) lista.IDLuogo = 10; // Non in inventario
       if (dossier) dossier.IDLuogo = 0;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.resultType).toBe('OK');
       expect(state.narrativeState).not.toBe('ENDING_PHASE_2_WAIT');
@@ -98,15 +99,15 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLocationId = 1;
       state.turn.current.hasLight = true;
       
-      const fascicolo = state.Oggetti.find(o => o.ID === 16);
-      const lista = state.Oggetti.find(o => o.ID === 6);
-      const dossier = state.Oggetti.find(o => o.ID === 34);
+      const fascicolo = (state.Oggetti as any[]).find((o: any) => o.ID === 16);
+      const lista = (state.Oggetti as any[]).find((o: any) => o.ID === 6);
+      const dossier = (state.Oggetti as any[]).find((o: any) => o.ID === 34);
       if (fascicolo) fascicolo.IDLuogo = 0;
       if (lista) lista.IDLuogo = 0;
       if (dossier) dossier.IDLuogo = 15; // Non in inventario
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.resultType).toBe('OK');
       expect(state.narrativeState).not.toBe('ENDING_PHASE_2_WAIT');
@@ -118,8 +119,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.turn.current.hasLight = true;
       // Non imposta oggetti in inventario
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.resultType).toBe('OK');
       expect(state.currentLocationId).toBe(1); // Nessun teleport
@@ -145,8 +146,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       setupVictoryPrerequisites(state);
       const punteggioBefore = state.punteggio.totale;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       // victoryEffect assegna +4 Ferenc + +1 Luogo 59 = +5 totale
       expect(state.punteggio.totale).toBe(punteggioBefore + 5);
@@ -157,8 +158,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLingua = 1;
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.message).toBeTruthy();
       expect(result.message.length).toBeGreaterThan(50);
@@ -169,8 +170,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.currentLingua = 2;
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.message).toBeTruthy();
       expect(result.message.length).toBeGreaterThan(50);
@@ -180,8 +181,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.currentLocationId).toBe(59);
       expect(state.turn.current.location).toBe(59);
@@ -209,8 +210,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       const fascicolo = state.Oggetti.find((o: { ID: number; Attivo?: number; IDLuogo?: number; Inventario?: boolean }) => o.ID === 16);
       expect(fascicolo?.Attivo).toBe(0);
@@ -222,8 +223,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       const lista = state.Oggetti.find((o: { ID: number; Attivo?: number; IDLuogo?: number; Inventario?: boolean }) => o.ID === 6);
       expect(lista?.Attivo).toBe(0);
@@ -235,8 +236,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       const dossier = state.Oggetti.find((o: { ID: number; Attivo?: number; IDLuogo?: number; Inventario?: boolean }) => o.ID === 34);
       expect(dossier?.Attivo).toBe(0);
@@ -255,8 +256,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
         documenti.Attivo = 1;
       }
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       const documentiAfter = state.Oggetti.find((o: { ID: number; IDLuogo?: number; Attivo?: number }) => o.ID === 35);
       expect(documentiAfter?.IDLuogo).toBe(0); // Ancora in inventario
@@ -268,8 +269,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       setupVictoryPrerequisites(state);
       const punteggioBefore = state.punteggio.totale;
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       // +4 Ferenc + +1 Luogo 59 = +5 totale
       expect(state.punteggio.totale).toBe(punteggioBefore + 5);
@@ -280,8 +281,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.movementBlocked).toBe(true);
     });
@@ -290,8 +291,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.narrativeState).toBe('ENDING_PHASE_2_WAIT');
       expect(state.narrativePhase).toBe(2);
@@ -303,8 +304,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       setupVictoryPrerequisites(state);
       state.unusefulCommandsCounter = 5; // Imposta valore non-zero
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.unusefulCommandsCounter).toBe(0);
     });
@@ -313,8 +314,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
       
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(result.narrativePhase).toBe('ENDING_PHASE_2_WAIT');
     });
@@ -328,8 +329,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.awaitingRestart = true; // Game over attivo
       
       const punteggioBefore = state.punteggio.totale;
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.punteggio.totale).toBe(punteggioBefore); // Nessun incremento
       expect(state.currentLocationId).toBe(1); // Nessun teleport
@@ -342,8 +343,8 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.ended = true; // Gioco terminato
       
       const punteggioBefore = state.punteggio.totale;
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.punteggio.totale).toBe(punteggioBefore);
       expect(state.currentLocationId).toBe(1);
@@ -356,12 +357,13 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       state.victory = true; // Già vittoria
       
       const punteggioBefore = state.punteggio.totale;
-      const result = { message: '', resultType: 'OK' };
-      victoryEffect(state, result, null);
+      const result: any = { message: '', resultType: 'OK' };
+      victoryEffect(state, result);
       
       expect(state.punteggio.totale).toBe(punteggioBefore);
       expect(state.currentLocationId).toBe(1);
     });
   });
 });
+
 
