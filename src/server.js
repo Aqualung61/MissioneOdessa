@@ -55,6 +55,8 @@ try {
   initializeOriginalData();
   // Inizializza gameState con log per Step 1
   resetGameState();
+  // Carica messaggi di sistema dopo l'inizializzazione dei dati
+  loadMessaggiSistema();
 } catch (err) {
   console.error('Errore nel caricamento dati in memoria:', err.message);
   process.exit(1); // Esci se non riesci a caricare
@@ -125,9 +127,6 @@ app.use(BASE_PATH, (req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
 
-const server = app.listen(PORT, async () => {
+const server = app.listen(PORT, () => {
   console.log(`Server unico avviato su http://localhost:${PORT}/`);
-  // Carica messaggi di sistema dopo l'inizializzazione dei dati
-  await initOdessa();
-  loadMessaggiSistema();
 });
