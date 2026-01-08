@@ -68,6 +68,11 @@ app.get(BASE_PATH + '/api/version', (req, res) => {
   res.json({ version });
 });
 
+// API: config (espone BASE_PATH al client)
+app.get('/api/config', (req, res) => {
+  res.json({ basePath: BASE_PATH || '/' });
+});
+
 // API: init_odessa per test
 app.get(BASE_PATH + '/init_odessa', async (req, res) => {
   try {

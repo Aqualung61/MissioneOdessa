@@ -19,9 +19,9 @@ if (window.i18n) {
       let descrizione = localStorage.getItem('linguaDescrizione') || '';
       if (!descrizione && idLingua) {
         // Fallback: recupera nome lingua dal backend
-        // NOTA: basePath definito più avanti, ma hoisting consente l'uso qui
-        const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
-        fetch(basePath + 'api/lingue')
+        // NOTA: basePath definito più avanti, ma hoisting consente l'uso qui tramite funzione
+        const bp = getBasePath();
+        fetch(bp + 'api/lingue')
           .then(res => res.json())
           .then(data => {
             const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
@@ -394,13 +394,17 @@ const inputForm = document.getElementById('inputArea');
 const userInput = document.getElementById('userInput');
 
 // Determina base path per deployment in sottodirectory
-// Supporta qualsiasi path (es. /test/, /produzione/, /missioneodessa/)
+// Supporta qualsiasi path custom (es. /missioneodessa/, /test/, /produzione/)
+// Esclude segmenti "app" come /web/, /images/, /src/ per deployment root
 function getBasePath() {
   const pathParts = window.location.pathname.split('/').filter(p => p);
-  // Se pathname contiene almeno un segmento, usa il primo come base
-  // Esempio: /missioneodessa/web/odessa_main.html → /missioneodessa/
-  // Esempio: /web/odessa_main.html → /
-  return pathParts.length > 0 ? '/' + pathParts[0] + '/' : '/';
+  // Se primo segmento è cartella app interna, siamo in root deployment
+  const appFolders = ['web', 'images', 'src', 'api'];
+  if (pathParts.length === 0 || appFolders.includes(pathParts[0])) {
+    return '/';
+  }
+  // Altrimenti primo segmento è il BASE_PATH custom
+  return '/' + pathParts[0] + '/';
 }
 const basePath = getBasePath();
 
