@@ -19,7 +19,9 @@ if (window.i18n) {
       let descrizione = localStorage.getItem('linguaDescrizione') || '';
       if (!descrizione && idLingua) {
         // Fallback: recupera nome lingua dal backend
-        fetch('/api/lingue')
+        // NOTA: basePath definito più avanti, ma hoisting consente l'uso qui
+        const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
+        fetch(basePath + 'api/lingue')
           .then(res => res.json())
           .then(data => {
             const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
