@@ -394,7 +394,15 @@ const inputForm = document.getElementById('inputArea');
 const userInput = document.getElementById('userInput');
 
 // Determina base path per deployment in sottodirectory
-const basePath = window.location.pathname.split('/').filter(p => p).length > 0 && window.location.pathname.split('/').filter(p => p)[0] === 'missioneodessa' ? '/' + window.location.pathname.split('/').filter(p => p)[0] + '/' : '/';
+// Supporta qualsiasi path (es. /test/, /produzione/, /missioneodessa/)
+function getBasePath() {
+  const pathParts = window.location.pathname.split('/').filter(p => p);
+  // Se pathname contiene almeno un segmento, usa il primo come base
+  // Esempio: /missioneodessa/web/odessa_main.html → /missioneodessa/
+  // Esempio: /web/odessa_main.html → /
+  return pathParts.length > 0 ? '/' + pathParts[0] + '/' : '/';
+}
+const basePath = getBasePath();
 
 // Dati e stato per parsing livello 0
 let odessaData = {};
