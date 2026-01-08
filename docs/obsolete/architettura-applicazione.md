@@ -1,5 +1,9 @@
 # Architettura Applicazione Missione Odessa
 
+> OBSOLETE: documento architetturale “storico”.
+> 
+> Per lo stato corrente (8 gennaio 2026) vedere: `docs/20260108_architettura_applicativa_01.md`.
+
 Questo documento descrive l'architettura completa dell'applicazione Missione Odessa.
 
 ## Diagramma Architetturale
