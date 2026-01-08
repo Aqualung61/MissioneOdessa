@@ -484,7 +484,7 @@ flowchart TB
   Apply --> All["applyAllTurnEffects(...)<br/>(turnEffects registry)"]
   All --> GO["gameOverEffect"]
 
-  GO --> Check{ "condizione game over?" }
+  GO --> Check{condizione game over?}
   Check -->|"no"| Ok["result normal"]
   Check -->|"sì"| Set["set awaitingRestart=true<br/>result.gameOver=true"]
   Set --> Client["client mostra messaggio e<br/>accetta solo SI/NO"]
