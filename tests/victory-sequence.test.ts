@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Test End-to-End per Sequenza Vittoria Completa (Sprint 3.3.5.D)
  * Test integrazione Ferenc → Teleport → PORGI DOCUMENTI → Vittoria
