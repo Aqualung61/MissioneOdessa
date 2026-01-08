@@ -119,8 +119,8 @@ Quattro gruppi di endpoint REST:
   - **index.js** - Registry e coordinatore effetti (TURN_EFFECTS array)
   - **torchEffect.js** - Logica countdown torcia (6 turni → difettosa)
   - **darknessEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B** Countdown buio (3 turni → morte)
-  - **gameOverEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B** Game over centralizzato (darkness, terminal, intercettazione, guardia)
-  - **interceptEffect.js** - *(⏳ TODO Sprint 3.3.5.C)* Countdown intercettazione (3 turni → morte)
+  - **gameOverEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.B/C** Game over centralizzato (darkness, terminal, intercettazione, guardia)
+  - **interceptEffect.js** - ✅ **COMPLETATO Sprint 3.3.5.C** Countdown intercettazione (danger zones 51,52,53,55,56,58 → 3 turni → morte)
   - **mysteryEffect.js** - *(⏳ TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
 
 ### 💾 Data Layer
@@ -730,9 +730,9 @@ sequenceDiagram
 3. ✅ **gameOverEffect**: Game over centralizzato per TUTTE le condizioni di morte:
    - **Darkness death**: turnsInDarkness ≥ 3
    - **Terminal location**: Terminale === -1
-   - **Intercettazione**: *(⏳ TODO Sprint 3.3.5.C)* turnsInDangerZone ≥ 3
+   - **Intercettazione**: ✅ **COMPLETATO Sprint 3.3.5.C** turnsInDangerZone ≥ 3 (CHECK 3)
    - **Guardia**: *(⏳ TODO Sprint 3.3.5.D)* unusefulCommandsCounter al luogo 59
-4. ⏳ **interceptEffect**: *(TODO Sprint 3.3.5.C)* Countdown zone pericolose
+4. ✅ **interceptEffect** (Sprint 3.3.5.C): Traccia turni in danger zones (51,52,53,55,56,58), reset uscendo, morte via gameOverEffect CHECK 3
 5. ⏳ **mysteryEffect**: *(TODO Sprint 3.3.5.D)* Auto-assegnazione misteri
 
 **hasLight Recalculation** (✅ Sprint 3.3.5.B):
@@ -765,7 +765,7 @@ flowchart TB
     Check1 -->|NO| Check2{Terminale === -1?}
     
     Check2 -->|YES| Death2[🏴 TERMINAL LOCATION<br/>Messaggio: game.terminal.location]
-    Check2 -->|NO| Check3{turnsInDangerZone >= 3?<br/>TODO Sprint 3.3.5.C}
+    Check2 -->|NO| Check3{turnsInDangerZone >= 3?<br/>✅ Sprint 3.3.5.C}
     
     Check3 -->|YES| Death3[🏴 INTERCETTAZIONE<br/>Messaggio: TBD]
     Check3 -->|NO| Check4{unusefulCommands<br/>al luogo 59?<br/>TODO Sprint 3.3.5.D}
@@ -815,7 +815,11 @@ flowchart TB
      - Messaggio i18n: `getSystemMessage('timer.darkness.death')`
    - **CHECK 2 - Terminal Location**: `currentLuogo.Terminale === -1`
      - Messaggio i18n: `getSystemMessage('game.terminal.location')`
-   - **CHECK 3 - Intercettazione** (TODO Sprint 3.3.5.C): `turnsInDangerZone >= 3`
+   - **CHECK 3 - Intercettazione** (✅ Sprint 3.3.5.C): `turnsInDangerZone >= 3`
+     - Messaggio i18n: `getSystemMessage('game.intercept.death')` (IT/EN con emoji 💀)
+     - Danger zones: [51, 52, 53, 55, 56, 58] | Safe refuge: 57
+     - Incremento dal primo arrivo in zona, reset automatico all'uscita
+     - Comandi SYSTEM esclusi (non consumano turno)
    - **CHECK 4 - Guardia** (TODO Sprint 3.3.5.D): `unusefulCommandsCounter` al luogo 59
    - **Azione**: Imposta `awaitingRestart = true`, ritorna `{gameOver: true, gameOverReason, message}`
 
@@ -861,6 +865,100 @@ flowchart TB
    - `/api/engine/execute` bypassa parser, chiama direttamente `resetGameState()`
    - Response: `{ok: true, restarted: true}`
    - Client ricarica interfaccia con luogo iniziale
+
+---
+
+### Sistema Intercettazione (Danger Zones) - ✅ Sprint 3.3.5.C
+
+**Architettura Middleware per Pattuglie Sovietiche**:
+
+Il sistema di intercettazione implementa un countdown di 3 turni nelle zone pericolose, con morte automatica al terzo turno consumato.
+
+**Componenti Implementati**:
+
+1. **interceptEffect.js** (4° middleware nel registry):
+   ```javascript
+   export function interceptEffect(gameState, result, _parseResult) {
+     const current = gameState.turn.current;
+     const previous = gameState.turn.previous;
+     
+     // INCREMENTO: comando consuming in danger zone
+     if (current.consumesTurn && current.inDangerZone) {
+       gameState.turn.turnsInDangerZone++;
+     }
+     
+     // RESET: uscita da danger zone
+     if (!current.inDangerZone && previous.inDangerZone) {
+       gameState.turn.turnsInDangerZone = 0;
+     }
+   }
+   ```
+
+2. **gameOverEffect.js CHECK 3**:
+   - Verifica `turnsInDangerZone >= 3` PRIMA dell'incremento
+   - Messaggio: `getSystemMessage('game.intercept.death')` (💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA)
+   - Imposta `gameOverReason = 'INTERCEPT'`
+
+**Configurazione Luoghi**:
+- **Danger Zones**: [51, 52, 53, 55, 56, 58] - Zone di pattuglia sovietica
+- **Safe Refuge**: 57 (Capanno attrezzi) - Reset contatore se raggiunto
+- **Terminal Locations**: [8, 40, 54] - Morte immediata (Terminale === -1)
+
+**Logica Contatore**:
+- **Incremento immediato**: Dal primo arrivo in zona pericolosa (no skip)
+- **Reset automatico**: Quando si esce verso qualsiasi luogo sicuro
+- **Movimento tra danger zones**: Solo incremento, NO reset
+- **Comandi SYSTEM**: Esclusi automaticamente (non consumano turno)
+- **Persistenza**: Contatore salvato in save/load (getGameStateSnapshot)
+
+**Ordine Esecuzione Critico**:
+```
+prepareTurnContext() → executeCommand() → applyTurnEffects():
+  1. torchEffect (aggiorna torciaDifettosa)
+  2. darknessEffect (aggiorna turnsInDarkness)
+  3. gameOverEffect (CHECK 1,2,3 - verifica PRIMA incremento)
+  4. interceptEffect (incrementa/resetta turnsInDangerZone)
+```
+
+**Turn Structure v3.0 Extended**:
+```javascript
+turn: {
+  turnsInDangerZone: 0,  // Contatore zone pericolose
+  current: {
+    inDangerZone: boolean  // Flag calcolato da currentLocationId
+  },
+  previous: {
+    inDangerZone: boolean  // Necessario per detectare transizioni
+  }
+}
+```
+
+**Bug Fix Implementati** (Sprint 3.3.5.C):
+1. Parser cache non resettato dopo loadGame → `resetVocabularyCache()` in load-client-state
+2. Turn structure non ricostruita → Enhanced `setGameState()` con defaults espliciti
+3. `previous.inDangerZone` non salvato → Aggiunto in `prepareTurnContext()` line 269
+4. `current.inDangerZone` non aggiornato dopo movimento → Ricalcolo in `applyTurnEffects()` line 347
+5. Contatori non salvati → Full turn structure in `getGameStateSnapshot()` lines 668-691
+
+**Test Coverage**:
+- `intercept-effect.test.ts`: 15 test isolati (incremento, reset, edge cases)
+- `gameover-effect.test.ts`: CHECK 3 attivato (morte a 3 turni)
+- `turn-effects-registry.test.ts`: Aggiornato per 4 effects
+- **Totale test suite**: 162 test passanti (+11 rispetto a Sprint 3.3.5.B)
+
+**Messaggi i18n**:
+```json
+"game.intercept.death": {
+  "IDLingua": 1,  // IT
+  "Messaggio": "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA\n\n..."
+},
+"game.intercept.death": {
+  "IDLingua": 2,  // EN
+  "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\n..."
+}
+```
+
+---
 
 ### Sistema i18n (Internazionalizzazione) - ✅ Sprint 3.3.5.B
 

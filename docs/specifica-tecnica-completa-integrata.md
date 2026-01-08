@@ -1945,9 +1945,415 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 
 ---
 
+### 3.3.8 Sprint 3.3.5.C - Sistema Intercettazione Pattuglie Sovietiche
+
+Sprint per implementare il sistema di countdown nelle zone pericolose (danger zones) con morte dopo 3 turni consecutivi.
+
 ---
 
-### 3.3.8 Aggiornare systemMessages.json (20 min)
+#### **3.3.8.1 - Implementazione interceptEffect.js Middleware** (45 min)
+
+**Obiettivo:** Creare il 4° middleware per tracciare turni in danger zones.
+
+**File:** `src/logic/turnEffects/interceptEffect.js` (NUOVO)
+
+**Codice:**
+```javascript
+/**
+ * Intercept Effect - Sistema intercettazione pattuglie sovietiche
+ * 
+ * Gestisce:
+ * - Contatore turni in danger zone (luoghi 51, 52, 53, 55, 56, 58)
+ * - Incremento immediato dal primo arrivo in zona pericolosa
+ * - Reset automatico quando si esce dalla danger zone
+ * - Esclusione automatica comandi SYSTEM (non consumano turno)
+ * 
+ * Sprint 3.3.5.C
+ */
+
+export function interceptEffect(gameState, result, _parseResult) {
+  const current = gameState.turn.current;
+  const previous = gameState.turn.previous;
+  
+  // INCREMENTO: se comando consuma turno E siamo in danger zone
+  if (current.consumesTurn && current.inDangerZone) {
+    gameState.turn.turnsInDangerZone++;
+    console.log('[interceptEffect] INCREMENTO - Counter ora:', gameState.turn.turnsInDangerZone);
+  }
+  
+  // RESET: se siamo usciti da danger zone
+  if (!current.inDangerZone && previous.inDangerZone) {
+    gameState.turn.turnsInDangerZone = 0;
+    console.log('[interceptEffect] RESET - Uscito da danger zone');
+  }
+}
+```
+
+**File:** `src/logic/turnEffects/index.js`
+
+**Modifica:**
+```javascript
+import { interceptEffect } from './interceptEffect.js';
+
+export const TURN_EFFECTS = [
+  torchEffect,
+  darknessEffect,
+  gameOverEffect,
+  interceptEffect  // NUOVO - 4° nel registry
+];
+```
+
+**Test Unit:**
+- `interceptEffect()` con `consumesTurn=true, inDangerZone=true` → incrementa counter
+- `interceptEffect()` con `consumesTurn=false, inDangerZone=true` → NO incremento (SYSTEM cmd)
+- `interceptEffect()` con transizione `previous.inDangerZone=true → current.inDangerZone=false` → reset
+- `interceptEffect()` movimento tra danger zones → solo incremento, NO reset
+- Verificare contatore persiste attraverso save/load
+
+**Effort:** 25 min codifica + 20 min test isolati
+
+---
+
+#### **3.3.8.2 - Aggiornamento gameOverEffect CHECK 3** (30 min)
+
+**Obiettivo:** Attivare la verifica di morte per intercettazione.
+
+**File:** `src/logic/turnEffects/gameOverEffect.js`
+
+**Modifica:**
+```javascript
+// === CHECK 3: INTERCETTAZIONE ===
+// 3 turni consuming in danger zone (luoghi 51,52,53,55,56,58)
+// Sprint 3.3.5.C: Morte dopo 3 turni in zone pericolose
+if (gameState.turn.turnsInDangerZone >= 3) {
+  const interceptMsg = getSystemMessage('game.intercept.death', gameState.currentLingua);
+  result.accepted = false;
+  result.resultType = 'GAME_OVER';
+  result.message = interceptMsg;
+  result.gameOver = true;
+  result.gameOverReason = 'INTERCEPT';
+  gameState.awaitingRestart = true;
+  gameState.ended = true;
+  return;
+}
+```
+
+**File:** `src/data-internal/MessaggiSistema.json`
+
+**Aggiunte:**
+```json
+{
+  "Chiave": "game.intercept.death",
+  "IDLingua": 1,
+  "Messaggio": "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA\n\nTroppo tempo in zona pericolosa. Le guardie sovietiche ti hanno individuato.\n\nMISSIONE FALLITA"
+},
+{
+  "Chiave": "game.intercept.death",
+  "IDLingua": 2,
+  "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\nToo much time in dangerous area. Soviet guards have spotted you.\n\nMISSION FAILED"
+}
+```
+
+**Test Unit:**
+- `gameOverEffect()` con `turnsInDangerZone=3` → `gameOver=true, reason='INTERCEPT'`
+- `gameOverEffect()` con `turnsInDangerZone=2` → NO game over
+- Verificare messaggio i18n IT/EN caricato correttamente
+- Verificare `awaitingRestart=true` impostato
+
+**Effort:** 15 min codifica + 15 min test
+
+---
+
+#### **3.3.8.3 - Engine.js: Aggiornamento Turn Structure** (60 min)
+
+**Obiettivo:** Estendere turn.current/previous con flag `inDangerZone`.
+
+**File:** `src/logic/engine.js`
+
+**Modifiche Multiple:**
+
+1. **Struttura iniziale gameState** (linee 72-90):
+```javascript
+turn: {
+  globalTurnNumber: 0,
+  totalTurnsConsumed: 0,
+  turnsInDarkness: 0,
+  turnsInDangerZone: 0,  // NUOVO
+  current: {
+    parseResult: null,
+    consumesTurn: false,
+    location: 1,
+    hasLight: false,
+    inDangerZone: false  // NUOVO
+  },
+  previous: {
+    location: 1,
+    hasLight: false,
+    consumedTurn: false,
+    inDangerZone: false  // NUOVO
+  }
+}
+```
+
+2. **prepareTurnContext()** (linee 260-275):
+```javascript
+const dangerZones = [51, 52, 53, 55, 56, 58];
+
+const prev = gameState.turn.current || {};
+gameState.turn.previous = {
+  location: prev.location || gameState.currentLocationId,
+  hasLight: prev.hasLight || false,
+  consumedTurn: prev.consumesTurn || false,
+  inDangerZone: prev.inDangerZone || false  // NUOVO - BUGFIX
+};
+
+const inDangerZone = dangerZones.includes(gameState.currentLocationId);
+
+gameState.turn.current = {
+  parseResult,
+  consumesTurn,
+  location: gameState.currentLocationId,
+  hasLight,
+  inDangerZone  // NUOVO
+};
+```
+
+3. **applyTurnEffects()** (dopo linea 345):
+```javascript
+// Ricalcola inDangerZone DOPO comando (può essere cambiata location)
+const dangerZones = [51, 52, 53, 55, 56, 58];
+gameState.turn.current.inDangerZone = dangerZones.includes(gameState.currentLocationId);
+```
+
+4. **setGameState()** (linee 597-605):
+```javascript
+previous: newState.turn.previous ? {
+  location: newState.turn.previous.location || 1,
+  hasLight: newState.turn.previous.hasLight || false,
+  consumedTurn: newState.turn.previous.consumedTurn || false,
+  inDangerZone: newState.turn.previous.inDangerZone || false  // NUOVO
+} : {
+  location: 1,
+  hasLight: false,
+  consumedTurn: false,
+  inDangerZone: false  // NUOVO
+}
+```
+
+5. **getGameStateSnapshot()** (linee 684-686):
+```javascript
+previous: {
+  location: gameState.turn.previous.location,
+  hasLight: gameState.turn.previous.hasLight,
+  consumedTurn: gameState.turn.previous.consumedTurn,
+  inDangerZone: gameState.turn.previous.inDangerZone  // NUOVO
+}
+```
+
+**Bug Fix Critici:**
+- Parser cache reset in `engineRoutes.js` load-client-state: `resetVocabularyCache()`
+- Turn structure defaults in `setGameState()` per evitare undefined
+- `previous.inDangerZone` salvato per detectare transizioni out→in
+
+**Test Unit:**
+- `prepareTurnContext()` a luogo 51 → `current.inDangerZone=true`
+- `prepareTurnContext()` a luogo 57 → `current.inDangerZone=false`
+- `applyTurnEffects()` dopo NORD da 51→5 → `current.inDangerZone` aggiornato a false
+- `getGameStateSnapshot()` include `turn.turnsInDangerZone` e flags
+- `setGameState()` ricostruisce turn structure con defaults
+
+**Effort:** 30 min codifica + 30 min test integrazione
+
+---
+
+#### **3.3.8.4 - Test Suite Completa** (45 min)
+
+**Obiettivo:** Creare test isolati e aggiornare test esistenti.
+
+**File:** `tests/unit/intercept-effect.test.ts` (NUOVO)
+
+**Test Cases (15 totali):**
+```typescript
+describe('interceptEffect - Sprint 3.3.5.C', () => {
+  describe('Incremento contatore', () => {
+    it('dovrebbe incrementare turnsInDangerZone in danger zone con consuming command');
+    it('dovrebbe incrementare dal primo arrivo (senza skip)');
+    it('dovrebbe incrementare progressivamente in danger zone');
+    it('NON dovrebbe incrementare con comandi SYSTEM (non consuming)');
+    it('NON dovrebbe incrementare fuori danger zone');
+  });
+  
+  describe('Reset contatore', () => {
+    it('dovrebbe resettare uscendo da danger zone');
+    it('dovrebbe resettare anche con counter alto');
+    it('NON dovrebbe resettare se si rimane in danger zone');
+    it('NON dovrebbe resettare se non eri in danger zone prima');
+  });
+  
+  describe('Edge cases', () => {
+    it('Movimento tra danger zones: NO reset, solo incremento');
+    it('Arrivo in rifugio sicuro (luogo 57): reset');
+    it('Comando SYSTEM in danger zone: NO incremento');
+    it('Contatore a 3 non viene incrementato se esce');
+  });
+  
+  describe('Integrazione con gameState.turn', () => {
+    it('dovrebbe rispettare la struttura turn.current');
+    it('dovrebbe rispettare la struttura turn.previous');
+  });
+});
+```
+
+**File:** `tests/unit/gameover-effect.test.ts`
+
+**Modifica:**
+```typescript
+describe('CHECK 3: Intercettazione (Sprint 3.3.5.C)', () => {
+  it('dovrebbe triggare game over con turnsInDangerZone >= 3', () => {
+    const state = getGameState();
+    state.turn.turnsInDangerZone = 3;
+    const result = { message: '', gameOver: false };
+    gameOverEffect(state, result, null);
+    expect(result.gameOver).toBe(true);
+    expect(result.gameOverReason).toBe('INTERCEPT');
+    expect(state.awaitingRestart).toBe(true);
+  });
+  
+  it('NON dovrebbe triggare con turnsInDangerZone = 2', () => {
+    const state = getGameState();
+    state.turn.turnsInDangerZone = 2;
+    const result = { message: '', gameOver: false };
+    gameOverEffect(state, result, null);
+    expect(result.gameOver).toBe(false);
+  });
+});
+```
+
+**File:** `tests/unit/turn-effects-registry.test.ts`
+
+**Modifica:**
+```typescript
+it('dovrebbe contenere esattamente 4 effects (Sprint 3.3.5.A-C)', () => {
+  expect(TURN_EFFECTS).toHaveLength(4);
+});
+
+it('effects dovrebbero avere nomi descrittivi', () => {
+  const names = TURN_EFFECTS.map(fn => fn.name);
+  expect(names[0]).toBe('torchEffect');
+  expect(names[1]).toBe('darknessEffect');
+  expect(names[2]).toBe('gameOverEffect');
+  expect(names[3]).toBe('interceptEffect'); // Sprint 3.3.5.C
+});
+```
+
+**File:** `tests/unit/turn-system.test.ts`
+
+**Rimozione:** Test obsoleti di `runPreExecutionChecks()` per intercettazione (migrati al middleware)
+
+**File:** `types/game-state.d.ts` (NUOVO)
+
+**Definizioni TypeScript:**
+```typescript
+export interface TurnCurrent {
+  parseResult: any | null;
+  consumesTurn: boolean;
+  location: number;
+  hasLight: boolean;
+  inDangerZone: boolean;  // Sprint 3.3.5.C
+}
+
+export interface TurnPrevious {
+  location: number;
+  hasLight: boolean;
+  consumedTurn: boolean;
+  inDangerZone: boolean;  // Sprint 3.3.5.C
+}
+
+export interface TurnState {
+  globalTurnNumber: number;
+  totalTurnsConsumed: number;
+  turnsInDarkness: number;
+  turnsInDangerZone: number;  // Sprint 3.3.5.C
+  current: TurnCurrent;
+  previous: TurnPrevious;
+}
+```
+
+**Esecuzione:**
+```bash
+npm test
+# Atteso: 162 tests passed (+11 rispetto a Sprint 3.3.5.B)
+
+npm run lint
+# Atteso: 0 errors
+```
+
+**Effort:** 30 min creazione test + 15 min validazione suite
+
+---
+
+#### **3.3.8.5 - Test Manuali End-to-End** (30 min)
+
+**Scenario 1: Morte per intercettazione**
+```
+1. NORD → Luogo 51 (Corridoio Ovest)
+2. INVENTARIO (NON incrementa - comando SYSTEM)
+3. NORD → Luogo 52 (turnsInDangerZone=1)
+4. GUARDA → (turnsInDangerZone=2)
+5. NORD → Luogo 53 (turnsInDangerZone=3)
+✅ Atteso: "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA" + prompt riavvio
+```
+
+**Scenario 2: Salvezza in rifugio sicuro**
+```
+1. NORD → Luogo 51
+2. NORD → Luogo 52 (turnsInDangerZone=1)
+3. EST → Luogo 57 (Capanno attrezzi - RESET)
+4. OVEST → Luogo 52 (turnsInDangerZone=1 - ripartito da 0)
+✅ Atteso: Contatore resettato entrando in luogo 57
+```
+
+**Scenario 3: Persistenza save/load**
+```
+1. NORD → Luogo 51
+2. NORD → Luogo 52 (turnsInDangerZone=1)
+3. SALVA
+4. Ricarica pagina
+5. CARICA
+6. NORD → Luogo 53
+✅ Atteso: turnsInDangerZone=2 (persistito + incrementato)
+```
+
+**Scenario 4: Comandi SYSTEM non incrementano**
+```
+1. NORD → Luogo 51
+2. INVENTARIO, AIUTO, GUARDA (3 comandi SYSTEM)
+✅ Atteso: turnsInDangerZone=0 (SYSTEM non consuma turno)
+```
+
+**Effort:** 30 min (4 scenari completi)
+
+---
+
+**Totale Sprint 3.3.5.C:** ~210 min (3h 30min)
+
+**Checkpoint critici per test manuali:**
+- ✅ Dopo **C.2**: Test game over CHECK 3 attivato
+- ✅ Dopo **C.3**: Test turn structure con inDangerZone
+- ✅ Dopo **C.5**: Test end-to-end completi (4 scenari)
+
+**Bug Fix Documentati:**
+1. Parser cache non resettato dopo loadGame
+2. Turn structure non ricostruita in setGameState()
+3. previous.inDangerZone non salvato in prepareTurnContext()
+4. current.inDangerZone non aggiornato dopo movimento
+5. Contatori turn non salvati in getGameStateSnapshot()
+
+---
+
+---
+
+### 3.3.9 Aggiornare systemMessages.json (20 min)
 
 **Task:**
 1. Aggiungere messaggi i18n per timer (torcia, buio, intercettazione)

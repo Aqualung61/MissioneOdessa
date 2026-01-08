@@ -1,19 +1,44 @@
 ## Unreleased
 
-### Novità principali
-- 
+### Sprint 3.3.5.C - Sistema Intercettazione Pattuglie Sovietiche (v1.2.5)
 
-### Migliorie tecniche
-- 
+#### Novità principali
+- **Sistema intercettazione**: Morte automatica dopo 3 turni consecutivi in zone pericolose (danger zones: luoghi 51,52,53,55,56,58)
+- **Rifugio sicuro**: Luogo 57 (Capanno attrezzi) resetta il contatore di intercettazione
+- **Messaggi i18n**: Nuovo messaggio di morte "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA" (IT/EN)
+- **Game Over CHECK 3**: Attivato controllo intercettazione in gameOverEffect
 
-### Note
-- 
+#### Migliorie tecniche
+- **Middleware interceptEffect.js**: 4° effect nel registry TURN_EFFECTS
+  - Incremento dal primo arrivo in zona pericolosa (no skip)
+  - Reset automatico all'uscita verso luogo sicuro
+  - Comandi SYSTEM esclusi automaticamente (non consumano turno)
+- **Turn System v3.0 Extended**: Aggiunto flag `inDangerZone` a current/previous
+- **TypeScript definitions**: Nuovo file `types/game-state.d.ts` con interfacce complete
+- **Test suite**: +11 test (162 totali), nuovi test isolati in `intercept-effect.test.ts`
+
+#### Bug Fix (5 totali)
+1. Parser cache non resettato dopo loadGame → `resetVocabularyCache()` in load-client-state
+2. Turn structure non ricostruita → Enhanced `setGameState()` con defaults espliciti
+3. `previous.inDangerZone` non salvato → Aggiunto in `prepareTurnContext()`
+4. `current.inDangerZone` non aggiornato dopo movimento → Ricalcolo in `applyTurnEffects()`
+5. Contatori turn non salvati → Full turn structure in `getGameStateSnapshot()`
+
+#### Documentazione
+- Aggiornata `architettura-applicazione.md` con sezione dedicata Sistema Intercettazione
+- Aggiornata `specifica-tecnica-completa-integrata.md` con Sprint 3.3.8 (5 sottosprint)
+- Diagrammi mermaid aggiornati con CHECK 3 implementato
+
+#### Note tecniche
+- Ordine esecuzione critico: gameOverEffect (3°) verifica PRIMA di interceptEffect (4°) incremento
+- Persistenza garantita: contatore salvato in save/load cycle
+- ESLint clean, tutti i test green (162 passing)
 
 ---
 
-## v1.2.2 (06/11/2025)
+### Sprint 3.3.5.B - Sistema Buio e Game Over Unificato (v1.2.4)
 
-### Novità principali
+#### Novità principali
 - Nuova pagina principale: `web/odessa_main.html` promossa a entrypoint dell'app.
 - `index.html` aggiornato: redirect alla nuova pagina principale con selezione lingua.
 - Pannello stella/UI direzioni: click-to-move su lettere N/E/S/O e controlli Su/Giù; tooltip dinamici e stati attivo/disabilitato.
