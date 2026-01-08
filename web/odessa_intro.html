@@ -5,13 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
-  <link rel="preload" href="../images/Simon Wiesenthal.png" as="image" />
-  <link rel="preload" href="../images/1948 - Berlin map.png" as="image" />
-  <link rel="preload" href="../images/Ferenc.png" as="image" />
   <script>
-    // Detect base path dynamically
-    const pathParts = window.location.pathname.split('/').filter(p => p);
-    const basePath = pathParts.length > 0 && pathParts[0] === 'missioneodessa' ? '/' + pathParts[0] + '/' : '/';
+    // Detect base path dynamically - supporta qualsiasi path custom
+    function getBasePath() {
+      const pathParts = window.location.pathname.split('/').filter(p => p);
+      const appFolders = ['web', 'images', 'src', 'api'];
+      if (pathParts.length === 0 || appFolders.includes(pathParts[0])) {
+        return '/';
+      }
+      return '/' + pathParts[0] + '/';
+    }
+    const basePath = getBasePath();
 
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
@@ -86,7 +90,7 @@
 </head>
 <body>
 
-    <img id="mainImage" src="../images/MissioneOdessa_intro.png" alt="Missione Odessa" />
+    <img id="mainImage" src="../images/MissioneOdessa_intro.png" alt="Missione Odessa" fetchpriority="low" />
     <div id="introduzione"></div>
 
   <script src="js/marked.min.js"></script>
@@ -165,8 +169,8 @@
           dualImages.style.gap = '20px';
           dualImages.style.marginTop = '10px';
           dualImages.innerHTML = `
-            <img src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" style="width: 40%; height: auto; flex-shrink: 0;" />
-            <img src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" style="width: 40%; height: auto; flex-shrink: 0;" />
+            <img src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" style="width: 40%; height: auto; flex-shrink: 0;" fetchpriority="low" />
+            <img src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" style="width: 40%; height: auto; flex-shrink: 0;" fetchpriority="low" />
           `;
           imageContainer.insertBefore(dualImages, document.getElementById('mainImage'));
           console.log('Immagini affiancate create');
@@ -181,9 +185,11 @@
         } else if (currentIntro === 2) {
           // Cambia immagine a Ferenc
           document.getElementById('dualImages').style.display = 'none';
-          document.getElementById('mainImage').src = '../images/Ferenc.png';
-          document.getElementById('mainImage').alt = 'Ferenc';
-          document.getElementById('mainImage').onload = () => console.log('Immagine Ferenc caricata');
+          const mainImg = document.getElementById('mainImage');
+          mainImg.src = '../images/Ferenc.png';
+          mainImg.alt = 'Ferenc';
+          mainImg.fetchPriority = 'low';
+          mainImg.onload = () => console.log('Immagine Ferenc caricata');
           document.getElementById('mainImage').style.display = '';
           // Carica testo ID=3
           loadIntroduzione(3);
