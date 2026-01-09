@@ -2,9 +2,14 @@
 
 **Versione:** 3.0 (Turn-Based Architecture)  
 **Data:** 02 gennaio 2026  
-**Status:** Revised - Ready for Implementation  
+**Status:** Revised - Partially Implemented (as-is notes below)  
 **Riferimenti:** `sistema-punteggio.md`, `sistema-temporizzazione.md`, `sistema-vittoria.md`  
 **Changelog v3.0:** Adottata architettura turn-based con pipeline Pre/Core/Post per eliminare duplicazione codice e migliorare testabilità
+
+> **Patch di obsolescenza (as-is) — 09 gennaio 2026**
+> 
+> Questo documento nasce come specifica “ready for implementation”, ma nel repository alcune scelte sono già state implementate con dettagli diversi.
+> Le sezioni marcate/aggiornate qui sotto descrivono lo **stato effettivo (as-is)** per evitare ambiguità tra design e comportamento reale.
 
 ---
 
@@ -78,8 +83,9 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 #### Fase 1: Torcia Attiva (6 turni)
 - **Contesto:** Il giocatore inizia con una torcia elettrica difettosa in inventario.
 - **Durata:** La torcia resta accesa per **6 turni** dall'inizio del gioco.
-- **Comandi che incrementano il timer:** NAVIGATION (NORD, SUD...), ACTION (PRENDI, LASCIA, ESAMINA...), EXAMINE
-- **Comandi di sistema esclusi (NON incrementano timer):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+- **Comandi che incrementano il timer (as-is):** tutti i comandi con `CommandType === 'NAVIGATION'` o `CommandType === 'ACTION'`.
+- **Comandi esclusi (as-is):** solo i comandi con `CommandType === 'SYSTEM'`.
+  - **Nota as-is:** `GUARDA`/`ESAMINA` senza oggetto sono `ACTION` e quindi **consumano turno** (non sono “SYSTEM”).
 - **Spegnimento automatico:** Dopo 6 turni, la torcia si spegne automaticamente (anche se in inventario).
 - **Spegnimento anticipato:** Se il giocatore posa la torcia (comando POSA/LASCIA), questa si spegne immediatamente.
 - **Messaggio spegnimento:**
@@ -87,7 +93,7 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
   - Senza lampada accesa: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
 
 #### Fase 2: Buio (3 turni di tolleranza)
-- **Trigger:** Torcia spenta E lampada NON accesa in inventario.
+- **Trigger (as-is):** Torcia spenta (`timers.torciaDifettosa === true`) E lampada non accesa (`timers.lampadaAccesa === false`).
 - **Countdown:** Il giocatore ha **3 turni** per trovare una fonte di luce.
 - **Reset automatico:** Se il giocatore accende la lampada entro i 3 turni, il countdown si resetta.
 - **Comandi che incrementano il countdown:** Tutti i comandi con `CommandType === 'NAVIGATION'` o `CommandType === 'ACTION'`
@@ -125,13 +131,15 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 
 #### Condizione di Luce (Funzione Centrale)
 La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
-- **TRUE:** (Torcia accesa E in inventario) OPPURE (Lampada accesa E in inventario)
+- **TRUE (as-is):** (Torcia in inventario E non difettosa) OPPURE (`timers.lampadaAccesa === true`)
+  - **Nota as-is:** attualmente la lampada viene considerata “fonte di luce” in base al flag `timers.lampadaAccesa`, senza verificare la presenza della lampada in inventario.
 - **FALSE:** Tutte le altre condizioni → attiva countdown buio
 
 #### Casi Speciali
 1. **Posa torcia dopo 3 turni + nessuna lampada** → Torcia si spegne → Start countdown buio (3 turni)
-2. **Posa lampada accesa** → Lampada resta accesa nel luogo, giocatore al buio → Start countdown (3 turni)
-3. **Torna a prendere lampada entro 3 turni** → Countdown resettato
+2. **Posa lampada accesa** → (design) Lampada resta accesa nel luogo, giocatore al buio → Start countdown (3 turni)
+  - **Nota as-is:** questo caso non è attualmente distinguibile dal solo flag `timers.lampadaAccesa` (vedi nota sopra su inventario).
+3. **Torna a prendere lampada entro 3 turni** → (design) Countdown resettato
 4. **Accende lampada durante countdown** → Countdown resettato, gioco prosegue normalmente
 
 ### 1.2.2 Evento B: Intercettazione (3 comandi + 1 in zona pericolosa)
@@ -162,32 +170,32 @@ La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
 
 #### Meccanica Dettagliata
 
-**Regole:**
-1. **Arrivo** in luogo pericoloso da luogo sicuro → **NO incremento counter** (è solo posizionamento)
-2. **Comando eseguito** mentre sei in luogo pericoloso → **incremento counter DOPO esecuzione**
-3. **Counter accumula** fino a 3: 1°cmd→1, 2°cmd→2, 3°cmd→3
-4. **4° comando tentato** in zona pericolosa → **Game Over PRIMA dell'esecuzione** (check pre-comando)
-5. **Comandi di sistema esclusi (NON incrementano counter):** INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+**Regole (as-is):**
+1. **Incremento counter:** ogni comando che consuma turno (`CommandType` NAVIGATION/ACTION) incrementa il counter **se il turno termina in zona pericolosa**.
+  - **Nota as-is:** l'arrivo in zona pericolosa tramite NAVIGATION è un comando consuming, quindi **incrementa il counter**.
+2. **Check game over:** avviene nel post-turno e si basa su `turn.turnsInDangerZone`.
+  - **Nota as-is:** poiché il reset “uscita da danger zone” avviene dopo il check, per mettersi in salvo bisogna uscire quando il counter è ancora ≤ 2.
+3. **Comandi esclusi (as-is):** solo i comandi `SYSTEM` non incrementano il counter.
 
-**Reset:** Il counter si azzera **solo** uscendo dalla zona pericolosa. Spostarsi tra luoghi pericolosi **NON resetta** il counter.
+**Reset (as-is):** Il counter si azzera **solo** uscendo dalla zona pericolosa. Spostarsi tra luoghi pericolosi **NON resetta** il counter.
 
-**Esempio Completo:**
-- Atrio (1) → NORD → Grossa piazza (51): counter=0 (arrivo, no increment)
-- Piazza (51) → EST → Filo spinato (52): counter=1 (1° comando da pericoloso)
-- Filo (52) → OVEST → Piazza (51): counter=2 (2° comando da pericoloso)
-- Piazza (51) → SUD → Strada (55): counter=3 (3° comando da pericoloso)
-- Strada (55) → qualsiasi comando → **GAME OVER prima esecuzione** (4° tentativo)
+**Esempio Completo (as-is):**
+- Atrio (1) → NORD → Grossa piazza (51): counter=1 (arrivo, increment)
+- Piazza (51) → EST → Filo spinato (52): counter=2
+- Filo (52) → OVEST → Piazza (51): counter=3
+- Piazza (51) → qualsiasi comando consuming che non porti fuori dalla zona in tempo → rischio Game Over
 
-**Esempio Reset:**
-- Piazza (51) → OVEST → Atrio (47, sicuro): counter=0 (reset immediato)
+**Esempio Reset (as-is):**
+- Piazza (51) con counter=2 → OVEST → Atrio (47, sicuro): counter=0 (reset immediato)
 
 **Conseguenza:** Game Over con messaggio "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!"
 
 ### 1.2.3 Evento C: Lampada Abbandonata
 - **Contesto:** La lampada è l'unica fonte di luce affidabile dopo che la torcia si esaurisce.
 - **Regola:** Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo.
-- **Conseguenza:** Game Over immediato al cambio stanza con messaggio "Buio Mortale"
-- **Soluzione:** Usare `PRENDI LAMPADA` prima di muoversi se è stata lasciata a terra.
+- **Conseguenza (design):** Game Over immediato al cambio stanza con messaggio "Buio Mortale".
+- **Stato implementazione (as-is):** non risulta implementato come regola autonoma nel motore/turn effects; la logica luce si basa sul flag `timers.lampadaAccesa`.
+- **Soluzione (design):** Usare `PRENDI LAMPADA` prima di muoversi se è stata lasciata a terra.
 
 ### 1.2.4 Messaggi Game Over
 Ogni evento di morte mostra un messaggio narrativo dettagliato con suggerimenti:
@@ -267,22 +275,21 @@ La vittoria non è istantanea ma richiede una sequenza narrativa specifica.
 
 ### 1.3.1 Prerequisiti di Innesco
 La sequenza finale si attiva entrando nell'**Atrio (Luogo ID=1)** solo se:
-1.  **Fascicolo** in inventario (ID=16).
-2.  **Lista di servizio** in inventario (ID=6). *Nota: ID=28 è un duplicato da rimuovere.*
-3.  **Dossier** in inventario (ID=34).
-4.  **Stato:** Il giocatore è vivo (implicito).
+1.  **Fonte di luce attiva (as-is):** `hasLight === true`.
+2.  **Fascicolo** in inventario (ID=16).
+3.  **Lista di servizio** in inventario (ID=6). *Nota: ID=28 è un duplicato da rimuovere.*
+4.  **Dossier** in inventario (ID=34).
+5.  **Stato:** Il giocatore è vivo (implicito).
 
 **Nota Importante:** I **Documenti** (ID=35) NON sono prerequisito per l'innesco della sequenza. Tuttavia, sono necessari per completare la vittoria al Luogo 59 (comando PORGI DOCUMENTI). Se il giocatore arriva all'Atrio senza i Documenti, la sequenza si attiva comunque, ma non potrà vincere alla barriera.
 
 ### 1.3.2 Flusso Narrativo (5 Fasi)
-1.  **Fase 1A (Atrio):** Incontro con Ferenc. Dialogo automatico. Input: `BARRA SPAZIO`.
-2.  **Fase 1B (Viaggio):** Descrizione del cammino verso il confine. Input: `BARRA SPAZIO` -> Teletrasporto automatico al Luogo 59.
-3.  **Fase 2_WAIT (Barriera):** Il giocatore è alla barriera con la guardia.
-    *   Tutti i comandi sono permessi (nessuna limitazione di movimento o azione).
-    *   Comando risolutivo: `PORGI DOCUMENTI` (se Documenti in inventario).
-    *   **Meccanica "Guardia Sospetta":** Ogni comando diverso da PORGI DOCUMENTI (con successo) incrementa un counter. Al **5° comando inappropriato** → Game Over.
-    *   Il giocatore ha quindi **5 tentativi** per dare il comando corretto.
-    *   Se tenta PORGI DOCUMENTI senza avere i Documenti (ID=35) → messaggio errore "Non hai documenti da porgere" (NON incrementa counter).
+1.  **Fase 1A/1B (as-is):** all'innesco, la sequenza Ferenc+viaggio viene mostrata come messaggio unico e il teleport a Luogo 59 avviene **immediatamente** (senza gating a `BARRA SPAZIO`).
+2.  **Fase 2_WAIT (Barriera, as-is):** il giocatore è alla barriera con la guardia.
+  *   **Movimento limitato (as-is):** `NAVIGATION` è bloccato (`movementBlocked === true`).
+  *   Comando risolutivo: `PORGI DOCUMENTI` (se Documenti in inventario).
+  *   **Meccanica "Guardia Sospetta" (as-is):** comandi ACTION non risolutivi al Luogo 59 incrementano `unusefulCommandsCounter`. A soglia **>= 3** → Game Over.
+  *   **Nota as-is:** i comandi `SYSTEM` non incrementano il counter; tentare `PORGI DOCUMENTI` senza Documenti non risolve e tipicamente non incrementa il counter.
 4.  **Fase 2A/2B (Controllo):** La guardia controlla e approva.
 5.  **Fase 2C (Vittoria):** Schermata finale e statistiche.
 
@@ -292,10 +299,9 @@ La sequenza finale si attiva entrando nell'**Atrio (Luogo ID=1)** solo se:
 - **Prerequisito:** Documenti (ID=35) in inventario
 - **Effetto:** Avanza alla fase di controllo (Fase 2A)
 - **Messaggi:**
-  - **Successo:** "Porgi i documenti e la guardia li guarda con cura. Sono attimi importanti.\n\n[Premere BARRA per continuare]"
-  - **Senza documenti:** "Non hai documenti da porgere."
-  - **Fuori contesto:** "Non c'è nessuno a cui porgere qualcosa."
-  - **Oggetto sbagliato:** "La guardia non è interessata a questo. Vuole vedere i documenti."
+  - **Successo (as-is):** messaggio narrativo completo e finale gioco via interazione `porgi_documenti_59` (senza prompt `BARRA SPAZIO`).
+  - **Senza documenti (as-is):** non esiste un messaggio dedicato; tipicamente viene restituito un errore generico tipo “oggetto non qui / non in inventario”.
+  - **Fuori contesto / Oggetto sbagliato (design):** non sono gestiti come casi speciali dedicati.
 
 ### 1.3.4 Teleport e Rimozione Oggetti
 Durante il teleport da Luogo 1 a Luogo 59, Ferenc prende i 3 oggetti prerequisito:
@@ -328,7 +334,7 @@ gameState = {
 
   // === SISTEMA PUNTEGGIO ===
   punteggio: {
-    totale: 0,
+    totale: 1,                      // Luogo iniziale (ID=1) già visitato
     interazioniPunteggio: new Set(), // ID interazioni completate (per +2)
     misteriRisolti: new Set()        // ID misteri risolti (per +3 automatico su effetti)
   },
@@ -340,7 +346,6 @@ gameState = {
     totalTurnsConsumed: 0,         // Turni "veri" (esclusi SYSTEM)
     
     // Stati temporizzati (reset a condizioni specifiche)
-    turnsWithTorch: 0,             // Turni con torcia attiva
     turnsInDarkness: 0,            // Turni consecutivi al buio
     turnsInDangerZone: 0,          // Turni in zona pericolosa
     
@@ -348,24 +353,27 @@ gameState = {
     current: {
       parseResult: null,           // Comando parsato
       consumesTurn: false,         // Questo comando consuma turno?
-      location: 1,                 // Luogo attuale (prima movimento)
-      hasLight: true,              // Fonte di luce disponibile?
+      location: 1,                 // Luogo attuale
+      hasLight: false,             // Fonte di luce disponibile?
       inDangerZone: false          // In zona pericolosa?
     },
     
     // Snapshot turno precedente (per confronti)
     previous: {
       location: 1,
-      hasLight: true,
-      consumedTurn: false
+      hasLight: false,
+      consumedTurn: false,
+      inDangerZone: false
     }
   },
 
-  // === SISTEMA TEMPORIZZAZIONE (Legacy, deprecato v3.0) ===
-  // NOTA: Campi mantenuti per compatibilità backward durante migrazione
+  // === SISTEMA TEMPORIZZAZIONE (as-is) ===
   timers: {
-    lampadaAccesa: false,            // Stato della lampada (ancora usato)
-    torciaSpenta: false              // Stato torcia (ancora usato)
+    movementCounter: 0,              // Legacy
+    torciaDifettosa: false,          // True dopo 6 turni consuming (o se posata)
+    lampadaAccesa: false,            // Stato della lampada
+    azioniInLuogoPericoloso: 0,      // Legacy
+    ultimoLuogoPericoloso: null      // Legacy
   },
 
   // === SISTEMA VITTORIA ===
@@ -553,21 +561,8 @@ function shouldConsumeTurn(parseResult) {
   if (parseResult.CommandType === 'SYSTEM') {
     return false;
   }
-  
-  // GUARDA/ESAMINA senza oggetto NON consuma turno (solo descrizione luogo)
-  if (parseResult.CommandType === 'ACTION') {
-    const concept = parseResult.VerbConcept || '';
-    if ((concept === 'GUARDARE' || concept === 'ESAMINARE') && !parseResult.NounConcept) {
-      return false;
-    }
-  }
-  
-  // NAVIGATION sempre consuma turno
-  if (parseResult.CommandType === 'NAVIGATION') {
-    return true;
-  }
-  
-  // Altri ACTION consumano turno (PRENDI, POSA, ESAMINA oggetto, interazioni)
+
+  // NAVIGATION e ACTION consumano turno (as-is)
   return true;
 }
 
@@ -576,20 +571,14 @@ function shouldConsumeTurn(parseResult) {
  * @returns {boolean} - true se ha luce (torcia O lampada)
  */
 function hasFonteLuceAttiva() {
-  const TORCIA_ID = 37;
-  const LAMPADA_ID = 27;
-  
-  // Check torcia: in inventario E non spenta
-  const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
-  const torciaInInventario = torcia && torcia.IDLuogo === 0;
-  const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
-  
-  // Check lampada: in inventario E accesa
-  const lampada = gameState.Oggetti.find(o => o.ID === LAMPADA_ID);
-  const lampadaInInventario = lampada && lampada.IDLuogo === 0;
-  const lampadaAccesa = lampadaInInventario && gameState.timers.lampadaAccesa;
-  
-  return torciaAccesa || lampadaAccesa;
+  // Torcia: ID=37 in inventario e non difettosa
+  const torcia = gameState.Oggetti.find(o => o.ID === 37);
+  const hasTorcia = torcia && torcia.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
+
+  // Lampada: as-is è modellata da un flag (non verifica inventario)
+  const hasLampada = !!gameState.timers.lampadaAccesa;
+
+  return hasTorcia || hasLampada;
 }
 ```
 
@@ -639,128 +628,11 @@ function snapshotTurnState() {
 
 #### **Fase 2: runPreExecutionChecks** (Validazione su Snapshot)
 
-```javascript
-/**
- * Esegue check pre-esecuzione basati su snapshot statico
- * @param {Object} parseResult - Comando parsato
- * @returns {Object|null} - Result bloccante (GAME_OVER/ERROR) o null (procedi)
- */
-function runPreExecutionChecks(parseResult) {
-  const { current } = gameState.turn;
-  
-  // CHECK 1: Intercettazione (4° turno in zona pericolosa)
-  if (current.inDangerZone && current.consumesTurn) {
-    if (gameState.turn.turnsInDangerZone >= 3) {
-      gameState.ended = true;
-      return {
-        accepted: false,
-        resultType: 'GAME_OVER',
-        message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
-        deathReason: 'INTERCETTAZIONE',
-        showLocation: false
-      };
-    }
-  }
-  
-  // CHECK 2: Movement Block (narrativa, luogo 59)
-  if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
-    return {
-      accepted: false,
-      resultType: 'ERROR',
-      message: "Non puoi muoverti. La guardia ti sta osservando."
-    };
-  }
-  
-  // CHECK 3: Awaiting Continue (narrativa BARRA SPAZIO)
-  if (gameState.awaitingContinue) {
-    return processContinueNarrative();
-  }
-  
-  // Nessun blocco: procedi con esecuzione
-  return null;
-}
-```
+**Nota as-is:** i pre-check attivi sono minimi (es. blocco movimento alla barriera). Le condizioni di morte (buio, intercettazione) e la sequenza vittoria sono applicate nel post-turno tramite middleware `turnEffects`.
 
 #### **Fase 3: applyTurnEffects** (Post-Processing Centralizzato)
 
-```javascript
-/**
- * Applica effetti post-esecuzione (solo se turno consumato)
- * @param {Object} result - Result da executeCommandCore
- * @param {Object} parseResult - Comando parsato
- * @returns {Object} - Result arricchito o sovrascritto (GAME_OVER)
- */
-function applyTurnEffects(result, parseResult) {
-  const { current } = gameState.turn;
-  
-  // === UPDATE 1: Sistema Illuminazione ===
-  if (current.hasLight) {
-    // Ha luce: incrementa turni con torcia (se torcia attiva)
-    const TORCIA_ID = 37;
-    const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
-    const torciaInInventario = torcia && torcia.IDLuogo === 0;
-    const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
-    
-    if (torciaAccesa) {
-      gameState.turn.turnsWithTorch++;
-      
-      // Spegnimento dopo 6 turni
-      if (gameState.turn.turnsWithTorch >= 6) {
-        gameState.timers.torciaSpenta = true;
-        result.message += '\n\n' + getSystemMessage('timer.torch.defective', gameState.currentLingua);
-        
-        // Start countdown buio se nessuna lampada
-        if (!gameState.timers.lampadaAccesa) {
-          gameState.turn.turnsInDarkness = 0;
-          result.message += ' ' + getSystemMessage('timer.torch.warning', gameState.currentLingua);
-        }
-      }
-    }
-    
-    // Reset countdown buio
-    gameState.turn.turnsInDarkness = 0;
-    
-  } else {
-    // Nessuna luce: incrementa countdown buio
-    gameState.turn.turnsInDarkness++;
-    
-    // Morte dopo 3 turni al buio
-    if (gameState.turn.turnsInDarkness >= 3) {
-      gameState.ended = true;
-      return {
-        accepted: true,
-        resultType: 'GAME_OVER',
-        message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
-        deathReason: 'MORTE_BUIO',
-        showLocation: false
-      };
-    }
-  }
-  
-  // === UPDATE 2: Sistema Intercettazione ===
-  if (current.inDangerZone) {
-    gameState.turn.turnsInDangerZone++;
-  } else {
-    gameState.turn.turnsInDangerZone = 0;
-  }
-  
-  // === UPDATE 3: Punteggio Misteri Automatici ===
-  if (result.effects && result.effects.length > 0) {
-    result.effects.forEach(effect => {
-      const misteroId = generateMisteroId(effect);
-      if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
-        gameState.punteggio.totale += 3;
-        gameState.punteggio.misteriRisolti.add(misteroId);
-      }
-    });
-  }
-  
-  // === UPDATE 4: Contatore Turni Consumati ===
-  gameState.turn.totalTurnsConsumed++;
-  
-  return result;
-}
-```
+**Nota as-is:** l'applicazione effetti è delegata al registry `TURN_EFFECTS` (ordine: torch → darkness → gameOver → intercept → victory). Il sistema torcia usa `turn.totalTurnsConsumed` e il flag `timers.torciaDifettosa`.
 
 ### 2.3.3 Gestione Data-Driven: Interazione ACCENDI LAMPADA
 
@@ -1311,20 +1183,20 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
 gameState.turn = {
   globalTurnNumber: 0,
   totalTurnsConsumed: 0,
-  turnsWithTorch: 0,
   turnsInDarkness: 0,
   turnsInDangerZone: 0,
   current: {
     parseResult: null,
     consumesTurn: false,
     location: 1,
-    hasLight: true,
+    hasLight: false,
     inDangerZone: false
   },
   previous: {
     location: 1,
-    hasLight: true,
-    consumedTurn: false
+    hasLight: false,
+    consumedTurn: false,
+    inDangerZone: false
   }
 };
 ```
@@ -1374,7 +1246,7 @@ function prepareTurnContext(parseResult) {
 ```
 
 **Test:**
-- Partenza (luogo 1) → snapshot.location = 1, hasLight = true, inDangerZone = false
+- Partenza (luogo 1) → snapshot.location = 1, hasLight = true (torcia in inventario), inDangerZone = false
 - Movimento a luogo pericoloso (51) → snapshot.inDangerZone = true
 - Dopo 6 turni con torcia → snapshot.hasLight = false (se torcia spenta)
 - Comando INVENTARIO → current.consumesTurn = false
@@ -1386,28 +1258,13 @@ function prepareTurnContext(parseResult) {
 ### 3.3.3 Pipeline Fase 2: runPreExecutionChecks (60 min)
 
 **Task:**
-1. Implementare check intercettazione (counter >= 3 → GAME_OVER)
-2. Implementare check movement block (narrativa luogo 59)
-3. Implementare check awaiting continue (narrativa BARRA SPAZIO)
-4. Integrare in `executeCommand` dopo `prepareTurnContext`
+1. Implementare check movement block (narrativa luogo 59)
+2. Integrare in `executeCommand` dopo `prepareTurnContext`
+
+**Nota as-is:** intercettazione e morte per buio sono gestite nel post-turno dal middleware `turnEffects`.
 
 **Codice:**
 ```javascript
-function runPreExecutionChecks(parseResult) {
-  const { current } = gameState.turn;
-  
-  // Check intercettazione
-  if (current.inDangerZone && current.consumesTurn) {
-    if (gameState.turn.turnsInDangerZone >= 3) {
-      gameState.ended = true;
-      return {
-        accepted: false,
-        resultType: 'GAME_OVER',
-        message: getSystemMessage('timer.intercept.death', gameState.currentLingua),
-        deathReason: 'INTERCETTAZIONE'
-      };
-    }
-  }
   
   // Check movement block
   if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
@@ -1416,11 +1273,9 @@ function runPreExecutionChecks(parseResult) {
       resultType: 'ERROR',
       message: "Non puoi muoverti. La guardia ti sta osservando."
     };
-  }
-  
-  // Check awaiting continue
-  if (gameState.awaitingContinue) {
-    return processContinueNarrative();
+ 
+  // Nessun blocco
+  return null;
   }
   
   return null; // Nessun blocco
@@ -1496,64 +1351,9 @@ export function executeCommand(parseResult) {
 **Codice:**
 ```javascript
 function applyTurnEffects(result, parseResult) {
-  const { current } = gameState.turn;
-  
-  // === Sistema Illuminazione ===
-  if (current.hasLight) {
-    const TORCIA_ID = 37;
-    const torcia = gameState.Oggetti.find(o => o.ID === TORCIA_ID);
-    const torciaInInventario = torcia && torcia.IDLuogo === 0;
-    const torciaAccesa = torciaInInventario && !gameState.timers.torciaSpenta;
-    
-    if (torciaAccesa) {
-      gameState.turn.turnsWithTorch++;
-      
-      if (gameState.turn.turnsWithTorch >= 6) {
-        gameState.timers.torciaSpenta = true;
-        result.message += '\n\n' + getSystemMessage('timer.torch.defective', gameState.currentLingua);
-        
-        if (!gameState.timers.lampadaAccesa) {
-          gameState.turn.turnsInDarkness = 0;
-          result.message += ' ' + getSystemMessage('timer.torch.warning', gameState.currentLingua);
-        }
-      }
-    }
-    
-    gameState.turn.turnsInDarkness = 0;
-    
-  } else {
-    gameState.turn.turnsInDarkness++;
-    
-    if (gameState.turn.turnsInDarkness >= 3) {
-      gameState.ended = true;
-      return {
-        accepted: true,
-        resultType: 'GAME_OVER',
-        message: getSystemMessage('timer.darkness.death', gameState.currentLingua),
-        deathReason: 'MORTE_BUIO'
-      };
-    }
-  }
-  
-  // === Sistema Intercettazione ===
-  if (current.inDangerZone) {
-    gameState.turn.turnsInDangerZone++;
-  } else {
-    gameState.turn.turnsInDangerZone = 0;
-  }
-  
-  // === Punteggio Misteri ===
-  if (result.effects && result.effects.length > 0) {
-    result.effects.forEach(effect => {
-      const misteroId = generateMisteroId(effect);
-      if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
-        gameState.punteggio.totale += 3;
-        gameState.punteggio.misteriRisolti.add(misteroId);
-      }
-    });
-  }
-  
-  gameState.turn.totalTurnsConsumed++;
+  // As-is: ricalcola hasLight/inDangerZone post-esecuzione e delega al registry TURN_EFFECTS
+  // (torch → darkness → gameOver → intercept → victory).
+  applyAllTurnEffects(gameState, result, parseResult);
   return result;
 }
 ```
@@ -1691,7 +1491,7 @@ case 'RESET_COUNTER':
 **Test Manuale:** ⚠️ Parziale (comando riconosciuto, attendere B.3 per messaggi completi)
 ```
 > ACCENDI LAMPADA
-Atteso: Non più "Non capisco" (potrebbero mancare messaggi errore se B.3 non completato)
+✅ Atteso (design/target): Non più "Non capisco" (potrebbero mancare messaggi errore se B.3 non completato)
 ```
 
 **Effort:** 15 min (10 min implementazione + 5 min validazione)
@@ -1737,28 +1537,28 @@ Atteso: Non più "Non capisco" (potrebbero mancare messaggi errore se B.3 non co
 > PRENDI LAMPADA (al luogo 6)
 > PRENDI FIAMMIFERI (al luogo appropriato)
 > ACCENDI LAMPADA
-✅ Atteso: "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente."
+✅ Atteso (as-is): "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente."
 ✅ Verifica: gameState.timers.lampadaAccesa === true (visibile via console o comando PUNTI)
 ```
 
 **Scenario 2 - Senza lampada:**
 ```
 > ACCENDI LAMPADA (senza avere lampada in inventario)
-✅ Atteso: "Non hai la lampada."
+✅ Atteso (as-is): "Non hai la lampada."
 ```
 
 **Scenario 3 - Senza fiammiferi:**
 ```
 > PRENDI LAMPADA
 > ACCENDI LAMPADA (senza fiammiferi)
-✅ Atteso: "Non hai i fiammiferi per accendere la lampada."
+✅ Atteso (as-is): "Non hai i fiammiferi per accendere la lampada."
 ```
 
 **Scenario 4 - Lampada già accesa:**
 ```
 > ACCENDI LAMPADA (prima volta - successo)
 > ACCENDI LAMPADA (seconda volta)
-✅ Atteso: "La lampada è già accesa."
+✅ Atteso (as-is): "La lampada è già accesa."
 ```
 
 **Effort:** 10 min (7 min aggiunta + 3 min validazione)
@@ -1817,11 +1617,11 @@ if (hasFonteLuceAttiva()) {
 **Scenario 1 - Morte dopo torcia spenta:**
 ```
 > (Esegui 6 comandi qualsiasi - esempio: NORD, SUD, EST, OVEST, PRENDI TORCIA, POSA TORCIA)
-Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
+✅ Atteso (as-is): "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
 > NORD (1° turno buio)
 > SUD (2° turno buio)
 > NORD (3° turno buio)
-✅ Atteso: "💀 MORTE AL BUIO - Muoversi al buio può essere pericoloso..."
+✅ Atteso (as-is): "💀 MORTE AL BUIO - Muoversi al buio può essere pericoloso..."
 ✅ Verifica: gameState.ended === true, impossibile eseguire altri comandi
 ```
 
@@ -1832,7 +1632,7 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 > PRENDI LAMPADA (non resetta countdown, serve accenderla)
 > ACCENDI LAMPADA (countdown resettato)
 > (Continua a giocare normalmente)
-✅ Atteso: Gioco prosegue senza morte, turnsInDarkness = 0
+✅ Atteso (as-is): Gioco prosegue senza morte, turnsInDarkness = 0
 ```
 
 **Scenario 3 - Posa lampada accesa:**
@@ -1840,19 +1640,20 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 > PRENDI LAMPADA
 > ACCENDI LAMPADA
 > POSA LAMPADA (lasci a terra)
-> NORD (1° turno buio - lampada non più in inventario)
-> SUD (2° turno buio)
-> OVEST (3° turno buio)
-✅ Atteso: Morte per buio (lampada accesa ma non in inventario = no luce)
+> NORD (as-is: lampada considerata ancora fonte luce se timers.lampadaAccesa=true)
+> SUD
+> OVEST
+✅ Atteso (design/target): Morte per buio (lampada accesa ma non in inventario = no luce)
+✅ Atteso (as-is): Gioco prosegue senza morte, turnsInDarkness = 0
 ```
 
 **Scenario 4 - Recupero lampada in tempo:**
 ```
 > (Accendi lampada, poi posa)
-> NORD (1° turno buio)
-> SUD (2° turno buio, torni dove hai lasciato lampada)
-> PRENDI LAMPADA (countdown resettato)
-✅ Atteso: Gioco prosegue, turnsInDarkness = 0
+> NORD
+> SUD (2° comando)
+> PRENDI LAMPADA
+✅ Atteso (as-is): Gioco prosegue, turnsInDarkness = 0
 ```
 
 **Effort:** 40 min (25 min implementazione + 15 min test)
@@ -1901,7 +1702,7 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 - Torcia si spegne dopo 6 turni (conteggio corretto)
 - Messaggio differenziato (con/senza lampada)
 - Posa torcia → spegnimento immediato
-- Counter `turnsWithTorch` incrementato solo da comandi consumanti turno
+- Counter `totalTurnsConsumed` incrementa solo da comandi consuming
 
 **Test Manuale:** ✅ **Verifica Sprint 3.3.5.A**
 
@@ -1913,7 +1714,7 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 > OVEST (turno 4)
 > NORD (turno 5)
 > SUD (turno 6)
-✅ Atteso: Messaggio "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
+✅ Atteso (as-is): Messaggio "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio."
 ```
 
 **Scenario 2 - Posa torcia anticipata:**
@@ -1922,14 +1723,14 @@ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso 
 > SUD (turno 2)
 > EST (turno 3)
 > POSA TORCIA
-✅ Atteso: Torcia si spegne immediatamente (gameState.timers.torciaSpenta = true)
+✅ Atteso (as-is): Torcia diventa difettosa immediatamente (gameState.timers.torciaDifettosa = true)
 ```
 
 **Scenario 3 - Messaggio differenziato con lampada:**
 ```
 > (Esegui PRENDI LAMPADA, PRENDI FIAMMIFERI, ACCENDI LAMPADA)
 > (Esegui 6 comandi per spegnere torcia)
-✅ Atteso: "La tua torcia si spegne di colpo: deve essere difettosa." (SENZA "E' pericoloso...")
+✅ Atteso (as-is): "La tua torcia si spegne di colpo: deve essere difettosa." (SENZA "E' pericoloso...")
 ```
 
 **Effort:** 15 min (10 min test + 5 min validazione suite)
@@ -2282,10 +2083,10 @@ export interface TurnState {
 **Esecuzione:**
 ```bash
 npm test
-# Atteso: 162 tests passed (+11 rispetto a Sprint 3.3.5.B)
+# Atteso (indicativo): 162 tests passed (+11 rispetto a Sprint 3.3.5.B)
 
 npm run lint
-# Atteso: 0 errors
+# Atteso (indicativo): 0 errors
 ```
 
 **Effort:** 30 min creazione test + 15 min validazione suite
@@ -2301,7 +2102,7 @@ npm run lint
 3. NORD → Luogo 52 (turnsInDangerZone=1)
 4. GUARDA → (turnsInDangerZone=2)
 5. NORD → Luogo 53 (turnsInDangerZone=3)
-✅ Atteso: "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA" + prompt riavvio
+✅ Atteso (as-is): "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA" + prompt riavvio
 ```
 
 **Scenario 2: Salvezza in rifugio sicuro**
@@ -2310,7 +2111,7 @@ npm run lint
 2. NORD → Luogo 52 (turnsInDangerZone=1)
 3. EST → Luogo 57 (Capanno attrezzi - RESET)
 4. OVEST → Luogo 52 (turnsInDangerZone=1 - ripartito da 0)
-✅ Atteso: Contatore resettato entrando in luogo 57
+✅ Atteso (as-is): Contatore resettato entrando in luogo 57
 ```
 
 **Scenario 3: Persistenza save/load**
@@ -2321,14 +2122,14 @@ npm run lint
 4. Ricarica pagina
 5. CARICA
 6. NORD → Luogo 53
-✅ Atteso: turnsInDangerZone=2 (persistito + incrementato)
+✅ Atteso (as-is): turnsInDangerZone=2 (persistito + incrementato)
 ```
 
 **Scenario 4: Comandi SYSTEM non incrementano**
 ```
 1. NORD → Luogo 51
-2. INVENTARIO, AIUTO, GUARDA (3 comandi SYSTEM)
-✅ Atteso: turnsInDangerZone=0 (SYSTEM non consuma turno)
+2. INVENTARIO, AIUTO, PUNTI (3 comandi SYSTEM)
+✅ Atteso (as-is): turnsInDangerZone=0 (SYSTEM non consuma turno)
 ```
 
 **Effort:** 30 min (4 scenari completi)
@@ -2367,15 +2168,15 @@ npm run lint
     "1": "La tua torcia si spegne di colpo: deve essere difettosa.",
     "2": "Your torch suddenly goes out: it must be defective."
   },
-  "timer.torch.warning": {
-    "1": "È pericoloso muoversi al buio.",
-    "2": "It's dangerous to move in the dark."
+  "timer.torch.defective.warning": {
+    "1": "La tua torcia si spegne di colpo: deve essere difettosa. E' pericoloso muoversi al buio.",
+    "2": "Your torch suddenly goes out: it must be defective. It's dangerous to move in the dark."
   },
   "timer.darkness.death": {
     "1": "Muoversi al buio può essere pericoloso: inciampi nelle macerie e cadi, rompendoti il collo. Sei morto!",
     "2": "Moving in the dark can be dangerous: you trip over debris and fall, breaking your neck. You're dead!"
   },
-  "timer.intercept.death": {
+  "game.intercept.death": {
     "1": "Sei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!",
     "2": "You've been spotted by a Russian patrol that arrests you as a spy. An inglorious end!"
   },

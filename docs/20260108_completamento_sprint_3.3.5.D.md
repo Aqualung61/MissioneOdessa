@@ -1,8 +1,14 @@
-# Sprint 3.3.5.D - Sistema Guardia e Vittoria Finale
+# 2026-01-08 — Completamento Sprint 3.3.5.D (Sistema Guardia e Vittoria Finale)
 
-**Status:** ✅ COMPLETATO  
-**Data Completamento:** 8 gennaio 2026  
-**Versione:** 1.0.0
+**Status:** ✅ COMPLETATO
+
+## Nota di mantenimento (anti-obsolescenza)
+Questo documento è uno **snapshot di completamento sprint**.
+- Le funzionalità descritte restano una buona base per regression test e comprensione del dominio.
+- I riferimenti a **numeri di riga** possono diventare obsoleti con refactor successivi: quando possibile, fare riferimento a nomi di file, chiavi i18n e stati (`ENDING_PHASE_*`).
+- Versioni:
+  - **Versione documento:** 1.0.0
+  - **Versione app corrente (da `package.json`):** 1.3.0
 
 ---
 
@@ -20,8 +26,8 @@ Implementare la fase finale del gioco con:
 ### 1. Sistema Guardia Insospettita ✅
 
 **File modificati:**
-- `src/logic/engine.js` (linee 1177-1189): Counter comandi inappropriati
-- `src/logic/turnEffects/gameOverEffect.js` (linee 100-115): CHECK 4 attivato
+- `src/logic/engine.js`: incremento counter comandi inappropriati in fase finale
+- `src/logic/turnEffects/gameOverEffect.js`: CHECK guardia insospettita (condizione di game over)
 - `src/data-internal/MessaggiSistema.json`: Messaggi IT/EN
 
 **Logica:**
@@ -50,11 +56,9 @@ if (narrativeState === 'ENDING_PHASE_2_WAIT' && unusefulCommandsCounter >= 3) {
 ### 2. Sistema Vittoria Finale ✅
 
 **File modificati:**
-- `src/logic/engine.js` (linee 958-970): Punteggio PRIMA di applicaEffetti
-- `src/logic/engine.js` (linee 972-983): Flag ended/victory nel risultato
+- `src/logic/engine.js`: punteggio assegnato prima dell’applicazione effetti + propagazione flag `ended`/`victory`
 - `src/data-internal/Interazioni.json`: Interazione porgi_documenti_59
-- `web/js/odessa1.js` (linee 151-173): displayGameEndedMessage()
-- `web/js/odessa1.js` (linee 1555-1571): Gestione vittoria con update stats
+- `web/js/odessa1.js`: helper `displayGameEndedMessage()` + gestione UI vittoria e aggiornamento stats
 
 **Sequenza Completa:**
 1. User arriva al Luogo 1 con prerequisiti Ferenc
@@ -102,7 +106,7 @@ function displayGameEndedMessage() {
 
 **Problema:** Navigazione via stella non triggherava Ferenc
 
-**Soluzione:** `web/js/odessa1.js` (linee 299-342)
+**Soluzione:** `web/js/odessa1.js`
 - Aggiunta gestione NARRATIVE (mostra messaggio Ferenc)
 - Aggiunta gestione TELEPORT (sposta a Luogo 59)
 - Parità funzionale tra comando testuale e click stella
@@ -113,7 +117,7 @@ function displayGameEndedMessage() {
 
 **Problema:** Punteggio assegnato DOPO ended=true
 
-**Soluzione:** `src/logic/engine.js` (linee 958-970)
+**Soluzione:** `src/logic/engine.js`
 - Spostato assegnazione punteggio PRIMA di applicaEffetti()
 - Ordine: +2 punti → segna eseguita → applicaEffetti() → return
 
@@ -247,4 +251,4 @@ Tutti i requisiti funzionali sono stati implementati e testati:
 - Sistema turn-based (torcia, buio, intercettazione)
 - Architettura middleware scalabile e testabile
 
-**Pronto per release 1.0.0** 🎉
+**Pronto per release 1.0.0 (alla data 2026-01-08)**

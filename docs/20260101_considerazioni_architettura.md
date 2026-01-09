@@ -1,9 +1,21 @@
-# Considerazioni su Architettura Applicativa e Interventi
+# 2026-01-01 — Considerazioni su Architettura Applicativa e Interventi
 
-**Versione:** 1.1  
-**Data:** 01 gennaio 2026  
+**Versione documento:** 1.2  
+**Data documento:** 01 gennaio 2026  
+**Ultimo aggiornamento:** 09 gennaio 2026  
 **Contesto:** Analisi post-sviluppo per valutazione refactoring e strategia testing  
 **Riferimenti:** `specifica-tecnica-completa-integrata.md` v2.0
+
+## Nota di mantenimento (anti-obsolescenza)
+Questo documento nasce come analisi “post-sviluppo” al 2026-01-01.
+
+Stato al 2026-01-09 (repo attuale):
+- L’app è in versione **1.3.0** (vedi `package.json`).
+- Sono presenti test automatici significativi (Vitest) su aree critiche (engine, punteggio, timer/effects, API).  
+   Di conseguenza, le sezioni che scoraggiano in blocco i test unit vanno lette come snapshot storico.
+- La logica dei timer/condizioni è organizzata in **turn effects** (es. `src/logic/turnEffects/interceptEffect.js`, `gameOverEffect.js`, `victoryEffect.js`).
+
+---
 
 ---
 
@@ -14,12 +26,70 @@ Questo documento raccoglie le considerazioni sull'architettura applicativa attua
 **Conclusioni Chiave:**
 - ✅ Architettura attuale **adeguata** per il caso d'uso (gioco single-player, no espansioni)
 - ❌ Refactoring **non necessario** (over-engineering per questo contesto)
-- ❌ Unit test estensivi **non consigliati** (ROI basso, 40-50h sprecate)
-- ✅ Focus raccomandato: **implementazione feature mancanti** + **E2E testing critico**
+- ⚠️ Test: priorità a **test pragmatici** (unit/integration su logica critica + smoke); E2E opzionali se serve coprire UI end-to-end
+- ✅ Focus raccomandato: **feature** + **stabilizzazione** (test su critical path)
 
 **Riferimenti Chiave:**
-- **§ 5.2 (Fase 2):** Dettagli implementazione timer intercettazione e luoghi pericolosi/terminali
-- **§ 5.2 - TD:** Verifica costante `LUOGHI_PERICOLOSI` e test mancanti
+- **Appendice A (Roadmap/TD):** Dettagli implementazione timer intercettazione e luoghi pericolosi/terminali (snapshot storico)
+- **Appendice A (TD):** Nota danger zone: oggi gestita tramite flag `turn.current.inDangerZone` + contatore `turnsInDangerZone` (turn effects)
+
+### 1.1 Sintesi aggiornata (2026-01-09)
+- Testing: esistono già test automatici (Vitest) e una CI GitHub Actions che esegue lint/build/test.
+- Save/Load: i comandi SALVA/CARICA sono presenti (engine → `SAVE_GAME`/`LOAD_GAME`; frontend gestisce download/upload del JSON).
+- Danger zone: `engine.js` calcola `turn.current.inDangerZone` via array locale `dangerZones`; gli effetti sono gestiti dai turn effects.
+
+### 1.2 Diagrammi Mermaid (stato attuale)
+
+#### 1.2.1 Sequenza comando utente
+```mermaid
+sequenceDiagram
+   autonumber
+   participant UI as Browser UI
+   participant API as Express server
+   participant Parser as Parser route
+   participant Engine as Engine route
+   UI->>API: POST api parser parse
+   API->>Parser: parse input
+   Parser-->>API: parseResult
+   API-->>UI: parseResult
+   UI->>API: POST api engine execute
+   API->>Engine: execute command
+   Engine-->>API: engine result
+   API-->>UI: engine result
+   UI->>UI: render feed and location
+```
+
+#### 1.2.2 Pipeline turn system e turn effects
+```mermaid
+flowchart TD
+   A[Input command] --> B[Parse result]
+   B --> C[Prepare turn context]
+   C --> D[Run pre execution checks]
+   D --> E[Execute command]
+   E --> F[Recalc hasLight]
+   F --> G[Recalc inDangerZone]
+   G --> H[Apply all turn effects]
+   H --> I[Torch effect]
+   H --> J[Darkness effect]
+   H --> K[Intercept effect]
+   H --> L[Victory effect]
+   H --> M[Game over effect]
+   M --> N[Result to client]
+```
+
+#### 1.2.3 Flusso SALVA e CARICA
+```mermaid
+flowchart TD
+   A[User enters SALVA] --> B[Server returns SAVE_GAME]
+   B --> C[Client calls save client state]
+   C --> D[Client downloads JSON file]
+   E[User enters CARICA] --> F[Server returns LOAD_GAME]
+   F --> G[Client picks JSON file]
+   G --> H[Client calls load client state]
+   H --> I[Client reloads luoghi]
+   I --> J[Client reloads engine state]
+   J --> K[Client shows current]
+```
 
 ---
 
@@ -126,6 +196,13 @@ Questo documento raccoglie le considerazioni sull'architettura applicativa attua
 
 ## 4. Valutazione Strategia Testing
 
+> Aggiornamento 2026-01-09 (repo attuale):
+> - Esiste già una suite di test **Vitest** su logica engine/effects, punteggio e API.
+> - Esiste una pipeline **CI GitHub Actions** che esegue `lint` + `build` + `test`.
+> - Playwright è configurato, ma non risulta una suite E2E “scenario completo” mantenuta allo stesso livello dei test Vitest.
+>
+> Di conseguenza, le conclusioni “NO unit test” ed “E2E come unica strategia” vanno lette come valutazione storica (2026-01-01). Oggi la raccomandazione pragmatica è: mantenere/espandere i test sui **critical path** e aggiungere E2E solo se servono a coprire regressioni di UI.
+
 ### 4.1 Unit Test Estensivi: Analisi Costo/Beneficio
 
 #### Scenario: Coverage 80-90% Codebase
@@ -149,7 +226,9 @@ Questo documento raccoglie le considerazioni sull'architettura applicativa attua
 - ❌ Setup boilerplate pesante (mock `global.odessaData`)
 
 #### Conclusione
-**NON raccomandato.** Per progetto single-release senza espansioni, unit test estensivi sono **lusso inutile**.
+Storicamente (2026-01-01): unit test estensivi al 80–90% non erano considerati prioritari.
+
+Stato attuale (2026-01-09): i test unit/integration **esistono già** e stanno dando valore (regressioni su engine/effects/API). La raccomandazione è evitare l’obiettivo “coverage alto a tutti i costi” e continuare invece con test mirati ad alto ROI.
 
 ---
 
@@ -208,13 +287,17 @@ test('save and load state', async ({ page }) => {
 - User Experience: **100%**
 
 #### Conclusione
-**Altamente raccomandato.** Miglior ROI per garantire "zero bug in produzione".
+E2E restano utili come copertura “utente finale”, ma nel repo attuale non sono obbligatori per avere stabilità (dato che esiste già una buona base di test automatici su engine/effects/API). Inserirli solo se c’è un rischio reale di regressione UI o se si vuole validare l’intero flusso “parser+UI+API+engine” con pochi scenari.
 
 ---
 
-## 5. Piano Pragmatico Raccomandato
+## Appendice A — Snapshot (2026-01-01): Piano Pragmatico e Valutazioni
 
-### 5.1 Contesto Decisionale
+> Nota importante: le sezioni **5–11** sono lasciate come *snapshot storico* (piano/valutazione al 2026-01-01).
+> Nel repo attuale alcune affermazioni in queste sezioni possono risultare superate (feature già implementate, test già presenti, stime non più rilevanti).
+> Per lo “stato attuale” fare riferimento a **Nota di mantenimento**, §4 e alla sintesi aggiornata in §1.1.
+
+### A.1 Contesto decisionale
 
 **Input dall'Utente:**
 - Gioco single-player, no componenti transazionali ✅
@@ -234,14 +317,16 @@ test('save and load state', async ({ page }) => {
 
 ---
 
-### 5.2 Roadmap Implementazione
+### A.2 Roadmap implementazione
 
-#### 5.2.1 Fondamenta e Pulizia Dati (Settimana 1)
+> Nota: questa roadmap è stata scritta come piano futuro al 2026-01-01. Nel repo attuale molte parti risultano **già implementate**; dove possibile, qui sotto è indicato lo **stato reale** (storico vs attuale).
+
+#### A.2.1 Fondamenta e pulizia dati (Settimana 1)
 **Effort:** 10-12h
 
 **Task:**
 1. Eliminare oggetto ID=28 duplicato da `Oggetti.json` (15 min)
-2. Creare `Misteri.json` con 9 obiettivi (2h)
+2. Creare `Misteri.json` con 9 obiettivi (2h) *(storico: nel repo attuale i “misteri” risultano gestiti senza un file dedicato `Misteri.json`)*
 3. Estendere `gameState` in `engine.js`:
    ```javascript
    gameState = {
@@ -254,7 +339,7 @@ test('save and load state', async ({ page }) => {
      }
    };
    ```
-4. Aggiornare `saveGame`/`loadGame` per serializzare Set → Array (1h)
+4. Aggiornare serializzazione Save/Load per strutture non-JSON (Set → Array) (1h) *(nel repo attuale SALVA/CARICA sono presenti: engine produce `SAVE_GAME`/`LOAD_GAME` e il frontend gestisce download/upload JSON)*
 5. Implementare sistema punteggio base (8h):
    - Luoghi: +1 punto primo ingresso
    - Interazioni: +2 punti (marcare 15-20 in `Interazioni.json`)
@@ -265,7 +350,7 @@ test('save and load state', async ({ page }) => {
 
 ---
 
-#### 5.2.2 Sistema Temporizzazione (Settimana 2)
+#### A.2.2 Sistema temporizzazione (Settimana 2)
 **Effort:** 10-12h
 
 **Task:**
@@ -284,10 +369,11 @@ test('save and load state', async ({ page }) => {
    - `checkTorciaEsaurita()` dopo 6 mosse
    - Game Over con messaggio "Oscurità Fatale"
 3. Implementare timer intercettazione (4h):
-   - Array `LUOGHI_PERICOLOSI = [51,52,53,55,56,58]` (vedi specifica tecnica § 1.2.2 per dettagli)
-   - Counter `azioniInLuogoPericoloso` (reset solo uscendo)
-   - `checkIntercettazione()` a 3 azioni
-   - Game Over "Catturato!"
+   - **Implementazione attuale (repo):**
+     - flag `gameState.turn.current.inDangerZone`
+     - contatore `gameState.turn.turnsInDangerZone`
+     - aggiornamento tramite `src/logic/turnEffects/interceptEffect.js`
+     - game over a 3 turni gestito da `src/logic/turnEffects/gameOverEffect.js`
 4. Implementare timer lampada + comando ACCENDI (3h):
    - Comando `ACCENDI LAMPADA` (prerequisito: fiammiferi)
    - `checkLampadaAbbandonata()` al movimento
@@ -300,43 +386,33 @@ test('save and load state', async ({ page }) => {
 - § 2.3.1 (TD): Implementazione costante `LUOGHI_PERICOLOSI` e verifica
 
 **Checklist Operativa Codice:**
-- [ ] Verificare `const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58]` in `src/logic/engine.js`
-- [ ] Confermare esclusioni: ID=54 (terminale), ID=57 (rifugio)
-- [ ] Test esistenti: `tests/luoghi.schema.test.ts`, `tests/engine.terminal.test.ts`
-- [ ] Test MANCANTE: timer intercettazione E2E
+- [x] Pericolo/intercettazione: verificare via test unit `tests/unit/intercept-effect.test.ts`
+- [x] Luoghi terminali: `tests/engine.terminal.test.ts`
+- [ ] (Opzionale) E2E UI: non presente una suite Playwright “scenario gioco” nel repo attuale; valutare solo se serve coprire la UI end-to-end
 
 #### **TD: Interventi Codice per Luoghi Pericolosi/Terminali**
 
 **Status Attuale:**
 - ✅ Luoghi terminali (ID=8, 40, 54): **GIÀ IMPLEMENTATI** correttamente
-- ✅ Costante `LUOGHI_PERICOLOSI`: Da verificare nel codice
+- ✅ Danger zone: calcolata come flag `turn.current.inDangerZone` (in `engine.js` tramite array locale `dangerZones`) e usata da `interceptEffect`/`gameOverEffect`
 
-**Verifica Necessaria:**
-```javascript
-// File: src/logic/engine.js
-// Verificare che la costante sia:
-const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
-
-// NON deve includere:
-// - ID=54 (terminale, morte istantanea)
-// - ID=57 (rifugio, zona sicura)
-```
+**Nota tecnica (aggiornamento implementazione):**
+Nel repo attuale non risulta una costante globale `LUOGHI_PERICOLOSI`, ma `engine.js` calcola `inDangerZone` tramite un array locale `dangerZones` e poi i turn effects consumano quel flag.
 
 **Test di Validazione:**
 1. ✅ `tests/luoghi.schema.test.ts`: Verifica campo `Terminale` (-1 per ID 8,40,54)
 2. ✅ `tests/engine.terminal.test.ts`: Verifica comportamento luoghi terminali
-3. ⚠️ **MANCANTE**: Test timer intercettazione su `LUOGHI_PERICOLOSI`
+3. ✅ `tests/unit/intercept-effect.test.ts`: Verifica incremento/reset contatore intercettazione
 
 **Azioni Raccomandate:**
-- [ ] Verificare costante `LUOGHI_PERICOLOSI` in `src/logic/engine.js`
-- [ ] Se non presente, implementare come da specifica tecnica § 2.3.1
-- [ ] Aggiungere test E2E per timer intercettazione (§ 5.2.2, vedi sotto)
+- [ ] (Se richiesto) Aggiungere un test di integrazione che verifichi la catena completa `interceptEffect` → `gameOverEffect` su 3 turni in danger zone
+- [ ] (Opzionale) E2E UI: introdurre Playwright solo se serve davvero coprire regressioni del frontend
 
 **Riferimento:** Per tabella completa luoghi pericolosi/terminali, vedere `specifica-tecnica-completa-integrata.md` § 1.2.2 (HLD) e § 2.3.1 (TD).
 
 ---
 
-#### 5.2.3 Sistema Vittoria (Settimana 3)
+#### A.2.3 Sistema vittoria (Settimana 3)
 **Effort:** 12-15h
 
 **Task:**
@@ -369,11 +445,11 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-#### 5.2.4 Stabilizzazione e Testing (Settimana 4)
+#### A.2.4 Stabilizzazione e testing (Settimana 4)
 **Effort:** 10-15h
 
 **Task:**
-1. **E2E Tests con Playwright (5-8h):**
+1. **E2E Tests con Playwright (5-8h):** *(opzionale, non presente oggi come suite di scenario UI nel repo)*
    - Scenario vittoria completo
    - 3 Game Over (torcia, intercettazione, lampada)
    - Sistema punteggio (10 luoghi → verifica score)
@@ -385,7 +461,7 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
    - [ ] Tutti i 9 misteri (verifica 3pt ciascuno) (30 min)
    - [ ] Edge cases: inventario pieno, comandi invalidi (15 min)
    - [ ] Tutti i game over possibili (15 min)
-   - [ ] Save/load in 5 punti diversi (10 min)
+   - [ ] Save/load in 5 punti diversi (10 min) *(feature presente: validare file, ripristino stato e coerenza UI/server)*
 
 3. **Bug Fixing (2-5h):**
    - Correggi issue trovati durante testing
@@ -398,7 +474,7 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-### 5.3 Budget Totale
+### A.3 Budget totale
 
 | Fase | Attività | Effort | Priorità |
 |------|----------|--------|----------|
@@ -417,9 +493,9 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-## 6. Decisioni Chiave e Rationale
+### A.4 Decisioni chiave e rationale
 
-### 6.1 Perché NO Refactoring
+#### A.4.1 Perché no refactoring
 
 **Scenario Applicabilità:** Refactoring si giustifica quando:
 - App ha bug architetturali frequenti ❌ (non presente)
@@ -434,14 +510,14 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-### 6.2 Perché NO Unit Test Estensivi
+#### A.4.2 Perché no unit test estensivi
 
 **Unit test sono utili quando:**
 - Codebase evolve continuamente (add/remove feature) ❌
 - Refactoring frequente richiesto ❌
 - Business logic complessa con edge case nascosti ⚠️ (parziale)
 - Team multi-developer (catch regressions cross-team) ❌
-- Deployment continuo (CI/CD automatico) ❌
+- CI presente (lint/build/test). CD non obbligatorio per questo tipo di progetto ⚠️
 
 **Missione Odessa:** Solo business logic parzialmente complessa giustificherebbe, ma:
 - No CI/CD
@@ -452,7 +528,7 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-### 6.3 Perché SÌ E2E Testing
+#### A.4.3 Perché sì E2E testing
 
 **E2E tests sono ideali quando:**
 - Critical path ben definito ✅ (inizio → vittoria)
@@ -467,7 +543,7 @@ const LUOGHI_PERICOLOSI = [51, 52, 53, 55, 56, 58];
 
 ---
 
-### 6.4 Analisi ESLint Complexity Rules
+#### A.4.4 Analisi ESLint complexity rules
 
 #### 6.4.1 Contesto Normativo
 
@@ -579,7 +655,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 6.5 Perché Priorità su Feature Implementation
+#### A.4.5 Perché priorità su feature implementation
 
 **Feature dalla specifica NON implementate:**
 - Sistema punteggio (57 + 34 + 27 + 4 = 122 punti)
@@ -597,9 +673,9 @@ Refactoring diventa prioritario SE:
 
 ---
 
-## 7. Rischi e Mitigazioni
+### A.5 Rischi e mitigazioni
 
-### 7.1 Rischio: Bug in Implementazione Feature
+#### A.5.1 Rischio: bug in implementazione feature
 
 **Probabilità:** Media (nuove feature = nuovi bug)  
 **Impatto:** Alto (blocca rilascio)
@@ -611,7 +687,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 7.2 Rischio: Test Insufficienti
+#### A.5.2 Rischio: test insufficienti
 
 **Probabilità:** Bassa (8 scenari E2E coprono critical path)  
 **Impatto:** Medio (possibili bug in produzione)
@@ -623,7 +699,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 7.3 Rischio: Tech Debt Futuro
+#### A.5.3 Rischio: tech debt futuro
 
 **Probabilità:** Alta (no refactoring = debt accumula)  
 **Impatto:** Basso (no evoluzioni previste)
@@ -635,9 +711,9 @@ Refactoring diventa prioritario SE:
 
 ---
 
-## 8. Metriche di Successo
+### A.6 Metriche di successo
 
-### 8.1 Criteri Completamento per Fase Implementativa
+#### A.6.1 Criteri completamento per fase implementativa
 
 | Fase | Criterio Successo | Metrica |
 |------|-------------------|---------|
@@ -646,7 +722,7 @@ Refactoring diventa prioritario SE:
 | **§ 5.2.3** | Vittoria completa | Playtest: inizio→fine senza crash |
 | **§ 5.2.4** | Stabilità garantita | E2E tests: 10/10 pass + smoke test completo |
 
-### 8.2 Criteri Produzione
+#### A.6.2 Criteri produzione
 
 - [ ] **Zero crash** durante smoke test completo (3h playtest)
 - [ ] **10 scenari E2E** passano al 100%
@@ -657,9 +733,9 @@ Refactoring diventa prioritario SE:
 
 ---
 
-## 9. Alternative Considerate e Respinte
+### A.7 Alternative considerate e respinte
 
-### 9.1 Opzione A: Refactoring + Unit Test Estensivi
+#### A.7.1 Opzione A: refactoring + unit test estensivi
 
 **Descrizione:** Refactorare architettura a dependency injection, scrivere 80-90% coverage unit test.
 
@@ -679,7 +755,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 9.2 Opzione B: Solo Feature, Zero Test
+#### A.7.2 Opzione B: solo feature, zero test
 
 **Descrizione:** Implementare feature, deployare senza test automatici.
 
@@ -698,7 +774,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 9.3 Opzione C: Feature + Unit Test Selettivi
+#### A.7.3 Opzione C: feature + unit test selettivi
 
 **Descrizione:** Feature + unit test solo su aree bug-prone (es. timer, prerequisiti).
 
@@ -717,9 +793,9 @@ Refactoring diventa prioritario SE:
 
 ---
 
-## 10. Conclusioni e Next Steps
+### A.8 Conclusioni e next steps
 
-### 10.1 Sintesi Raccomandazioni
+#### A.8.1 Sintesi raccomandazioni
 
 1. **❌ NON fare refactoring** → Architettura attuale adeguata
 2. **❌ NON scrivere unit test estensivi** → ROI insufficiente
@@ -731,7 +807,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 10.2 Prossimi Passi Immediati
+#### A.8.2 Prossimi passi immediati
 
 #### **Step 1: Validazione Piano (30 min)**
 - [ ] Review documento con stakeholder
@@ -751,7 +827,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 10.3 Criteri Go/No-Go per Produzione
+#### A.8.3 Criteri go/no-go per produzione
 
 **GO se:**
 - ✅ 10 scenari E2E passano
@@ -766,7 +842,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-### 10.4 Post-Deployment
+#### A.8.4 Post-deployment
 
 **Monitoring:**
 - Raccogliere feedback primi 10 utenti
@@ -785,7 +861,7 @@ Refactoring diventa prioritario SE:
 
 ---
 
-## 11. Riferimenti
+### A.9 Riferimenti
 
 - **Specifica Tecnica:** `specifica-tecnica-completa-integrata.md` v2.0
 - **Codebase:** `src/logic/engine.js`, `src/logic/parser.js`
@@ -795,8 +871,8 @@ Refactoring diventa prioritario SE:
 ---
 
 **Fine Documento**  
-**Ultima revisione:** 01 gennaio 2026  
-**Versione:** 1.1
+**Ultima revisione:** 09 gennaio 2026  
+**Versione:** 1.2
 
 **Approvazione:**
 - [ ] Sviluppatore: ______________________

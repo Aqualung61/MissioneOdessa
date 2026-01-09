@@ -1,5 +1,5 @@
 # Statistiche Progetto Missione Odessa
-*Generato: 31 dicembre 2025*
+*Generato: 9 gennaio 2026*
 
 ---
 
@@ -7,21 +7,21 @@
 
 ### Timeline
 - **Data inizio:** 30 ottobre 2025 (19:00:42)
-- **Data snapshot:** 31 dicembre 2025 (13:59:35)
-- **Durata:** 61 giorni
-- **Ore totali:** ~1,483 ore calendario (tempo reale, non effort)
+- **Data snapshot:** 9 gennaio 2026 (23:43:33)
+- **Durata:** 71 giorni
+- **Ore totali:** ~1,709 ore calendario (tempo reale, non effort)
 
 ### Commit e Attività
-- **Commit totali:** 261
-- **Media commit/giorno:** 4.3
-- **Modifiche file totali:** 1,322 operazioni (aggiunte/modifiche/rimozioni)
-- **Commit oggi (31/12):** 4
+- **Commit totali:** 303
+- **Media commit/giorno:** 4.26
+- **Modifiche file totali:** 1,420 operazioni (git numstat: file×commit)
+- **Commit oggi (09/01):** 4
 
 ### Crescita Codebase
-- **File modificati:** 204
-- **Linee aggiunte:** +36,546
-- **Linee rimosse:** -9,070
-- **Delta netto:** +27,476 linee
+- **File modificati:** 408 (unique path in history)
+- **Linee aggiunte:** +58,863
+- **Linee rimosse:** -14,417
+- **Delta netto:** +44,446 linee
 
 ---
 
@@ -30,9 +30,9 @@
 ### Totali per Estensione
 | Estensione | Linee Codice |
 |------------|--------------|
-| **JS/TS**  | 3,704        |
+| **JS/TS**  | 8,970        |
 
-*Note: Codice applicativo pulito (src/ + tests/ + web/), esclusi: node_modules, backup, dbbuild, deploy, dist, test-results*
+*Note: conteggio su “repo pulito” (tutto il repo), esclusi: node_modules, backup, dbbuild, deploy, dist, test-results + file binari.*
 
 ### Nota Metodologica
 Tutti i conteggi escludono:
@@ -43,43 +43,52 @@ Tutti i conteggi escludono:
 
 Conteggi verificabili tramite:
 ```powershell
-# File applicativi
-Get-ChildItem -Recurse -File | Where-Object { 
-  $_.FullName -notmatch '(\\node_modules\\|\\backup\\|\\deploy\\)' 
-}
+# Repo "pulito" (tutto il repo), esclusi binari/artefatti
+$excluded = '\\(node_modules|backup|dbbuild|deploy|dist|test-results|\.git)\\'
+$binary = @('.png','.jpg','.jpeg','.pdf','.xlsx','.zip','.bmp','.ico')
+$files = Get-ChildItem -Recurse -File |
+  Where-Object { $_.FullName -notmatch $excluded -and ($binary -notcontains $_.Extension.ToLower()) }
 
-# LOC JS/TS
-Get-ChildItem -Recurse -Include *.js,*.ts -File | ForEach-Object {
+# LOC JS/TS (repo pulito)
+($files | Where-Object { $_.Extension -in @('.js','.ts') } | ForEach-Object {
   (Get-Content $_.FullName | Measure-Object -Line).Lines
-}
+} | Measure-Object -Sum).Sum
 
 # Commit totali
 git rev-list --count HEAD
 ```
 
 ### Distribuzione File per Tipo (Codice Applicativo)
-*Solo file del progetto, esclusi: node_modules, backup, dbbuild, deploy, dist, test-results, .git, *.lock, *.log*
+*Repo pulito (tutto il repo), esclusi: node_modules, backup, dbbuild, deploy, dist, test-results, .git, file binari, *.lock, *.log*
 
 | Tipologia | Count | Descrizione |
 |-----------|-------|-------------|
-| `.md`     | 28    | Documentazione |
+| `.md`     | 39    | Documentazione |
+| `.ts`     | 38    | TypeScript (tests, types, tooling) |
+| `.js`     | 29    | Backend + frontend logic |
 | `.json`   | 20    | Dati + configurazioni |
-| `.ts`     | 19    | TypeScript (types, tests) |
-| `.js`     | 19    | Backend + frontend logic |
-| `.html`   | 3     | Pagine frontend |
 | `.css`    | 3     | Fogli di stile |
-| **Totale** | **92** | **File applicativi** |
+| `.csv`    | 3     | Dati/estrazioni |
+| `.html`   | 3     | Pagine frontend |
+| `.mmd`    | 2     | Diagrammi Mermaid |
+| `.txt`    | 3     | Note/utility |
+| `.yml`    | 2     | CI/config |
+| **Altri** | 12    | File singoli di config/metadata |
+| **Totale** | **154** | **File (repo pulito)** |
 
 ### File Applicativi (Escluso node_modules)
 | Categoria | Files | Descrizione |
 |-----------|-------|-------------|
-| **Source** | 36 | Backend logic (src/, ricorsivo: 14 JS + 3 TS + altri) |
-| **Tests** | 10 | Test suite (tests/) |
-| **Web** | 8 | Frontend (web/, ricorsivo: 2 html + 3 css + 3 js) |
-| **Totale Codice** | **54** | Files sorgente e frontend |
+| **Source** | 46 | Backend logic + middleware (src/) |
+| **Tests** | 27 | Test suite (tests/) |
+| **Web** | 8 | Frontend (web/) |
+| **Types** | 2 | Type definitions (*.d.ts) |
+| **Docs** | 41 | Documentazione (docs/, esclusi binari) |
+| **Root/Config** | 30 | File root e configurazioni (package.json, tsconfig, ecc.) |
+| **Totale** | **154** | File nel perimetro “repo pulito” |
 
-**Dimensione totale progetto:** 812 KB (~0.8 MB)  
-*Esclusi: node_modules (125 MB), backup, deploy, dbbuild*
+**Dimensione totale progetto (repo pulito):** 1,545 KB (~1.5 MB)  
+*Esclusi: node_modules (~382 MB), backup, deploy, dbbuild, dist, test-results, file binari*
 
 ---
 
@@ -88,21 +97,23 @@ git rev-list --count HEAD
 ### Metriche Strutturali
 | Metrica | Valore | Note |
 |---------|--------|------|
-| **Funzioni esportate** | 23 | API pubbliche JS (export function in .js files) |
-| **Dichiarazioni TypeScript** | 5 | Type definitions in .d.ts (non codice eseguibile) |
+| **Funzioni esportate** | 40 | API pubbliche JS (export function + export async function in src/) |
+| **Dichiarazioni TypeScript** | 2 | Type definitions in *.d.ts (non codice eseguibile) |
 | **Classi** | 0 | Pattern funzionale puro, no OOP |
-| **Moduli core** | 36 | File in src/ (ricorsivo) |
-| **Test suite** | 10 | File test TypeScript |
+| **Moduli core** | 46 | File in src/ (ricorsivo, esclusi binari/artefatti) |
+| **Test suite** | 26 | Vitest test files (25 passed | 1 skipped) |
 | **Componenti web** | 8 | File frontend (2 HTML + 3 CSS + 3 JS) |
 | **API Routes** | 7 | Endpoint REST Express (sviluppati, non framework) |
 
 **Dettaglio funzioni esportate:**
-- `src/logic/engine.js`: 14 funzioni (business logic core)
+- `src/logic/engine.js`: 20 funzioni (business logic core)
 - `src/logic/parser.js`: 3 funzioni (parsing comandi)
+- `src/middleware/validation.js`: 3 funzioni (input validation)
 - `src/logic/systemMessages.js`: 2 funzioni (i18n)
-- `src/logic/messages.js`: 1 funzione (error mapping)
 - `src/initOdessa.js`: 1 funzione (bootstrap)
-- `src/azioni_setup.ts`: 1 funzione (setup)
+- `src/logic/messages.js`: 1 funzione (error mapping)
+- `src/logic/turnEffects/*`: 5 funzioni (effects)
+- `src/middleware/{auth,rateLimiter,errorHandler}.js`: 3 funzioni
 - `src/tests/runE2E.js`: 1 funzione (E2E testing)
 
 ### Complessità Funzionale Stimata
@@ -115,7 +126,7 @@ git rev-list --count HEAD
 | Aspetto | Valutazione | Dettaglio |
 |---------|-------------|-----------|
 | **Modularità** | ✅ Alta | Separazione API/Logic/Data layer |
-| **Testabilità** | ✅ Alta | 42 test passing (Vitest) |
+| **Testabilità** | ✅ Alta | 208 test passing (Vitest) |
 | **Manutenibilità** | ✅ Alta | Codice documentato, pattern chiari |
 | **Accoppiamento** | ✅ Basso | Dependency injection implicita |
 | **Coesione** | ✅ Alta | Single responsibility per modulo |
@@ -203,16 +214,16 @@ git rev-list --count HEAD
 ## 🔍 Metriche Aggiuntive
 
 ### Copertura Funzionale
-- **Test files:** 10
-- **Test passing:** 42
-- **Test skipped:** 1
-- **Test duration:** ~1.29s
+- **Test files:** 26 (25 passed | 1 skipped)
+- **Test passing:** 208
+- **Test skipped:** 17
+- **Test duration:** ~2.27s
 - **Code coverage:** Non misurato (stimato >70% per logic core)
 
 ### Documentazione
-- **File `.md` totali:** 28 (15 in docs/, 13 root/altri)
+- **File `.md` totali:** 39 (escluse cartelle artefatto)
 - **Documenti principali:**
-  - `README.md` (136 linee)
+  - `README.md` (117 linee)
   - `docs/data-modeling.md`
   - `docs/raccomandazioni.md`
   - `docs/considerazioni-architettura-interventi.md`
@@ -259,8 +270,8 @@ git rev-list --count HEAD
 
 ### Punti di Forza
 ✅ **Modularità:** Separazione netta tra layer  
-✅ **Testabilità:** 42 test passing, no regression  
-✅ **Documentazione:** 28 file .md, commenti inline  
+✅ **Testabilità:** 208 test passing, no regression  
+✅ **Documentazione:** 39 file .md, commenti inline  
 ✅ **Pattern Design:** 10+ pattern applicati correttamente  
 ✅ **Manutenibilità:** Codice leggibile, naming conventions chiare  
 ✅ **Pragmatismo:** Scelte architetturali proporzionate allo scope  

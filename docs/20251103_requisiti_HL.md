@@ -1,0 +1,667 @@
+# Documento di Requisiti e Specifiche di Alto Livello: Modulo Parser (Missione Odessa)
+
+## SEZIONE 1: REQUISITO FUNZIONALE (SRS)
+
+**ID REQ-PARSE-01:** Interpretare comandi e frasi inserite dall'utente (Parser)
+
+### 1.1. Panoramica Funzionale
+
+Il modulo Parser (di seguito "il Parser") funge da interfaccia di traduzione tra l'utente e il Motore di Gioco (Game Engine). La responsabilità primaria del Parser è ricevere una singola linea di testo (stringa) in lingua italiana inserita dall'utente tramite la linea di comando del gioco.
+
+Il Parser deve analizzare lessicalmente e sintatticamente questa stringa. Se l'input è valido, il Parser deve tradurlo in una struttura dati di comando (un "Oggetto Comando") normalizzata e inequivocabile, che verrà poi passata al Motore di Gioco per l'esecuzione. Se l'input non è valido, il Parser è responsabile della generazione di un messaggio d'errore appropriato per l'utente.
+
+### 1.2. Lessico del Parser (Vocabolario Accettato)
+
+Il Parser deve riconoscere un vocabolario fisso di termini. Qualsiasi termine non presente in questo vocabolario (ad eccezione dei sostantivi, vedi 1.2.4) deve essere considerato non valido.
+
+#### 1.2.1. Comandi di Azione (Verbi)
+
+Il Parser deve riconoscere i seguenti 36 verbi di azione. Questi verbi costituiscono l'insieme primario di azioni che l'utente può tentare di eseguire. L'elenco è derivato dalla documentazione fornita.1
+
+**Tavola 1.1: Lessico dei Verbi di Azione**
+
+- ACCENDI
+- APRI
+- ATTACCA
+- CHIUDI
+- COLPISCI
+- DAI
+- DORMI
+- ESAMINA
+- GIRA
+- GUARDA
+- INFILA
+- INTRODUCI
+- LASCIA
+- LEGGI
+- MUOVI
+- OSSERVA
+- PICCHIA
+- PIGIA
+- PORGI
+- POSA
+- PREMI
+- PRENDI
+- RISPONDI
+- RUOTA
+- SCAPPA
+- SCARICA
+- SCAVA
+- SCHIACCIA
+- SIEDITI
+- SORRIDI
+- SPEGNI
+- SPOSTA
+- UCCIDI
+
+#### 1.2.2. Comandi di Navigazione
+
+Il Parser deve riconoscere i comandi per il movimento tra le locazioni. Questi comandi sono speciali e gestiti separatamente dai verbi di azione. Devono inoltre essere gestiti i sinonimi e le abbreviazioni specificate, come indicato nella documentazione del gioco.1
+
+**Tavola 1.2: Lessico dei Comandi di Navigazione e Sinonimi**
+
+| Comando Canonico | Sinonimi e Abbreviazioni Accettati |
+|---|---|
+| NORD | N |
+| SUD | S |
+| EST | E |
+| OVEST | O |
+| ALTO | SU, SALI |
+| BASSO | GIÙ, SCENDI |
+
+#### 1.2.3. Comandi di Sistema e Meta-Gioco
+
+Il Parser deve riconoscere un insieme di comandi che non interagiscono con l'ambiente di gioco, ma con il sistema stesso (es. inventario, salvataggio).1
+
+Un requisito chiave è la capacità di mappare più input (sinonimi) allo stesso comando canonico. Ad esempio, COSA, ? e INVENTARIO devono tutti attivare la medesima funzione.1 La specifica (Sez. 2.2) dovrà riflettere questa mappatura "molti-a-uno".
+
+**Tavola 1.3: Lessico dei Comandi di Sistema e Sinonimi**
+
+| Comando Canonico | Sinonimi Accettati |
+|---|---|
+| INVENTARIO | COSA, ? |
+| SALVA | SAVE |
+| CARICA | LOAD |
+| PUNTI | (Nessun sinonimo) |
+| FINE | (Nessun sinonimo) |
+
+#### 1.2.4. Sostantivi (Oggetti)
+
+Il Parser deve essere in grado di riconoscere un elenco di sostantivi (oggetti) con cui l'utente può interagire.
+
+- Azione Richiesta: L'elenco completo dei sostantivi deve essere fornito dal Committente/SME (Subject Matter Expert) per popolare la relativa tabella di database (Vedi Appendice B).
+- Requisito: Il Parser deve validare che il sostantivo fornito dall'utente in un comando VERBO + OGGETTO esista in questo dizionario.
+- Esempi 1: LAMPADA, FIAMMIFERO, TORCIA, FERMACARTE, SCOMPARTO, FOGLIO, QUADRO, CASSAFORTE, MANOPOLA, MEDAGLIONE, ARAZZO, FORMA, STATUETTA, BADILE, BASTONE, PESO, DOSSIER, DOCUMENTI.
+
+#### 1.2.5. Articoli e Parole Vuote (Stop Words)
+
+La documentazione 1 specifica una sintassi verbo + (articolo) + oggetto, dove l'articolo è esplicitamente opzionale. Questo impone un requisito fondamentale: il Parser deve identificare e scartare (ignorare) gli articoli determinativi e indeterminativi della lingua italiana per isolare il Verbo e il Sostantivo.
+
+- Requisito: Il Parser deve identificare ed eliminare le seguenti parole (stop words) dalla stringa di input prima dell'analisi sintattica (elenco derivato da 1):
+    - IL, LO, LA, I, GLI, LE
+    - UN, UNO, UNA
+    - DEL, DELLO, DELLA, DEI, DEGLI, DELLE
+    - AL, ALLA, AI, AGLI, ALLE
+
+### 1.3. Grammatica e Sintassi dei Comandi
+
+Il Parser deve validare la struttura dell'input dell'utente rispetto a una grammatica formale. Dall'analisi del lessico 1, emergono quattro strutture grammaticali valide che il Parser deve accettare.
+#### 1.3.1. Formati di Comando Validi
+
+1. Comando Singolo (Sistema o Navigazione): Un singolo token riconosciuto.
+    - Esempi: INVENTARIO, PUNTI, NORD, N, SALI.1
+2. Comando Singolo (Azione): Un verbo d'azione che non richiede un oggetto.
+    - Esempi (dalla lista in 1.2.1): DORMI, SCAPPA, SORRIDI.
+3. Comando (VERBO + OGGETTO): La struttura più comune, composta da un verbo d'azione e un sostantivo.
+    - Esempi: PRENDI LAMPADA 1, ACCENDI LAMPADA 1, SPOSTA FERMACARTE 1, ESAMINA SCOMPARTO 1, INFILA MEDAGLIONE.1
+4. Comando (VERBO + (ARTICOLO) + OGGETTO): Variante del tipo 3, dove l'articolo viene ignorato (vedi 1.2.5).
+    - Esempio: PRENDI LA LAMPADA (deve essere interpretato come PRENDI LAMPADA).
+
+#### 1.3.2. Regole di Normalizzazione e Gestione Input
+
+1. **REQ-PARSE-1.3.2.1 (No Abbreviazioni):** Il Parser NON deve accettare abbreviazioni per Verbi o Sostantivi, ad eccezione di quelle esplicitamente definite nel lessico di navigazione (es. 'N' per 'NORD'). Questa è una regola esplicita della documentazione originale.1
+    - Comportamento: PRE LAMP deve essere rifiutato. N deve essere accettato.
+2. **REQ-PARSE-1.3.2.2 (Case Insensitive):** L'input dell'utente deve essere interpretato senza distinzione tra maiuscole e minuscole.
+    - Comportamento: prendi lampada, Prendi Lampada, e PRENDI LAMPADA devono essere considerati identici.
+3. **REQ-PARSE-1.3.2.3 (Rimozione Articoli):** Gli articoli (definiti in 1.2.5) devono essere rimossi prima della validazione.
+    - Comportamento: ESAMINA IL FOGLIO deve essere ridotto a ESAMINA FOGLIO.
+4. **REQ-PARSE-1.3.2.4 (Spaziatura):** Spazi multipli tra le parole devono essere trattati come un singolo spazio. Gli spazi iniziali e finali devono essere ignorati.
+
+### 1.4. Comportamento del Sistema e Gestione degli Errori
+
+#### 1.4.1. Flusso di Successo (Scenario Nominale)
+
+1. L'utente inserisce una linea di testo e preme Invio.
+2. Il Parser riceve la stringa (es. " PRENDI la LAMPADA ").
+3. Il Parser esegue la Normalizzazione (1.3.2):
+    1. Trim: "PRENDI la LAMPADA"
+    2. ToUpper: "PRENDI LA LAMPADA"
+    3. Tokenize: \`\`
+    4. Remove Stop Words (1.2.5): \`\`
+4. Il Parser esegue l'Analisi Sintattica (1.3.1):
+    1. Token 1 ("PRENDI") viene cercato nel Lessico (1.2.1). Trovato. Tipo: VERBO_AZIONE.
+    2. Token 2 ("LAMPADA") viene cercato nel Lessico (1.2.4). Trovato. Tipo: SOSTANTIVO.
+    3. La sintassi VERBO_AZIONE + SOSTANTIVO è valida.
+5. Il Parser genera un Oggetto Comando strutturato (es. ParseResult { Verb: "PRENDI", Noun: "LAMPADA" }).
+6. L'Oggetto Comando viene passato al Motore di Gioco.
+
+#### 1.4.2. Requisiti di Gestione degli Errori (Comportamento)
+
+Il Parser deve fornire un feedback chiaro e immediato all'utente quando l'input non può essere interpretato.
+
+L'analisi del riferimento a ?illegal quantity error 1 indica che tale stringa, seguita da error in 16376, non è un errore gestito del parser dell'avventura testuale. Si tratta quasi certamente di un errore a livello di sistema (es. un'eccezione non gestita nell'interprete del motore di gioco), probabilmente dovuto a un bug o a una gestione non corretta di un input inaspettato.
+
+Il requisito per un moderno Parser è di non generare errori di sistema. Deve invece gestire gli input fallati e rispondere con messaggi di errore predefiniti e controllati, specifici del dominio del gioco.1
+
+1. **REQ-PARSE-1.4.2.1 (Comando Sconosciuto):** Se il primo token della stringa normalizzata (o l'unico token) non corrisponde a nessun termine nei lessici (Verbi, Navigazione, Sistema), il Parser deve restituire un errore di comando non riconosciuto.
+    - Input: "VOLA LUNA"
+    - Risposta Attesa (Esempio): ?NON CAPISCO QUESTA PAROLA.
+2. **REQ-PARSE-1.4.2.2 (Sintassi Incompleta):** Se un verbo richiede un oggetto (es. PRENDI), ma l'oggetto non viene fornito, il Parser deve restituire un errore di sintassi.
+    - Input: "PRENDI"
+    - Risposta Attesa (Esempio): ?PRENDERE COSA?
+3. **REQ-PARSE-1.4.2.3 (Oggetto Sconosciuto):** Se il verbo è valido ma il sostantivo non è nel lessico (1.2.4) o non è applicabile in quella sintassi, il Parser deve restituire un errore.
+    - Input: "PRENDI AAA"
+    - Risposta Attesa (Esempio): ?NON VEDO NESSUN "AAA" QUI. (o un generico ?NON PUOI FARLO.)
+
+## SEZIONE 2: SPECIFICA DI ALTO LIVELLO (HLD)
+
+**ID SPEC-PARSE-01:** Specifiche di Ingegneria per il Modulo Parser
+
+### 2.1. Architettura del Modulo Parser
+
+#### 2.1.1. Posizionamento Architetturale e Flusso Dati
+
+Il Parser è un componente stateless (vedi 2.5.1) che agisce come un "traduttore" puro tra l'interfaccia utente (UI Loop) e la logica di business (Game Engine).
+
+Flusso Dati Architetturale:
+
+```text
+[Input Utente (UI)] -> (string raw_input) ->
+|
+(ParseResult object) -----------------------------+
+|
+                                                  V
+ -> (GameState change) -> [Output Utente (UI)]
+```
+
+#### 2.1.2. Principio di Separazione delle Responsabilità (SoC)
+L'analisi dei documenti di gioco 1 rivela una chiara distinzione tra fallimento del Parser e fallimento del Motore di Gioco. L'esempio fornito nella soluzione (esamina bastone -> Senza prenderlo e' difficile) dimostra perfettamente questo principio:
+1. Il Parser ha successo: riconosce sintatticamente VERBO(ESAMINA) + SOSTANTIVO(BASTONE).
+2. Il Motore di Gioco riceve l'Oggetto Comando {Verb: "ESAMINA", Noun: "BASTONE"}.
+3. Il Motore di Gioco esegue la validazione semantica e di stato: "Il giocatore sta cercando di esaminare il bastone. Controllo Stato: il giocatore ha l'oggetto 'bastone' nell'inventario? No. Azione: Rifiuta il comando ed emetti la risposta Senza prenderlo e' difficile.".
+* Specifica:
+- Responsabilità del Parser (Validazione Sintattica): Il Parser valida solo la forma del comando. "Questo comando è scritto correttamente?" (Es. PRENDI LAMPADA).
+- Responsabilità del Motore di Gioco (Validazione Semantica): Il Motore valida il significato e la fattibilità del comando. "Questo comando ha senso ora?" (Es. C'è una lampada nella stanza? Sto già trasportando il numero massimo di 5 oggetti? 1).
+
+### 2.2. Modello Dati e Strutture
+
+#### 2.2.1. Modello Dati (Database SQL)
+Per supportare un ambiente web moderno e garantire l'estensibilità e la gestione multilingua, il vocabolario del parser non sarà codificato (hardcoded) nell'applicazione, ma sarà memorizzato in un database SQL.
+Questo modello normalizzato (3NF) centralizza tutti i termini e li categorizza dinamicamente, risolvendo i requisiti di sinonimia (es. SALVA/SAVE 1, COSA/? 1), multilingua e multi-software (permettendoci di catalogare lessici per diversi giochi, es. Missione Odessa 1 o altri 1).
+Il design si basa su sette (7) tabelle: 3 tabelle fondamentali (Core), 3 tabelle lessicali (Struttura) e 1 tabella associativa (Bridge).
+Tabelle Fondamentali (Core):
+
+1. Lingue: Anagrafica delle lingue. Questa è la tabella master per i contenuti descrittivi. L'Italiano avrà ID_Lingua = 1.
+2. Piattaforme: Anagrafica delle piattaforme (es. "Web", "C64").
+3. Software: Anagrafica dei giochi (es. "Missione Odessa").
+
+Tabelle Lessicali (Struttura):
+
+4. TipiLessico: Categorizzazione dei termini (es. 'VERBO_AZIONE', 'SOSTANTIVO', 'NAVIGAZIONE', 'SISTEMA', 'STOPWORD').
+5. TerminiLessico: Definisce il concetto astratto di un termine. Questa tabella raggruppa sinonimi e traduzioni (es. "Concetto: Osservare").
+6. VociLessico: Memorizza la stringa di testo effettiva (la "voce", es. "guarda", "osserva") e la collega a un ID_Termine (concetto) e a un ID_Lingua (implementando il requisito multilingua).
+
+Tabelle Associative (Bridge):
+
+7. LessicoSoftware: Tabella M:N (Molti-a-Molti) che collega un ID_Software specifico alle ID_Voce che esso supporta.
+
+(Vedi Appendice A per il DDL SQL completo per la creazione di questo schema e Appendice B per gli script di popolamento).
+
+#### 2.2.2. Strutture Dati in-memory (Dizionari)
+Il cuore del Parser (la funzione JavaScript) utilizzerà un dizionario (un Map) che mappa le stringhe di input ai loro token canonici.
+- Enum CommandType:
+    - ACTION (Verbo, es. PRENDI)
+    - NAVIGATION (Movimento, es. NORD)
+    - SYSTEM (Meta-comando, es. INVENTARIO)
+    - NOUN (Sostantivo, es. LAMPADA)
+    - STOPWORD (Articolo, es. LA)
+- Struttura CommandToken:
+    - CanonicalName (string): La forma base (es. "INVENTARIO")
+    - Type (CommandType): Il tipo di token (es. SYSTEM)
+- Specifica del Dizionario (Vocabulary):
+    - Il Parser, all'avvio del gioco, caricherà i dati dalle tabelle SQL (2.2.1) e costruirà una struttura dati in-memory (es. Map<string, CommandToken>) per un lookup ad alte prestazioni.
+    - Questa Map in-memory mapperà tutti i termini noti (la colonna InputTerm) al loro CommandToken (composto da CanonicalForm e TypeName).
+
+#### 2.2.3. Oggetto Risultato del Parser (ParseResult)
+
+Questa è la struttura dati che il Parser produce e invia al Motore di Gioco. È l'interfaccia di output del modulo.
+
+- Struttura ParseResult:
+    - IsValid (bool): true se il parsing ha avuto successo, false altrimenti.
+    - OriginalInput (string): La stringa originale (es. "prendi la lampada").
+    - NormalizedInput (string): La stringa normalizzata (es. "PRENDI LAMPADA").
+    - CommandType (CommandType): Il tipo di comando (es. ACTION).
+    - CanonicalVerb (string): Il verbo canonico (es. "PRENDI").
+    - CanonicalNoun (string): Il sostantivo canonico (es. "LAMPADA").
+    - Error (ParseErrorType): Codice di errore se IsValid è false (vedi 2.4.1).
+
+### 2.3. Logica della Funzione di Parsing (Alto Livello)
+La funzione principale (in JavaScript) Parse(string input) seguirà questi passaggi logici:
+
+1. Fase 1: Normalizzazione (REQ 1.3.2):
+    - Riceve input (es. " PRENDI il medaglione ").
+    - Applica ToUpper() e Trim() -> "PRENDI IL MEDAGLIONE".
+2. Fase 2: Tokenizzazione:
+    - Divide la stringa per spazi -> Tokens =.
+3. Fase 3: Analisi Lessicale e Rimozione Stop Words (REQ 1.2.5):
+    - Itera su Tokens e consulta il Vocabulary (la Map in-memory, 2.2.2).
+    - "PRENDI" -> { "PRENDI", ACTION }
+    - "IL" -> { "IL", STOPWORD } -> Scartato.
+    - "MEDAGLIONE" -> { "MEDAGLIONE", NOUN }
+    - FilteredTokens =
+4. Fase 4: Analisi Sintattica (REQ 1.3.1):
+    - Analizza FilteredTokens.
+    - count = 2.
+    - Token1 = Vocabulary.Get("PRENDI") -> Tipo ACTION.
+    - Token2 = Vocabulary.Get("MEDAGLIONE") -> Tipo NOUN.
+    - La sintassi ACTION + NOUN è valida (Grammatica 1.3.1, Tipo 3).
+5. Fase 5: Costruzione Risultato:
+    - Restituisce un ParseResult popolato:
+      - IsValid = true
+      - CommandType = ACTION
+      - CanonicalVerb = "PRENDI"
+      - CanonicalNoun = "MEDAGLIONE"
+      - Error = NONE
+### 2.4. Specifica di Gestione degli Errori
+Questa sezione definisce i codici di errore interni e la loro mappatura ai messaggi utente.
+
+#### 2.4.1. Tipi di Errore del Parser (Enumerazione)
+Viene definito un tipo enumerativo ParseErrorType per la comunicazione interna e con il ParseResult.
+
+**Tavola 2.1: Enumerazione Errori del Parser**
+
+| Enum ParseErrorType | Causa Scatenante | Esempio Input |
+|---|---|---|
+| NONE | Parsing completato con successo. | PRENDI BADILE |
+| COMMAND_UNKNOWN | Il primo (o unico) token non è in nessun lessico. | VOLA LUNA |
+| SYNTAX_ACTION_INCOMPLETE | Un verbo ACTION che richiede un oggetto è stato usato da solo. | PRENDI |
+| SYNTAX_NOUN_UNKNOWN | Il verbo ACTION è valido, ma il secondo token non è un NOUN noto. | PRENDI ZZZ |
+| SYNTAX_INVALID_STRUCTURE | La struttura non è valida (es. troppe parole, o comandi di sistema con oggetti). | INVENTARIO FOGLIO |
+
+#### 2.4.2. Messaggistica Utente
+Il Motore di Gioco (o un sottosistema UI) mapperà i ParseErrorType ai messaggi utente.
+
+**Tavola 2.2: Mappatura Errori-Messaggi**
+
+| ParseErrorType | Messaggio Utente (Italiano) |
+|---|---|
+| COMMAND_UNKNOWN | ?NON CAPISCO QUESTA PAROLA. |
+| SYNTAX_ACTION_INCOMPLETE | ?COSA VUOI? (es. ?COSA VUOI PRENDERE?) |
+| SYNTAX_NOUN_UNKNOWN | ?NON VEDO NESSUN "" QUI. |
+| SYNTAX_INVALID_STRUCTURE | ?NON CAPISCO. |
+### 2.5. Considerazioni di Ingegnerizzazione ("Quanto altro sia necessario")
+
+#### 2.5.1. Statelessness (Assenza di Stato)
+
+- Specifica: Il Parser deve essere progettato come un componente stateless (senza stato).
+- Motivazione: La responsabilità di mantenere lo stato (inventario, posizione del giocatore, stato degli oggetti) è esclusivamente del Motore di Gioco (come discusso in 2.1.2). Il Parser è una funzione pura: la sua unica dipendenza è la stringa di input e il dizionario del lessico. Questo design migliora la manutenibilità, la testabilità (si può testare il parser in isolamento) e aderisce al Principio di Singola Responsabilità.
+
+#### 2.5.2. Estensibilità
+
+- Specifica: Il design deve permettere l'aggiunta di nuovi Verbi, Sostantivi o Comandi di Sistema con modifiche minime al codice.
+- Implementazione: Utilizzando un modello dati basato su database e dizionari in-memory (2.2.1 e 2.2.2), l'aggiunta di un nuovo comando (es. un nuovo verbo COMBINA) richiederebbe solo:
+    1. Aggiungere il concetto e la voce alle tabelle TerminiLessico e VociLessico del database.
+    2. Mappare la nuova voce al software Missione Odessa nella tabella LessicoSoftware.
+    3. Assicurarsi che il Motore di Gioco implementi la logica per il CanonicalVerb = "COMBINA".
+    - Nessuna modifica alla logica di tokenizzazione, normalizzazione o analisi sintattica (2.3) sarebbe necessaria, poiché il parser caricherebbe il nuovo vocabolario dinamicamente.
+
+#### 2.5.3. Considerazioni Piattaforma (Web/JavaScript/SQL)
+
+- Specifica: Il Parser sarà un componente software eseguito in un ambiente web moderno.
+- Stack Tecnologico (Esempio): Client-side JavaScript (per la logica di parsing), Database SQL (per la persistenza del vocabolario).
+- Note di Implementazione:
+    - Caricamento Lessico: Il Vocabulary (dalle 7 tabelle) sarà memorizzato nel database SQL. All'avvio della sessione di gioco, il client (JavaScript) interrogherà il server per recuperare questo lessico e costruirà la Map in-memory (come descritto in 2.2.2) per un'analisi rapida.
+    - Logica Parser (JavaScript): La funzione Parse() (2.3) sarà una funzione pura JavaScript. La sua dipendenza dal dizionario (la Map) sarà iniettata o caricata all'inizializzazione.
+    - Nessun Hardcoding: I verbi, i sostantivi e i sinonimi non devono essere "hardcodati" nel codice JavaScript, ma letti dal database. Questo permette l'estensibilità (2.5.2) e facilita la manutenzione o la traduzione.
+
+### 2.6. Input Aggiuntivi Richiesti
+
+Come specificato in 1.2.4, per completare il Vocabulary del Parser (popolare le tabelle TerminiLessico e VociLessico) è necessario l'elenco completo di tutti i Sostantivi (oggetti, personaggi, elementi dello scenario) che l'utente può nominare in un comando.
+
+## Appendice A: DDL (Data Definition Language) per Schema Vocabolario
+
+Il seguente script SQL (standard) definisce la struttura di database a 7 tabelle necessaria per memorizzare il lessico del parser, come descritto nella Sezione 2.2.1.
+
+```sql
+/*
+ * Tabella 1: Lingue
+ * Anagrafica Lingue. Master per tutti i contenuti descrittivi.
+ */
+CREATE TABLE Lingue (
+    ID_Lingua INT PRIMARY KEY AUTO_INCREMENT,
+    Codice_ISO_639_1 CHAR(2) NOT NULL UNIQUE,
+    Nome_Lingua VARCHAR(50) NOT NULL
+);
+
+/*
+ * Tabella 2: Piattaforme
+ * Anagrafica Piattaforme (es. C64, Web)
+ */
+CREATE TABLE Piattaforme (
+    ID_Piattaforma INT PRIMARY KEY AUTO_INCREMENT,
+    Nome_Piattaforma VARCHAR(100) NOT NULL UNIQUE
+);
+
+/*
+ * Tabella 3: Software
+ * Anagrafica Giochi (es. Missione Odessa)
+ */
+CREATE TABLE Software (
+    ID_Software INT PRIMARY KEY AUTO_INCREMENT,
+    Titolo_Originale VARCHAR(255) NOT NULL,
+    ID_Piattaforma_Originale INT,
+    Autore VARCHAR(255),
+    Anno_Pubblicazione SMALLINT,
+    FOREIGN KEY (ID_Piattaforma_Originale) REFERENCES Piattaforme(ID_Piattaforma) ON DELETE SET NULL
+);
+
+/*
+ * Tabella 4: TipiLessico
+ * Categorizzazione (es. Verbo, Sostantivo, Stopword)
+ */
+CREATE TABLE TipiLessico (
+    ID_TipoLessico INT PRIMARY KEY AUTO_INCREMENT,
+    Tipo VARCHAR(100) NOT NULL UNIQUE
+);
+
+/*
+ * Tabella 5: TerminiLessico
+ * Il "Concetto" astratto (es. "Concetto: Osservare")
+ */
+CREATE TABLE TerminiLessico (
+    ID_Termine INT PRIMARY KEY AUTO_INCREMENT,
+    ID_TipoLessico INT NOT NULL,
+    Concetto VARCHAR(255) NOT NULL UNIQUE,
+    FOREIGN KEY (ID_TipoLessico) REFERENCES TipiLessico(ID_TipoLessico) ON DELETE RESTRICT
+);
+
+/*
+ * Tabella 6: VociLessico
+ * La "Stringa" testuale (es. "guarda", "osserva")
+ * Implementa il requisito di lingua (DEFAULT 1 = Italiano)
+ */
+CREATE TABLE VociLessico (
+    ID_Voce INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Termine INT NOT NULL,
+    ID_Lingua INT NOT NULL DEFAULT 1,
+    Voce VARCHAR(100) NOT NULL,
+    FOREIGN KEY (ID_Termine) REFERENCES TerminiLessico(ID_Termine) ON DELETE CASCADE,
+    FOREIGN KEY (ID_Lingua) REFERENCES Lingue(ID_Lingua) ON DELETE RESTRICT,
+    UNIQUE KEY UQ_VociLessico_TermineLinguaVoce (ID_Termine, ID_Lingua, Voce)
+);
+
+CREATE INDEX idx_voce ON VociLessico (Voce);
+
+/*
+ * Tabella 7: LessicoSoftware
+ * Tabella associativa M:N (Software <-> VociLessico)
+ */
+CREATE TABLE LessicoSoftware (
+    ID_Software INT NOT NULL,
+    ID_Voce INT NOT NULL,
+    PRIMARY KEY (ID_Software, ID_Voce),
+    FOREIGN KEY (ID_Software) REFERENCES Software(ID_Software) ON DELETE CASCADE,
+    FOREIGN KEY (ID_Voce) REFERENCES VociLessico(ID_Voce) ON DELETE CASCADE
+);
+
+```
+
+## Appendice B: Popolamento Dati (Esempio Missione Odessa)
+
+Script SQL per il popolamento (caricamento) delle tabelle con i dati lessicali di Missione Odessa.1
+
+```sql
+/*
+ * === 1. POPOLAMENTO TABELLE FONDAMENTALI ===
+ */
+
+-- Popolamento Lingue (Italiano = 1, come da requisito)
+INSERT INTO Lingue (ID_Lingua, Codice_ISO_639_1, Nome_Lingua) VALUES
+(1, 'it', 'Italiano'),
+(2, 'en', 'Inglese');
+
+-- Popolamento Piattaforme (Aggiungiamo 'Web' per la nuova versione)
+INSERT INTO Piattaforme (Nome_Piattaforma) VALUES
+('Commodore 64'),
+('Spectrum'),
+('Web');
+
+-- Popolamento TipiLessico (dati dall'analisi)
+INSERT INTO TipiLessico (Tipo) VALUES
+('VERBO_AZIONE'),
+('SOSTANTIVO'),
+('NAVIGAZIONE'),
+('SISTEMA'),
+('STOPWORD');
+
+/*
+ * === 2. REGISTRAZIONE SOFTWARE (MISSIONE ODESSA) ===
+ */
+INSERT INTO Software (Titolo_Originale, ID_Piattaforma_Originale, Autore, Anno_Pubblicazione)
+VALUES (
+  'Missione Odessa',
+  (SELECT ID_Piattaforma FROM Piattaforme WHERE Nome_Piattaforma = 'Commodore 64'),
+  'Paolo Giorgi',
+  1986
+);
+
+-- Assumiamo che il software 'Missione Odessa' abbia ID_Software = 1
+-- Assumiamo che la lingua 'Italiano' abbia ID_Lingua = 1
+
+/*
+ * === 3. CREAZIONE TERMINI E VOCI LESSICALI (CONCETTI E SINONIMI) ===
+ */
+
+/* 3.1 Lessico: Verbi (Azione)  */
+INSERT INTO TerminiLessico (ID_TipoLessico, Concetto) VALUES
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: accendi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: apri'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: attacca'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: chiudi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: colpisci'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: dai'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: dormi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: esamina'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: gira'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: Osservare'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: infila'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: introduci'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: lascia'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: leggi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: muovi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: picchia'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: pigia'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: porgi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: posa'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: premi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: prendi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: rispondi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: ruota'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: scappa'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: scarica'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: scava'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: schiaccia'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: siediti'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: sorridi'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: spegni'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: sposta'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'VERBO_AZIONE'), 'Concetto: uccidi');
+
+INSERT INTO VociLessico (ID_Termine, ID_Lingua, Voce) VALUES
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: accendi'), 1, 'ACCENDI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: apri'), 1, 'APRI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: attacca'), 1, 'ATTACCA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: chiudi'), 1, 'CHIUDI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: colpisci'), 1, 'COLPISCI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: dai'), 1, 'DAI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: dormi'), 1, 'DORMI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: esamina'), 1, 'ESAMINA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: gira'), 1, 'GIRA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Osservare'), 1, 'GUARDA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Osservare'), 1, 'OSSERVA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: infila'), 1, 'INFILA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: introduci'), 1, 'INTRODUCI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: lascia'), 1, 'LASCIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: leggi'), 1, 'LEGGI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: muovi'), 1, 'MUOVI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: picchia'), 1, 'PICCHIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: pigia'), 1, 'PIGIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: porgi'), 1, 'PORGI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: posa'), 1, 'POSA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: premi'), 1, 'PREMI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: prendi'), 1, 'PRENDI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: rispondi'), 1, 'RISPONDI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: ruota'), 1, 'RUOTA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: scappa'), 1, 'SCAPPA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: scarica'), 1, 'SCARICA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: scava'), 1, 'SCAVA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: schiaccia'), 1, 'SCHIACCIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: siediti'), 1, 'SIEDITI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: sorridi'), 1, 'SORRIDI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: spegni'), 1, 'SPEGNI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: sposta'), 1, 'SPOSTA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: uccidi'), 1, 'UCCIDI');
+
+/* 3.2 Lessico: Comandi (Navigazione)  */
+INSERT INTO TerminiLessico (ID_TipoLessico, Concetto) VALUES
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai a Nord'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai a Sud'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai a Est'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai a Ovest'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai in Alto'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'NAVIGAZIONE'), 'Concetto: Vai in Basso');
+
+INSERT INTO VociLessico (ID_Termine, ID_Lingua, Voce) VALUES
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Nord'), 1, 'NORD'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Nord'), 1, 'N'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Sud'), 1, 'SUD'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Sud'), 1, 'S'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Est'), 1, 'EST'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Est'), 1, 'E'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Ovest'), 1, 'OVEST'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai a Ovest'), 1, 'O'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Alto'), 1, 'ALTO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Alto'), 1, 'SU'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Alto'), 1, 'SALI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Basso'), 1, 'BASSO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Basso'), 1, 'GIU'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Vai in Basso'), 1, 'SCENDI');
+
+/* 3.3 Lessico: Comandi (Sistema)  */
+INSERT INTO TerminiLessico (ID_TipoLessico, Concetto) VALUES
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SISTEMA'), 'Concetto: Mostra Inventario'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SISTEMA'), 'Concetto: Salva Stato'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SISTEMA'), 'Concetto: Carica Stato'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SISTEMA'), 'Concetto: Mostra Punteggio'),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SISTEMA'), 'Concetto: Termina Gioco');
+
+INSERT INTO VociLessico (ID_Termine, ID_Lingua, Voce) VALUES
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Mostra Inventario'), 1, 'INVENTARIO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Mostra Inventario'), 1, 'COSA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Mostra Inventario'), 1, '?'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Salva Stato'), 1, 'SALVA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Salva Stato'), 1, 'SAVE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Carica Stato'), 1, 'CARICA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Carica Stato'), 1, 'LOAD'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Mostra Punteggio'), 1, 'PUNTI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Termina Gioco'), 1, 'FINE');
+
+/* 3.4 Lessico: Sostantivi (Oggetti)  */
+INSERT INTO TerminiLessico (ID_TipoLessico, Concetto) VALUES
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''documenti'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''fiammifero'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''torcia'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''lampada'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''fermacarte'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''scomparto'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''foglio'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''quadro'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''cassaforte'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''manopola'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''medaglione'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''arazzo'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''forma'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''statuetta'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''nicchia'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''badile'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''bastone'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''sedile'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''fascicolo'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''pulsante'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''macerie'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''peso'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''pesa'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''botola'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'SOSTANTIVO'), 'Concetto: Oggetto ''dossier''');
+
+INSERT INTO VociLessico (ID_Termine, ID_Lingua, Voce) VALUES
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''documenti'''), 1, 'DOCUMENTI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''fiammifero'''), 1, 'FIAMMIFERO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''torcia'''), 1, 'TORCIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''lampada'''), 1, 'LAMPADA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''fermacarte'''), 1, 'FERMACARTE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''scomparto'''), 1, 'SCOMPARTO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''foglio'''), 1, 'FOGLIO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''quadro'''), 1, 'QUADRO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''cassaforte'''), 1, 'CASSAFORTE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''manopola'''), 1, 'MANOPOLA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''medaglione'''), 1, 'MEDAGLIONE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''arazzo'''), 1, 'ARAZZO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''forma'''), 1, 'FORMA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''statuetta'''), 1, 'STATUETTA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''nicchia'''), 1, 'NICCHIA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''badile'''), 1, 'BADILE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''bastone'''), 1, 'BASTONE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''sedile'''), 1, 'SEDILE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''fascicolo'''), 1, 'FASCICOLO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''pulsante'''), 1, 'PULSANTE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''macerie'''), 1, 'MACERIE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''peso'''), 1, 'PESO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''pesa'''), 1, 'PESA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''botola'''), 1, 'BOTOLA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Oggetto ''dossier'''), 1, 'DOSSIER');
+
+/* 3.5 Lessico: Stop Words  */
+INSERT INTO TerminiLessico (ID_TipoLessico, Concetto) VALUES
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''IL'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''LO'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''LA'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''I'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''GLI'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''LE'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''UN'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''UNO'''),
+((SELECT ID_TipoLessico FROM TipiLessico WHERE Tipo = 'STOPWORD'), 'Concetto: Stopword ''UNA''');
+
+INSERT INTO VociLessico (ID_Termine, ID_Lingua, Voce) VALUES
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''IL'''), 1, 'IL'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''LO'''), 1, 'LO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''LA'''), 1, 'LA'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''I'''), 1, 'I'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''GLI'''), 1, 'GLI'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''LE'''), 1, 'LE'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''UN'''), 1, 'UN'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''UNO'''), 1, 'UNO'),
+((SELECT ID_Termine FROM TerminiLessico WHERE Concetto = 'Concetto: Stopword ''UNA'''), 1, 'UNA');
+-- (Si possono aggiungere altre preposizioni articolate come DEL, ALLA ecc. se necessario)
+
+/*
+ * === 4. MAPPARE TUTTE LE VOCI CREATE A 'MISSIONE ODESSA' (ID_Software = 1) ===
+ */
+INSERT INTO LessicoSoftware (ID_Software, ID_Voce)
+SELECT 1, V.ID_Voce
+FROM VociLessico V
+WHERE V.ID_Lingua = 1; -- Mappa tutte le voci in Italiano al software con ID 1
+
+```
+
