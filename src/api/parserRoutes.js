@@ -1,10 +1,11 @@
 import express from 'express';
 import { parseCommand, resetVocabularyCache, ensureVocabulary } from '../logic/parser.js';
+import { validateCommandInput } from '../middleware/validation.js';
 
 const router = express.Router();
 
 // POST /api/parser/parse  { input: string }
-router.post('/parse', async (req, res) => {
+router.post('/parse', validateCommandInput({ mode: 'parser' }), async (req, res, next) => {
   try {
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
@@ -14,7 +15,7 @@ router.post('/parse', async (req, res) => {
     const result = await parseCommand(null, input); // dbPath ignorato
     res.json(result);
   } catch (err) {
-    res.status(500).json({ IsValid: false, Error: 'INTERNAL', Message: err.message });
+    return next(err);
   }
 });
 
@@ -22,7 +23,7 @@ export default router;
 
 // Diagnostica: GET /api/parser/stats
 // Ritorna conteggi per tipo lessicale e info DB path
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (req, res, next) => {
   try {
     const tipiLessico = global.odessaData.TipiLessico || [];
     const terminiLessico = global.odessaData.TerminiLessico || [];
@@ -40,18 +41,18 @@ router.get('/stats', async (req, res) => {
     
     res.json({ dbPathResolved: 'in-memory (global.odessaData)', byType });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 });
 
 // Ricarica (invalida) la cache del vocabolario
-router.post('/reload', async (req, res) => {
+router.post('/reload', async (req, res, next) => {
   try {
     resetVocabularyCache();
     // opzionalmente pre-carica subito
     await ensureVocabulary();
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });

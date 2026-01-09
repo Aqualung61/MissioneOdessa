@@ -1,4 +1,4 @@
-# 20260109_tickets_security_01 — Security Hardening (M1/M2/M5)
+# 20260109_tickets_security_01 — Security Hardening (M1/M2/M3/M4/M5/M6)
 
 Data: 9 gennaio 2026  
 Repo: MissioneOdessa  
@@ -7,13 +7,24 @@ Contesto: deploy **pubblico** su hosting (non solo localhost)
 Questo documento contiene i ticket tecnici (formato “GitHub Issue”) per le mitigazioni prioritarie:
 - **M1**: Auth/API protection
 - **M2**: Input validation + body limits
+- **M3**: CORS restrictions (default same-origin, whitelist opt-in)
+- **M4**: Error sanitization (anti-leak in produzione)
 - **M5**: Rate limiting
+- **M6**: Dependency audit
 
 ---
 
 ## Issue 1 — M1: Proteggere le API con autenticazione (API Key o Basic Auth)
 
 **Priorità:** 🔴 CRITICA (blocking per deploy pubblico)
+
+**Status:** ✅ Completato (9 gennaio 2026)
+
+Implementazione (riferimenti):
+- Middleware: `src/middleware/auth.js`
+- Mount: `src/server.js`
+- Test: `tests/api.auth.test.ts`
+- Doc/env: `README.md`, `.env.example`
 
 **Problema**
 Attualmente gli endpoint `/api/*` sono invocabili senza autenticazione. In un deploy pubblico questo permette:
@@ -62,6 +73,15 @@ Richiedere credenziali valide per tutte le API (salvo eccezioni esplicite e moti
 ## Issue 2 — M2: Validazione input e limiti payload (anti-DoS + integrità stato)
 
 **Priorità:** 🔴 CRITICA (blocking per deploy pubblico)
+
+**Status:** ✅ Completato (9 gennaio 2026)
+
+Implementazione (riferimenti):
+- Validatori: `src/middleware/validation.js`
+- Mount body limit + handler 413: `src/server.js`
+- Applicazione middleware: `src/api/parserRoutes.js`, `src/api/engineRoutes.js`, `src/api/routes.js`
+- Test: `tests/api.validation.test.ts`
+- Doc/env: `README.md`, `.env.example`
 
 **Problema**
 - `POST /api/engine/execute` e `POST /api/parser/parse` accettano input stringa senza limite di lunghezza → rischio DoS.
@@ -125,6 +145,14 @@ Ridurre superficie DoS e impedire payload malformati/corrotti, mantenendo compat
 
 **Priorità:** 🔴 CRITICA (blocking per deploy pubblico)
 
+**Status:** ✅ Completato (9 gennaio 2026)
+
+Implementazione (riferimenti):
+- Limiter: `src/middleware/rateLimiter.js`
+- Mount + `trust proxy` opzionale: `src/server.js`
+- Test: `tests/api.ratelimit.test.ts`
+- Doc/env: `README.md`, `.env.example`
+
 **Problema**
 Nessun rate limiting sugli endpoint; un attacker può saturare CPU con richieste ripetute.
 
@@ -165,3 +193,51 @@ Applicare rate limiting coerente:
 
 ## Note di etichettatura (consiglio)
 Label suggerite (se le usate in repo): `security`, `hardening`, `blocking-release`, `auth`, `validation`, `rate-limit`.
+
+---
+
+## Issue 4 — M3: CORS (default same-origin, whitelist opt-in)
+
+**Priorità:** 🟡 MED (pubblico) / 🟢 LOW (stesso origin)
+
+**Status:** ✅ Completato (9 gennaio 2026)
+
+Implementazione (riferimenti):
+- Mount CORS condizionale: `src/server.js`
+- Env: `.env.example`
+- Doc: `README.md`
+
+**Nota**
+Se web app e API sono sullo stesso dominio/origin, CORS resta disabilitato e non introduce superficie extra.
+
+---
+
+## Issue 5 — M4: Error Sanitization (evitare leak di dettagli)
+
+**Priorità:** 🟡 MED
+
+**Status:** ✅ Completato (9 gennaio 2026)
+
+Implementazione (riferimenti):
+- Middleware: `src/middleware/errorHandler.js`
+- Mount: `src/server.js`
+- Routes aggiornate a `next(err)`: `src/api/parserRoutes.js`, `src/api/engineRoutes.js`, `src/api/routes.js`
+- Test: `tests/api.errorhandler.test.ts`
+
+**Obiettivo**
+In `NODE_ENV=production`, le risposte 5xx non devono esporre `err.message`/stack/path; il dettaglio resta nei log server-side.
+
+---
+
+## Issue 6 — M6: Dependency audit (npm audit)
+
+**Priorità:** 🟡 MED
+
+**Status:** ✅ Completato (9 gennaio 2026)
+
+**Evidenza**
+- Eseguito `npm audit` (prod e completo) con esito: **0 vulnerabilità**.
+
+**Note operative**
+- Ripetere l’audit prima di ogni release pubblica e/o periodicamente.
+- Se in futuro emergono finding, preferire bump patch/minor e rieseguire `npm test` + `npm run lint`.

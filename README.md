@@ -42,13 +42,82 @@
 - `backup/` — backup e archivi
 - `docs/` — documentazione e note di modellazione
 - `tests/` — suite Vitest
-- `.env` — variabili opzionali (es. `PORT`, `BASE_PATH`; il percorso DB è legacy e non usato)
+- `.env` — variabili opzionali (es. `PORT`, `BASE_PATH`, flag security)
+
+## Sicurezza API (M1)
+
+Le route sotto `/api/*` possono essere protette via API key.
+
+- Header richiesto: `X-API-Key`
+- Variabile d'ambiente: `API_KEY`
+- Flag: `API_AUTH_DISABLED=1` per bypassare l'auth (utile se il sito è **pubblico anonimo**: una API key nel browser non è un segreto)
+- Eccezioni pubbliche (senza key): `GET /api/version`, `GET /api/config`
+
+Esempi:
+
+```sh
+curl -i http://localhost:3001/api/luoghi
+curl -i -H "X-API-Key: <la-tua-key>" http://localhost:3001/api/luoghi
+```
+
+Nota:
+- in ambienti non-production, se `API_KEY` non è impostata l'autenticazione viene bypassata (comportamento esplicito per sviluppo/test).
+- in `NODE_ENV=production`, se l'auth è abilitata ma `API_KEY` è assente, le API rispondono `500` con `{ ok:false, error:'SERVER_MISCONFIGURED' }`.
+
+Vedi anche: [.env.example](.env.example).
+
+## Limiti payload e validazione (M2)
+
+Per ridurre rischi di input malevoli e payload eccessivi:
+
+- Il body JSON ha un limite massimo configurabile tramite `JSON_BODY_LIMIT` (default: `1mb`).
+- Se il payload supera il limite, l'API risponde con `413` e body `{ ok:false, error:'PAYLOAD_TOO_LARGE' }`.
+
+## Rate limiting API (M5)
+
+Per ridurre flood/DoS, le API sono soggette a rate limiting:
+
+- Generale su `/api/*` (soglia più alta)
+- Più stretto su endpoint CPU-intensive: `POST /api/parser/parse`, `POST /api/engine/execute`
+- Molto stretto su endpoint pesanti: `POST /api/run-tests`
+
+Variabili env utili:
+
+- `TRUST_PROXY=1` se l'app è dietro reverse proxy (per usare l'IP reale del client)
+- `RATE_LIMIT_DISABLED=1` per disabilitare temporaneamente i limiter (es. debug)
+
+Vedi anche: [.env.example](.env.example).
+
+## CORS (M3)
+
+Se web app e API sono servite dallo **stesso origin**, CORS non è necessario e viene lasciato **disabilitato**.
+
+Se invece serve abilitare chiamate cross-origin (frontend su dominio diverso), impostare una whitelist tramite:
+
+- `ALLOWED_ORIGINS` (CSV, es. `https://odessa.example.com,https://www.odessa.example.com`)
+
+Vedi anche: [.env.example](.env.example).
+
+## Error sanitization (M4)
+
+Per evitare **information disclosure** (es. `err.message`, stack trace, path interni) in produzione:
+
+- Gli errori non gestiti vengono normalizzati dal middleware globale `src/middleware/errorHandler.js`.
+- In `NODE_ENV=production` le risposte 5xx sono **sanitizzate** (es. `INTERNAL_ERROR`), mantenendo però forme compatibili per alcune API legacy:
+   - `POST /api/parser/*` → envelope `{ IsValid:false, Error:'INTERNAL' }`
+   - `POST /api/run-tests` → envelope `{ success:false, error:'INTERNAL_ERROR' }`
+
+Test: `tests/api.errorhandler.test.ts`.
 
 ## Note
 - Il server carica i dati da file JSON statici in `src/data-internal/` e serve sia API che file statici dalla stessa porta.
 - La logica di parsing e la presentazione sono modulari e facilmente estendibili.
 - I test sono in `tests/` (Vitest).
 - I backup sono in `backup/`.
+
+Nota deploy Railway (root `https://missioneodessa.up.railway.app/`):
+- lasciare `BASE_PATH` vuoto
+- consigliati: `NODE_ENV=production`, `TRUST_PROXY=1`, `API_AUTH_DISABLED=1`, `DISABLE_RUN_TESTS=1`
 
 ## Dati e struttura
 
@@ -64,6 +133,7 @@ I dati dell'applicazione sono memorizzati in file JSON statici in `src/data-inte
 - POST `/api/run-tests?suite=smoke|full`
    - Esegue la suite E2E Playwright dal backend e restituisce un report JSON.
    - `suite=smoke` esegue solo i controlli minimi (es. API versione) per una verifica rapida.
+   - In produzione pubblica è consigliato disabilitare l'endpoint con `DISABLE_RUN_TESTS=1`.
 
 - POST `/api/shutdown`
    - Spegne il server in modo “graceful” (exit code 0). Disponibile solo quando `NODE_ENV=test`. Utile nelle pipeline locali per evitare exit -1.

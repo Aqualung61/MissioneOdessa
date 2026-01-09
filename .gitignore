@@ -44,6 +44,9 @@ test-results/
 backup/
 db/.project
 
+# Local security audit reports
+audit-*.json
+
 # OS/editor
 .DS_Store
 Thumbs.db

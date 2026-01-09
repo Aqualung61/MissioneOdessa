@@ -1,11 +1,25 @@
 import express from 'express';
 import { runE2ETests } from '../tests/runE2E.js';
 import { getOggetti } from '../logic/engine.js';
+import { validateSuiteParam } from '../middleware/validation.js';
 
 const router = express.Router();
 
+function isTruthy(value) {
+  return value === '1' || value === 'true' || value === 'yes';
+}
+
+function blockRunTestsIfDisabled(req, res, next) {
+  if (isTruthy(process.env.DISABLE_RUN_TESTS || '')) {
+    res.set('Cache-Control', 'no-store');
+    // Use a 404 to avoid advertising operational endpoints in production.
+    return res.status(404).json({ success: false, error: 'NOT_AVAILABLE' });
+  }
+  return next();
+}
+
 // GET /api/frontend-messages/:lingua - restituisce messaggi UI localizzati
-router.get('/frontend-messages/:lingua', async (req, res) => {
+router.get('/frontend-messages/:lingua', async (req, res, next) => {
   try {
     const lingua = parseInt(req.params.lingua, 10);
     if (!lingua || (lingua !== 1 && lingua !== 2)) {
@@ -15,7 +29,8 @@ router.get('/frontend-messages/:lingua', async (req, res) => {
     const filtered = messaggiFrontend.filter(m => m.IDLingua === lingua);
     res.json({ ok: true, messages: filtered, count: filtered.length });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    // Delegare al middleware globale per evitare leak in produzione
+    return next(err);
   }
 });
 
@@ -29,13 +44,14 @@ router.get('/introduzione', async (req, res) => {
 });
 
 // POST /api/run-tests - esegue la suite e2e Playwright e restituisce il report
-router.post('/run-tests', async (req, res) => {
+router.post('/run-tests', blockRunTestsIfDisabled, validateSuiteParam({ allowed: ['full', 'smoke'] }), async (req, res, next) => {
   try {
     const suite = (req.query?.suite || '').toString() || 'full';
     const result = await runE2ETests({ suite });
     res.json(result);
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    // Manteniamo l'envelope { success, error } tramite errorHandler globale
+    return next(err);
   }
 });
 

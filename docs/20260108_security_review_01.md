@@ -15,6 +15,8 @@ L'applicazione **Missione Odessa v1.3.0** presenta una **security posture adegua
 - ✅ **Locale/Dev:** PASS (rischi accettabili)
 - ⚠️ **Produzione pubblica:** NEEDS HARDENING (vulnerabilità medie identificate)
 
+**Aggiornamento (9 gennaio 2026):** implementate le mitigazioni critiche M1/M2/M5 (auth, validazione + body limit, rate limiting), M3 (CORS con default same-origin e whitelist opzionale) e M4 (error sanitization / anti-leak in produzione). Eseguito anche M6 (dependency audit): `npm audit` (prod e completo) → 0 vulnerabilità.
+
 **Criticità identificate:** 7 aree (S1-S7)
 - **0 High Severity** (per uso locale)
 - **6 Medium Severity** (diventano High se pubblico)
@@ -28,12 +30,12 @@ L'applicazione **Missione Odessa v1.3.0** presenta una **security posture adegua
 
 | ID | Categoria | Rischio | Severità<br/>Locale | Severità<br/>Pubblico | Status |
 |----|-----------|---------|:-------------------:|:--------------------:|:------:|
-| **S1** | Auth/Authz | Nessuna autenticazione | 🟢 LOW | 🔴 **HIGH** | Open |
-| **S2** | Input Validation | Validazione parziale | 🟡 MED | 🔴 **HIGH** | Open |
-| **S3** | CORS | Configurazione aperta | 🟢 LOW | 🟡 MED | Open |
-| **S4** | Error Disclosure | Stack traces esposti | 🟡 MED | 🟡 MED | Open |
-| **S5** | Rate Limiting | Assente | 🟢 LOW | 🔴 **HIGH** | Open |
-| **S6** | Dependencies | Vulnerabilità potenziali | 🟡 MED | 🟡 MED | Open |
+| **S1** | Auth/Authz | Nessuna autenticazione | 🟢 LOW | 🔴 **HIGH** | ✅ Mitigato (M1) |
+| **S2** | Input Validation | Validazione parziale | 🟡 MED | 🔴 **HIGH** | ✅ Mitigato (M2) |
+| **S3** | CORS | Configurazione aperta | 🟢 LOW | 🟡 MED | ✅ Mitigato (M3) |
+| **S4** | Error Disclosure | Stack traces esposti | 🟡 MED | 🟡 MED | ✅ Mitigato (M4) |
+| **S5** | Rate Limiting | Assente | 🟢 LOW | 🔴 **HIGH** | ✅ Mitigato (M5) |
+| **S6** | Dependencies | Vulnerabilità potenziali | 🟡 MED | 🟡 MED | ✅ Verificato (M6) |
 | **S7** | Shutdown Endpoint | Esposto in test | 🟢 LOW | 🟢 LOW | ✅ Mitigato |
 
 **Legenda:**
@@ -203,6 +205,8 @@ fetch('http://victim-game.com/api/engine/state')
 **Descrizione:**  
 Stack traces e dettagli interni esposti in risposte di errore.
 
+**Status (agg. 9 gennaio 2026):** ✅ Mitigato (M4) — sanitizzazione dei 5xx in `NODE_ENV=production` tramite middleware globale.
+
 **Esempio:**
 ```javascript
 // Pattern comune in tutti i routes
@@ -275,16 +279,17 @@ Librerie con potenziali vulnerabilità note non verificate.
   "cors": "^2.8.5",
   "dotenv": "^17.2.3",
   "express": "^5.1.0",      // ⚠️ Versione beta
-  "helmet": "^8.1.0",
-  "sqlite": "^5.1.1",
-  "sqlite3": "^5.1.7"
+  "helmet": "^8.1.0"
 }
 ```
+
+Nota:
+- A partire da v1.3.0 l'app runtime usa **dati JSON** (non DB). Le dipendenze SQLite sono state rimosse per ridurre superficie e tempi di install.
 
 **Rischi:**
 - Express 5.x è beta (potenziali bug)
 - Versioni non pinned (^ permette minor updates)
-- Audit non eseguito recentemente
+- Audit eseguito (9 gennaio 2026): `npm audit` (prod e completo) → **0 vulnerabilità**
 
 **Azioni necessarie:**
 ```bash
@@ -722,12 +727,12 @@ export function validateSuiteParam(req, res, next) {
 ```
 
 **Deliverable:**
-- [ ] `src/middleware/validation.js` creato
-- [ ] Body size limit configurato
-- [ ] Validazione input comandi
-- [ ] Validazione save data
-- [ ] Validazione query params
-- [ ] Test per ogni validatore
+- [x] `src/middleware/validation.js` creato
+- [x] Body size limit configurato
+- [x] Validazione input comandi
+- [x] Validazione save data
+- [x] Validazione query params
+- [x] Test per ogni validatore
 
 ---
 
@@ -783,13 +788,15 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 **Deliverable:**
-- [ ] CORS configurato con whitelist
-- [ ] `.env.example` aggiornato
-- [ ] Test cross-origin
+- [x] CORS configurato con whitelist (opt-in via `ALLOWED_ORIGINS`)
+- [x] `.env.example` aggiornato
+- [x] Test cross-origin / comportamento same-origin
 
 ---
 
 ### M4 - Sanitizzare Error Messages
+
+**Status:** ✅ Completato (9 gennaio 2026)
 
 **Priorità:** 🟡 MED  
 **Effort:** 1 ora
@@ -797,42 +804,38 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```javascript
 // src/middleware/errorHandler.js
 export function errorHandler(err, req, res, next) {
-  // Log completo server-side
-  console.error('[API Error]', {
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    path: req.path,
-    error: err.message,
-    stack: err.stack
+  console.error('[error]', {
+    method: req?.method,
+    url: req?.originalUrl ?? req?.url,
+    message: err?.message,
+    stack: err?.stack,
   });
-  
-  // Risposta sanitizzata al client
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  const errorResponse = {
-    ok: false,
-    error: isDevelopment ? err.message : 'Errore interno del server',
-    timestamp: new Date().toISOString()
-  };
-  
-  // Includi stack trace solo in development
-  if (isDevelopment && err.stack) {
-    errorResponse.stack = err.stack;
-  }
-  
-  // Determina status code
-  const statusCode = err.statusCode || err.status || 500;
-  
-  res.status(statusCode).json(errorResponse);
-}
 
-// Helper per creare errori custom
-export class APIError extends Error {
-  constructor(message, statusCode = 500) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = 'APIError';
+  if (res.headersSent) return next(err);
+
+  const isProd = process.env.NODE_ENV === 'production';
+  const url = (req?.originalUrl ?? req?.url ?? '').toString();
+
+  // Esempio: CORS origin callback error
+  if (err?.message === 'Not allowed by CORS') {
+    return res.status(403).json({ ok: false, error: 'CORS_NOT_ALLOWED' });
   }
+
+  // Standardizza/sanitizza solo le API
+  if (!url.includes('/api')) {
+    return res.status(500).send('Internal Server Error');
+  }
+
+  // Parser: envelope storico { IsValid, Error } (+ Message solo non-prod)
+  if (url.includes('/api/parser')) {
+    const baseBody = { IsValid: false, Error: 'INTERNAL' };
+    if (!isProd && err?.message) return res.status(500).json({ ...baseBody, Message: err.message });
+    return res.status(500).json(baseBody);
+  }
+
+  // Default API envelope
+  const errorValue = isProd ? 'INTERNAL_ERROR' : (err?.message || 'INTERNAL_ERROR');
+  return res.status(500).json({ ok: false, error: errorValue });
 }
 ```
 
@@ -868,10 +871,10 @@ if (!input) {
 ```
 
 **Deliverable:**
-- [ ] `src/middleware/errorHandler.js` creato
-- [ ] Error handler globale applicato
-- [ ] Routes aggiornate per usare `next(err)`
-- [ ] Test error handling
+- [x] `src/middleware/errorHandler.js` creato
+- [x] Error handler globale applicato (`src/server.js`)
+- [x] Routes aggiornate per usare `next(err)` (es. parser/engine)
+- [x] Test error handling (`tests/api.errorhandler.test.ts`)
 
 ---
 

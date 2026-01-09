@@ -1,37 +1,31 @@
 # Copilot Instructions for Missione Odessa App
 
 ## Project Overview
-- **Type:** Node.js/TypeScript app using SQLite (no ORM). Ready to switch to Postgres/MySQL with custom scripts.
+- **Type:** Node.js/TypeScript app with backend Express, frontend statico e API REST basata su dati JSON statici (caricati in memoria).
 - **Structure:**
   - `src/` – App code (entry: `src/server.js`)
-  - `docs/` – Modeling notes, recommendations, and conventions
-  - `.env` – DB path (default: `./db/odessa.db` via `ODESSA_DB_PATH`)
+  - `docs/` – Note, review e documentazione
+  - `.env` – variabili opzionali (es. `PORT`, `BASE_PATH`, flag security)
 
 ## Key Workflows
 - **Install dependencies:** `npm install`
 - **Run tests:** `npm test` or `npm run test:watch` (Vitest)
 - **Run app:** `npm run dev`
-- **Schema changes:** gestiti via DDL SQL in `ddl/` e documentati in `docs/`
+- **Dati applicativi:** in `src/data-internal/` (JSON). Per modifiche, aggiornare i file e validare con `npm test`.
 
 ## Modeling & Conventions
-- **Schema** via DDL SQL (unique, FK, indici) e regole applicative.
-- **Audit fields** (`createdAt`, `updatedAt`) consigliati su tabelle core.
-- **Migrations:** nominare i file DDL in modo descrittivo (es. `core_entities`, `add_audit_fields`).
-- **Seed data:** via script SQL o Node (`sqlite3`).
-- **i18n:** Pattern: `Lingua` 1:N `Descrizione`; per multi-entità valutare tabella polimorfica o chiavi uniche composte.
+- **i18n:** Pattern: `Lingua` 1:N `Descrizione`.
+- **Validazione input API:** preferire whitelist/range e limiti di payload (vedi `.env.example`).
 
 ## Testing & Quality
-- **Tests in** `tests/` (Vitest). Cover entity creation, uniqueness, and relations.
-- **Recommended:** Add tests for DB constraints and relations after each schema change.
+- **Tests in** `tests/` (Vitest). Coprono API e invarianti principali.
 
 ## Integration & Extensibility
-- **DB path:** configurabile con `ODESSA_DB_PATH`.
-- **Switch DB provider:** valutare migrazione dati e adattare accesso (script ad hoc).
-- **External tools:** DBeaver o DB Browser for SQLite per ispezione.
+- **Deploy pubblico:** usare i flag in `.env.example` (es. `API_AUTH_DISABLED`, `DISABLE_RUN_TESTS`, `TRUST_PROXY`).
 
 ## Examples
 - See `docs/raccomandazioni.md` for domain-specific modeling tips and next steps.
--- Esempi DDL: vedere `ddl/` se presente.
+-- Nota: cartelle/artefatti legacy di DB possono esistere in repo, ma l'app runtime usa dati JSON.
 
 ## Non-Obvious Patterns
 - Usare trigger/app-logica per aggiornare `updatedAt`.

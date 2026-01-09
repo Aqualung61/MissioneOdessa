@@ -16,6 +16,9 @@ import engineRoutes from './api/engineRoutes.js';
 import { initOdessa } from './initOdessa.js';
 import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
+import { apiKeyAuth } from './middleware/auth.js';
+import { apiLimiter, parsingLimiter, heavyLimiter } from './middleware/rateLimiter.js';
+import { errorHandler } from './middleware/errorHandler.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -30,6 +33,10 @@ console.log(`Missione Odessa - Versione: ${version}`);
 // ...existing code...
 
 const app = express();
+// Se dietro reverse proxy (hosting), abilita trust proxy per IP reale.
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -64,17 +71,17 @@ try {
 
 
 // API: versione applicazione
-app.get(BASE_PATH + '/api/version', (req, res) => {
+app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
   res.json({ version });
 });
 
 // API: config (espone BASE_PATH al client)
-app.get('/api/config', (req, res) => {
+app.get('/api/config', apiLimiter, (req, res) => {
   res.json({ basePath: BASE_PATH || '/' });
 });
 
 // API: init_odessa per test
-app.get(BASE_PATH + '/init_odessa', async (req, res) => {
+app.get(BASE_PATH + '/init_odessa', async (req, res, next) => {
   try {
     await initOdessa();
     const tables = Object.keys(global.odessaData);
@@ -84,7 +91,7 @@ app.get(BASE_PATH + '/init_odessa', async (req, res) => {
     });
     res.json({ tables, counts });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 });
 
@@ -97,8 +104,45 @@ if (BASE_PATH) {
 
 // Serve statico dalla root del progetto
 const ROOT = path.resolve(__dirname, '..');
-app.use(cors());
-app.use(express.json());
+// M3: CORS
+// Se web app e API sono sullo stesso origin, CORS non è necessario.
+// Abilita cross-origin solo se esplicitamente richiesto via whitelist.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+if (allowedOrigins.length > 0) {
+  app.use(cors({
+    origin: (origin, callback) => {
+      // origin può essere undefined per richieste non-browser (curl/server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+  }));
+}
+const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '1mb';
+app.use(express.json({ limit: JSON_BODY_LIMIT, strict: true }));
+
+// Gestione 413 / payload troppo grande
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.too.large' || err?.status === 413) {
+    res.set('Cache-Control', 'no-store');
+    return res.status(413).json({ ok: false, error: 'PAYLOAD_TOO_LARGE' });
+  }
+  return next(err);
+});
+
+// Auth (API key) per tutte le API sotto /api/*.
+// Nota: /api/version e /api/config restano pubbliche perché definite prima.
+app.use(BASE_PATH + '/api', apiKeyAuth());
+
+// Rate limiting: generale su /api/* + più stretto su endpoint pesanti
+app.use(BASE_PATH + '/api', apiLimiter);
+app.use(BASE_PATH + '/api/parser/parse', parsingLimiter);
+app.use(BASE_PATH + '/api/engine/execute', parsingLimiter);
+app.use(BASE_PATH + '/api/run-tests', heavyLimiter);
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);
@@ -127,10 +171,13 @@ if (process.env.NODE_ENV === 'test') {
 // Statico dopo le API
 app.use(BASE_PATH, express.static(ROOT));
 
-// Catch-all per SPA (deve essere l'ULTIMO!)
+// Catch-all per SPA (ultimo middleware "non-error").
 app.use(BASE_PATH, (req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
+
+// M4: Error handler globale (sanitizza errori in produzione)
+app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
   console.log(`Server unico avviato su http://localhost:${PORT}/`);

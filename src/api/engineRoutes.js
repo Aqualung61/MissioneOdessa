@@ -3,10 +3,11 @@ import { parseCommand } from '../logic/parser.js';
 import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
+import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
 
 const router = express.Router();
 
-router.post('/execute', async (req, res) => {
+router.post('/execute', validateCommandInput({ mode: 'engine' }), async (req, res, next) => {
   try {
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
@@ -28,34 +29,34 @@ router.post('/execute', async (req, res) => {
     const engine = await executeCommandAsync(parsed); // dbPath rimosso
     res.json({ ok: true, parseResult: parsed, command, engine });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Stato engine: snapshot
-router.get('/state', (req, res) => {
+router.get('/state', (req, res, next) => {
   try {
     const snap = getGameStateSnapshot();
     res.json({ ok: true, state: snap });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Stato engine: reset
-router.post('/reset', (req, res) => {
+router.post('/reset', (req, res, next) => {
   try {
     const { idLingua } = req.body || {};
     resetGameState(idLingua);
     const snap = getGameStateSnapshot();
     res.json({ ok: true, state: snap });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Stato engine: set location
-router.post('/set-location', (req, res) => {
+router.post('/set-location', (req, res, next) => {
   try {
     const { locationId, consumeTurn } = req.body;
     if (typeof locationId !== 'number' || locationId < 1) {
@@ -140,12 +141,12 @@ router.post('/set-location', (req, res) => {
     
     res.json({ ok: true, turnMessages });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Nuovo endpoint per salvare stato client
-router.post('/save-client-state', (req, res) => {
+router.post('/save-client-state', (req, res, next) => {
   try {
     const { luoghi } = req.body;
     if (!Array.isArray(luoghi)) {
@@ -171,12 +172,12 @@ router.post('/save-client-state', (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.json(saveData);
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Nuovo endpoint per caricare stato client
-router.post('/load-client-state', (req, res) => {
+router.post('/load-client-state', validateSaveData(), (req, res, next) => {
   try {
     const { gameState, odessaData } = req.body;
     if (!gameState || !odessaData || !Array.isArray(odessaData.Luoghi)) {
@@ -196,13 +197,13 @@ router.post('/load-client-state', (req, res) => {
     
     res.json({ ok: true, message: 'Stato ripristinato' });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Nuovo endpoint per ottenere direzioni dinamiche di un luogo
 // Integrato con turn pipeline per Sprint 3.3.5.A (Torcia)
-router.get('/direzioni/:idLuogo', (req, res) => {
+router.get('/direzioni/:idLuogo', (req, res, next) => {
   try {
     const idLuogo = parseInt(req.params.idLuogo, 10);
     if (isNaN(idLuogo)) {
@@ -213,12 +214,12 @@ router.get('/direzioni/:idLuogo', (req, res) => {
     const direzioni = getDirezioniLuogo(idLuogo);
     res.json({ ok: true, direzioni, messages: [] });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 
 // Endpoint per ottenere statistiche di gioco (luoghi visitati + interazioni + misteri + punteggio + rango)
-router.get('/stats', (req, res) => {
+router.get('/stats', (req, res, next) => {
   try {
     const state = getGameStateSnapshot();
     const visitedPlaces = state.visitedPlaces?.length || 0;
@@ -235,7 +236,7 @@ router.get('/stats', (req, res) => {
     
     res.json({ ok: true, visitedPlaces, interactions, mysteries, score, rank });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    return next(err);
   }
 });
 

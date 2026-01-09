@@ -104,7 +104,7 @@ sequenceDiagram
 
   OS->>S: node src/server.js
   S->>S: legge version da package.json
-  S->>S: configura helmet/cors/json
+  S->>S: configura helmet/json (+ cors opzionale) + security middleware
   S->>L: initOdessa()
   L->>L: legge src/data-internal/*.json
   L-->>S: set global.odessaData
@@ -372,8 +372,11 @@ graph TB
 
     subgraph Middleware["middleware"]
       Helmet["helmet (CSP)"]
-      Cors["cors"]
-      Json["express.json()"]
+      Cors["cors (opzionale)"]
+      Json["express.json() + 413"]
+      Auth["API key auth"]
+      RateLimit["rate limiting"]
+      Err["error handler"]
     end
 
     subgraph Routers["routers (mount sotto BASE_PATH)"]
@@ -471,8 +474,13 @@ Nota: il client usa anche 3 JSON del lessico per il “livello 0” (pre-parsing
 ## 8) Sicurezza (stato attuale)
 
 - Helmet con CSP (attualmente include `'unsafe-inline'` per script/style).
-- CORS abilitato (app-wide) e nessuna auth applicativa.
-- Per hardening e raccomandazioni, vedere `docs/20250108_security_review_01.md`.
+- CORS **disabilitato di default** (same-origin). Cross-origin è abilitabile solo via whitelist (`ALLOWED_ORIGINS`).
+- API protette con **API key** su `BASE_PATH + /api/*` (header `X-API-Key`), con eccezioni pubbliche minime: `GET BASE_PATH + /api/version` e `GET /api/config`.
+  - Nota: `GET /api/config` è a **path assoluto** (non prefissato da `BASE_PATH`) per esporre al client il `basePath` corrente.
+- Rate limiting su `/api/*` e limiti più stretti per endpoint “pesanti” (`/api/parser/parse`, `/api/engine/execute`, `/api/run-tests`).
+- Limitazione payload JSON (`express.json({ limit })`) con risposta `413` standardizzata.
+- Error handling globale: sanitizzazione dei 5xx in produzione (evita leak di dettagli interni).
+- Per hardening e raccomandazioni, vedere `docs/20260108_security_review_01.md`.
 
 ## 8.1 Diagramma game over (flusso logico)
 
