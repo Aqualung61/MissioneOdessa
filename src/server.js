@@ -17,7 +17,7 @@ import { initOdessa } from './initOdessa.js';
 import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
 import { apiKeyAuth } from './middleware/auth.js';
-import { apiLimiter, parsingLimiter, heavyLimiter } from './middleware/rateLimiter.js';
+import { apiLimiter, parsingLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
 // import { azioni_setup } from './azioni_setup';
 
@@ -142,7 +142,6 @@ app.use(BASE_PATH + '/api', apiKeyAuth());
 app.use(BASE_PATH + '/api', apiLimiter);
 app.use(BASE_PATH + '/api/parser/parse', parsingLimiter);
 app.use(BASE_PATH + '/api/engine/execute', parsingLimiter);
-app.use(BASE_PATH + '/api/run-tests', heavyLimiter);
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);

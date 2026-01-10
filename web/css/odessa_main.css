@@ -69,12 +69,13 @@ body {
 /* Colonna destra: output + input con riquadro quadrato a destra dell'input */
 .right {
 	display: grid;
-	grid-template-columns: 1fr 140px; /* colonna input + colonna riquadro (larghezza fissa) */
-	grid-template-rows: minmax(0, 1fr) auto auto; /* output, input, lingua */
+	grid-template-columns: 1fr;
+	grid-template-rows: minmax(0, 1fr) auto auto auto; /* output, input, lingua, versione */
 	grid-template-areas:
-		"main  main"
-		"input square"
-		"lang  square";
+		"main"
+		"input"
+		"lang"
+		"version";
 	height: 100%;
 	border: 8px solid var(--ottanio);
 	box-sizing: border-box;
@@ -164,32 +165,10 @@ body {
 	padding-left: 0;
 }
 
-/* Riquadro quadrato a destra dell'input: lato = (altezza input + altezza lingua) */
-#squarePanel {
-	grid-area: square;
-	align-self: stretch; /* occupa tutta l'altezza dell'area (input+lingua) */
-	height: 100%;
-	margin-top: 0;
-	margin-bottom: 0;
-	width: 100%; /* usa tutta la colonna, non aumentiamo la larghezza */
-	background: var(--page-bg);
-	/* Percorso aggiornato: dal file CSS (web/css) alla cartella root images */
-	/* Usa image-set per servire variante 2x se disponibile; fallback alla PNG singola */
-	background-image: image-set(
-		url('../../images/Star.png') 1x,
-		url('../../images/Star.png') 2x
-	);
-	background-position: center center; /* centrata verticalmente */
-	background-repeat: no-repeat;
-	background-size: 50% auto; /* ridotta al 50% come richiesto */
-	border: 0; /* nessun bordo visibile */
-	border-radius: 0;
-	/* bordo rimosso su richiesta */
-	box-sizing: border-box;
-	position: relative;
-	padding-bottom: 0; /* bottoni a filo bordo inferiore */
+/* Versione attuale dell'app sotto la lingua */
+#versioneRunning {
+	grid-area: version;
 }
-/* Controlli verticali fittizi (solo layout) — stile come pagina originale */
 
 /* Responsive minimi */
 @media (max-width: 1200px) { .layout { grid-template-columns: 48% 52%; } }

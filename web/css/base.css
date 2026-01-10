@@ -4,6 +4,22 @@
   --ottanio: var(--page-bg);
   --black: #000000;
   --white: #ffffff;
+
+  /* Responsive sizing tokens */
+  --ui-pad: clamp(10px, 1.6vw, 16px);
+  --ui-gap: clamp(10px, 1.6vw, 16px);
+  --ui-border: clamp(4px, 0.9vw, 8px);
+
+  --font-sm: clamp(13px, 1.0vw, 15px);
+  --font-base: clamp(14px, 1.1vw, 16px);
+  --font-lg: clamp(15px, 1.25vw, 17px);
+  --font-xl: clamp(16px, 1.5vw, 18px);
+
+  --square-col-width: clamp(108px, 12vw, 160px);
+  --square-dot-size: clamp(10px, 1.1vw, 12px);
+  --square-label-size: var(--font-base);
+  --place-image-max: clamp(260px, 34vw, 560px);
+
   --btns-offset-y: 24px;
   --north-offset-y: -6px;
   --east-offset-x: 24px;

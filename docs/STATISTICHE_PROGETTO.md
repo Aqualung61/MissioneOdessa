@@ -114,7 +114,7 @@ git rev-list --count HEAD
 - `src/logic/messages.js`: 1 funzione (error mapping)
 - `src/logic/turnEffects/*`: 5 funzioni (effects)
 - `src/middleware/{auth,rateLimiter,errorHandler}.js`: 3 funzioni
-- `src/tests/runE2E.js`: 1 funzione (E2E testing)
+
 
 ### Complessità Funzionale Stimata
 - **Moduli principali:** 14 JS + 3 TS in src/ (logic, api, data-internal, tests)
