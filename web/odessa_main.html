@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Missione Odessa: avventura testuale interattiva." />
+  <meta name="theme-color" content="#000000" />
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script src="js/bootstrap.js"></script>
@@ -10,10 +12,13 @@
   <link rel="stylesheet" href="css/odessa_main.css" />
 </head>
   <body class="page-main">
-  <div class="layout">
+  <header class="visually-hidden">
+    <h1>Missione Odessa</h1>
+  </header>
+  <main class="layout">
     <section class="left" aria-label="Luoghi Missione Odessa">
         <div class="temp-img-wrapper">
-          <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" />
+          <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" width="1024" height="1024" decoding="async" />
           <div id="placeNameOverlay"></div>
       </div>
       <!-- Numero luoghi visitati -->
@@ -39,7 +44,8 @@
       <div id="inputBar">
         <!-- Area di input per i comandi dell'utente -->
         <form id="inputArea" autocomplete="off">
-          <input id="userInput" type="text" placeholder="Inserisci un comando (es. Nord, Inventario, Esamina Lampada)" />
+          <label for="userInput" class="visually-hidden">Comando</label>
+          <input id="userInput" type="text" placeholder="Inserisci un comando (es. Nord, Inventario, Esamina Lampada)" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" />
           <button id="sendBtn" type="submit">Invia</button>
         </form>
       </div>
@@ -47,7 +53,7 @@
       <!-- Versione attuale dell'app -->
       <div id="versioneRunning"></div>
     </section>
-  </div>
+  </main>
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
   <script src="js/odessa_main.js?v=20251106_12" type="module"></script>
