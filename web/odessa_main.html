@@ -5,22 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Missione Odessa - Adventure Game</title>
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
-  <script>
-    // Detect base path dynamically
-    const pathParts = window.location.pathname.split('/').filter(p => p);
-    const basePath = pathParts.length > 0 && pathParts[0] === 'missioneodessa' ? '/' + pathParts[0] + '/' : '/';
-
-    // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
-    // Reindirizza automaticamente al server locale mantenendo i parametri query.
-    (function(){
-      try{
-        if (location.protocol === 'file:'){
-          var target = 'http://localhost:3001' + basePath + 'web/odessa_main.html' + (location.search||'');
-          location.replace(target);
-        }
-      }catch(e){}
-    })();
-  </script>
+  <script src="js/bootstrap.js"></script>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
 </head>
