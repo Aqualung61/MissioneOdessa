@@ -4,38 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Missione Odessa</title>
-    <meta http-equiv="refresh" content="0; url=web/odessa_intro.html?idLingua=1" />
-    <script>
-      // Detect base path dynamically - supporta qualsiasi path custom
-      function getBasePath() {
-        const pathParts = window.location.pathname.split('/').filter((p) => p);
-        const appFolders = ['web', 'images', 'src', 'api'];
-        if (pathParts.length === 0 || appFolders.includes(pathParts[0])) {
-          return '/';
-        }
-        return '/' + pathParts[0] + '/';
-      }
-
-      (function redirectToIntro() {
-        const basePath = getBasePath();
-        const params = new URLSearchParams(window.location.search || '');
-        params.set('idLingua', '1');
-
-        const targetPath = basePath + 'web/odessa_intro.html?' + params.toString();
-        const target =
-          location.protocol === 'file:'
-            ? 'http://localhost:3001' + targetPath
-            : targetPath;
-
-        location.replace(target);
-      })();
-    </script>
-    <noscript>
-      <meta http-equiv="refresh" content="0; url=web/odessa_intro.html?idLingua=1" />
-    </noscript>
+    <script src="web/js/bootstrap.js" defer></script>
+    <script src="web/js/index.js" defer></script>
   </head>
   <body>
     <p>Reindirizzamento in corso…</p>
+    <p>
+      Se il reindirizzamento non parte,
+      <a href="web/odessa_intro.html?idLingua=1">apri l’introduzione</a>.
+    </p>
   </body>
 </html>
 

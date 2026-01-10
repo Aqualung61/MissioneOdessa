@@ -26,9 +26,13 @@
   // Reindirizza automaticamente al server locale mantenendo i parametri query.
   try {
     if (window.location.protocol === 'file:') {
-      var page = window.location.pathname.split('/').filter(Boolean).pop() || 'odessa_main.html';
-      var target = 'http://localhost:3001' + basePath + 'web/' + page + (window.location.search || '');
-      window.location.replace(target);
+      // Solo le pagine in /web/ vanno riscritte su http://localhost:3001/.../web/<page>
+      // (Evita che index.html in root venga inviato a /web/index.html che non esiste.)
+      if (String(window.location.pathname || '').includes('/web/')) {
+        var page = window.location.pathname.split('/').filter(Boolean).pop() || 'odessa_main.html';
+        var target = 'http://localhost:3001' + basePath + 'web/' + page + (window.location.search || '');
+        window.location.replace(target);
+      }
     }
   } catch {
     // ignore
