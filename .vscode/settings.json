@@ -1,0 +1,27 @@
+{
+  // (1) Terminal: riduce lag da output molto verboso (es. test)
+  "terminal.integrated.scrollback": 3000,
+  "terminal.integrated.gpuAcceleration": "off",
+
+  // (2) Watcher/Search: evita indicizzazione e file watching su cartelle pesanti
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/test-results/**": true,
+    "**/backup/**": true,
+    "**/build/**": true,
+    "**/dist/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/swark-output/**": true
+  },
+  "search.exclude": {
+    "**/node_modules/**": true,
+    "**/test-results/**": true,
+    "**/backup/**": true,
+    "**/build/**": true,
+    "**/dist/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/swark-output/**": true
+  }
+}
