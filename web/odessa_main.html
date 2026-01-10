@@ -63,53 +63,6 @@
       <div id="versioneRunning"></div>
     </section>
   </div>
-
-  <script>
-    // Mostra la lingua scelta (descrizione) sotto la barra input
-    function getQueryParam(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name);
-    }
-    const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
-    let descrizione = localStorage.getItem('linguaDescrizione') || '';
-    function setLingua(text) {
-      const el = document.getElementById('linguaScelta');
-      if (el) el.textContent = text ? ('Lingua selezionata: ' + text) : '';
-    }
-
-    // Mostra la versione running sotto la lingua
-    function setVersioneRunning(ver) {
-      const el = document.getElementById('versioneRunning');
-      if (el) el.textContent = ver ? ('Versione: ' + ver) : '';
-    }
-
-    // Recupera la versione dall'API
-    fetch(basePath + 'api/version')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.version) setVersioneRunning(data.version);
-      })
-      .catch(() => setVersioneRunning('non disponibile'));
-  // --- fine fetch versione ---
-    if (!descrizione && idLingua && idLingua !== '0') {
-      fetch(basePath + 'api/lingue')
-        .then(res => res.json())
-        .then(data => {
-          const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === idLingua);
-          if (lingua) {
-            const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
-            descrizione = nome || '';
-            if (descrizione) {
-              setLingua(descrizione);
-              localStorage.setItem('linguaDescrizione', descrizione);
-            }
-          }
-        })
-        .catch(() => {});
-    } else if (descrizione) {
-      setLingua(descrizione);
-    }
-  </script>
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
   <script src="js/odessa_main.js?v=20251106_12" type="module"></script>

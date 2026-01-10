@@ -8,6 +8,47 @@ function getQueryParam(name) {
 const idLingua = parseInt(getQueryParam('idLingua')) || parseInt(localStorage.getItem('linguaSelezionata')) || 1;
 console.log('ID Lingua corrente (odessa_main.js):', idLingua);
 
+// Persistenza lingua: utile se l'utente apre direttamente odessa_main.html senza query.
+try {
+  const prev = localStorage.getItem('linguaSelezionata');
+  const current = String(idLingua);
+  if (prev !== current) {
+    localStorage.setItem('linguaSelezionata', current);
+    localStorage.removeItem('linguaDescrizione');
+  }
+} catch {
+  // ignore
+}
+
+function setLinguaScelta(descrizione) {
+  const el = document.getElementById('linguaScelta');
+  if (!el) return;
+  if (!descrizione) {
+    el.textContent = window.i18n ? window.i18n.msg('ui.lang.selected', '') : 'Lingua selezionata:';
+    return;
+  }
+  el.textContent = window.i18n ? window.i18n.msg('ui.lang.selected', descrizione) : `Lingua selezionata: ${descrizione}`;
+}
+
+function setVersioneRunning(ver) {
+  const el = document.getElementById('versioneRunning');
+  if (!el) return;
+  el.textContent = ver ? `Versione: ${ver}` : '';
+}
+
+// Recupera la versione dall'API (mostrata sotto la lingua)
+try {
+  const bp = getBasePath();
+  fetch(bp + 'api/version')
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.version) setVersioneRunning(data.version);
+    })
+    .catch(() => setVersioneRunning('non disponibile'));
+} catch {
+  setVersioneRunning('non disponibile');
+}
+
 // Carica messaggi i18n frontend
 if (window.i18n) {
   window.i18n.load(idLingua)
@@ -29,16 +70,44 @@ if (window.i18n) {
               const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
               descrizione = nome || '';
               if (descrizione) {
-                document.getElementById('linguaScelta').textContent = window.i18n.msg('ui.lang.selected', descrizione);
+                setLinguaScelta(descrizione);
                 localStorage.setItem('linguaDescrizione', descrizione);
               }
             }
           });
       } else if (descrizione) {
-        document.getElementById('linguaScelta').textContent = window.i18n.msg('ui.lang.selected', descrizione);
+        setLinguaScelta(descrizione);
       }
     })
     .catch(err => console.error('Errore caricamento i18n:', err));
+}
+
+// Se l'i18n non è disponibile, mostriamo comunque la lingua (best-effort)
+if (!window.i18n) {
+  try {
+    let descrizione = localStorage.getItem('linguaDescrizione') || '';
+    if (descrizione) {
+      setLinguaScelta(descrizione);
+    } else if (idLingua) {
+      const bp = getBasePath();
+      fetch(bp + 'api/lingue')
+        .then(res => res.json())
+        .then(data => {
+          const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
+          if (!lingua) return;
+          const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
+          descrizione = nome || '';
+          if (!descrizione) return;
+          setLinguaScelta(descrizione);
+          localStorage.setItem('linguaDescrizione', descrizione);
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
+  } catch {
+    // ignore
+  }
 }
 
 // Nessuna logica click/hover: solo visualizzazione direzioni
