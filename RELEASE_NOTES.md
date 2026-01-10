@@ -30,6 +30,21 @@
 
 ## Unreleased
 
+### 2026-01-10 - Pulizia test/entrypoint e allineamento documentazione
+
+#### Cambiamenti principali
+- Rimossi test E2E Playwright e ogni integrazione di esecuzione test via endpoint (nessun `/api/run-tests`).
+- `index.html` semplificato: redirect verso `web/odessa_intro.html` (lingua default IT) con gestione `file://`.
+- Script frontend rinominati/estratti:
+	- `web/js/odessa1.js` → `web/js/odessa_main.js`
+	- logica intro estratta in `web/js/odessa_intro.js`
+- CSS consolidato in file dedicati (riduzione inline CSS).
+
+#### Docs
+- Allineati i documenti tecnici a rename script e rimozione test runner (senza toccare note freeze storiche).
+
+---
+
 ### Sprint 3.3.5.C - Sistema Intercettazione Pattuglie Sovietiche (v1.2.5)
 
 #### Novità principali
