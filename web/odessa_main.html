@@ -15,6 +15,12 @@
   <header class="visually-hidden">
     <h1>Missione Odessa</h1>
   </header>
+  <noscript>
+    <p>
+      Questa pagina richiede JavaScript per funzionare.
+      Puoi tornare a <a href="../index.html">Missione Odessa</a> oppure aprire <a href="odessa_intro.html?idLingua=1">l’introduzione</a>.
+    </p>
+  </noscript>
   <main class="layout">
     <section class="left" aria-label="Luoghi Missione Odessa">
         <div class="temp-img-wrapper">
@@ -32,12 +38,12 @@
       <!-- Livello/Rango -->
         <div id="rankCount" class="hud-stat hud-stat--rank"></div>
     </section>
-    <section class="right">
-      <div id="outputWrapper">
+    <section class="right" aria-label="Console di gioco">
+      <div id="outputWrapper" aria-label="Output di gioco">
         <!-- Riquadro descrizioni e feed del gioco -->
-          <div id="placeFeed"></div>
+          <div id="placeFeed" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
         <!-- Output principale del gioco (descrizione luogo attuale) -->
-        <div id="output"></div>
+        <div id="output" role="region" aria-label="Descrizione del luogo"></div>
         <!-- Messaggi di sistema, azioni, feedback -->
         <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
