@@ -5,6 +5,12 @@
   --black: #000000;
   --white: #ffffff;
 
+  /* Semantic theme tokens (preferire questi ai colori hardcoded) */
+  --text-color: var(--white);
+  --text-muted: #666;
+  --text-on-light: #111;
+  --accent-gold: #ffd700;
+
   /* Responsive sizing tokens */
   --ui-pad: clamp(10px, 1.6vw, 16px);
   --ui-gap: clamp(10px, 1.6vw, 16px);
@@ -31,9 +37,91 @@
 
 html, body { height:100%; }
 
+*, *::before, *::after { box-sizing: border-box; }
+
 /* Utility */
 .no-select { user-select: none; }
 .visually-hidden { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0 0 0 0) !important; white-space:nowrap !important; border:0 !important; }
+.is-hidden { display: none !important; }
 
 /* Base body fallback (solo se nessun foglio successivo sovrascrive) */
-body { background: var(--page-bg); font-family: Aptos, "Segoe UI", Arial, sans-serif; }
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-color);
+  font-family: Aptos, "Segoe UI", Arial, sans-serif;
+  font-size: var(--font-base);
+  line-height: 1.35;
+}
+
+/* --- Intro page (odessa_intro.html) --- */
+body.page-intro {
+  overflow: auto; /* Permette lo scroll solo se necessario */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.page-intro #mainImage {
+  width: auto;
+  max-width: 75%;
+  max-height: 75vh;
+  margin-top: 10px;
+  margin-bottom: 1em;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
+}
+
+.page-intro #introduzione {
+  max-width: 75%;
+  text-align: justify;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 0 50px 0;
+  flex: 1;
+  overflow-y: visible;
+}
+
+/* Riduce flicker/layout shift mentre viene aggiornato l'HTML del markdown */
+.page-intro #introduzione.is-loading {
+  visibility: hidden;
+}
+
+.page-intro #introduzione * { margin: 0; padding: 0; }
+.page-intro #introduzione p { margin: 0 0 10px; }
+
+.page-intro .continue-hint {
+  margin-top: 12px;
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+.page-intro #mainImage,
+.page-intro .dual-images__img {
+  cursor: pointer;
+}
+
+.page-intro #mainImage:focus-visible,
+.page-intro .dual-images__img:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 3px;
+}
+
+.page-intro .dual-images {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+  margin-bottom: 1em;
+}
+
+.page-intro .dual-images__img {
+  width: 40%;
+  height: auto;
+  flex-shrink: 0;
+  display: block;
+}

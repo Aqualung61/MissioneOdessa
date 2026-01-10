@@ -44,12 +44,6 @@ export function errorHandler(err, req, res, next) {
     return res.status(httpStatus).json(baseBody);
   }
 
-  // E2E test runner historically returns { success: boolean, error: string } on failures.
-  if (url.includes('/api/run-tests')) {
-    const errorValue = isProd ? 'INTERNAL_ERROR' : (err?.message || 'INTERNAL_ERROR');
-    return res.status(httpStatus).json({ success: false, error: errorValue });
-  }
-
   // Default API envelope.
   const errorValue = isProd ? 'INTERNAL_ERROR' : (err?.message || 'INTERNAL_ERROR');
   return res.status(httpStatus).json({ ok: false, error: errorValue });

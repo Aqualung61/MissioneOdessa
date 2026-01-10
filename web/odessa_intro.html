@@ -16,6 +16,7 @@
       return '/' + pathParts[0] + '/';
     }
     const basePath = getBasePath();
+    window.basePath = basePath;
 
     // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
     // Reindirizza automaticamente al server locale mantenendo i parametri query.
@@ -28,181 +29,16 @@
       }catch(e){}
     })();
   </script>
-  <script>
-    // Log dei parametri ricevuti da index.html
-    console.log('Parametri ricevuti:', location.search);
-  </script>
   <link rel="stylesheet" href="css/base.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/odessa_main.css" />
-  <style>
-    html, body {
-      overflow: auto; /* Permette lo scroll solo se necessario */
-      margin: 0; /* Rimuove margini predefiniti */
-      padding: 0; /* Rimuove padding predefiniti */
-    }
-
-    body {
-      align-items: center;
-      margin: 0;
-      background: var(--page-bg);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    #mainImage {
-      width: auto; /* Mantiene la proporzione dell'immagine */
-      max-width: 75%; /* Limita la larghezza al 75% della viewport per non superare il div introduzione */
-      max-height: 75vh; /* Limita l'altezza al 75% della viewport height */
-      margin-top: 10px; /* Distanza di 10px dal bordo superiore */
-      display: block; /* Assicura che l'immagine sia un elemento a blocco */
-      margin-left: auto; /* Centra orizzontalmente */
-      margin-right: auto; /* Centra orizzontalmente */
-      flex-shrink: 0; /* Impedisce che l'immagine si riduca */
-      /* transition: opacity 0.2s ease; - rimossa definitivamente */
-    }
-
-    #introduzione {
-      max-width: 75%; /* Larghezza massima al 75% della pagina */
-      text-align: justify; /* Giustifica il testo */
-      margin-left: auto; /* Centra orizzontalmente */
-      margin-right: auto; /* Centra orizzontalmente */
-      padding: 0 0 50px 0; /* Aggiunge 50px di padding bottom per spazio all'ultima riga */
-      flex: 1; /* Occupa il resto dello spazio disponibile */
-      overflow-y: visible; /* Permette che il contenuto si espanda senza scroll interno */
-    }
-
-    #introduzione * {
-      margin: 0; /* Rimuove margini da tutti gli elementi figli */
-      padding: 0; /* Rimuove padding da tutti gli elementi figli */
-    }
-
-    #introduzione p {
-      margin: 0 0 10px; /* Riduce i margini tra i paragrafi */
-    }
-
-    /* Transizione per fading rimossa definitivamente per compatibilità con scroll */
-    /* #introduzione {
-      transition: opacity 0.2s ease;
-    } */
-  </style>
 </head>
-<body>
+<body class="page-intro">
 
     <img id="mainImage" src="../images/MissioneOdessa_intro.png" alt="Missione Odessa" fetchpriority="low" />
     <div id="introduzione"></div>
 
   <script src="js/marked.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const introduzioneDiv = document.getElementById('introduzione');
-      let currentIntro = 1;
-
-      // Funzione per leggere parametri URL
-      function getQueryParam(name) {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-      }
-
-      // Legge idLingua da URL, localStorage o default a 1
-      const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
-      console.log('ID Lingua corrente:', idLingua);
-
-      // Fetch e mostra il testo di introduzione ID=1 con leggero delay per uniformità
-      setTimeout(() => {
-        loadIntroduzione(1);
-      }, 100);
-
-      function loadIntroduzione(id) {
-        console.log('Caricando introduzione ID:', id, 'lingua:', idLingua);
-        fetch(basePath + 'api/introduzione?id=' + id + '&lingua=' + idLingua)
-          .then(res => res.json())
-          .then(data => {
-            console.log('Testo ricevuto per ID', id, ':', data.testo);
-            const testo = (data.testo || '').replace(/\\n/g, '\n'); // Corretto il parsing delle nuove righe
-            const lines = testo.split('\n');
-            console.log('Righe dopo split:', lines.length, 'ultima riga:', lines[lines.length - 1]);
-            // Rimossa evidenziazione ultima riga
-            const parsedHTML = marked.parse(lines.join('\n'));
-            console.log('HTML parsato:', parsedHTML.substring(0, 200) + '...');
-            // Senza fading per compatibilità con scroll
-            introduzioneDiv.style.display = 'none';
-            setTimeout(() => {
-              introduzioneDiv.innerHTML = parsedHTML;
-              introduzioneDiv.style.display = '';
-              // Aggiungi bottone sotto il testo
-              const button = document.createElement('button');
-              button.textContent = 'Continua';
-              button.style.backgroundColor = 'red';
-              button.style.color = 'white';
-              button.style.border = 'none';
-              button.style.padding = '10px 20px';
-              button.style.marginTop = '20px';
-              button.style.cursor = 'pointer';
-              button.style.display = 'block';
-              button.style.marginLeft = 'auto';
-              button.style.marginRight = 'auto';
-              button.style.fontWeight = 'bold';
-              button.onmouseover = () => button.style.backgroundColor = 'darkred';
-              button.onmouseout = () => button.style.backgroundColor = 'red';
-              button.onclick = nextStage;
-              introduzioneDiv.appendChild(button);
-              window.scrollTo(0, 0);
-            }, 10);
-          })
-          .catch(err => {
-            console.error('Errore nel caricamento dell\'introduzione:', err);
-          });
-      }
-
-      window.nextStage = function() {
-        if (currentIntro === 1) {
-          console.log('Passo 2: creando immagini affiancate');
-          // Sostituisci con due immagini affiancate
-          const imageContainer = document.getElementById('mainImage').parentNode;
-          document.getElementById('mainImage').style.display = 'none';
-          const dualImages = document.createElement('div');
-          dualImages.id = 'dualImages';
-          dualImages.style.display = 'flex';
-          dualImages.style.justifyContent = 'center';
-          dualImages.style.gap = '20px';
-          dualImages.style.marginTop = '10px';
-          dualImages.innerHTML = `
-            <img src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" style="width: 40%; height: auto; flex-shrink: 0;" fetchpriority="low" />
-            <img src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" style="width: 40%; height: auto; flex-shrink: 0;" fetchpriority="low" />
-          `;
-          imageContainer.insertBefore(dualImages, document.getElementById('mainImage'));
-          console.log('Immagini affiancate create');
-          // Aggiungi eventi onload per logging
-          const imgs = dualImages.querySelectorAll('img');
-          imgs.forEach(img => {
-            img.onload = () => console.log('Immagine caricata:', img.alt);
-          });
-          // Carica testo ID=2
-          loadIntroduzione(2);
-          currentIntro = 2;
-        } else if (currentIntro === 2) {
-          // Cambia immagine a Ferenc
-          document.getElementById('dualImages').style.display = 'none';
-          const mainImg = document.getElementById('mainImage');
-          mainImg.src = '../images/Ferenc.png';
-          mainImg.alt = 'Ferenc';
-          mainImg.fetchPriority = 'low';
-          mainImg.onload = () => console.log('Immagine Ferenc caricata');
-          document.getElementById('mainImage').style.display = '';
-          // Carica testo ID=3
-          loadIntroduzione(3);
-          currentIntro = 3;
-        } else if (currentIntro === 3) {
-          // Vai alla pagina principale
-          window.location.href = basePath + 'web/odessa_main.html' + location.search;
-        }
-      };
-    });
-  </script>
+  <script src="js/odessa_intro.js"></script>
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
-  <!-- <script src="js/odessa1.js?v=20251106_12" type="module"></script> -->
 </body>
 </html>

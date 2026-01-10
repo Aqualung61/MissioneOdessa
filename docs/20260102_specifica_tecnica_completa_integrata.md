@@ -394,7 +394,7 @@ gameState = {
 #### Decisione 1: Riuso visitedPlaces
 
 **Contesto:** L'applicazione possiede già un sistema `visitedPlaces` implementato e funzionante:
-- **Lato client:** `web/js/odessa1.js` mantiene `let visitedPlaces = new Set()` aggiornato automaticamente ad ogni movimento
+- **Lato client:** `web/js/odessa_main.js` mantiene `let visitedPlaces = new Set()` aggiornato automaticamente ad ogni movimento
 - **Lato server:** `src/logic/engine.js` ha `visitedPlaces: new Set([1])` nel gameState
 - **Serializzazione:** Save/load già gestiscono correttamente Set ↔ Array conversion
 - **UI:** Già visualizza contatore "Luoghi visitati: N" nell'interfaccia

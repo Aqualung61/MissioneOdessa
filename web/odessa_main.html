@@ -23,43 +23,29 @@
   </script>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
-  <style>
-    /* Modifica per mostrare la barra di scorrimento verticale solo se necessario */
-    body {
-      overflow-y: auto;
-    }
-    /* Aggiunta barra di scorrimento orizzontale per l'intera finestra del browser */
-    body {
-      overflow-x: auto;
-    }
-    /* Cambiato il colore dell'ombra in bianco per l'immagine dinamica */
-    #dynamicPlaceImage {
-      box-shadow: 0px 8px 16px rgba(255, 255, 255, 0.5);
-    }
-  </style>
 </head>
-<body>
+  <body class="page-main">
   <div class="layout">
     <section class="left" aria-label="Luoghi Missione Odessa">
-      <div class="temp-img-wrapper" style="text-align:center; margin-bottom:16px; margin-top:20px; position: relative;">
-        <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" style="max-width:100%; height:auto; border-radius:8px; display:none;" />
-        <div id="placeNameOverlay" style="position: absolute; bottom: 0; left: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: bold;"></div>
+        <div class="temp-img-wrapper">
+          <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" />
+          <div id="placeNameOverlay"></div>
       </div>
       <!-- Numero luoghi visitati -->
-      <div id="visitedCount" style="font-size:0.9em;color:#fff;margin-top:2px;text-align:left;"></div>
+        <div id="visitedCount" class="hud-stat"></div>
       <!-- Numero interazioni -->
-      <div id="interactionsCount" style="font-size:0.9em;color:#fff;margin-top:2px;text-align:left;"></div>
+        <div id="interactionsCount" class="hud-stat"></div>
       <!-- Numero misteri -->
-      <div id="mysteriesCount" style="font-size:0.9em;color:#fff;margin-top:2px;text-align:left;"></div>
+        <div id="mysteriesCount" class="hud-stat"></div>
       <!-- Punteggio totale -->
-      <div id="scoreCount" style="font-size:0.9em;color:#ffd700;margin-top:2px;text-align:left;font-weight:bold;"></div>
+        <div id="scoreCount" class="hud-stat hud-stat--score"></div>
       <!-- Livello/Rango -->
-      <div id="rankCount" style="font-size:0.9em;color:#fff;margin-top:2px;text-align:left;font-style:italic;"></div>
+        <div id="rankCount" class="hud-stat hud-stat--rank"></div>
     </section>
     <section class="right">
       <div id="outputWrapper">
         <!-- Riquadro descrizioni e feed del gioco -->
-        <div id="placeFeed" style="flex:1 1 auto; min-height:0; overflow-y:auto;"></div>
+          <div id="placeFeed"></div>
         <!-- Output principale del gioco (descrizione luogo attuale) -->
         <div id="output"></div>
         <!-- Messaggi di sistema, azioni, feedback -->
@@ -73,10 +59,8 @@
         </form>
       </div>
       <div id="linguaScelta">Lingua selezionata:</div>
-  <!-- Lingua selezionata dall'utente -->
-  <div id="linguaScelta">Lingua selezionata:</div>
       <!-- Versione attuale dell'app -->
-      <div id="versioneRunning" style="font-size:0.9em;color:#666;margin-top:2px;"></div>
+      <div id="versioneRunning"></div>
     </section>
   </div>
 
@@ -128,6 +112,6 @@
   </script>
   <!-- cache-bust -->
   <!-- Preload rimosso: l'immagine è decorativa (background CSS) e il preload generava warning non necessario -->
-  <script src="js/odessa1.js?v=20251106_12" type="module"></script>
+  <script src="js/odessa_main.js?v=20251106_12" type="module"></script>
 </body>
 </html>

@@ -146,14 +146,15 @@ global.odessaData.Luoghi = odessaData.Luoghi; // Sovrascrive globale!
 
 #### 2.3 Query Parameters Non Sanitizzati
 ```javascript
-// src/api/routes.js - GET /api/run-e2e
-const suite = (req.query?.suite || '').toString() || 'full';
-// ⚠️ Nessuna whitelist, accetta qualsiasi valore
+// src/api/routes.js - GET /api/introduzione
+const id = parseInt(req.query.id, 10) || 1;
+const lingua = parseInt(req.query.lingua, 10) || 1;
+// ⚠️ Nessuna validazione di range/whitelist (accetta numeri arbitrari)
 ```
 
 **Impatto:**
-- **Locale:** 🟡 DoS self-inflicted
-- **Pubblico:** 🔴 DoS remoto, memory exhaustion
+- **Locale:** 🟢 Input tampering / UX inconsistente
+- **Pubblico:** 🟡 Input tampering / potenziale stress su logging
 
 **Mitigazione proposta:** Vedere Piano → M2
 
@@ -247,7 +248,6 @@ Nessuna limitazione sul numero di richieste, permettendo flooding.
 **Endpoint ad alto rischio CPU:**
 1. `POST /api/engine/execute` - Parsing + game logic
 2. `POST /api/parser/parse` - Parsing complesso
-3. `GET /api/run-e2e` - Test suite (CPU-intensive)
 
 **Attack Scenario:**
 ```bash
@@ -935,7 +935,7 @@ export const parsingLimiter = rateLimit({
 **Applicare:**
 ```javascript
 // src/server.js
-import { apiLimiter, heavyLimiter } from './middleware/rateLimiter.js';
+import { apiLimiter, parsingLimiter } from './middleware/rateLimiter.js';
 
 // Rate limit generale su tutte le API
 app.use('/api', apiLimiter);
@@ -943,7 +943,6 @@ app.use('/api', apiLimiter);
 // Rate limit specifici
 app.use('/api/engine/execute', parsingLimiter);
 app.use('/api/parser/parse', parsingLimiter);
-app.use('/api/run-e2e', heavyLimiter);
 ```
 
 **Configurazione avanzata (opzionale):**

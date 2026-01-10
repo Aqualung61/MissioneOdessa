@@ -187,7 +187,7 @@ git rev-list --count HEAD
 #### 9. **Observer Pattern** (Client-side)
 - **DOM Events:** Event listeners su form submit, button clicks
 - **State Updates:** Aggiornamento UI dopo risposte API
-- **Implementazione:** `odessa1.js` ascolta submit e aggiorna DOM
+- **Implementazione:** `odessa_main.js` ascolta submit e aggiorna DOM
 
 #### 10. **Dependency Injection** (Implicito)
 - **Global Data:** `global.odessaData` iniettato da `initOdessa()`
@@ -232,7 +232,7 @@ git rev-list --count HEAD
 
 ### Configurazione e Setup
 - **Package.json scripts:** 6+ (dev, test, test:watch, build, etc.)
-- **Config files:** eslint, vitest, playwright, tsconfig
+- **Config files:** eslint, vitest, tsconfig
 - **Environment:** `.env` per `ODESSA_DB_PATH` (legacy), ora JSON-based
 
 ---

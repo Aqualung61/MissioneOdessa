@@ -19,7 +19,7 @@ graph TB
   subgraph Client["Browser"]
     Intro["web/odessa_intro.html"]
     Main["web/odessa_main.html"]
-    JS["web/js/odessa1.js"]
+    JS["web/js/odessa_main.js"]
     I18N["web/js/i18n.js"]
   end
 
@@ -289,7 +289,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-  participant C as Browser (odessa1.js)
+  participant C as Browser (odessa_main.js)
   participant ER as /api/engine/execute
   participant P as parser.js
   participant E as engine.js
@@ -347,7 +347,6 @@ Con `BASE_PATH`:
 - `GET /api/luogo-oggetti?idLuogo&?idLingua`
 - `GET /api/introduzione?id&lingua` (markdown)
 - `GET /api/frontend-messages/:lingua`
-- `POST /api/run-tests?suite=...` (Playwright)
 
 **Engine** (`src/api/engineRoutes.js`):
 - `POST /api/engine/execute` (parser+engine)
@@ -409,9 +408,9 @@ graph TB
 
 - `web/odessa_main.html`
   - UI principale (feed, input comandi, pannello direzioni)
-  - nota: in header calcola `basePath` con euristica specifica su `missioneodessa` (potenzialmente diversa da `odessa1.js`)
+  - nota: in header calcola `basePath` con euristica specifica su `missioneodessa` (potenzialmente diversa da `odessa_main.js`)
 
-### 7.2 Client runtime (`web/js/odessa1.js`)
+### 7.2 Client runtime (`web/js/odessa_main.js`)
 
 - Calcola `basePath` con euristica:
   - root deployment se primo segmento è tra `web/images/src/api`
@@ -437,7 +436,7 @@ graph TB
     end
 
     subgraph JS["javascript"]
-      Core["web/js/odessa1.js"]
+      Core["web/js/odessa_main.js"]
       I18N["web/js/i18n.js"]
       subgraph CoreModules["responsabilità"]
         BasePath["basePath (euristica)"]
@@ -477,7 +476,7 @@ Nota: il client usa anche 3 JSON del lessico per il “livello 0” (pre-parsing
 - CORS **disabilitato di default** (same-origin). Cross-origin è abilitabile solo via whitelist (`ALLOWED_ORIGINS`).
 - API protette con **API key** su `BASE_PATH + /api/*` (header `X-API-Key`), con eccezioni pubbliche minime: `GET BASE_PATH + /api/version` e `GET /api/config`.
   - Nota: `GET /api/config` è a **path assoluto** (non prefissato da `BASE_PATH`) per esporre al client il `basePath` corrente.
-- Rate limiting su `/api/*` e limiti più stretti per endpoint “pesanti” (`/api/parser/parse`, `/api/engine/execute`, `/api/run-tests`).
+- Rate limiting su `/api/*` e limiti più stretti per endpoint CPU/pesanti (`/api/parser/parse`, `/api/engine/execute`).
 - Limitazione payload JSON (`express.json({ limit })`) con risposta `413` standardizzata.
 - Error handling globale: sanitizzazione dei 5xx in produzione (evita leak di dettagli interni).
 - Per hardening e raccomandazioni, vedere `docs/20260108_security_review_01.md`.
@@ -503,12 +502,11 @@ flowchart TB
 ## 9) Testing
 
 - Unit/integration: Vitest (`tests/`).
-- E2E: Playwright richiamabile via `POST /api/run-tests` (utile per smoke in ambiente dove il server può lanciare i test).
 
 ---
 
 ## 10) Rischi/attenzioni note (architetturali)
 
 - **Stato singleton**: non adatto a scaling orizzontale senza persistenza/sessione.
-- **BASE_PATH client/server**: più punti di calcolo (intro, main, odessa1.js); va mantenuta coerenza.
+- **BASE_PATH client/server**: più punti di calcolo (intro, main, odessa_main.js); va mantenuta coerenza.
 - **/api/config** non prefissato da `BASE_PATH`: se usato da client in sottocartella può richiedere attenzione.

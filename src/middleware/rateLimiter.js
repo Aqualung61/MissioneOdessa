@@ -40,7 +40,7 @@ export const parsingLimiter = createRateLimiter({
   max: 30,
 });
 
-// Endpoint pesanti: run-tests
+// Endpoint pesanti (opzionale)
 export const heavyLimiter = createRateLimiter({
   windowMs: 60_000,
   max: 5,

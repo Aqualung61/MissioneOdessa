@@ -15,8 +15,9 @@
    npm run dev
    ```
 3. Accedi all'applicazione web:
-  - [http://localhost:3001/index.html](http://localhost:3001/index.html) (entrypoint con selezione lingua)
-  - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
+   - [http://localhost:3001/index.html](http://localhost:3001/index.html) (entrypoint: redirect verso intro, lingua default IT)
+   - [http://localhost:3001/web/odessa_intro.html?idLingua=1](http://localhost:3001/web/odessa_intro.html?idLingua=1) (intro)
+   - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
 
 4. Le API sono disponibili su:
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
@@ -38,7 +39,7 @@
   - `src/logic/` — logica di parsing e utility (es. `parser.js`)
   - `src/api/` — router API Express (es. `routes.js`, `linguaRoutes.js`)
   - `src/server.js` — entry point server Express (statico + API)
-- `web/` — file frontend statici (es. `odessa_main.html`, `odessa_intro.html`, `odessa1.js`)
+- `web/` — file frontend statici (es. `odessa_main.html`, `odessa_intro.html`, `js/odessa_main.js`, `js/odessa_intro.js`)
 - `backup/` — backup e archivi
 - `docs/` — documentazione e note di modellazione
 - `tests/` — suite Vitest
@@ -79,7 +80,8 @@ Per ridurre flood/DoS, le API sono soggette a rate limiting:
 
 - Generale su `/api/*` (soglia più alta)
 - Più stretto su endpoint CPU-intensive: `POST /api/parser/parse`, `POST /api/engine/execute`
-- Molto stretto su endpoint pesanti: `POST /api/run-tests`
+
+Nota: è definito anche un limiter "heavy" (opzionale) per eventuali endpoint futuri particolarmente costosi.
 
 Variabili env utili:
 
@@ -103,9 +105,8 @@ Vedi anche: [.env.example](.env.example).
 Per evitare **information disclosure** (es. `err.message`, stack trace, path interni) in produzione:
 
 - Gli errori non gestiti vengono normalizzati dal middleware globale `src/middleware/errorHandler.js`.
-- In `NODE_ENV=production` le risposte 5xx sono **sanitizzate** (es. `INTERNAL_ERROR`), mantenendo però forme compatibili per alcune API legacy:
+- In `NODE_ENV=production` le risposte 5xx sono **sanitizzate** (es. `INTERNAL_ERROR`), mantenendo però forme compatibili per alcune API:
    - `POST /api/parser/*` → envelope `{ IsValid:false, Error:'INTERNAL' }`
-   - `POST /api/run-tests` → envelope `{ success:false, error:'INTERNAL_ERROR' }`
 
 Test: `tests/api.errorhandler.test.ts`.
 
@@ -117,7 +118,7 @@ Test: `tests/api.errorhandler.test.ts`.
 
 Nota deploy Railway (root `https://missioneodessa.up.railway.app/`):
 - lasciare `BASE_PATH` vuoto
-- consigliati: `NODE_ENV=production`, `TRUST_PROXY=1`, `API_AUTH_DISABLED=1`, `DISABLE_RUN_TESTS=1`
+- consigliati: `NODE_ENV=production`, `TRUST_PROXY=1`, `API_AUTH_DISABLED=1`
 
 ## Dati e struttura
 
@@ -128,15 +129,10 @@ I dati dell'applicazione sono memorizzati in file JSON statici in `src/data-inte
 
 - Vedi `RELEASE_NOTES.md` per i punti salienti; le note legacy restano in `docs/release-notes/`.
 
-## Endpoint utili (test e servizio)
-
-- POST `/api/run-tests?suite=smoke|full`
-   - Esegue la suite E2E Playwright dal backend e restituisce un report JSON.
-   - `suite=smoke` esegue solo i controlli minimi (es. API versione) per una verifica rapida.
-   - In produzione pubblica è consigliato disabilitare l'endpoint con `DISABLE_RUN_TESTS=1`.
+## Endpoint utili (servizio)
 
 - POST `/api/shutdown`
-   - Spegne il server in modo “graceful” (exit code 0). Disponibile solo quando `NODE_ENV=test`. Utile nelle pipeline locali per evitare exit -1.
+   - Spegne il server in modo “graceful” (exit code 0). Disponibile solo quando `NODE_ENV=test`. Utile nelle pipeline locali.
 
 ## Migrazione da DB a JSON
 
@@ -150,14 +146,13 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 ## Stato
 
 - **Versione attuale: 1.3.0 Beta** (8 gennaio 2026)
-- **Test Coverage**: 211 test totali (194 passati, 17 skippati)
+- **Test Coverage**: vedi output `npm test` (Vitest)
 - **Qualità**: ESLint clean, TypeScript strict typing
 - **i18n**: Full compliance IT/EN
-- Test E2E: Suite completa via Playwright, accessibile da `index.html` > "Esegui test applicazione"
-- Smoke test via API: ~9–10 secondi su ambiente locale
+
 
 ### Novità versione 1.3.0
-- Sistema completo di test (unit, integration, E2E)
+- Sistema completo di test (unit/integration con Vitest)
 - Mystery scoring tests (VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE)
 - Intercettazione pattuglie sovietiche (danger zones)
 - Sistema buio e game over unificato

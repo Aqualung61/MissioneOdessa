@@ -58,7 +58,7 @@ if (narrativeState === 'ENDING_PHASE_2_WAIT' && unusefulCommandsCounter >= 3) {
 **File modificati:**
 - `src/logic/engine.js`: punteggio assegnato prima dell’applicazione effetti + propagazione flag `ended`/`victory`
 - `src/data-internal/Interazioni.json`: Interazione porgi_documenti_59
-- `web/js/odessa1.js`: helper `displayGameEndedMessage()` + gestione UI vittoria e aggiornamento stats
+- `web/js/odessa_main.js`: helper `displayGameEndedMessage()` + gestione UI vittoria e aggiornamento stats
 
 **Sequenza Completa:**
 1. User arriva al Luogo 1 con prerequisiti Ferenc
@@ -106,7 +106,7 @@ function displayGameEndedMessage() {
 
 **Problema:** Navigazione via stella non triggherava Ferenc
 
-**Soluzione:** `web/js/odessa1.js`
+**Soluzione:** `web/js/odessa_main.js`
 - Aggiunta gestione NARRATIVE (mostra messaggio Ferenc)
 - Aggiunta gestione TELEPORT (sposta a Luogo 59)
 - Parità funzionale tra comando testuale e click stella

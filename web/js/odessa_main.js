@@ -6,7 +6,7 @@ function getQueryParam(name) {
 
 // Legge idLingua da URL, localStorage o default a 1
 const idLingua = parseInt(getQueryParam('idLingua')) || parseInt(localStorage.getItem('linguaSelezionata')) || 1;
-console.log('ID Lingua corrente (odessa1.js):', idLingua);
+console.log('ID Lingua corrente (odessa_main.js):', idLingua);
 
 // Carica messaggi i18n frontend
 if (window.i18n) {
@@ -384,7 +384,7 @@ function handleDirectionClick(dir) {
 }
 
 
-// odessa1.js - Adventure game client-side (usa dati reali via API)
+// odessa_main.js - Adventure game client-side (usa dati reali via API)
 // Versione aggiornata: 2025-10-30  (fetch API)
 
 const DIRECTIONS = ['Nord', 'Est', 'Sud', 'Ovest', 'Su', 'Giu'];

@@ -74,8 +74,8 @@ describe('M4 error handler sanitization', () => {
     expect(res.body).toEqual({ IsValid: false, Error: 'INTERNAL' });
   });
 
-  it('run-tests envelope: non espone err.message in production', () => {
-    const err = new Error('PLAYWRIGHT_INTERNAL');
+  it('legacy /api/run-tests path: usa envelope /api standard in production', () => {
+    const err = new Error('LEGACY_ENDPOINT_INTERNAL');
     const req: MockReq = { method: 'POST', originalUrl: '/api/run-tests' };
     const res = createRes();
     const next = vi.fn();
@@ -83,6 +83,6 @@ describe('M4 error handler sanitization', () => {
     errorHandler(err, req, res, next);
 
     expect(res.statusCode).toBe(500);
-    expect(res.body).toEqual({ success: false, error: 'INTERNAL_ERROR' });
+    expect(res.body).toEqual({ ok: false, error: 'INTERNAL_ERROR' });
   });
 });

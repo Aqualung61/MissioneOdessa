@@ -40,7 +40,7 @@ Componenti osservati:
 - Core game engine: `src/logic/engine.js`.
 - Turn effects pipeline: `src/logic/turnEffects/*.js` + registry in `src/logic/turnEffects/index.js`.
 - Parser: `src/logic/parser.js`.
-- Client: `web/js/odessa1.js`.
+- Client: `web/js/odessa_main.js`.
 
 Nota: dove la documentazione diverge dal codice, questo documento segue il **codice**.
 
@@ -92,11 +92,11 @@ Nota: dove la documentazione diverge dal codice, questo documento segue il **cod
 **Soluzione implementata:**
 
 **P0 - Fix hardcoded fetch (commit d9e36b3):**
-- Corretto `fetch('/api/lingue')` hardcoded a riga 22 in `web/js/odessa1.js`
+- Corretto `fetch('/api/lingue')` hardcoded a riga 22 in `web/js/odessa_main.js`
 - Ora usa `fetch(basePath + 'api/lingue')`
 
 **P1 - basePath logic migliorato (commit b30e6a9):**
-- Creata funzione `getBasePath()` in `web/js/odessa1.js`
+- Creata funzione `getBasePath()` in `web/js/odessa_main.js`
 - Rimossa logica hardcoded per 'missioneodessa'
 - Ora supporta qualsiasi path custom (/test/, /prod/, /staging/, ecc.)
 
@@ -109,7 +109,7 @@ Nota: dove la documentazione diverge dal codice, questo documento segue il **cod
 **P1.2 - Allineamento odessa_intro.html (commit c1e2870):**
 - Rimossi 3 `<link rel="preload">` inutilizzati (eliminati warning console)
 - Aggiunto `fetchpriority="low"` a tutte le immagini per lazy loading
-- Allineata logica basePath con `getBasePath()` da odessa1.js
+- Allineata logica basePath con `getBasePath()` da odessa_main.js
 
 **Vantaggi ottenuti:**
 - ✅ Deployment flessibile in qualsiasi sottodirectory (Railway, Vercel, custom paths)
@@ -167,7 +167,7 @@ Nota: dove la documentazione diverge dal codice, questo documento segue il **cod
 ### R4 — Assenza di rate limiting su API
 **Rischio:** Client malfunzionante potrebbe bombardare server con richieste.  
 **Impatto:** Minimo (single-player locale), maggiore se deployato pubblicamente.  
-**Mitigazione implementata (agg. 9 gen 2026):** rate limiting attivo su `/api/*` con limiti più stretti per endpoint CPU/pesanti (`/api/parser/parse`, `/api/engine/execute`, `/api/run-tests`).
+**Mitigazione implementata (agg. 9 gen 2026):** rate limiting attivo su `/api/*` con limiti più stretti per endpoint CPU/pesanti (`/api/parser/parse`, `/api/engine/execute`).
 **Priorità:** Chiusa (resta solo tuning eventuale in base al traffico reale)
 
 ### R5 — Logging e observability limitati
@@ -278,9 +278,9 @@ Il server supporta `BASE_PATH` (utile per deploy in sottocartella). Nel client, 
 
 ---
 
-### 4) Monoliti (engine.js e odessa1.js): costo di manutenzione
+### 4) Monoliti (engine.js e odessa_main.js): costo di manutenzione
 **Osservazione**  
-`engine.js` e `odessa1.js` sono file molto grandi con responsabilità miste.
+`engine.js` e `odessa_main.js` sono file molto grandi con responsabilità miste.
 
 **Perché è critico nel vostro modello**
 Non è un tema di performance/scalabilità, ma di:
@@ -476,7 +476,7 @@ Questa sezione elenca interventi concreti e verificabili. Non implica che vadano
    - Isolare la logica click/enable in un modulo.
 
 **Test consigliati**
-- Non necessariamente unit test JS puro (se non previsto), ma almeno smoke manuale + Playwright suite esistente.
+- Non necessariamente unit test JS puro (se non previsto), ma almeno smoke manuale.
 
 ---
 

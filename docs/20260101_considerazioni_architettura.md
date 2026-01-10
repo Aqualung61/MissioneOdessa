@@ -199,7 +199,7 @@ flowchart TD
 > Aggiornamento 2026-01-09 (repo attuale):
 > - Esiste già una suite di test **Vitest** su logica engine/effects, punteggio e API.
 > - Esiste una pipeline **CI GitHub Actions** che esegue `lint` + `build` + `test`.
-> - Playwright è configurato, ma non risulta una suite E2E “scenario completo” mantenuta allo stesso livello dei test Vitest.
+> - Playwright **non è presente** nel repo attuale (test E2E rimossi); valutare E2E solo se servono davvero a coprire regressioni di UI.
 >
 > Di conseguenza, le conclusioni “NO unit test” ed “E2E come unica strategia” vanno lette come valutazione storica (2026-01-01). Oggi la raccomandazione pragmatica è: mantenere/espandere i test sui **critical path** e aggiungere E2E solo se servono a coprire regressioni di UI.
 
@@ -237,7 +237,7 @@ Stato attuale (2026-01-09): i test unit/integration **esistono già** e stanno d
 #### Scenario: Coverage 100% User Experience
 
 **Effort Richiesto:**
-- 8-10 scenari critici con Playwright: 5-8h
+- 8-10 scenari critici con Playwright (se introdotto): 5-8h
 - Smoke testing manuale: 3-5h
 - **Totale: 8-13h**
 
@@ -865,7 +865,7 @@ Refactoring diventa prioritario SE:
 
 - **Specifica Tecnica:** `specifica-tecnica-completa-integrata.md` v2.0
 - **Codebase:** `src/logic/engine.js`, `src/logic/parser.js`
-- **Test Framework:** Vitest (unit), Playwright (E2E)
+- **Test Framework:** Vitest
 - **Issue Tracker:** GitHub Issues (se attivato)
 
 ---
