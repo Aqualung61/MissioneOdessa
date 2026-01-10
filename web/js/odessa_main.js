@@ -322,10 +322,6 @@ function handleDirectionClick(dir) {
         feed.scrollTop = feed.scrollHeight;
       }
       // Se awaiting continue, blocca input e aspetta INVIO
-      if (result.awaitingContinue) {
-        awaitingContinue = true;
-        console.log('[CLIENT] Awaiting continue - blocco input fino a INVIO');
-      }
       return;
     }
     
@@ -445,10 +441,6 @@ const ParseErrorType = {
   SYNTAX_NOUN_UNKNOWN: 'SYNTAX_NOUN_UNKNOWN',
   SYNTAX_INVALID_STRUCTURE: 'SYNTAX_INVALID_STRUCTURE',
 };
-
-function resetVocabularyCache() {
-  vocabCache = null;
-}
 
 async function ensureVocabulary() {
   if (vocabCache) return vocabCache;
@@ -627,7 +619,6 @@ let current = null;
 let awaitingRestart = false;
 let awaitingConfirmEnd = false;
 let gameEnded = false;
-let visitedPlaces = new Set();
 let currentScore = 0; // Punteggio corrente dal server
 
 function updateDynamicPlaceImage() {
@@ -815,7 +806,6 @@ inputForm.addEventListener('submit', async function(e) {
       userInput.value = '';
       current = luoghi.find(l => l.ID === 1) || luoghi[0];
       awaitingRestart = false;
-      visitedPlaces = new Set(); // Reset luoghi visitati
       // Reset del gameState sul server
       fetch(basePath + 'api/engine/reset', { 
         method: 'POST',
@@ -1467,7 +1457,6 @@ inputForm.addEventListener('submit', async function(e) {
                             .then(stateResult => {
                               if (stateResult.ok) {
                                 current = luoghi.find(l => l.ID === stateResult.state.currentLocationId) || luoghi[0];
-                                visitedPlaces = new Set(stateResult.state.visitedPlaces || []);
                                 showCurrent();
                                 const feed = document.getElementById('placeFeed');
                                 if (feed) {
@@ -1495,7 +1484,7 @@ inputForm.addEventListener('submit', async function(e) {
                       feed.scrollTop = feed.scrollHeight;
                     }
                   });
-                } catch (err) {
+                } catch {
                   const feed = document.getElementById('placeFeed');
                   if (feed) {
                     const errMsg = document.createElement('div');
@@ -1538,6 +1527,7 @@ inputForm.addEventListener('submit', async function(e) {
         }
       })
       .catch(err => {
+        console.error('Errore interno nell\'esecuzione (SYSTEM):', err);
         const feed = document.getElementById('placeFeed');
         if (feed) {
           const errMsg = document.createElement('div');
@@ -1630,6 +1620,7 @@ inputForm.addEventListener('submit', async function(e) {
         }
       })
       .catch(err => {
+        console.error('Errore interno nell\'esecuzione (ACTION):', err);
         const feed = document.getElementById('placeFeed');
         if (feed) {
           const errMsg = document.createElement('div');
