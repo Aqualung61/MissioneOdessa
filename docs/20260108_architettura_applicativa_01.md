@@ -416,17 +416,16 @@ graph TB
 
 - `web/odessa_intro.html`
   - selezione lingua / introduzione
-  - calcolo `basePath` client-side (euristica “exclude app folders”)
+  - usa `web/js/bootstrap.js` per inizializzare `window.basePath` (compatibile con deploy root o in sottocartella)
 
 - `web/odessa_main.html`
   - UI principale (feed, input comandi, pannello direzioni)
-  - nota: in header calcola `basePath` con euristica specifica su `missioneodessa` (potenzialmente diversa da `odessa_main.js`)
+  - usa `web/js/bootstrap.js` per inizializzare `window.basePath`
 
 ### 7.2 Client runtime (`web/js/odessa_main.js`)
 
-- Calcola `basePath` con euristica:
-  - root deployment se primo segmento è tra `web/images/src/api`
-  - altrimenti assume sottocartella di deploy (primo segmento)
+- Usa `window.basePath` inizializzato da `web/js/bootstrap.js`.
+- Fallback: se `bootstrap.js` non è presente, applica una euristica (root se primo segmento è tra `web/images/src/api`, altrimenti primo segmento come BASE_PATH).
 - Carica JSON client-side per “parser livello 0” (lessico) da:
   - `src/data-internal/TerminiLessico.json`
   - `src/data-internal/VociLessico.json`
@@ -520,5 +519,5 @@ flowchart TB
 ## 10) Rischi/attenzioni note (architetturali)
 
 - **Stato singleton**: non adatto a scaling orizzontale senza persistenza/sessione.
-- **BASE_PATH client/server**: più punti di calcolo (intro, main, odessa_main.js); va mantenuta coerenza.
+- **BASE_PATH client/server**: la fonte primaria lato client è `web/js/bootstrap.js` (window.basePath). Il fallback di `web/js/odessa_main.js` va tenuto coerente se si rimuove/varia il bootstrap.
 - **/api/config** non prefissato da `BASE_PATH`: se usato da client in sottocartella può richiedere attenzione.

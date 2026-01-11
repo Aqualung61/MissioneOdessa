@@ -462,6 +462,14 @@ const userInput = document.getElementById('userInput');
 // Supporta qualsiasi path custom (es. /missioneodessa/, /test/, /produzione/)
 // Esclude segmenti "app" come /web/, /images/, /src/ per deployment root
 function getBasePath() {
+  // Preferisci il bootstrap comune (web/js/bootstrap.js), se presente.
+  if (typeof window.basePath === 'string' && window.basePath) {
+    let bp = window.basePath;
+    if (!bp.startsWith('/')) bp = '/' + bp;
+    if (!bp.endsWith('/')) bp = bp + '/';
+    return bp;
+  }
+
   const pathParts = window.location.pathname.split('/').filter(p => p);
   // Se primo segmento è cartella app interna, siamo in root deployment
   const appFolders = ['web', 'images', 'src', 'api'];
