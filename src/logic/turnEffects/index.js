@@ -11,7 +11,8 @@
  * 3. Game over effect (controllo condizioni morte)
  * 4. Intercept effect (intercettazione)
  * 5. Victory effect (sequenza finale Ferenc + teleport)
- * 6. Mystery effect (assegnazione misteri) - TODO Sprint 3.3.5.D
+ * 
+ * Nota: i “misteri” sono gestiti dal sistema punteggio in engine (non come turnEffect).
  */
 
 import { torchEffect } from './torchEffect.js';
@@ -19,7 +20,6 @@ import { darknessEffect } from './darknessEffect.js';
 import { gameOverEffect } from './gameOverEffect.js';
 import { interceptEffect } from './interceptEffect.js';
 import { victoryEffect } from './victoryEffect.js';
-// import { mysteryEffect } from './mysteryEffect.js';     // TODO Sprint 3.3.5.D
 
 /**
  * Registry di tutti gli effetti temporali applicati al turno.
@@ -37,7 +37,6 @@ export const TURN_EFFECTS = [
   gameOverEffect,    // Priorità 3: Verifica condizioni game over (darkness, terminale, intercept)
   interceptEffect,   // Priorità 4: Intercettazione in zone pericolose (incrementa turnsInDangerZone)
   victoryEffect,     // Priorità 5: Sequenza finale Ferenc + teleport (trigger vittoria)
-  // mysteryEffect   // Priorità 6: Assegnazione automatica misteri (TODO Sprint 3.3.5.D)
 ];
 
 /**
