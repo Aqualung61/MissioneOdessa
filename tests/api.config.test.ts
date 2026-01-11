@@ -20,7 +20,9 @@ describe('M0 api config: basePath esposto e normalizzato', () => {
   let baseUrl = '';
 
   afterEach(async () => {
-    if (server) await new Promise<void>((resolve) => server.close(() => resolve()));
+    const srv = server;
+    if (!srv) return;
+    await new Promise<void>((resolve) => srv.close(() => resolve()));
   });
 
   it('BASE_PATH vuoto: /api/config -> basePath "/"', async () => {
