@@ -13,6 +13,7 @@ import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
 import engineRoutes from './api/engineRoutes.js';
+import { registerApiConfigRoutes } from './api/configRoute.js';
 import { initOdessa } from './initOdessa.js';
 import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
@@ -58,15 +59,6 @@ const PORT = process.env.PORT || 3001;
 const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
-function normalizeBasePath(value) {
-  if (!value) return '/';
-  let bp = String(value).trim();
-  if (!bp) return '/';
-  if (!bp.startsWith('/')) bp = '/' + bp;
-  if (bp !== '/' && bp.endsWith('/')) bp = bp.slice(0, -1);
-  return bp + '/';
-}
-
 // Carica tutto il DB in memoria
 try {
   await initOdessa();
@@ -89,18 +81,7 @@ app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
 });
 
 // API: config (espone BASE_PATH al client)
-const BASE_PATH_NORMALIZED = normalizeBasePath(BASE_PATH);
-
-function sendApiConfig(req, res) {
-  res.json({ basePath: BASE_PATH_NORMALIZED });
-}
-
-// Nota: esponiamo /api/config anche sotto BASE_PATH per evitare ambiguità
-// in deploy in sottocartella (client può sempre chiamare window.basePath + 'api/config').
-app.get('/api/config', apiLimiter, sendApiConfig);
-if (BASE_PATH) {
-  app.get(BASE_PATH + '/api/config', apiLimiter, sendApiConfig);
-}
+registerApiConfigRoutes(app, { basePath: BASE_PATH, limiter: apiLimiter });
 
 // API: init_odessa per test
 app.get(BASE_PATH + '/init_odessa', async (req, res, next) => {
