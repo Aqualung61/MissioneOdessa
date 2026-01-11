@@ -3,18 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainImg = document.getElementById('mainImage');
   let currentIntro = 1;
 
-  // Progressione step tramite click sulle immagini (niente bottone Continua)
-  if (mainImg) {
-    mainImg.tabIndex = 0;
-    mainImg.setAttribute('role', 'button');
-    mainImg.setAttribute('aria-label', 'Continua');
-    mainImg.title = "Clicca sull'immagine per continuare";
-  }
-
-  const continueHint = document.createElement('div');
-  continueHint.className = 'continue-hint no-select';
-  continueHint.textContent = "Clicca sull'immagine per continuare";
-
   // Funzione per leggere parametri URL
   function getQueryParam(name) {
     const url = new URL(window.location.href);
@@ -24,6 +12,47 @@ document.addEventListener('DOMContentLoaded', () => {
   // Legge idLingua da URL, localStorage o default a 1
   const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
 
+  const continueHintFallbackByLingua = {
+    '1': "Clicca sull'immagine per continuare",
+    '2': 'Click the image to continue',
+  };
+
+  const continueAriaLabelFallbackByLingua = {
+    '1': 'Continua',
+    '2': 'Continue',
+  };
+
+  // Progressione step tramite click sulle immagini (niente bottone Continua)
+  if (mainImg) {
+    mainImg.tabIndex = 0;
+    mainImg.setAttribute('role', 'button');
+    mainImg.setAttribute('aria-label', continueAriaLabelFallbackByLingua[idLingua] || continueAriaLabelFallbackByLingua['1']);
+    mainImg.title = '';
+  }
+
+  const continueHint = document.createElement('div');
+  continueHint.id = 'continueHint';
+  continueHint.className = 'continue-hint no-select';
+  continueHint.textContent = continueHintFallbackByLingua['1'];
+
+  function applyContinueHintText(messageText, ariaLabelText) {
+    const hintFallback = continueHintFallbackByLingua[idLingua] || continueHintFallbackByLingua['1'];
+    const hintText = String(messageText || hintFallback);
+
+    const ariaFallback = continueAriaLabelFallbackByLingua[idLingua] || continueAriaLabelFallbackByLingua['1'];
+    const ariaText = String(ariaLabelText || ariaFallback);
+
+    continueHint.textContent = hintText;
+    if (mainImg) {
+      mainImg.title = hintText;
+      mainImg.setAttribute('aria-label', ariaText);
+    }
+    dualImages.querySelectorAll('img').forEach((img) => {
+      img.title = hintText;
+      img.setAttribute('aria-label', ariaText);
+    });
+  }
+
   const introHtmlCache = new Map(); // id -> parsedHTML
   const introFetchCache = new Map(); // id -> Promise<parsedHTML>
 
@@ -31,12 +60,29 @@ document.addEventListener('DOMContentLoaded', () => {
   dualImages.id = 'dualImages';
   dualImages.className = 'dual-images is-hidden';
   dualImages.innerHTML = `
-        <img class="dual-images__img" src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" fetchpriority="low" tabindex="0" role="button" aria-label="Continua" title="Clicca sull'immagine per continuare" />
-        <img class="dual-images__img" src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" fetchpriority="low" tabindex="0" role="button" aria-label="Continua" title="Clicca sull'immagine per continuare" />
+      <img class="dual-images__img" src="../images/Simon Wiesenthal.png" alt="Simon Wiesenthal" fetchpriority="low" tabindex="0" role="button" aria-label="" />
+      <img class="dual-images__img" src="../images/1948 - Berlin map.png" alt="1948 - Berlin map" fetchpriority="low" tabindex="0" role="button" aria-label="" />
       `;
   if (mainImg && mainImg.parentNode) {
     mainImg.insertAdjacentElement('afterend', dualImages);
   }
+
+  // UI hint i18n (non bloccante): se le API non sono accessibili (es. 401/403), resta il fallback.
+  applyContinueHintText(null);
+  fetch(window.basePath + 'api/frontend-messages/' + idLingua)
+    .then((res) => {
+      if (!res.ok) return null;
+      return res.json();
+    })
+    .then((data) => {
+      const messages = Array.isArray(data?.messages) ? data.messages : [];
+      const hintRow = messages.find((m) => m?.Chiave === 'ui.hint.clickImageToContinue');
+      const ariaRow = messages.find((m) => m?.Chiave === 'ui.aria.continue');
+      applyContinueHintText(hintRow?.Messaggio, ariaRow?.Messaggio);
+    })
+    .catch(() => {
+      // ignore
+    });
 
   // Fetch e mostra il testo di introduzione ID=1 con leggero delay per uniformità
   setTimeout(() => {

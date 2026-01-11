@@ -18,9 +18,13 @@ Questo documento descrive l’architettura **corrente** dell’app Missione Odes
 graph TB
   subgraph Client["Browser"]
     Index["index.html"]
+    Storia["web/odessa_storia.html"]
     Intro["web/odessa_intro.html"]
     Main["web/odessa_main.html"]
     Boot["web/js/bootstrap.js"]
+    IndexRedirect["web/js/index-redirect.js"]
+    SEO["web/js/seo-i18n.js"]
+    StoriaJS["web/js/odessa_storia.js"]
     IndexJS["web/js/index.js"]
     JS["web/js/odessa_main.js"]
     I18N["web/js/i18n.js"]
@@ -55,14 +59,20 @@ graph TB
     Cache["vocabCache<br/>(parser)"]
   end
 
-  Index -->|redirect| Intro
+  Index -->|redirect| Storia
   Index --> Boot
-  Index --> IndexJS
+  Index --> IndexRedirect
+  Storia --> Boot
+  Storia --> SEO
+  Storia --> StoriaJS
+  Storia --> IndexJS
   Intro --> Boot
   Main --> Boot
   Intro -->|fetch| Srv
   Main -->|fetch| Srv
+  Storia -->|fetch| Srv
   JS -->|fetch API| Srv
+  StoriaJS -->|fetch API| Srv
 
   Srv --> R1
   Srv --> R2
@@ -84,8 +94,11 @@ graph TB
   SysMsg --> Global
 
   Srv -.->|static| Intro
+  Srv -.->|static| Storia
   Srv -.->|static| Main
   Srv -.->|static| JS
+  Srv -.->|static| StoriaJS
+  Srv -.->|static| SEO
 ```
 
 ### 1.2 Principi chiave
@@ -97,8 +110,9 @@ graph TB
 - **Frontend**: statico (HTML/CSS/JS) servito da Express; il client usa fetch verso API REST.
 
 Nota frontend (as-is):
-- `index.html` è una pagina di lancio/redirect verso `web/odessa_intro.html`.
+- `index.html` è una pagina di lancio/redirect verso `web/odessa_storia.html`.
 - `web/js/bootstrap.js` inizializza `window.basePath` e gestisce la compatibilità `file://` reindirizzando a `http://localhost:3001` per le pagine sotto `web/`.
+- `web/js/index-redirect.js` effettua il redirect includendo `idLingua` e rispettando `window.basePath`.
 
 ---
 
@@ -190,7 +204,7 @@ graph LR
 - Gestito da `src/logic/engine.js`.
 - Include:
   - posizione corrente (`currentLocationId`), set luoghi visitati, inventario/oggetti runtime (`Oggetti`)
-  - flags “narrative / victory / restart” (`awaitingRestart`, `awaitingContinue`, `victory`, ecc.)
+  - flags “narrative / victory / end/restart” (`awaitingEndConfirm`, `awaitingRestart`, `awaitingContinue`, `victory`, ecc.)
   - punteggio e progressi (set e contatori)
   - sottostruttura `turn` con snapshot `current` e `previous`
 

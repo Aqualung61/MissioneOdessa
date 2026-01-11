@@ -166,6 +166,95 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.stats.score).toBe('number');
   });
 
+  it('FINE: conferma NO server-side (bypass parser) e continua il gioco', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res1 = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'FINE' }),
+    });
+    expect(res1.status).toBe(200);
+    const body1 = await res1.json();
+    expect(body1.ok).toBe(true);
+    expect(body1.engine?.resultType).toBe('CONFIRM_END');
+    expect(body1.state?.awaitingEndConfirm).toBe(true);
+
+    const res2 = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'N' }),
+    });
+    expect(res2.status).toBe(200);
+    const body2 = await res2.json();
+    expect(body2.ok).toBe(true);
+    expect(body2.parseResult).toBe(null);
+    expect(body2.command).toBe(null);
+    expect(body2.engine?.resultType).toBe('OK');
+    expect(body2.engine?.message).toBe('Gioco continuato.');
+    expect(body2.state?.awaitingEndConfirm).toBe(false);
+    expect(body2.state?.awaitingRestart).toBe(false);
+    expect(body2.state?.ended).toBe(false);
+  });
+
+  it('FINE: conferma SI -> GAME_OVER + awaitingRestart, poi SI -> hard reset', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const r1 = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'FINE' }),
+    });
+    expect(r1.status).toBe(200);
+    const b1 = await r1.json();
+    expect(b1.ok).toBe(true);
+    expect(b1.state?.awaitingEndConfirm).toBe(true);
+
+    const r2 = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'SI' }),
+    });
+    expect(r2.status).toBe(200);
+    const b2 = await r2.json();
+    expect(b2.ok).toBe(true);
+    expect(b2.parseResult).toBe(null);
+    expect(b2.command).toBe(null);
+    expect(b2.engine?.resultType).toBe('GAME_OVER');
+    expect(b2.engine?.gameOver).toBe(true);
+    expect(b2.engine?.message).toBe('Hai deciso di terminare la partita.');
+    expect(b2.state?.awaitingEndConfirm).toBe(false);
+    expect(b2.state?.awaitingRestart).toBe(true);
+
+    const r3 = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'SI' }),
+    });
+    expect(r3.status).toBe(200);
+    const b3 = await r3.json();
+    expect(b3.ok).toBe(true);
+    expect(b3.parseResult).toBe(null);
+    expect(b3.command).toBe(null);
+    expect(b3.engine?.resultType).toBe('OK');
+    expect(b3.state?.awaitingRestart).toBe(false);
+    expect(b3.state?.currentLocationId).toBe(1);
+    expect(b3.stats?.visitedPlaces).toBe(1);
+    expect(b3.stats?.score).toBe(1);
+  });
+
   it('navigation: aggiorna contatori e li ritorna in state/stats', async () => {
     const app = express();
     app.use(express.json());

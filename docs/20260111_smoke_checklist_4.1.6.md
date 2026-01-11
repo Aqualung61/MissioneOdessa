@@ -18,6 +18,9 @@ Obiettivo: verificare rapidamente che la migrazione “thin client + pipeline un
 - Apri `/web/odessa_main.html`.
 - Direzione valida (es. NORD/EST/...) → cambia luogo; pannello direzioni aggiornato; nessun errore console.
 - Direzione bloccata (muro) → resta nello stesso luogo e mostra messaggio d’errore coerente.
+- Comando `FINE` → prompt conferma.
+  - Risposta `NO` → “Gioco continuato.” e si resta nello stesso stato (nessun reset).
+  - Risposta `SI` → GAME OVER + prompt riavvio (come luogo terminale).
 - Entra in un luogo terminale (`Terminale=-1`) → GAME OVER + prompt riavvio.
 - Risposta `NO` al prompt → gioco terminato (input disabilitato).
 - Risposta `SI` al prompt → ripartenza a luogo 1 e HUD azzerato (luoghi visitati=1, punteggio=1, turn counters=0).

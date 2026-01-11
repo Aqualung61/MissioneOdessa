@@ -1,6 +1,11 @@
 /* eslint-env browser */
 
-(function redirectIndexToIntro() {
+(function initIndexLinks() {
+  function getQueryParam(name) {
+    var url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
+
   function ensureBasePath(path) {
     if (!path || typeof path !== 'string') return '/';
     var normalized = path;
@@ -23,14 +28,19 @@
       ? ensureBasePath(window.basePath)
       : ensureBasePath(computeBasePathFallback());
 
-  var params = new URLSearchParams(window.location.search || '');
-  params.set('idLingua', '1');
+  var idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
 
-  var targetPath = basePath + 'web/odessa_intro.html?' + params.toString();
-  var target =
-    window.location.protocol === 'file:'
-      ? 'http://localhost:3001' + targetPath
-      : targetPath;
+  var continueLink = document.getElementById('continueImageLink');
+  if (continueLink) {
+    var params = new URLSearchParams(window.location.search || '');
+    params.set('idLingua', idLingua);
+    continueLink.setAttribute('href', basePath + 'web/odessa_intro.html?' + params.toString());
+  }
 
-  window.location.replace(target);
+  var pdfLinks = document.querySelectorAll('a[data-pdf]');
+  pdfLinks.forEach(function (el) {
+    var filename = el.getAttribute('data-pdf');
+    if (!filename) return;
+    el.setAttribute('href', basePath + 'web/docs/' + filename);
+  });
 })();

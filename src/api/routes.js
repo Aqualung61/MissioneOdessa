@@ -28,6 +28,23 @@ router.get('/introduzione', async (req, res) => {
   res.json({ testo: row?.Testo || '' });
 });
 
+// GET /api/storia - restituisce testi markdown e label localizzata per la pagina storia
+router.get('/storia', async (req, res) => {
+  const id = parseInt(req.query.id, 10) || 1;
+  const lingua = parseInt(req.query.lingua, 10) || 1;
+  const storie = global.odessaData.Storia || [];
+  const row = storie.find(storia => storia.ID == id && storia.IDLingua == lingua);
+  res.json({
+    testo1: row?.Testo1 || '',
+    testo2: row?.Testo2 || '',
+    labelLinks: row?.LabelLinks || '',
+    labelDocumenti: row?.LabelDocumenti || '',
+    autoreLine: row?.AutoreLine || '',
+    genereLine: row?.GenereLine || '',
+    piattaformaLine: row?.PiattaformaLine || '',
+  });
+});
+
 // GET /api/luoghi - restituisce tutti i luoghi
 router.get('/luoghi', async (req, res) => {
   const luoghi = global.odessaData.Luoghi || [];

@@ -5,6 +5,7 @@
 #### Novità principali
 - Pipeline unica per input: `POST /api/engine/execute` come source-of-truth (parser + engine) con risposta arricchita `state/ui/stats`.
 - Restart dopo GAME OVER: conferma `SI` esegue un hard reset server-side (preserva lingua) e riallinea HUD/UI.
+- Comando `FINE` allineato al flusso full-server: richiede conferma `SI/NO` server-side (flag `awaitingEndConfirm`) ed elimina regressioni dovute a mismatch client/server.
 
 #### Hardening e compatibilità
 - Test HTTP aggiunti per la navigazione via `/api/engine/execute` (valida/bloccata/terminale + flow `SI/NO`).
@@ -53,10 +54,13 @@
 
 #### Cambiamenti principali
 - Rimossi test E2E Playwright e ogni integrazione di esecuzione test via endpoint (nessun `/api/run-tests`).
-- `index.html` semplificato: redirect verso `web/odessa_intro.html` (lingua default IT) con gestione `file://`.
+- `index.html` semplificato: redirect verso `web/odessa_storia.html` (lingua default IT) con gestione `file://`.
 - Script frontend rinominati/estratti:
 	- `web/js/odessa1.js` → `web/js/odessa_main.js`
 	- logica intro estratta in `web/js/odessa_intro.js`
+	- nuova logica storia/landing estratta in `web/js/odessa_storia.js`
+	- SEO/i18n meta estratto in `web/js/seo-i18n.js`
+	- redirect entrypoint estratto in `web/js/index-redirect.js`
 - CSS consolidato in file dedicati (riduzione inline CSS).
 
 #### Docs

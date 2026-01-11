@@ -97,6 +97,8 @@ Nota: dove la documentazione diverge dal codice, questo documento segue il **cod
 > - `web/js/bootstrap.js` calcola e imposta `window.basePath` (single source of truth lato client).
 > - `web/js/odessa_intro.js` usa direttamente `window.basePath` per tutte le chiamate API.
 > - `web/js/odessa_main.js` ora preferisce `window.basePath` e mantiene un fallback locale solo se il bootstrap non è presente.
+> - `web/js/odessa_storia.js` usa `window.basePath` per link e API (con fallback statico se le API non sono disponibili).
+> - `web/js/seo-i18n.js` aggiorna title/meta/canonical in base a `idLingua` (fallback + override via API se accessibile).
 
 **P0 - Fix hardcoded fetch (commit d9e36b3):**
 - Corretto `fetch('/api/lingue')` hardcoded a riga 22 in `web/js/odessa_main.js`

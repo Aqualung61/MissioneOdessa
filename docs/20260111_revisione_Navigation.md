@@ -5,6 +5,7 @@
 
 - Pipeline unica per l’input: `POST /api/engine/execute` (server-side parsing + esecuzione) con risposta arricchita (`state/ui/stats`).
 - Restart: hard reset server-side (preserva lingua), con gestione `awaitingRestart`.
+- Fine gioco (comando `FINE`): conferma server-side (bypass parser) con flag `awaitingEndConfirm`.
 - Endpoint legacy (`POST /api/parser/parse`, `POST /api/engine/set-location`): deprecati e disabilitabili con `DISABLE_LEGACY_ENDPOINTS=1`.
 
 Riferimenti rapidi:
@@ -81,6 +82,7 @@ Conseguenza: c’è duplicazione di responsabilità:
 - Server:
   - `src/api/parserRoutes.js` espone `POST /api/parser/parse` e ritorna il parseResult.
   - `src/api/engineRoutes.js` espone `POST /api/engine/execute` che:
+    - se `awaitingEndConfirm` interpreta input come `SI/NO` (bypass parser)
     - se `awaitingRestart` interpreta input come `SI/NO` (bypass parser)
     - altrimenti chiama `parseCommand` e poi `executeCommandAsync`.
   - `src/logic/engine.js`:

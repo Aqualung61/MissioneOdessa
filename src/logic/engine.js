@@ -16,18 +16,50 @@ export async function executeCommandAsync(parseResult) {
   // Puoi aggiungere logica custom async qui se serve
   return executeCommand(parseResult);
 }
+
+// Conferma fine gioco (SI/NO) quando lo stato è in attesa di conferma.
+export function confirmEnd(risposta) {
+  const r = (risposta || '').trim().toUpperCase();
+
+  const isYes = r === 'S' || r === 'SI' || r === 'SÌ' || r === 'Y' || r === 'YES';
+  const isNo = r === 'N' || r === 'NO';
+
+  if (isYes) {
+    gameState.awaitingEndConfirm = false;
+    gameState.awaitingRestart = true;
+    return {
+      accepted: false,
+      resultType: 'GAME_OVER',
+      message: getSystemMessage('engine.end.ended', gameState.currentLingua),
+      gameOver: true,
+    };
+  }
+
+  if (isNo) {
+    gameState.awaitingEndConfirm = false;
+    return {
+      accepted: true,
+      resultType: 'OK',
+      message: getSystemMessage('engine.end.continued', gameState.currentLingua),
+    };
+  }
+
+  // Risposta non riconosciuta: rimane in attesa
+  return { accepted: false, resultType: 'ERROR' };
+}
+
 // Stub: conferma riavvio (da implementare secondo logica app)
 export function confirmRestart(risposta) {
   // Normalizza risposta
-  const r = (risposta || '').toUpperCase();
-  if (r === 'S' || r === 'SI' || r === 'SÌ') {
+  const r = (risposta || '').trim().toUpperCase();
+  if (r === 'S' || r === 'SI' || r === 'SÌ' || r === 'Y' || r === 'YES') {
     // Riavvia: reset completo stato (source of truth), mantenendo lingua corrente
     // Nota: `resetGameState` ricrea visitedPlaces/punteggio/turn/timers ecc.
     const lingua = typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : 1;
     resetGameState(lingua);
     return { accepted: true, resultType: 'OK' };
   }
-  if (r === 'NO') {
+  if (r === 'N' || r === 'NO') {
     // Termina partita
     gameState.awaitingRestart = false;
     gameState.ended = true;
@@ -41,6 +73,7 @@ export function confirmRestart(risposta) {
 // Stato di gioco (singleton in memoria)
 let gameState = {
   openStates: { BOTOLA: false },
+  awaitingEndConfirm: false,
   awaitingRestart: false,
   currentLocationId: 1,
   ended: false,
@@ -121,6 +154,7 @@ export function resetGameState(idLingua = 1) {
   console.log('Inizializzazione gameState con lingua:', idLingua);
   gameState = {
     openStates: { BOTOLA: false },
+    awaitingEndConfirm: false,
     awaitingRestart: false,
     currentLocationId: 1,
     ended: false,
@@ -527,7 +561,8 @@ export function getDirezioniLuogo(idLuogo) {
 // Funzione per impostare lo stato di gioco
 export function setGameState(newState) {
   gameState = { 
-    ...newState, 
+    ...newState,
+    awaitingEndConfirm: newState.awaitingEndConfirm === true,
     visitedPlaces: new Set(newState.visitedPlaces || []),
     Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : [],
     // Deserializzazione Set del punteggio
@@ -610,6 +645,7 @@ export function getGameStateSnapshot() {
   const currentLocation = global.odessaData.Luoghi.find(l => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua);
   const snapshot = {
     openStates: { ...gameState.openStates },
+    awaitingEndConfirm: gameState.awaitingEndConfirm,
     awaitingRestart: gameState.awaitingRestart,
     currentLocationId: gameState.currentLocationId,
     ended: gameState.ended,
@@ -1107,6 +1143,7 @@ function executeCommandLegacy(parseResult) {
             return { accepted: true, resultType: 'OK', message: breakdown, effects: [], showLocation: true };
           }
           case 'FINE':
+            gameState.awaitingEndConfirm = true;
             return { accepted: true, resultType: 'CONFIRM_END', message: getSystemMessage('engine.end.confirm', gameState.currentLingua), effects: [] };
           default:
             return {

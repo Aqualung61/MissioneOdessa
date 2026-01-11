@@ -99,7 +99,7 @@ Il sistema di illuminazione è gestito come **unico thread logico** con tre fasi
 - **Comandi che incrementano il countdown:** Tutti i comandi con `CommandType === 'NAVIGATION'` o `CommandType === 'ACTION'`
   - Include: spostamenti (NORD, SUD, EST, OVEST...), azioni (PRENDI, LASCIA, ESAMINA, USA...)
 - **Comandi di sistema esclusi (NON incrementano countdown):** Tutti i comandi con `CommandType === 'SYSTEM'`
-  - Include: INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, GUARDA (senza parametro), RESTART, QUIT
+  - Include: INVENTARIO, AIUTO, PUNTI, SALVA, CARICA, FINE, GUARDA (senza parametro), RESTART, QUIT
   - Determinazione automatica dal parser in base al verbo, non lista hardcoded
 - **Nessun warning:** Non ci sono messaggi di avviso durante i 3 turni.
 
@@ -2604,9 +2604,11 @@ executeCommand(parseResult)              [Router - 17 LOC, complessità 4]
    function handleSaveCommand() { ... }         // 3 LOC
    function handleLoadCommand() { ... }         // 3 LOC
    function handleScoreCommand() { ... }        // 5 LOC
-   function handleEndCommand() { ... }          // 3 LOC
+  function handleEndCommand() { ... }          // 3 LOC (imposta awaitingEndConfirm e ritorna CONFIRM_END)
    function handleSystemFallback(verb) { ... }  // 5 LOC
    ```
+
+  Nota: la risposta dell’utente alla conferma (SI/NO) va gestita a livello API come bypass del parser quando `state.awaitingEndConfirm === true` (analogo a `awaitingRestart`).
 
 2. Implementare dispatcher:
    ```javascript

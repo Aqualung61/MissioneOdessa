@@ -180,6 +180,26 @@
     "Messaggio": "Do you really want to end the game? (y/n)"
   },
   {
+    "Chiave": "engine.end.continued",
+    "IDLingua": 1,
+    "Messaggio": "Gioco continuato."
+  },
+  {
+    "Chiave": "engine.end.continued",
+    "IDLingua": 2,
+    "Messaggio": "Game continued."
+  },
+  {
+    "Chiave": "engine.end.ended",
+    "IDLingua": 1,
+    "Messaggio": "Hai deciso di terminare la partita."
+  },
+  {
+    "Chiave": "engine.end.ended",
+    "IDLingua": 2,
+    "Messaggio": "You chose to end the game."
+  },
+  {
     "Chiave": "engine.examine.nothingSpecial",
     "IDLingua": 1,
     "Messaggio": "Non vedi nulla di particolare."

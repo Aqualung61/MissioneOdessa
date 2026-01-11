@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Missione Odessa: avventura testuale interattiva." />
+  <link rel="canonical" href="https://missioneodessa.up.railway.app/web/odessa_storia.html" />
+  <meta name="theme-color" content="#000000" />
+
+  <meta property="og:locale" content="it_IT" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Missione Odessa" />
+  <meta property="og:title" content="Missione Odessa - Adventure Game" />
+  <meta property="og:description" content="Missione Odessa: avventura testuale interattiva." />
+  <meta property="og:url" content="https://missioneodessa.up.railway.app/web/odessa_storia.html" />
+  <meta property="og:image" content="https://missioneodessa.up.railway.app/images/MissioneOdessa_intro.png" />
+  <meta property="og:image:alt" content="Missione Odessa" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Missione Odessa - Adventure Game" />
+  <meta name="twitter:description" content="Missione Odessa: avventura testuale interattiva." />
+  <meta name="twitter:image" content="https://missioneodessa.up.railway.app/images/MissioneOdessa_intro.png" />
+
+  <title>Missione Odessa - Adventure Game</title>
+  <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
+  <script src="js/seo-i18n.js" defer></script>
+  <script src="js/bootstrap.js"></script>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/odessa_storia.css" />
+</head>
+<body class="page-intro page-index">
+  <header class="visually-hidden">
+    <h1>Missione Odessa</h1>
+  </header>
+  <noscript>
+    <p>
+      JavaScript è consigliato. Puoi comunque aprire
+      <a href="odessa_intro.html">l’introduzione</a>.
+    </p>
+  </noscript>
+
+  <main id="introduzione">
+    <div class="index-two-col">
+      <section class="col-left" aria-label="Avvio Missione Odessa">
+        <a id="continueImageLink" href="odessa_intro.html" aria-label="Apri introduzione">
+          <img class="index-hero-img" src="../images/dummy.png" alt="Missione Odessa" width="1024" height="1024" decoding="async" loading="eager" />
+        </a>
+      </section>
+
+      <section class="col-right" aria-label="Documenti PDF">
+        <div id="storiaTesto1"></div>
+        <p id="autoreLine">Autore: Paolo Giorgi (con il contributo di Mauro Giorgi e Enrico Colombini)</p>
+        <p id="genereLine">Genere: Avventura testuale, spionaggio, Guerra Fredda.</p>
+        <p id="piattaformaLine">Piattaforma: Commodore 64/128, ZX Spectrum.</p>
+        <p id="linksLabel">Links:</p>
+        <p class="line-hover">
+          <a
+            href="https://ready64.org/giochi/scheda_gioco/id/830/missione-odessa"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover-effect font-normal not-italic underline"
+            >Scheda Ready64.org</a
+          >
+        </p>
+        <p class="line-hover">
+          <a
+            href="https://csdb.dk/release/?id=148666"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover-effect font-normal not-italic underline"
+            >English version</a
+          >
+        </p>
+        <p class="line-hover">
+          <a
+            href="https://c64online.com/c64-games/missione-odessa-it/#jumptothegame"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover-effect font-normal not-italic underline"
+            >Gioca on line</a
+          >
+        </p>
+
+        <p id="documentiLabel">Documenti (PDF):</p>
+        <p class="line-hover">
+          <a
+            data-pdf="Missione_Odessa_Brochure.pdf"
+            href="docs/Missione_Odessa_Brochure.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            type="application/pdf"
+            class="hover-effect font-normal not-italic underline"
+            >Missione Odessa - Brochure</a
+          >
+        </p>
+        <p class="line-hover">
+          <a
+            data-pdf="Missione_Odessa_Soluzione_Mappa.pdf"
+            href="docs/Missione_Odessa_Soluzione_Mappa.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            type="application/pdf"
+            class="hover-effect font-normal not-italic underline"
+            >Missione Odessa - Soluzione + mappa</a
+          >
+        </p>
+        <p class="line-hover">
+          <a
+            data-pdf="Missione_Odessa_Istruzioni.pdf"
+            href="docs/Missione_Odessa_Istruzioni.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            type="application/pdf"
+            class="hover-effect font-normal not-italic underline"
+            >Missione Odessa - Istruzioni</a
+          >
+        </p>
+      </section>
+    </div>
+
+    <section class="index-below" aria-label="Testo aggiuntivo">
+      <div id="storiaTesto2"></div>
+      <div id="continueHint" class="continue-hint no-select">Clicca sull'immagine per continuare</div>
+    </section>
+  </main>
+
+  <script src="js/marked.min.js"></script>
+  <script src="js/odessa_storia.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

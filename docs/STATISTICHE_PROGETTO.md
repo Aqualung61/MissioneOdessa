@@ -110,7 +110,7 @@ git rev-list --count HEAD
 | **Classi** | 0 | Pattern funzionale puro, no OOP |
 | **Moduli core** | 46 | File in src/ (ricorsivo, esclusi binari/artefatti) |
 | **Test suite** | 26 | Vitest test files (25 passed | 1 skipped) |
-| **Componenti web** | 8 | File frontend (2 HTML + 3 CSS + 3 JS) |
+| **Componenti web** | 16 | Asset frontend principali (4 HTML entry + 3 CSS in `web/css` + 9 JS in `web/js`) |
 | **API Routes** | 7 | Endpoint REST Express (sviluppati, non framework) |
 
 **Dettaglio funzioni esportate:**
@@ -127,7 +127,7 @@ git rev-list --count HEAD
 ### Complessità Funzionale Stimata
 - **Moduli principali:** 14 JS + 3 TS in src/ (logic, api, data-internal, tests)
 - **API Endpoints:** 7 route REST (POST /execute, GET /state, POST /reset, POST /set-location [legacy], POST /save-client-state, POST /load-client-state, GET /direzioni/:idLuogo)
-- **Frontend pages:** 3 HTML (index.html, odessa_intro.html, odessa_main.html)
+- **Frontend pages:** 4 HTML (index.html, odessa_storia.html, odessa_intro.html, odessa_main.html)
 - **Depth medio:** 3 livelli (src → logic/api → implementazione)
 
 ### Analisi Qualitativa

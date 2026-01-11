@@ -357,6 +357,7 @@ function applyUiFromExecute(ui) {
 function syncFlagsFromState(state) {
   if (!state || typeof state !== 'object') return;
   awaitingRestart = !!state.awaitingRestart;
+  awaitingConfirmEnd = !!state.awaitingEndConfirm;
   if (state.ended === true) {
     displayGameEndedMessage();
   }
@@ -635,38 +636,16 @@ inputForm.addEventListener('submit', async function(e) {
     return;
   }
   
-  // Se in attesa di conferma fine gioco
+  // Se in attesa di conferma fine gioco (server-side), inoltra SI/NO a /execute
   if (awaitingConfirmEnd) {
     const risposta = userInput.value.trim().toUpperCase();
-    if (/^S(I|Ì)?$/.test(risposta)) {
-      awaitingConfirmEnd = false;
-      awaitingRestart = true;
+    if (/^(S(I|Ì)?|Y(ES)?)$/.test(risposta) || /^(N(O)?)$/.test(risposta)) {
       userInput.value = '';
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const msg = document.createElement('div');
-        msg.className = 'feed-msg system';
-        msg.innerHTML = '<b>Vuoi ripartire? (SI/SÌ per confermare)</b>';
-        feed.appendChild(msg);
-        feed.scrollTop = feed.scrollHeight;
-      }
-      return;
-    } else if (/^N(O)?$/.test(risposta)) {
-      awaitingConfirmEnd = false;
-      userInput.value = '';
-      const feed = document.getElementById('placeFeed');
-      if (feed) {
-        const msg = document.createElement('div');
-        msg.className = 'feed-msg system';
-        msg.textContent = window.i18n ? window.i18n.msg('ui.game.continued') : 'Gioco continuato.';
-        feed.appendChild(msg);
-        feed.scrollTop = feed.scrollHeight;
-      }
-      return;
-    } else {
-      userInput.value = '';
+      await executeCommandOnServer(risposta);
       return;
     }
+    userInput.value = '';
+    return;
   }
   // Se in attesa di conferma riavvio
   if (awaitingRestart) {

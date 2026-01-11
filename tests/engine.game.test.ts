@@ -86,6 +86,10 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('CONFIRM_END');
     expect(res.message).toBe('Vuoi davvero finire il gioco? (s/n)');
+
+    const snap = getGameStateSnapshot();
+    expect(snap.awaitingEndConfirm).toBe(true);
+    expect(snap.awaitingRestart).toBe(false);
   });
 
   it('SALVA restituisce stato per download', async () => {

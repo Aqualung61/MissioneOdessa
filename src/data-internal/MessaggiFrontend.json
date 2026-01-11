@@ -220,6 +220,66 @@
     "Messaggio": "Mission Odessa Adventure"
   },
   {
+    "Chiave": "seo.title.intro",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Introduzione"
+  },
+  {
+    "Chiave": "seo.title.intro",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Introduction"
+  },
+  {
+    "Chiave": "seo.description.intro",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa: introduzione e contesto dell’avventura."
+  },
+  {
+    "Chiave": "seo.description.intro",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa: introduction and story background."
+  },
+  {
+    "Chiave": "seo.title.storia",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Storia"
+  },
+  {
+    "Chiave": "seo.title.storia",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Story"
+  },
+  {
+    "Chiave": "seo.description.storia",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa: avventura testuale interattiva."
+  },
+  {
+    "Chiave": "seo.description.storia",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa: interactive text-adventure story and resources."
+  },
+  {
+    "Chiave": "seo.title.main",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Gioco"
+  },
+  {
+    "Chiave": "seo.title.main",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Game"
+  },
+  {
+    "Chiave": "seo.description.main",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa: avventura testuale interattiva."
+  },
+  {
+    "Chiave": "seo.description.main",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa: interactive text adventure."
+  },
+  {
     "Chiave": "ui.heading",
     "IDLingua": 1,
     "Messaggio": "Missione Odessa - Adventure"
@@ -368,5 +428,25 @@
     "Chiave": "ui.game.restart",
     "IDLingua": 2,
     "Messaggio": "Do you want to restart? (YES to confirm)"
+  },
+  {
+    "Chiave": "ui.hint.clickImageToContinue",
+    "IDLingua": 1,
+    "Messaggio": "Clicca sull'immagine per continuare"
+  },
+  {
+    "Chiave": "ui.hint.clickImageToContinue",
+    "IDLingua": 2,
+    "Messaggio": "Click the image to continue"
+  },
+  {
+    "Chiave": "ui.aria.continue",
+    "IDLingua": 1,
+    "Messaggio": "Continua"
+  },
+  {
+    "Chiave": "ui.aria.continue",
+    "IDLingua": 2,
+    "Messaggio": "Continue"
   }
 ]

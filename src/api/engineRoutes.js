@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseCommand } from '../logic/parser.js';
-import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
+import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmEnd, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
@@ -102,6 +102,20 @@ router.post('/execute', validateCommandInput({ mode: 'engine' }), async (req, re
     }
     // ensureVocabulary ora chiamata automaticamente in parseCommand
     const state = getGameStateSnapshot();
+    // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
+    if (state.awaitingEndConfirm) {
+      const engine = normalizeEngineResult(confirmEnd(input));
+      const nextState = getGameStateSnapshot();
+      return res.json({
+        ok: true,
+        parseResult: null,
+        command: null,
+        engine,
+        state: nextState,
+        ui: buildUiFromState(nextState),
+        stats: computeStatsFromState(nextState),
+      });
+    }
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
       const engine = normalizeEngineResult(await confirmRestart(input)); // dbPath rimosso
