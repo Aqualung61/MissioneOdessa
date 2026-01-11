@@ -4,30 +4,146 @@ import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
+import { appVersion } from '../version.js';
 
 const router = express.Router();
+
+function isTruthy(value) {
+  return value === '1' || value === 'true' || value === 'yes';
+}
+
+function computeStatsFromState(state) {
+  const visitedPlaces = state?.visitedPlaces?.length || 0;
+  const interactions = state?.punteggio?.interazioniPunteggio?.length || 0;
+  const mysteries = state?.punteggio?.misteriRisolti?.length || 0;
+  const score = state?.punteggio?.totale || 0;
+
+  let rank = 'Novizio';
+  if (score >= 100) rank = 'Maestro';
+  else if (score >= 67) rank = 'Investigatore';
+  else if (score >= 34) rank = 'Esploratore';
+  if (score === 134) rank = 'Perfezionista';
+
+  return { visitedPlaces, interactions, mysteries, score, rank };
+}
+
+function buildUiFromState(state) {
+  const locationId = state?.currentLocationId;
+  const direzioni = typeof locationId === 'number' ? getDirezioniLuogo(locationId) : {};
+  const availableDirections = Object.entries(direzioni)
+    .filter(([, value]) => typeof value === 'number' && value >= 1)
+    .map(([key]) => key);
+
+  return {
+    location: {
+      id: typeof locationId === 'number' ? locationId : null,
+      name: typeof state?.currentLocationName === 'string' ? state.currentLocationName : '',
+    },
+    direzioni,
+    availableDirections,
+  };
+}
+
+function normalizeEngineResult(engine) {
+  if (!engine || typeof engine !== 'object') {
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: '',
+      turnMessages: [],
+      gameOver: false,
+    };
+  }
+
+  const normalized = { ...engine };
+
+  if (typeof normalized.accepted !== 'boolean') {
+    normalized.accepted = true;
+  }
+
+  if (typeof normalized.resultType !== 'string' || normalized.resultType.length === 0) {
+    normalized.resultType = normalized.accepted ? 'OK' : 'ERROR';
+  }
+
+  if (typeof normalized.message !== 'string') {
+    normalized.message = '';
+  }
+
+  if (!Array.isArray(normalized.turnMessages)) {
+    if (typeof normalized.turnMessages === 'string' && normalized.turnMessages.trim()) {
+      normalized.turnMessages = [normalized.turnMessages.trim()];
+    } else {
+      normalized.turnMessages = [];
+    }
+  }
+
+  if (typeof normalized.gameOver !== 'boolean') {
+    normalized.gameOver = false;
+  }
+
+  return normalized;
+}
 
 router.post('/execute', validateCommandInput({ mode: 'engine' }), async (req, res, next) => {
   try {
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
-      return res.status(400).json({ ok: false, error: 'Invalid input' });
+      const state = getGameStateSnapshot();
+      return res.status(400).json({
+        ok: false,
+        error: 'Invalid input',
+        parseResult: null,
+        command: null,
+        engine: null,
+        state,
+        ui: buildUiFromState(state),
+        stats: computeStatsFromState(state),
+      });
     }
     // ensureVocabulary ora chiamata automaticamente in parseCommand
     const state = getGameStateSnapshot();
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
-      const engine = await confirmRestart(input); // dbPath rimosso
-      return res.json({ ok: true, parseResult: null, command: null, engine });
+      const engine = normalizeEngineResult(await confirmRestart(input)); // dbPath rimosso
+      const nextState = getGameStateSnapshot();
+      return res.json({
+        ok: true,
+        parseResult: null,
+        command: null,
+        engine,
+        state: nextState,
+        ui: buildUiFromState(nextState),
+        stats: computeStatsFromState(nextState),
+      });
     }
     const parsed = await parseCommand(null, input, state); // passa gameState
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
-      return res.status(400).json({ ok: false, parseResult: parsed, error: parsed.Error, userMessage });
+      const currentState = getGameStateSnapshot();
+      return res.status(400).json({
+        ok: false,
+        parseResult: parsed,
+        command: null,
+        engine: null,
+        error: parsed.Error,
+        userMessage,
+        state: currentState,
+        ui: buildUiFromState(currentState),
+        stats: computeStatsFromState(currentState),
+      });
     }
     const command = toCommandDTO(parsed);
-    const engine = await executeCommandAsync(parsed); // dbPath rimosso
-    res.json({ ok: true, parseResult: parsed, command, engine });
+    const engine = normalizeEngineResult(await executeCommandAsync(parsed)); // dbPath rimosso
+    const nextState = getGameStateSnapshot();
+    res.json({
+      ok: true,
+      parseResult: parsed,
+      command,
+      engine,
+      state: nextState,
+      ui: buildUiFromState(nextState),
+      stats: computeStatsFromState(nextState),
+    });
   } catch (err) {
     return next(err);
   }
@@ -58,6 +174,19 @@ router.post('/reset', (req, res, next) => {
 // Stato engine: set location
 router.post('/set-location', (req, res, next) => {
   try {
+    // Legacy endpoint: usare POST /api/engine/execute (NAVIGATION) invece di set-location.
+    res.set('Deprecation', 'true');
+    res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
+    res.set('Cache-Control', 'no-store');
+
+    if (isTruthy(process.env.DISABLE_LEGACY_ENDPOINTS || '')) {
+      return res.status(410).json({
+        ok: false,
+        error: 'LEGACY_ENDPOINT_DISABLED',
+        message: 'Endpoint legacy disabilitato. Usa POST /api/engine/execute.',
+      });
+    }
+
     const { locationId, consumeTurn } = req.body;
     if (typeof locationId !== 'number' || locationId < 1) {
       return res.status(400).json({ ok: false, error: 'Invalid locationId' });
@@ -163,7 +292,7 @@ router.post('/save-client-state', (req, res, next) => {
         Oggetti: gameState.Oggetti
       },
       timestamp: new Date().toISOString(),
-      version: '1.3.0'
+      version: appVersion
     };
     // Imposta header per download
     const now = new Date();

@@ -1,3 +1,22 @@
+## v1.3.1-beta (11 gennaio 2026)
+
+### Navigation: migrazione full-server (Sprint 4.1.x)
+
+#### Novità principali
+- Pipeline unica per input: `POST /api/engine/execute` come source-of-truth (parser + engine) con risposta arricchita `state/ui/stats`.
+- Restart dopo GAME OVER: conferma `SI` esegue un hard reset server-side (preserva lingua) e riallinea HUD/UI.
+
+#### Hardening e compatibilità
+- Test HTTP aggiunti per la navigazione via `/api/engine/execute` (valida/bloccata/terminale + flow `SI/NO`).
+- Endpoint legacy marcati come deprecati (`Deprecation`/`Sunset`) e disabilitabili via `DISABLE_LEGACY_ENDPOINTS=1`:
+	- `POST /api/engine/set-location`
+	- `POST /api/parser/parse`
+
+#### Note
+- Nessuna rimozione fisica degli endpoint legacy in questa release: cleanup aggressivo rimandato.
+
+---
+
 ## v1.3.0 - Beta Release (8 gennaio 2026)
 
 ### Sprint 3.3.5.D - Test Suite Completo e Quality Assurance

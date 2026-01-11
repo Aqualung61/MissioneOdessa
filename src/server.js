@@ -8,7 +8,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync } from 'fs';
 import apiRoutes from './api/routes.js';
 import linguaRoutes from './api/linguaRoutes.js';
 import parserRoutes from './api/parserRoutes.js';
@@ -20,6 +19,7 @@ import { loadMessaggiSistema } from './logic/systemMessages.js';
 import { apiKeyAuth } from './middleware/auth.js';
 import { apiLimiter, parsingLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { appVersion } from './version.js';
 // import { azioni_setup } from './azioni_setup';
 
 // Definizione __filename e __dirname per ESM
@@ -27,9 +27,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-// Leggi versione da package.json
-const { version } = JSON.parse(readFileSync(path.resolve(__dirname, '../package.json')));
-console.log(`Missione Odessa - Versione: ${version}`);
+console.log(`Missione Odessa - Versione: ${appVersion}`);
 
 // ...existing code...
 
@@ -77,7 +75,7 @@ try {
 
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
-  res.json({ version });
+  res.json({ version: appVersion });
 });
 
 // API: config (espone BASE_PATH al client)

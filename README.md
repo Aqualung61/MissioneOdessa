@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-**Versione 1.3.0 Beta** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
+**Versione 1.3.1-beta** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 ## Avvio rapido
 
@@ -23,13 +23,21 @@
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
   - [http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1](http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1)
   - [http://localhost:3001/api/version](http://localhost:3001/api/version) — restituisce la versione dell'applicazione
+
 ## Versionamento API e applicazione
 
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
 - La rotta `/api/version` restituisce un oggetto JSON con la versione attuale, ad esempio:
    ```json
-  { "version": "1.3.0" }
+   { "version": "1.3.1-beta" }
    ```
+
+Verifica rapida (smoke check):
+
+```sh
+curl -s http://localhost:3001/api/version
+```
+
 - Ogni avvio del server stampa la versione corrente in console.
 
 ## Struttura progetto
@@ -90,6 +98,21 @@ Variabili env utili:
 
 Vedi anche: [.env.example](.env.example).
 
+## Endpoint legacy (deprecati)
+
+Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
+
+Gli endpoint legacy seguenti sono marcati come deprecati (`Deprecation`/`Sunset`) e possono essere disabilitati:
+
+- `POST /api/engine/set-location`
+- `POST /api/parser/parse`
+
+Per disabilitarli (risposta `410`):
+
+- `DISABLE_LEGACY_ENDPOINTS=1`
+
+Vedi anche: [.env.example](.env.example).
+
 ## CORS (M3)
 
 Se web app e API sono servite dallo **stesso origin**, CORS non è necessario e viene lasciato **disabilitato**.
@@ -145,7 +168,7 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 
 ## Stato
 
-- **Versione attuale: 1.3.0 Beta** (8 gennaio 2026)
+- **Versione attuale: 1.3.1-beta** (11 gennaio 2026)
 - **Test Coverage**: vedi output `npm test` (Vitest)
 - **Qualità**: ESLint clean, TypeScript strict typing
 - **i18n**: Full compliance IT/EN

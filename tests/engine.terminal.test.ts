@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { resetGameState, getGameStateSnapshot, enterLocation, confirmRestart, initializeOriginalData } from '../src/logic/engine.js';
+import { resetGameState, getGameStateSnapshot, enterLocation, confirmRestart, initializeOriginalData, getGameState } from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -46,6 +46,14 @@ describe('Engine - luoghi terminali', () => {
   });
 
   it('riavvia con risposta positiva (S)', async () => {
+    // Sporca lo stato per verificare che il restart resetti davvero i contatori
+    const state = getGameState();
+    state.visitedPlaces.add(2);
+    state.visitedPlaces.add(3);
+    state.punteggio.totale = 42;
+    state.turn.globalTurnNumber = 10;
+    state.turn.totalTurnsConsumed = 7;
+
     await enterLocation(8);
     const res = await confirmRestart('S');
     expect(res.accepted).toBe(true);
@@ -53,6 +61,16 @@ describe('Engine - luoghi terminali', () => {
     const snap = getGameStateSnapshot();
     expect(snap.awaitingRestart).toBe(false);
     expect(snap.currentLocationId).toBe(1);
+
+    // Reset contatori/stats (state snapshot)
+    expect(Array.isArray(snap.visitedPlaces)).toBe(true);
+    expect(snap.visitedPlaces.length).toBe(1);
+    expect(snap.visitedPlaces[0]).toBe(1);
+    expect(snap.punteggio).toBeDefined();
+    expect(snap.punteggio.totale).toBe(1);
+    expect(snap.turn).toBeDefined();
+    expect(snap.turn.globalTurnNumber).toBe(0);
+    expect(snap.turn.totalTurnsConsumed).toBe(0);
   });
 
   it('termina la partita con risposta negativa', async () => {

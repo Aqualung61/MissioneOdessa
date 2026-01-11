@@ -1,5 +1,19 @@
 # 2026-01-11 — Revisione Navigation: eliminare parsing lato client e centralizzare su server
 
+## Stato (aggiornamento)
+**Implementato in v1.3.1-beta (11 gennaio 2026).**
+
+- Pipeline unica per l’input: `POST /api/engine/execute` (server-side parsing + esecuzione) con risposta arricchita (`state/ui/stats`).
+- Restart: hard reset server-side (preserva lingua), con gestione `awaitingRestart`.
+- Endpoint legacy (`POST /api/parser/parse`, `POST /api/engine/set-location`): deprecati e disabilitabili con `DISABLE_LEGACY_ENDPOINTS=1`.
+
+Riferimenti rapidi:
+- Smoke checklist: `docs/20260111_smoke_checklist_4.1.6.md`
+- Release notes: `RELEASE_NOTES.md`
+- Test hardening navigation via HTTP: `tests/api.engine.navigation.http.test.ts`
+
+Nota: le sezioni seguenti restano utili come contesto storico (AS IS/TO BE) e razionale di design.
+
 ## Scopo del documento
 Questo documento fotografa lo stato attuale (“AS IS”) della gestione comandi di navigazione (direzioni) e propone una migrazione (“TO BE”) verso un’architettura **full-server parsing**, in cui il browser non interpreta più i comandi e non mantiene logiche di parsing del lessico.
 
@@ -330,6 +344,170 @@ Mitigazioni:
 - Aggiungere test Vitest mirati a `POST /api/engine/execute` per `NAVIGATION`.
 
 ---
+
+## Piano di delivery (Sprint 4.1.x)
+Questa sezione traduce il **TO BE full-server** (REQ-NAV-SERVER-ONLY) in sprint incrementali. Ogni sprint è pensato per essere “rilasciabile” e ridurre il rischio di regressioni, mantenendo la UI utilizzabile durante la migrazione.
+
+Nota sulla strategia:
+- Prima si rende il server *capace* di navigare davvero (`NAVIGATION` non stub), poi si sposta il client a consumare **solo** `POST /api/engine/execute`, e solo alla fine si eliminano gli endpoint/percorsi legacy.
+- Si privilegia l’uso di `getDirezioniLuogo(...)` (direzioni dinamiche) per evitare divergenze con toggle/sblocchi.
+
+### Sprint 4.1.1 — Stabilizzazione contratto `/api/engine/execute` + baseline test
+**Obiettivo:** rendere esplicito e stabile il contratto dell’endpoint principale prima di spostare il carico sul server.
+
+Interventi collegati:
+1. Definire chiaramente (e rendere consistente) la struttura di risposta di `POST /api/engine/execute`, in particolare:
+  - presenza di `engine` con campi minimi (`accepted`, `resultType`, `message`, `turnMessages`, `gameOver`, `locationId` se rilevante)
+  - presenza opzionale ma utile di `parseResult` (per debug/telemetria lato client; non per logica).
+2. Verificare che l’endpoint gestisca in modo consistente:
+  - parse error (HTTP 400 con messaggio utente)
+  - bypass `awaitingRestart` (SI/NO) con risposta strutturata.
+3. Aggiungere una baseline di test API che fotografi l’attuale contratto (anche parziale), così da avere un “guard-rail” durante le modifiche successive.
+
+Sorgenti coinvolte (principali):
+- `src/api/engineRoutes.js` (contratto HTTP, gestione errori, awaitingRestart)
+- `src/logic/engine.js` (shape del risultato dell’engine, resultType, turnMessages)
+- `tests/` (nuovi test o estensione di test esistenti)
+
+Impatto atteso:
+- **Server:** basso/medio (più coerenza e qualche normalizzazione output).
+- **Client:** nullo in questa fase.
+- **Rischio:** basso; aumenta la controllabilità (test).
+
+Criterio di uscita sprint:
+- Test Vitest verdi.
+- Un test dimostra che `POST /api/engine/execute` restituisce sempre un payload coerente (almeno per 2-3 casi: comando qualunque, parse error, awaitingRestart).
+
+### Sprint 4.1.2 — Implementazione `NAVIGATION` server-side (engine)
+**Obiettivo:** eliminare lo “stub” e rendere `NAVIGATION` eseguibile lato server, aggiornando realmente lo stato (`currentLocationId`).
+
+Interventi collegati:
+1. Implementare `case 'NAVIGATION'` nel ramo legacy/centrale dell’engine:
+  - mappatura `VerbConcept` → direzione (`Nord/Est/Sud/Ovest/Su/Giu`)
+  - calcolo destinazione usando `getDirezioniLuogo(gameState.currentLocationId)`
+  - aggiornamento stato con `setCurrentLocation(nextId)`
+  - gestione “muro/0” come `accepted:false` (o altra convenzione, ma coerente)
+2. Verificare che il pipeline turn-based applichi correttamente gli effetti *dopo* la navigazione.
+3. Verificare caso luogo terminale: entrando in una location con `Terminale:-1` deve risultare in `gameOver` tramite `gameOverEffect`.
+
+Sorgenti coinvolte (principali):
+- `src/logic/engine.js` (ramo `NAVIGATION`, `setCurrentLocation`, pipeline turno)
+- `src/logic/parser.js` (verifica che `VerbConcept` sia coerente per direzioni)
+- `src/logic/turnEffects/gameOverEffect.js` (game over su terminale)
+- `src/logic/*` e dati `src/data-internal/*` (direzioni dinamiche e luoghi)
+
+Impatto atteso:
+- **Server:** medio (nuova funzionalità effettiva, ma localizzata).
+- **Client:** ancora nullo; in questa fase la UI può continuare a muoversi come prima.
+- **Rischio:** medio (tocca logica core), mitigato da test.
+
+Criterio di uscita sprint:
+- Test automatico dedicato dimostra che una direzione valida cambia `currentLocationId` sul server.
+- Test dimostra che una direzione verso muro non cambia location.
+- Test dimostra che un luogo terminale attiva `awaitingRestart`.
+
+### Sprint 4.1.3 — End-to-end API per navigation via `/api/engine/execute`
+**Obiettivo:** rendere `POST /api/engine/execute` la fonte completa per `NAVIGATION`, includendo i dati necessari al rendering.
+
+Interventi collegati:
+1. Assicurare che per `NAVIGATION` la risposta includa sempre:
+  - `engine.locationId` (nuova location)
+  - `turnMessages` (se applicabili)
+  - eventuale `resultType` utile (`OK`, `GAME_OVER`, `TELEPORT`, …).
+2. Decisione esplicita sul “roundtrip direzioni”:
+  - Opzione A (minima): il client continua a chiamare `GET /api/engine/direzioni/{locationId}` dopo ogni cambio.
+  - Opzione B (più efficiente): includere le direzioni già in risposta engine per eliminare una chiamata.
+3. Introdurre (se serve) un flag di compatibilità temporaneo lato client/server per poter fare rollout graduale.
+
+Sorgenti coinvolte (principali):
+- `src/api/engineRoutes.js` (payload di risposta, eventuali campi aggiuntivi)
+- `src/logic/engine.js` (propagazione locationId e dati utili)
+- `src/api/engineRoutes.js` + endpoint `GET /api/engine/direzioni/:id` (se si mantiene opzione A)
+
+Impatto atteso:
+- **Server:** basso/medio (un po’ più di dati in risposta).
+- **Client:** ancora minimo (potenzialmente solo adattamenti per leggere `locationId`).
+- **Rischio:** medio-basso; il contratto già stabilizzato nello sprint precedente.
+
+Criterio di uscita sprint:
+- Un test API (o più) dimostra che inviando `input: 'Nord'` (o equivalente) l’engine ritorna `locationId` coerente e lo stato server è aggiornato.
+
+### Sprint 4.1.4 — Refactor client: thin UI (rimozione parsing e lessico)
+**Obiettivo:** rispettare pienamente REQ-NAV-SERVER-ONLY: il client non interpreta più comandi e non carica il lessico.
+
+Interventi collegati:
+1. Rimuovere dal client:
+  - fetch/uso di `src/data-internal/TerminiLessico.json`, `VociLessico.json`, `TipiLessico.json`
+  - `ensureVocabulary`, `parseLevel0` e qualunque normalizzazione che produca un parseResult
+  - chiamate a `POST /api/parser/parse` per la pipeline input (rimane eventualmente solo per debug, ma idealmente eliminata)
+2. Sostituire la pipeline con:
+  - `POST /api/engine/execute` sempre e solo
+  - aggiornamento `current` basato su `engine.locationId`
+  - refresh direzioni con `GET /api/engine/direzioni/{id}` (se si mantiene roundtrip)
+3. Gestire correttamente:
+  - parse error (HTTP 400) mostrando `userMessage`
+  - `awaitingRestart` (UI: disabilitare input o mostrare prompt) ma lasciando la decisione al server.
+
+Sorgenti coinvolte (principali):
+- `web/js/odessa_main.js` (rimozione parser livello 0 e nuova pipeline)
+- `index.html` / asset web correlati (se esistono hook o script che dipendono dal lessico)
+
+Impatto atteso:
+- **Client:** alto (rimozione di parecchia logica, ma refactor significativo).
+- **Server:** nullo (server già pronto).
+- **Beneficio:** forte riduzione di duplicazioni e rischio divergenze.
+
+Criterio di uscita sprint:
+- Navigazione funziona da UI digitando direzioni, senza chiamate a `/api/parser/parse`.
+- Il network mostra come unico endpoint di input `POST /api/engine/execute`.
+
+### Sprint 4.1.5 — Hardening: test completi, regressioni, cleanup legacy
+**Obiettivo:** mettere in sicurezza la migrazione (test + pulizia) e ridurre debito tecnico.
+
+Interventi collegati:
+1. Aggiungere test Vitest dedicati alla navigazione server-side (vedi sezione Test), coprendo:
+  - direzione valida
+  - direzione muro
+  - luogo terminale + awaitingRestart
+  - bypass SI/NO.
+2. Valutare se mantenere o deprecare:
+  - `POST /api/engine/set-location` (probabile legacy dopo refactor)
+  - `POST /api/parser/parse` (può restare come endpoint diagnostico, ma non usato dal client).
+3. Allineare messaggistica (almeno per `NAVIGATION`): evitare che il client debba avere messaggi “equivalenti” a quelli server.
+
+Sorgenti coinvolte (principali):
+- `tests/api.engine.navigation.test.ts` (nuovo)
+- `src/api/*` (eventuale deprecazione/cleanup endpoints)
+- `web/js/odessa_main.js` (rimozione definitiva fallback/branch morti)
+
+Impatto atteso:
+- **Qualità:** alto (riduce rischio regressioni future).
+- **Manutenzione:** medio (meno rami legacy).
+
+Criterio di uscita sprint:
+- Suite test verde.
+- Nessuna dipendenza del client da endpoint parser o set-location.
+
+### Sprint 4.1.6 — Release & documentazione
+**Obiettivo:** chiudere la linea 4.1 con una release beta (o equivalente) e documentazione aggiornata.
+
+Interventi collegati:
+1. Bump versione (proposta): `1.3.1-beta` (dopo che i test sono verdi e la UI è verificata).
+2. Aggiornare note di rilascio e documentazione tecnica:
+  - evidenziare la rimozione parsing client e il nuovo flusso unico `POST /api/engine/execute`.
+3. (Opzionale) Aggiungere una checklist di smoke test rapida per pre-release.
+
+Sorgenti coinvolte (principali):
+- `package.json` (version)
+- `RELEASE_NOTES.md`
+- `docs/20260111_revisione_Navigation.md` (questo documento come riferimento di architettura)
+
+Impatto atteso:
+- **Operativo:** basso (rilascio).
+- **Utente finale:** dovrebbe percepire solo maggiore robustezza/coerenza.
+
+Criterio di uscita sprint:
+- Release/tag creati *dopo* validazione funzionale (manuale) e test verdi.
 
 ## Prossimi passi consigliati
 1. Implementare `NAVIGATION` in engine (server).

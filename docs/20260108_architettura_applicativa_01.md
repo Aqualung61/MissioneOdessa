@@ -1,6 +1,6 @@
-# Missione Odessa — Architettura Applicativa (Snapshot 2026-01-08)
+# Missione Odessa — Architettura Applicativa (Snapshot 2026-01-11)
 
-Questo documento descrive l’architettura **corrente** dell’app Missione Odessa (v1.3.0 Beta, 8 gen 2026), con focus su:
+Questo documento descrive l’architettura **corrente** dell’app Missione Odessa (v1.3.1-beta, 11 gen 2026), con focus su:
 - server Node.js/Express e routing con `BASE_PATH`
 - modello dati **JSON in-memory** (niente DB runtime)
 - game engine (stato in memoria + turn effects)
@@ -115,7 +115,7 @@ sequenceDiagram
   participant M as src/logic/systemMessages.js
 
   OS->>S: node src/server.js
-  S->>S: legge version da package.json
+  S->>S: legge version tramite src/version.js (da package.json)
   S->>S: configura helmet/json (+ cors opzionale) + security middleware
   S->>L: initOdessa()
   L->>L: legge src/data-internal/*.json
@@ -134,8 +134,8 @@ sequenceDiagram
   - `app.use(BASE_PATH, express.static(ROOT))`
   - catch-all `app.use(BASE_PATH, sendFile(index.html))`
 - Redirect opzionale: se `BASE_PATH` è valorizzato, `GET /` redirige a `BASE_PATH + '/'`.
-- Endpoint “config”: `GET /api/config` risponde con `{ basePath: BASE_PATH || '/' }`.
-  - Nota: questo endpoint **non** è montato sotto `BASE_PATH` (è a path assoluto).
+- Endpoint “config”: `GET /api/config` risponde con `{ basePath: '<normalized>/' }` (sempre con slash finale).
+  - Se `BASE_PATH` è valorizzato, è disponibile anche come `BASE_PATH + /api/config` (stesso payload).
 
 ---
 
@@ -364,15 +364,18 @@ Con `BASE_PATH`:
 - `POST /api/engine/execute` (parser+engine)
 - `GET /api/engine/state`
 - `POST /api/engine/reset`
-- `POST /api/engine/set-location` (supporta `consumeTurn`)
+- `POST /api/engine/set-location` (legacy/deprecato; disabilitabile con `DISABLE_LEGACY_ENDPOINTS=1`)
 - `POST /api/engine/save-client-state` (download JSON)
 - `POST /api/engine/load-client-state` (ripristino)
 - `GET /api/engine/direzioni/:idLuogo`
 - `GET /api/engine/stats`
 
+Nota (input gioco): il flusso target usa **solo** `POST /api/engine/execute`. Anche `POST /api/parser/parse` è legacy/deprecato (disabilitabile con `DISABLE_LEGACY_ENDPOINTS=1`).
+
 **Versioning/config** (`src/server.js`):
 - `GET /api/version` (sotto `BASE_PATH`)
 - `GET /api/config` (root assoluta)
+- `GET BASE_PATH + /api/config` (se `BASE_PATH` è impostato)
 
 ### 6.3 Diagramma server layer (Express)
 
@@ -426,13 +429,9 @@ graph TB
 
 - Usa `window.basePath` inizializzato da `web/js/bootstrap.js`.
 - Fallback: se `bootstrap.js` non è presente, applica una euristica (root se primo segmento è tra `web/images/src/api`, altrimenti primo segmento come BASE_PATH).
-- Carica JSON client-side per “parser livello 0” (lessico) da:
-  - `src/data-internal/TerminiLessico.json`
-  - `src/data-internal/VociLessico.json`
-  - `src/data-internal/TipiLessico.json`
 - Invoca l’engine server via `/api/engine/*` per:
   - esecuzione comandi
-  - navigazione click (set-location)
+  - navigazione (anche via click: invia comando e usa `POST /api/engine/execute`)
   - save/load
   - stats
 
@@ -453,14 +452,12 @@ graph TB
         BasePath["basePath (euristica)"]
         Api["API client (fetch wrapper)"]
         UI["UI manager (DOM)"]
-        L0["parser livello 0 (client)"]
       end
     end
 
     subgraph ClientState["state (client)"]
       Stored["localStorage: idLingua"]
       Current["currentLocation"]
-      Vocab["vocabCache (client)"]
     end
   end
 
@@ -470,14 +467,12 @@ graph TB
   Core --> BasePath
   Core --> Api
   Core --> UI
-  Core --> L0
   I18N --> Stored
   UI --> Current
-  L0 --> Vocab
   Api -->|"fetch /api/*"| Backend["Express API"]
 ```
 
-Nota: il client usa anche 3 JSON del lessico per il “livello 0” (pre-parsing), ma l’esecuzione autorevole del comando avviene lato server.
+Nota: il client non fa parsing del lessico; invia input grezzo al server e renderizza la risposta.
 
 ---
 
@@ -486,7 +481,7 @@ Nota: il client usa anche 3 JSON del lessico per il “livello 0” (pre-parsing
 - Helmet con CSP (**`'unsafe-inline'` solo per `style-src`**; per gli script: **`script-src 'self'`** e **`script-src-attr 'none'`**).
 - CORS **disabilitato di default** (same-origin). Cross-origin è abilitabile solo via whitelist (`ALLOWED_ORIGINS`).
 - API protette con **API key** su `BASE_PATH + /api/*` (header `X-API-Key`), con eccezioni pubbliche minime: `GET BASE_PATH + /api/version` e `GET /api/config`.
-  - Nota: `GET /api/config` è a **path assoluto** (non prefissato da `BASE_PATH`) per esporre al client il `basePath` corrente.
+  - Nota: `GET /api/config` è sempre disponibile a path assoluto e, se `BASE_PATH` è impostato, anche come `BASE_PATH + /api/config` (stesso payload).
 - Rate limiting su `/api/*` e limiti più stretti per endpoint CPU/pesanti (`/api/parser/parse`, `/api/engine/execute`).
 - Limitazione payload JSON (`express.json({ limit })`) con risposta `413` standardizzata.
 - Error handling globale: sanitizzazione dei 5xx in produzione (evita leak di dettagli interni).

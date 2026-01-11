@@ -21,9 +21,10 @@ export function confirmRestart(risposta) {
   // Normalizza risposta
   const r = (risposta || '').toUpperCase();
   if (r === 'S' || r === 'SI' || r === 'SÌ') {
-    // Riavvia: torna in location 1, non più in attesa
-    gameState.awaitingRestart = false;
-    gameState.currentLocationId = 1;
+    // Riavvia: reset completo stato (source of truth), mantenendo lingua corrente
+    // Nota: `resetGameState` ricrea visitedPlaces/punteggio/turn/timers ecc.
+    const lingua = typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : 1;
+    resetGameState(lingua);
     return { accepted: true, resultType: 'OK' };
   }
   if (r === 'NO') {
@@ -988,12 +989,71 @@ function executeCommandLegacy(parseResult) {
   // Esecuzione minimale con stato per alcuni comandi
   switch (parseResult.CommandType) {
     case 'NAVIGATION':
-      return {
-        accepted: true,
-        resultType: 'OK',
-        message: `Stub: spostamento verso ${parseResult.CanonicalVerb}`,
-        effects: [],
-      };
+      {
+        const concept = (parseResult.VerbConcept || parseResult.CanonicalVerb || '').toUpperCase();
+
+        const directionField = (() => {
+          switch (concept) {
+            case 'NORD':
+              return 'Nord';
+            case 'EST':
+              return 'Est';
+            case 'SUD':
+              return 'Sud';
+            case 'OVEST':
+              return 'Ovest';
+            case 'SU':
+            case 'ALTO':
+              return 'Su';
+            case 'GIU':
+            case 'GIÙ':
+            case 'BASSO':
+              return 'Giu';
+            default:
+              return null;
+          }
+        })();
+
+        const messageBlocked = gameState.currentLingua === 2
+          ? 'You cannot go that way.'
+          : 'Non puoi andare in quella direzione.';
+
+        const messageUnknown = gameState.currentLingua === 2
+          ? 'Direction not recognized.'
+          : 'Direzione non riconosciuta.';
+
+        if (!directionField) {
+          return {
+            accepted: true,
+            resultType: 'ERROR',
+            message: messageUnknown,
+            effects: [],
+          };
+        }
+
+        const currentId = gameState.currentLocationId;
+        const direzioni = getDirezioniLuogo(currentId);
+        const nextId = direzioni?.[directionField];
+
+        if (typeof nextId !== 'number' || nextId < 1) {
+          return {
+            accepted: true,
+            resultType: 'ERROR',
+            message: messageBlocked,
+            effects: [],
+          };
+        }
+
+        setCurrentLocation(nextId);
+        return {
+          accepted: true,
+          resultType: 'OK',
+          message: '',
+          effects: [],
+          locationId: nextId,
+          showLocation: true,
+        };
+      }
     case 'SYSTEM':
       {
         // Preferisci il concetto per normalizzare i sinonimi (INVENTARIO/COSA/?)

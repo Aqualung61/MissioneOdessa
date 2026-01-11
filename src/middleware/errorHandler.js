@@ -8,18 +8,42 @@
  */
 
 export function errorHandler(err, req, res, next) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const url = (req?.originalUrl ?? req?.url ?? '').toString();
+
+  const isInvalidJsonBody =
+    err instanceof SyntaxError &&
+    (err?.type === 'entity.parse.failed' || err?.status === 400) &&
+    (typeof err?.body === 'string' || typeof err?.message === 'string');
+
+  // Malformed JSON body (Express/body-parser). Return a stable 400 envelope and avoid noisy stacks.
+  if (isInvalidJsonBody) {
+    console.warn('[warn]', {
+      method: req?.method,
+      url,
+      error: 'INVALID_JSON',
+      message: isProd ? undefined : err?.message,
+    });
+
+    if (res.headersSent) return next(err);
+
+    // Only standardize/sanitize API responses here.
+    if (!url.includes('/api')) {
+      return res.status(400).send('Bad Request');
+    }
+    res.set('Cache-Control', 'no-store');
+    return res.status(400).json({ ok: false, error: 'INVALID_JSON' });
+  }
+
   // Always log server-side (stack + details) for troubleshooting.
   console.error('[error]', {
     method: req?.method,
-    url: req?.originalUrl ?? req?.url,
+    url,
     message: err?.message,
     stack: err?.stack,
   });
 
   if (res.headersSent) return next(err);
-
-  const isProd = process.env.NODE_ENV === 'production';
-  const url = (req?.originalUrl ?? req?.url ?? '').toString();
 
   // CORS origin callback error (when ALLOWED_ORIGINS is set)
   if (err?.message === 'Not allowed by CORS') {

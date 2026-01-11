@@ -4,8 +4,25 @@ import { validateCommandInput } from '../middleware/validation.js';
 
 const router = express.Router();
 
+function isTruthy(value) {
+  return value === '1' || value === 'true' || value === 'yes';
+}
+
+function markLegacy(req, res, next) {
+  // RFC 8594: Deprecation/Sunset headers (best-effort)
+  res.set('Deprecation', 'true');
+  res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
+  res.set('Cache-Control', 'no-store');
+  return next();
+}
+
+function legacyDisabledAsParseResult(req, res, next) {
+  if (!isTruthy(process.env.DISABLE_LEGACY_ENDPOINTS || '')) return next();
+  return res.status(410).json({ IsValid: false, Error: 'LEGACY_ENDPOINT_DISABLED' });
+}
+
 // POST /api/parser/parse  { input: string }
-router.post('/parse', validateCommandInput({ mode: 'parser' }), async (req, res, next) => {
+router.post('/parse', markLegacy, legacyDisabledAsParseResult, validateCommandInput({ mode: 'parser' }), async (req, res, next) => {
   try {
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
