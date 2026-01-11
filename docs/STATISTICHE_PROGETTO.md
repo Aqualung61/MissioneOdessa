@@ -1,5 +1,13 @@
 # Statistiche Progetto Missione Odessa
-*Generato: 9 gennaio 2026*
+*Generato: 11 gennaio 2026*
+
+## Aggiornamento (11 gennaio 2026) — Parser integrato / thin client
+
+- **Input pipeline target:** `POST /api/engine/execute` come source-of-truth (parser + engine + snapshot `state/ui/stats`).
+- **Legacy:** `POST /api/parser/parse` e `POST /api/engine/set-location` restano disponibili ma **deprecati** e disabilitabili con `DISABLE_LEGACY_ENDPOINTS=1`.
+- **Test suite (ultimo run):** 240 test totali (223 passati, 17 skippati); 30 test files (29 passati, 1 skipped).
+
+Nota: le metriche sottostanti restano valide come fotografia “volumetrica”; per un refresh completo (LOC, conteggi file, ecc.) rieseguire i comandi in “Nota Metodologica”.
 
 ---
 
@@ -7,15 +15,15 @@
 
 ### Timeline
 - **Data inizio:** 30 ottobre 2025 (19:00:42)
-- **Data snapshot:** 9 gennaio 2026 (23:43:33)
+- **Data snapshot:** 11 gennaio 2026 (19:43:37)
 - **Durata:** 71 giorni
-- **Ore totali:** ~1,709 ore calendario (tempo reale, non effort)
+- **Ore totali:** ~1,753 ore calendario (tempo reale, non effort)
 
 ### Commit e Attività
-- **Commit totali:** 303
-- **Media commit/giorno:** 4.26
+- **Commit totali:** 327
+- **Media commit/giorno:** 4.48
 - **Modifiche file totali:** 1,420 operazioni (git numstat: file×commit)
-- **Commit oggi (09/01):** 4
+- **Commit oggi (11/01):** 8
 
 ### Crescita Codebase
 - **File modificati:** 408 (unique path in history)
@@ -118,7 +126,7 @@ git rev-list --count HEAD
 
 ### Complessità Funzionale Stimata
 - **Moduli principali:** 14 JS + 3 TS in src/ (logic, api, data-internal, tests)
-- **API Endpoints:** 7 route REST (POST /execute, GET /state, POST /reset, POST /set-location, POST /save-client-state, POST /load-client-state, GET /direzioni/:idLuogo)
+- **API Endpoints:** 7 route REST (POST /execute, GET /state, POST /reset, POST /set-location [legacy], POST /save-client-state, POST /load-client-state, GET /direzioni/:idLuogo)
 - **Frontend pages:** 3 HTML (index.html, odessa_intro.html, odessa_main.html)
 - **Depth medio:** 3 livelli (src → logic/api → implementazione)
 
@@ -214,8 +222,8 @@ git rev-list --count HEAD
 ## 🔍 Metriche Aggiuntive
 
 ### Copertura Funzionale
-- **Test files:** 26 (25 passed | 1 skipped)
-- **Test passing:** 208
+- **Test files:** 30 (29 passed | 1 skipped)
+- **Test passing:** 223
 - **Test skipped:** 17
 - **Test duration:** ~2.27s
 - **Code coverage:** Non misurato (stimato >70% per logic core)
