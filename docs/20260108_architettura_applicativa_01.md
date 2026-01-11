@@ -17,8 +17,11 @@ Questo documento descrive l’architettura **corrente** dell’app Missione Odes
 ```mermaid
 graph TB
   subgraph Client["Browser"]
+    Index["index.html"]
     Intro["web/odessa_intro.html"]
     Main["web/odessa_main.html"]
+    Boot["web/js/bootstrap.js"]
+    IndexJS["web/js/index.js"]
     JS["web/js/odessa_main.js"]
     I18N["web/js/i18n.js"]
   end
@@ -52,6 +55,11 @@ graph TB
     Cache["vocabCache<br/>(parser)"]
   end
 
+  Index -->|redirect| Intro
+  Index --> Boot
+  Index --> IndexJS
+  Intro --> Boot
+  Main --> Boot
   Intro -->|fetch| Srv
   Main -->|fetch| Srv
   JS -->|fetch API| Srv
@@ -87,6 +95,10 @@ graph TB
 - **Parser**: server-side conforme REQ01 (`src/logic/parser.js`) con cache del vocabolario per lingua.
 - **Turn system**: pattern “middleware” post-esecuzione (`src/logic/turnEffects/`).
 - **Frontend**: statico (HTML/CSS/JS) servito da Express; il client usa fetch verso API REST.
+
+Nota frontend (as-is):
+- `index.html` è una pagina di lancio/redirect verso `web/odessa_intro.html`.
+- `web/js/bootstrap.js` inizializza `window.basePath` e gestisce la compatibilità `file://` reindirizzando a `http://localhost:3001` per le pagine sotto `web/`.
 
 ---
 
