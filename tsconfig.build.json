@@ -2,5 +2,5 @@
   "extends": "./tsconfig.json",
   "include": ["src/**/*.ts", "types/**/*.d.ts"],
   // Escludiamo ricorsivamente i test (sia root che sotto src)
-  "exclude": ["tests/**/*", "src/tests/**/*", "src/azioni_setup.ts", "node_modules", "dist"]
+  "exclude": ["tests/**/*", "src/tests/**/*", "node_modules", "dist"]
 }
