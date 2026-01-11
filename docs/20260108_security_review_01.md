@@ -344,8 +344,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],  // Necessario per inline
-      imgSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      scriptSrcAttr: ["'none'"],
+      imgSrc: ["'self'", "data:", "blob:"],
       connectSrc: ["'self'"]
     }
   }
@@ -353,7 +356,7 @@ app.use(helmet({
 ```
 **Protezione da:** XSS, injection script esterni
 
-**Note:** `'unsafe-inline'` accettabile per app single-player senza user content.
+**Note:** `'unsafe-inline'` è mantenuto solo per `style-src` (UI usa `element.style.*`). Gli script inline e gli handler `on*=` sono bloccati.
 
 #### 2.2 Nessuna SQL Injection
 - ✅ Dati caricati da JSON statici in memoria

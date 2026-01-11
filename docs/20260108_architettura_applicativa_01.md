@@ -483,7 +483,7 @@ Nota: il client usa anche 3 JSON del lessico per il “livello 0” (pre-parsing
 
 ## 8) Sicurezza (stato attuale)
 
-- Helmet con CSP (attualmente include `'unsafe-inline'` per script/style).
+- Helmet con CSP (**`'unsafe-inline'` solo per `style-src`**; per gli script: **`script-src 'self'`** e **`script-src-attr 'none'`**).
 - CORS **disabilitato di default** (same-origin). Cross-origin è abilitabile solo via whitelist (`ALLOWED_ORIGINS`).
 - API protette con **API key** su `BASE_PATH + /api/*` (header `X-API-Key`), con eccezioni pubbliche minime: `GET BASE_PATH + /api/version` e `GET /api/config`.
   - Nota: `GET /api/config` è a **path assoluto** (non prefissato da `BASE_PATH`) per esporre al client il `basePath` corrente.

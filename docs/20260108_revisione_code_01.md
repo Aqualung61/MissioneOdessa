@@ -91,6 +91,13 @@ Nota: dove la documentazione diverge dal codice, questo documento segue il **cod
 **Commit:** `d9e36b3`, `b30e6a9`, `70c29ea`, `c1e2870` (8 gennaio 2026)  
 **Soluzione implementata:**
 
+> **Addendum (aggiornamento) — 11 gennaio 2026**
+>
+> Per ridurre ulteriormente la duplicazione e rendere più robusta l'esecuzione anche in `file://`, è stato introdotto un bootstrap comune:
+> - `web/js/bootstrap.js` calcola e imposta `window.basePath` (single source of truth lato client).
+> - `web/js/odessa_intro.js` usa direttamente `window.basePath` per tutte le chiamate API.
+> - `web/js/odessa_main.js` ora preferisce `window.basePath` e mantiene un fallback locale solo se il bootstrap non è presente.
+
 **P0 - Fix hardcoded fetch (commit d9e36b3):**
 - Corretto `fetch('/api/lingue')` hardcoded a riga 22 in `web/js/odessa_main.js`
 - Ora usa `fetch(basePath + 'api/lingue')`
