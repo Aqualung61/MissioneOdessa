@@ -519,5 +519,4 @@ flowchart TB
 ## 10) Rischi/attenzioni note (architetturali)
 
 - **Stato singleton**: non adatto a scaling orizzontale senza persistenza/sessione.
-- **BASE_PATH client/server**: la fonte primaria lato client è `web/js/bootstrap.js` (window.basePath). Il fallback di `web/js/odessa_main.js` va tenuto coerente se si rimuove/varia il bootstrap.
-- **/api/config** non prefissato da `BASE_PATH`: se usato da client in sottocartella può richiedere attenzione.
+- **BASE_PATH**: fonte primaria lato client `web/js/bootstrap.js` (`window.basePath`). L'endpoint config espone sempre un `basePath` normalizzato (con slash finale) ed è disponibile sia come `/api/config` sia come `BASE_PATH + /api/config`.

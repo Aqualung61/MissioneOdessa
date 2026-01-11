@@ -58,6 +58,15 @@ const PORT = process.env.PORT || 3001;
 const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`Base path: ${BASE_PATH || 'root'}`);
 
+function normalizeBasePath(value) {
+  if (!value) return '/';
+  let bp = String(value).trim();
+  if (!bp) return '/';
+  if (!bp.startsWith('/')) bp = '/' + bp;
+  if (bp !== '/' && bp.endsWith('/')) bp = bp.slice(0, -1);
+  return bp + '/';
+}
+
 // Carica tutto il DB in memoria
 try {
   await initOdessa();
@@ -80,9 +89,18 @@ app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
 });
 
 // API: config (espone BASE_PATH al client)
-app.get('/api/config', apiLimiter, (req, res) => {
-  res.json({ basePath: BASE_PATH || '/' });
-});
+const BASE_PATH_NORMALIZED = normalizeBasePath(BASE_PATH);
+
+function sendApiConfig(req, res) {
+  res.json({ basePath: BASE_PATH_NORMALIZED });
+}
+
+// Nota: esponiamo /api/config anche sotto BASE_PATH per evitare ambiguità
+// in deploy in sottocartella (client può sempre chiamare window.basePath + 'api/config').
+app.get('/api/config', apiLimiter, sendApiConfig);
+if (BASE_PATH) {
+  app.get(BASE_PATH + '/api/config', apiLimiter, sendApiConfig);
+}
 
 // API: init_odessa per test
 app.get(BASE_PATH + '/init_odessa', async (req, res, next) => {
