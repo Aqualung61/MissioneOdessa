@@ -1,4 +1,4 @@
-## v1.3.1-beta (11 gennaio 2026)
+## v1.3.1 (12 gennaio 2026)
 
 ### Navigation: migrazione full-server (Sprint 4.1.x)
 
@@ -15,6 +15,9 @@
 
 #### Note
 - Nessuna rimozione fisica degli endpoint legacy in questa release: cleanup aggressivo rimandato.
+- Scoring: rango **Perfezionista** ottenibile con punteggio **>= 134**; massimo tecnico visualizzato **/138** (coerente con le interazioni conteggiabili).
+
+> Nota: questa versione promuove la precedente prerelease `v1.3.1-beta` a release stabile.
 
 ---
 

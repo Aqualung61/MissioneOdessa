@@ -1,7 +1,7 @@
 # 2026-01-11 — Revisione Navigation: eliminare parsing lato client e centralizzare su server
 
 ## Stato (aggiornamento)
-**Implementato in v1.3.1-beta (11 gennaio 2026).**
+**Implementato in v1.3.1 (12 gennaio 2026).**
 
 - Pipeline unica per l’input: `POST /api/engine/execute` (server-side parsing + esecuzione) con risposta arricchita (`state/ui/stats`).
 - Restart: hard reset server-side (preserva lingua), con gestione `awaitingRestart`.
@@ -494,7 +494,7 @@ Criterio di uscita sprint:
 **Obiettivo:** chiudere la linea 4.1 con una release beta (o equivalente) e documentazione aggiornata.
 
 Interventi collegati:
-1. Bump versione (proposta): `1.3.1-beta` (dopo che i test sono verdi e la UI è verificata).
+1. Bump versione (proposta): `1.3.1` (dopo che i test sono verdi e la UI è verificata).
 2. Aggiornare note di rilascio e documentazione tecnica:
   - evidenziare la rimozione parsing client e il nuovo flusso unico `POST /api/engine/execute`.
 3. (Opzionale) Aggiungere una checklist di smoke test rapida per pre-release.

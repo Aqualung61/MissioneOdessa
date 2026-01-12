@@ -1,6 +1,6 @@
 # Missione Odessa — Architettura Applicativa (Snapshot 2026-01-11)
 
-Questo documento descrive l’architettura **corrente** dell’app Missione Odessa (v1.3.1-beta, 11 gen 2026), con focus su:
+Questo documento descrive l’architettura **corrente** dell’app Missione Odessa (v1.3.1, 12 gen 2026), con focus su:
 - server Node.js/Express e routing con `BASE_PATH`
 - modello dati **JSON in-memory** (niente DB runtime)
 - game engine (stato in memoria + turn effects)
