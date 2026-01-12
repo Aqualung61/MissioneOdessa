@@ -4,6 +4,23 @@
 
 **Versione 1.3.1-beta** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
+## 📜 Diritti e Licenza
+
+Questo progetto contiene il porting in JavaScript del videogioco Missione Odessa sviluppato in BASIC per Commodore 64 negli anni '80.
+
+### 👤 Autore originale
+L’opera originale è stata creata da **Paolo Giorgi** e pubblicata da Jackson Editore negli anni '80.
+L’autore originale conserva tutti i diritti sull’opera del 1986. La pubblicazione del porting avviene con autorizzazione esplicita dell’autore originale.
+
+### 🧩 Porting
+Il porting in JavaScript è stato realizzato da **Mauro Giorgi** come opera derivata.
+
+### 📖 Licenza
+Il codice del porting è distribuito con licenza **MIT**, come indicato nel file [LICENSE](LICENSE). Questa licenza si applica esclusivamente al porting e non modifica in alcun modo i diritti sull’opera originale.
+
+### 📌 Nota
+Il contenuto narrativo, i testi, la struttura del gioco e gli elementi creativi derivano dall’opera originale e sono utilizzati con il consenso dell’autore.
+
 ## Avvio rapido
 
 1. Installa le dipendenze:
@@ -15,9 +32,23 @@
    npm run dev
    ```
 3. Accedi all'applicazione web:
-   - [http://localhost:3001/index.html](http://localhost:3001/index.html) (entrypoint: redirect verso intro, lingua default IT)
+   - [http://localhost:3001/](http://localhost:3001/) oppure [http://localhost:3001/index.html](http://localhost:3001/index.html)
+     - entrypoint: redirect verso **storia** (default `idLingua=1`)
+   - [http://localhost:3001/web/odessa_storia.html?idLingua=1](http://localhost:3001/web/odessa_storia.html?idLingua=1) (storia)
    - [http://localhost:3001/web/odessa_intro.html?idLingua=1](http://localhost:3001/web/odessa_intro.html?idLingua=1) (intro)
    - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
+
+### Flusso di navigazione tra pagine (frontend)
+
+Il flusso “standard” è:
+
+1. `index.html` → redirect a `web/odessa_storia.html?idLingua=1` (entrypoint pubblico)
+2. `odessa_storia.html` → click sull’immagine → `web/odessa_intro.html` (propaga `idLingua`)
+3. `odessa_intro.html` → progressione a step (click) → `web/odessa_main.html` (propaga querystring)
+
+Note:
+- `idLingua` può essere passato in querystring (es. `idLingua=2`) ed è anche persistito in `localStorage`.
+- In deploy con `BASE_PATH`, tutti gli URL diventano `${BASE_PATH}/...` (es. `/missione-odessa/web/odessa_storia.html`).
 
 4. Le API sono disponibili su:
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
