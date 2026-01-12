@@ -196,7 +196,6 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.gameOverReason).toBe('INTERCEPT');
       expect(result.resultType).toBe('GAME_OVER');
       expect(state.awaitingRestart).toBe(true);
-      expect(state.ended).toBe(true);
       expect(result.message).toContain('INTERCETTATO'); // Verifica messaggio IT
     });
 
@@ -237,7 +236,6 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.gameOverReason).toBe('GUARD_SUSPICIOUS');
       expect(result.message).toBeTruthy();
       expect(state.awaitingRestart).toBe(true);
-      expect(state.ended).toBe(true);
     });
 
     it('NON dovrebbe triggerare con unusefulCommandsCounter = 2', () => {
@@ -326,7 +324,6 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.gameOverReason).toBe('TOO_LATE');
       expect(result.resultType).toBe('GAME_OVER');
       expect(state.awaitingRestart).toBe(true);
-      expect(state.ended).toBe(true);
       expect(result.message).toContain('Hai impiegato troppo tempo');
     });
 

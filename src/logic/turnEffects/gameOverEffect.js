@@ -91,7 +91,6 @@ export function gameOverEffect(gameState, result, _parseResult) {
     result.gameOver = true;
     result.gameOverReason = 'INTERCEPT';
     gameState.awaitingRestart = true;
-    gameState.ended = true;
     return;
   }
   
@@ -106,7 +105,6 @@ export function gameOverEffect(gameState, result, _parseResult) {
     result.gameOver = true;
     result.gameOverReason = 'GUARD_SUSPICIOUS';
     gameState.awaitingRestart = true;
-    gameState.ended = true;
     return;
   }
 
@@ -121,6 +119,5 @@ export function gameOverEffect(gameState, result, _parseResult) {
     result.gameOver = true;
     result.gameOverReason = 'TOO_LATE';
     gameState.awaitingRestart = true;
-    gameState.ended = true;
   }
 }
