@@ -67,12 +67,28 @@ body.page-intro {
   width: auto;
   max-width: 75%;
   max-height: 75vh;
+  max-height: 75svh;
+  height: auto;
+  object-fit: contain;
   margin-top: 10px;
   margin-bottom: 1em;
   display: block;
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .page-intro #mainImage {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 75svh;
+  }
+
+  .page-intro #introduzione {
+    max-width: 92%;
+  }
 }
 
 .page-intro #introduzione {
