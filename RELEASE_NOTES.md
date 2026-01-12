@@ -50,6 +50,14 @@
 
 ## Unreleased
 
+### 2026-01-12 - Lingua: localStorage e URL pulite
+
+#### Cambiamenti principali
+- Lingua UI persistita solo in `localStorage` (default=1, whitelist {1,2}); rimossa propagazione via querystring tra pagine.
+- Bootstrap: cleanup di parametri legacy `idLingua`/`Lingua` da bookmark e vecchi link (History API).
+- SEO: `canonical` e `og:url` senza querystring.
+- Cleanup frontend: rimosso `web/js/index.js` (logica link PDF gestita in `web/js/odessa_storia.js`).
+
 ### 2026-01-10 - Pulizia test/entrypoint e allineamento documentazione
 
 #### Cambiamenti principali
