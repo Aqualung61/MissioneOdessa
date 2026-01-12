@@ -33,22 +33,30 @@ Il contenuto narrativo, i testi, la struttura del gioco e gli elementi creativi 
    ```
 3. Accedi all'applicazione web:
    - [http://localhost:3001/](http://localhost:3001/) oppure [http://localhost:3001/index.html](http://localhost:3001/index.html)
-     - entrypoint: redirect verso **storia** (default `idLingua=1`)
-   - [http://localhost:3001/web/odessa_storia.html?idLingua=1](http://localhost:3001/web/odessa_storia.html?idLingua=1) (storia)
-   - [http://localhost:3001/web/odessa_intro.html?idLingua=1](http://localhost:3001/web/odessa_intro.html?idLingua=1) (intro)
+       - entrypoint: redirect verso **storia** (lingua default = 1, persistita in `localStorage`)
+    - [http://localhost:3001/web/odessa_storia.html](http://localhost:3001/web/odessa_storia.html) (storia)
+    - [http://localhost:3001/web/odessa_intro.html](http://localhost:3001/web/odessa_intro.html) (intro)
    - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
 
 ### Flusso di navigazione tra pagine (frontend)
 
 Il flusso “standard” è:
 
-1. `index.html` → redirect a `web/odessa_storia.html?idLingua=1` (entrypoint pubblico)
-2. `odessa_storia.html` → click sull’immagine → `web/odessa_intro.html` (propaga `idLingua`)
-3. `odessa_intro.html` → progressione a step (click) → `web/odessa_main.html` (propaga querystring)
+1. `index.html` → redirect a `web/odessa_storia.html` (entrypoint pubblico)
+2. `odessa_storia.html` → click sull’immagine → `web/odessa_intro.html`
+3. `odessa_intro.html` → progressione a step (click) → `web/odessa_main.html`
 
 Note:
-- `idLingua` può essere passato in querystring (es. `idLingua=2`) ed è anche persistito in `localStorage`.
+- La lingua UI è gestita tramite `localStorage` (chiave `linguaSelezionata`): default `1`, valori ammessi `{1,2}`.
+- Vecchi bookmark/link con `?idLingua=...` o `?Lingua=...` vengono ripuliti automaticamente dalla URL (History API).
 - In deploy con `BASE_PATH`, tutti gli URL diventano `${BASE_PATH}/...` (es. `/missione-odessa/web/odessa_storia.html`).
+
+Per forzare la lingua EN in locale (best-effort): apri DevTools Console e fai:
+
+```js
+localStorage.setItem('linguaSelezionata', '2');
+location.reload();
+```
 
 4. Le API sono disponibili su:
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)

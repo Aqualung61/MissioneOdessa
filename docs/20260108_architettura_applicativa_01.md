@@ -109,8 +109,8 @@ graph TB
 
 Nota frontend (as-is):
 - `index.html` è una pagina di lancio/redirect verso `web/odessa_storia.html`.
-- `web/js/bootstrap.js` inizializza `window.basePath` e gestisce la compatibilità `file://` reindirizzando a `http://localhost:3001` per le pagine sotto `web/`.
-- `web/js/index-redirect.js` effettua il redirect includendo `idLingua` e rispettando `window.basePath`.
+- `web/js/bootstrap.js` inizializza `window.basePath`, gestisce la compatibilità `file://` (redirect a `http://localhost:3001` per le pagine sotto `web/`) e inizializza la lingua UI in `localStorage` (default=1, whitelist {1,2}).
+- `web/js/index-redirect.js` effettua il redirect a URL pulita (nessuna propagazione di parametri lingua via querystring), rispettando `window.basePath`.
 
 ---
 
