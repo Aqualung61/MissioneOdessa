@@ -420,6 +420,16 @@
     "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\nYou spent too much time in dangerous zones. A Soviet patrol has intercepted and identified you as an intruder. You have been captured!"
   },
   {
+    "Chiave": "game.over.tooLate",
+    "IDLingua": 1,
+    "Messaggio": "💀 HAI IMPIEGATO TROPPO TEMPO\n\nHai impiegato troppo tempo. Sta albeggiando e vieni scoperto da una pattuglia sovietica. Sei catturato."
+  },
+  {
+    "Chiave": "game.over.tooLate",
+    "IDLingua": 2,
+    "Messaggio": "💀 YOU TOOK TOO LONG\n\nYou took too long. Dawn is breaking and you are spotted by a Soviet patrol. You are captured."
+  },
+  {
     "Chiave": "victory.phase1a",
     "IDLingua": 1,
     "Messaggio": "\nTi inoltri nell'atrio con la torcia che proietta ombre danzanti sulle pareti di marmo. La tua figura si staglia contro il buio mentre avanzi con determinazione. All'improvviso, una voce familiare ti ferma:\n— «Aspetta! Sei tu... ce l'hai fatta!»\nÈ Ferenc, il tuo contatto segreto. Si avvicina rapidamente, lo sguardo vigile verso le ombre.\n— «Non abbiamo molto tempo. Mi servono i documenti che hai recuperato. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB. Poi devo portarti al confine.»\nGli porgi i tre documenti. Ferenc li nasconde rapidamente sotto il cappotto.\n— «Perfetto. Ora seguimi. Ho una jeep che ci aspetta fuori. Destinazione: settore americano.»\nLa jeep sfreccia nelle strade deserte di Berlino, i fari che tagliano l'oscurità della notte. Ferenc guida con sicurezza, evitando le pattuglie sovietiche con una precisione che tradisce anni di esperienza.\n— «Hai fatto un lavoro incredibile,» dice Ferenc mentre svolta in una strada laterale. «Quei documenti che mi hai consegnato sono fondamentali per l'operazione. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB... con questi possiamo smantellare la rete di spionaggio.»\nLa jeep rallenta. Davanti a voi, illuminata da potenti riflettori, si staglia la barriera del settore americano.\n— «Ci siamo. Ora tocca a te. Hai ancora quei documenti personali che ti ho dato? Mostrali alla guardia. Lei sa cosa fare.»\nFerenc ti stringe la mano con forza.\n— «Buona fortuna, agente. L'America ti aspetta dall'altra parte.»"

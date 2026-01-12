@@ -295,4 +295,61 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.message).toContain('documents'); // Verifica testo inglese
     });
   });
+
+  describe('CHECK 5: Limite turni consumati (GAME_MAX_TURNS_CONSUMED)', () => {
+    const ENV_KEY = 'GAME_MAX_TURNS_CONSUMED';
+
+    beforeEach(() => {
+      // Default per questa suite: abilitato a 20 per test
+      process.env[ENV_KEY] = '20';
+    });
+
+    it('dovrebbe triggerare game over quando totalTurnsConsumed >= limite', () => {
+      const state = getGameState();
+      state.turn.totalTurnsConsumed = 20;
+      state.currentLingua = 1;
+      state.awaitingRestart = false;
+      state.ended = false;
+
+      const result: any = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+
+      expect(result.gameOver).toBe(true);
+      expect(result.gameOverReason).toBe('TOO_LATE');
+      expect(result.resultType).toBe('GAME_OVER');
+      expect(state.awaitingRestart).toBe(true);
+      expect(state.ended).toBe(true);
+      expect(result.message).toContain('Hai impiegato troppo tempo');
+    });
+
+    it('NON dovrebbe triggerare se totalTurnsConsumed < limite', () => {
+      const state = getGameState();
+      state.turn.totalTurnsConsumed = 19;
+      state.awaitingRestart = false;
+      state.ended = false;
+
+      const result: any = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+
+      expect(result.gameOver).toBe(false);
+      expect(state.awaitingRestart).toBe(false);
+      expect(state.ended).toBe(false);
+    });
+
+    it('dovrebbe essere DISABILITATO se env non impostata', () => {
+      delete process.env[ENV_KEY];
+
+      const state = getGameState();
+      state.turn.totalTurnsConsumed = 10_000;
+      state.awaitingRestart = false;
+      state.ended = false;
+
+      const result: any = { message: '', gameOver: false };
+      gameOverEffect(state, result, null);
+
+      expect(result.gameOver).toBe(false);
+      expect(state.awaitingRestart).toBe(false);
+      expect(state.ended).toBe(false);
+    });
+  });
 });

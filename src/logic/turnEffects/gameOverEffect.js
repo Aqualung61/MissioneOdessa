@@ -15,6 +15,20 @@
 
 import { getSystemMessage } from '../systemMessages.js';
 
+function getMaxTurnsConsumed() {
+  const raw = process.env.GAME_MAX_TURNS_CONSUMED;
+  if (raw === undefined || raw === null || String(raw).trim() === '') {
+    return null; // Disabilitato se non impostato
+  }
+
+  const parsed = Number.parseInt(String(raw), 10);
+  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed <= 0) {
+    return null; // Valore non valido => disabilitato
+  }
+
+  return parsed;
+}
+
 /**
  * Verifica tutte le condizioni di game over post-turno.
  * Se una condizione è soddisfatta, imposta awaitingRestart e ritorna game over.
@@ -94,5 +108,19 @@ export function gameOverEffect(gameState, result, _parseResult) {
     gameState.awaitingRestart = true;
     gameState.ended = true;
     return;
+  }
+
+  // === CHECK 5: LIMITE TURNI CONSUMATI (ALBA) ===
+  // Se si supera un limite previsto di turni che consumano tempo (escludendo i comandi SYSTEM), game over.
+  const maxTurnsConsumed = getMaxTurnsConsumed();
+  if (maxTurnsConsumed !== null && gameState.turn.totalTurnsConsumed >= maxTurnsConsumed) {
+    const tooLateMsg = getSystemMessage('game.over.tooLate', gameState.currentLingua);
+    result.accepted = false;
+    result.resultType = 'GAME_OVER';
+    result.message = tooLateMsg;
+    result.gameOver = true;
+    result.gameOverReason = 'TOO_LATE';
+    gameState.awaitingRestart = true;
+    gameState.ended = true;
   }
 }

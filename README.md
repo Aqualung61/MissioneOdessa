@@ -121,12 +121,14 @@ Per ridurre rischi di input malevoli e payload eccessivi:
 - Il body JSON ha un limite massimo configurabile tramite `JSON_BODY_LIMIT` (default: `1mb`).
 - Se il payload supera il limite, l'API risponde con `413` e body `{ ok:false, error:'PAYLOAD_TOO_LARGE' }`.
 
+
 ## Rate limiting API (M5)
 
 Per ridurre flood/DoS, le API sono soggette a rate limiting:
 
 - Generale su `/api/*` (soglia più alta)
 - Più stretto su endpoint CPU-intensive: `POST /api/parser/parse`, `POST /api/engine/execute`
+
 
 Nota: è definito anche un limiter "heavy" (opzionale) per eventuali endpoint futuri particolarmente costosi.
 
@@ -135,9 +137,16 @@ Variabili env utili:
 - `TRUST_PROXY=1` se l'app è dietro reverse proxy (per usare l'IP reale del client)
 - `RATE_LIMIT_DISABLED=1` per disabilitare temporaneamente i limiter (es. debug)
 
+
 Vedi anche: [.env.example](.env.example).
 
 ## Endpoint legacy (deprecati)
+
+### Limite turni (alba)
+
+- `GAME_MAX_TURNS_CONSUMED`: limite massimo di turni che consumano tempo (esclude comandi `SYSTEM`).
+   - Se la variabile non è impostata, il limite è disabilitato.
+   - Per test iniziali vedi `.env.example` (impostato a 20).
 
 Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
 
