@@ -25,7 +25,6 @@ graph TB
     IndexRedirect["web/js/index-redirect.js"]
     SEO["web/js/seo-i18n.js"]
     StoriaJS["web/js/odessa_storia.js"]
-    IndexJS["web/js/index.js"]
     JS["web/js/odessa_main.js"]
     I18N["web/js/i18n.js"]
   end
@@ -65,7 +64,6 @@ graph TB
   Storia --> Boot
   Storia --> SEO
   Storia --> StoriaJS
-  Storia --> IndexJS
   Intro --> Boot
   Main --> Boot
   Intro -->|fetch| Srv

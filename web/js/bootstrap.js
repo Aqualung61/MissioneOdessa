@@ -1,6 +1,45 @@
 /* eslint-env browser */
 
 (function bootstrapOdessa() {
+  // Bootstrap lingua (preferenza UI) su localStorage.
+  // Requisiti:
+  // - default = 1
+  // - whitelist = {1,2}
+  // - scrivere subito il default se mancante/invalida
+  (function bootstrapLingua() {
+    var STORAGE_KEY = 'linguaSelezionata';
+    var DEFAULT_LINGUA = '1';
+
+    function normalizeLingua(raw) {
+      var v = String(raw || '').trim();
+      return v === '2' ? '2' : '1';
+    }
+
+    // Normalizza/scrive subito in storage
+    try {
+      var current = localStorage.getItem(STORAGE_KEY);
+      var normalized = normalizeLingua(current || DEFAULT_LINGUA);
+      if (current !== normalized) {
+        localStorage.setItem(STORAGE_KEY, normalized);
+      }
+    } catch {
+      // ignore
+    }
+
+    // Ripulisce eventuale idLingua dalla URL (vecchi bookmark/redirect), mantenendo altri parametri.
+    try {
+      var url = new URL(window.location.href);
+      if (url.searchParams && (url.searchParams.has('idLingua') || url.searchParams.has('Lingua'))) {
+        url.searchParams.delete('idLingua');
+        url.searchParams.delete('Lingua');
+        var next = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') + url.hash;
+        window.history.replaceState({}, '', next);
+      }
+    } catch {
+      // ignore
+    }
+  })();
+
   function computeBasePath() {
     var pathParts = window.location.pathname.split('/').filter(Boolean);
     var appFolders = ['web', 'images', 'src', 'api'];

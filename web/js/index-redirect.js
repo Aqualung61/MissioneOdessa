@@ -23,11 +23,8 @@
       ? ensureBasePath(window.basePath)
       : ensureBasePath(computeBasePathFallback());
 
-  var params = new URLSearchParams(window.location.search || '');
-  // Manteniamo la convenzione di defaultare la lingua a 1.
-  params.set('idLingua', '1');
-
-  var targetPath = basePath + 'web/odessa_storia.html?' + params.toString();
+  // La lingua è gestita via localStorage (bootstrap.js). URL pulita.
+  var targetPath = basePath + 'web/odessa_storia.html';
   var target =
     window.location.protocol === 'file:'
       ? 'http://localhost:3001' + targetPath

@@ -14,26 +14,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!testo1El || !testo2El) return;
 
-  function getQueryParam(name) {
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-  }
-
-  const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
+  const idLingua = localStorage.getItem('linguaSelezionata') || '1';
 
   function applyContinueLinkHref() {
     if (!continueImageLinkEl) return;
 
-    const params = new URLSearchParams(window.location.search);
-    params.set('idLingua', idLingua);
-
     const basePath = typeof window.basePath === 'string' ? window.basePath : '';
-    const qs = params.toString();
-    const href = basePath + 'web/odessa_intro.html' + (qs ? '?' + qs : '');
+    const href = basePath + 'web/odessa_intro.html';
     continueImageLinkEl.setAttribute('href', href);
   }
 
   applyContinueLinkHref();
+
+  // Fix link PDF con basePath
+  try {
+    const basePath = typeof window.basePath === 'string' ? window.basePath : '';
+    const pdfLinks = document.querySelectorAll('a[data-pdf]');
+    pdfLinks.forEach((el) => {
+      const filename = el.getAttribute('data-pdf');
+      if (!filename) return;
+      el.setAttribute('href', basePath + 'web/docs/' + filename);
+    });
+  } catch {
+    // ignore
+  }
 
   const continueHintFallbackByLingua = {
     '1': "Clicca sull'immagine per continuare",

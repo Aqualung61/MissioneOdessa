@@ -24,17 +24,8 @@
       : ensureBasePath(computeBasePathFallback());
   }
 
-  function getQueryParam(name) {
-    try {
-      var url = new URL(window.location.href);
-      return url.searchParams.get(name);
-    } catch {
-      return null;
-    }
-  }
-
   function resolveIdLingua() {
-    return getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
+    return localStorage.getItem('linguaSelezionata') || '1';
   }
 
   function resolveLangConfig(idLingua) {
@@ -70,11 +61,9 @@
     return 'default';
   }
 
-  function computeCanonicalUrl(idLingua) {
+  function computeCanonicalUrl() {
     try {
-      var u = new URL(window.location.origin + window.location.pathname);
-      u.searchParams.set('idLingua', String(idLingua || '1'));
-      return u.toString();
+      return String(window.location.origin || '') + String(window.location.pathname || '');
     } catch {
       return '';
     }
@@ -150,7 +139,7 @@
   var idLingua = resolveIdLingua();
   var pageKey = getPageKey();
   var langCfg = resolveLangConfig(idLingua);
-  var canonicalUrl = computeCanonicalUrl(idLingua);
+  var canonicalUrl = computeCanonicalUrl();
   var fallback = getFallbackSeoByLingua(pageKey, idLingua);
 
   // Prima applicazione: immediata e senza dipendenze.

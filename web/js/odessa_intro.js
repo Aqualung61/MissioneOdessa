@@ -3,14 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainImg = document.getElementById('mainImage');
   let currentIntro = 1;
 
-  // Funzione per leggere parametri URL
-  function getQueryParam(name) {
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-  }
-
-  // Legge idLingua da URL, localStorage o default a 1
-  const idLingua = getQueryParam('idLingua') || localStorage.getItem('linguaSelezionata') || '1';
+  // Lingua persistita in localStorage (bootstrap.js scrive subito il default=1)
+  const idLingua = localStorage.getItem('linguaSelezionata') || '1';
 
   const continueHintFallbackByLingua = {
     '1': "Clicca sull'immagine per continuare",
@@ -170,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderIntroStep(3);
     } else if (currentIntro === 3) {
       // Vai alla pagina principale
-      window.location.href = window.basePath + 'web/odessa_main.html' + window.location.search;
+      window.location.href = window.basePath + 'web/odessa_main.html';
     }
   }
 

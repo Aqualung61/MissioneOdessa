@@ -1,11 +1,5 @@
-// Funzione per leggere parametri URL
-function getQueryParam(name) {
-  const url = new URL(window.location.href);
-  return url.searchParams.get(name);
-}
-
-// Legge idLingua da URL, localStorage o default a 1
-const idLingua = parseInt(getQueryParam('idLingua')) || parseInt(localStorage.getItem('linguaSelezionata')) || 1;
+// Lingua persistita in localStorage (bootstrap.js scrive subito il default=1)
+const idLingua = parseInt(localStorage.getItem('linguaSelezionata')) || 1;
 console.log('ID Lingua corrente (odessa_main.js):', idLingua);
 
 // Persistenza lingua: utile se l'utente apre direttamente odessa_main.html senza query.
