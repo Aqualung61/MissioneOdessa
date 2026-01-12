@@ -404,6 +404,13 @@ async function executeCommandOnServer(input) {
 
   // GAME OVER
   if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
+    // Mostra prima la location corrente (se la UI l'ha aggiornata) e poi il messaggio.
+    // Altrimenti, in caso di luogo terminale dopo NAVIGATION, si vede solo il messaggio.
+    try {
+      showCurrent();
+    } catch {
+      // ignore: fallback a solo messaggio game over
+    }
     displayGameOverMessage(engine.message);
     return;
   }
