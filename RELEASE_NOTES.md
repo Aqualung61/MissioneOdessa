@@ -50,6 +50,11 @@
 
 ## Unreleased
 
+### 2026-01-12 - Gameplay: intercettazione a 4 turni
+
+#### Cambiamenti principali
+- Luoghi pericolosi (intercettazione): game over dopo **4** turni consuming in danger zone (prima: 3).
+
 ### 2026-01-12 - Lingua: localStorage e URL pulite
 
 #### Cambiamenti principali
