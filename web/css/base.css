@@ -76,6 +76,8 @@ body.page-intro {
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;
+  opacity: 1;
+  transition: opacity 260ms ease;
 }
 
 @media (max-width: 900px) {
@@ -99,11 +101,30 @@ body.page-intro {
   padding: 0 0 50px 0;
   flex: 1;
   overflow-y: visible;
+  opacity: 1;
+  transition: opacity 260ms ease;
 }
 
-/* Riduce flicker/layout shift mentre viene aggiornato l'HTML del markdown */
+/* Dissolvenza tra step (testo introduzione) */
+.page-intro #introduzione.is-fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Fallback legacy: se qualche chiamante usa ancora is-loading, nasconde senza flicker */
 .page-intro #introduzione.is-loading {
-  visibility: hidden;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-intro #introduzione {
+    transition: none;
+  }
+
+  .page-intro #mainImage,
+  .page-intro .dual-images {
+    transition: none;
+  }
 }
 
 .page-intro #introduzione * { margin: 0; padding: 0; }
@@ -133,6 +154,14 @@ body.page-intro {
   gap: 20px;
   margin-top: 10px;
   margin-bottom: 1em;
+  opacity: 1;
+  transition: opacity 260ms ease;
+}
+
+.page-intro #mainImage.is-fading,
+.page-intro .dual-images.is-fading {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .page-intro .dual-images__img {
