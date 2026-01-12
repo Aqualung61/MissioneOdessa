@@ -299,6 +299,14 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
   describe('CHECK 5: Limite turni consumati (GAME_MAX_TURNS_CONSUMED)', () => {
     const ENV_KEY = 'GAME_MAX_TURNS_CONSUMED';
 
+    type EngineResultLike = {
+      message: string;
+      gameOver: boolean;
+      accepted?: boolean;
+      resultType?: string;
+      gameOverReason?: string;
+    };
+
     beforeEach(() => {
       // Default per questa suite: abilitato a 20 per test
       process.env[ENV_KEY] = '20';
@@ -311,7 +319,7 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.awaitingRestart = false;
       state.ended = false;
 
-      const result: any = { message: '', gameOver: false };
+      const result: EngineResultLike = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
 
       expect(result.gameOver).toBe(true);
@@ -328,7 +336,7 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.awaitingRestart = false;
       state.ended = false;
 
-      const result: any = { message: '', gameOver: false };
+      const result: EngineResultLike = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
 
       expect(result.gameOver).toBe(false);
@@ -344,7 +352,7 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.awaitingRestart = false;
       state.ended = false;
 
-      const result: any = { message: '', gameOver: false };
+      const result: EngineResultLike = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
 
       expect(result.gameOver).toBe(false);
