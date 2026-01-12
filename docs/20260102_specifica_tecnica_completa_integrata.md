@@ -22,12 +22,12 @@ Questo capitolo descrive le logiche funzionali, l'esperienza utente e le regole 
 L'obiettivo è incentivare l'esplorazione completa e premiare la risoluzione di enigmi, senza imporre grinding.
 
 ### 1.1.1 Categorie di Punteggio
-Il punteggio totale (massimo 134 punti) è la somma di quattro categorie:
+Il punteggio totale (design: 134 punti; massimo tecnico attuale: 138 punti) è la somma di quattro categorie:
 
 | Categoria | Valore | Condizione di Assegnazione | Note |
 |-----------|--------|----------------------------|------|
 | **Esplorazione** | 1 pto | Primo ingresso in un nuovo luogo | Totale 56 luoghi. Backtracking non premia. |
-| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 15 interazioni. Anche ripetibili contano alla prima esecuzione. |
+| **Interazioni** | 2 pti | Azioni che sbloccano passaggi o rivelano oggetti | Totale 15 interazioni (as-is: 17 conteggiabili). Anche ripetibili contano alla prima esecuzione. |
 | **Misteri** | 3 pti | Effetti strutturali automatici (oggetto visibile, direzione sbloccata) | Totale 14 misteri + 1 cassaforte. Assegnati automaticamente al verificarsi dell'effetto. |
 | **Sequenza Cassaforte** | 2 pti | Completamento pattern D-S-S-D-S (5 rotazioni) | Award al completamento della sequenza completa. |
 | **Completamento** | 4 pti | Raggiungimento del finale di gioco | Assegnato alla vittoria. |
@@ -46,9 +46,9 @@ Il giocatore ottiene un rango in base al punteggio totale accumulato:
 | 34-66 | Esploratore | Stai imparando le basi |
 | 67-99 | Investigatore | Buone capacità investigative |
 | 100-133 | Maestro | Ottima esplorazione |
-| 134 | Perfezionista | Completamento al 100%! |
+| >=134 | Perfezionista | Completamento al 100%! |
 
-**Punteggio massimo:** 134 punti (56 luoghi + 30 interazioni + 42 misteri + 2 sequenza + 4 completamento)
+**Punteggio massimo (tecnico):** 138 punti (56 luoghi + 34 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 
 ### 1.1.4 Definizione Misteri
 I **misteri** sono effetti strutturali automatici che premiano la prima volta che si verificano eventi significativi:
@@ -492,7 +492,7 @@ gameState = {
     - **Nota Importante:** Questo evento assegna solo 2 punti (non 3) al completamento della sequenza D-S-S-D-S.
 
 #### D) Fase Finale (+7 punti totali)
-La fase finale è cruciale per raggiungere il punteggio massimo di 134.
+La fase finale è cruciale per raggiungere il punteggio massimo (tecnico) di 138.
 1. **Incontro Ferenc (+4 punti):**
    - **Condizione:** Entrare in Atrio (ID 1) avendo nell'inventario: Fascicolo (16), Lista (6), Dossier (34).
    - **Nota:** Documenti (35) NON richiesti per trigger Ferenc.
@@ -506,11 +506,11 @@ La fase finale è cruciale per raggiungere il punteggio massimo di 134.
 
 **Riepilogo Punteggio Massimo:**
 - Luoghi: 56
-- Interazioni: 30 (15 interazioni × 2)
+- Interazioni: 34 (17 interazioni × 2)
 - Misteri: 42 (14 misteri × 3)
 - Sequenza Cassaforte: 2
 - Completamento/Ferenc: 4
-- **TOTALE: 134 punti**
+- **TOTALE: 138 punti**
 
 ### 2.2.2 File Dati e Definizioni
 
@@ -1113,7 +1113,7 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
     
     6.  ✅ **Comando PUNTI** (5 min): Implementare comando che mostra:
         ```
-        Punteggio totale: X/134
+      Punteggio totale: X/138
         - Luoghi visitati: X/57
         - Interazioni eseguite: X/15
         - Misteri risolti: X/13
@@ -1123,9 +1123,9 @@ Sequenza ottimizzata per minimizzare rischi di regressione e facilitare il testi
         Rango: [Novizio/Esploratore/Investigatore/Maestro/Perfezionista]
         ```
         **Implementazione:** Comando PUNTI in `executeCommand()` mostra:
-        - Totale su 134 con rango dinamico
+        - Totale su 138 con rango dinamico
         - Breakdown: visitedPlaces.size, interazioniPunteggio.size, misteriRisolti.size
-        - Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-131 Maestro, 132 Perfezionista
+        - Ranghi: 0-33 Novizio, 34-66 Esploratore, 67-99 Investigatore, 100-133 Maestro, >=134 Perfezionista
     
     7.  ~~**UI Punteggio**~~ ✅ **COMPLETATO ANTICIPATAMENTE** (2026-01-01): 
         - **Commit:** `0abea54` + `02a46c0` - feat(ui): add score display + refactor(ui): unify stats logic
@@ -2322,7 +2322,7 @@ npm run lint
 
 5. **Implementare schermata vittoria finale** (20 min)
    - Mostra statistiche: punteggio finale, rank, luoghi visitati, interazioni, misteri
-   - Messaggio congratulazioni basato su punteggio (134 = perfetto, <100 = discreto, etc.)
+  - Messaggio congratulazioni basato su punteggio (>=134 = perfezionista, <100 = discreto, etc.)
    - Opzione RICOMINCIA o ESCI
    - Test: verificare tutte statistiche corrette
 
@@ -2346,7 +2346,7 @@ npm run lint
 - **T7:** Luogo 59 senza Documenti → PORGI DOCUMENTI → errore (no counter) (5 min)
 - **T8:** Luogo 59 → 5 comandi diversi → Game Over guardia (10 min)
 - **T9:** Luogo 59 → 3 comandi → PORGI → vittoria (counter non raggiunge 5) (5 min)
-- **T10:** Playtest completo inizio→fine con punteggio perfetto 134 (30 min)
+- **T10:** Playtest completo inizio→fine con punteggio massimo (tecnico) 138 (30 min)
 
 **Tempo stimato totale:** ~2.5 ore (135 min task + 60 min test)
 
@@ -3070,9 +3070,9 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 
 ### OP-03: Bilanciamento Punteggio Finale (Priorità: Bassa)
 **Status:** Da validare post-implementazione  
-**Descrizione:** Verificare che il punteggio massimo di 134 punti sia effettivamente raggiungibile completando tutte le 15 interazioni (inclusa "Accendi Lampada"), risolvendo i 14 misteri automatici (+ 1 cassaforte), e completando il gioco.  
+**Descrizione:** Verificare che il punteggio massimo (tecnico) di 138 punti sia effettivamente raggiungibile completando tutte le interazioni conteggiabili (+2 ciascuna), risolvendo i 14 misteri automatici (+ 1 cassaforte), e completando il gioco.  
 **Azione richiesta:** Playtest completo con utente che tenta 100% completion.  
-**Calcolo teorico:** 56 luoghi + 15 interazioni×2 + 14 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 56+30+42+2+4 = 134 punti.  
+**Calcolo teorico (tecnico):** 56 luoghi + 17 interazioni×2 + 14 misteri×3 + 1 sequenza×2 + 1 completamento×4 = 56+34+42+2+4 = 138 punti.  
 **Blocca:** Solo polish finale (post-implementazione).
 
 ---
@@ -3104,7 +3104,7 @@ Questioni identificate durante la stesura della specifica che richiedono ulterio
 - ✅ Sequenza cassaforte: Pattern D-S-S-D-S (5 rotazioni), award +2 al completamento
 - ✅ Interazioni con punteggio: 15 identificate complete (inclusa "Accendi Lampada"), tutte danno +2 alla prima esecuzione
 - ✅ Misteri automatici: 14 totali (8 VISIBILITA + 4 SBLOCCA + 2 TOGGLE prima apertura), danno +3 inline quando effetto si verifica, più 1 sequenza cassaforte +2
-- ✅ Punteggio massimo: **134 punti** (56 luoghi + 30 interazioni + 42 misteri + 2 sequenza + 4 completamento)
+- ✅ Punteggio massimo (tecnico): **138 punti** (56 luoghi + 34 interazioni + 42 misteri + 2 sequenza + 4 completamento)
 - ✅ Direzioni bidirezionali: contano come 1 mistero unico (+3), non 2
 - ✅ TOGGLE_DIREZIONE: mistero solo prima apertura (0→valore), chiusure/riaperture non danno punti
 - ✅ Eliminazione Misteri.json: file obsoleto, logica misteri ora inline negli effetti

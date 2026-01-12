@@ -112,12 +112,12 @@
   {
     "Chiave": "engine.score.breakdown",
     "IDLingua": 1,
-    "Messaggio": "Punteggio totale: {0}/134\nRango: {1}\n\nDettaglio:\n- Luoghi visitati: {2}\n- Interazioni: {3}\n- Misteri risolti: {4}"
+    "Messaggio": "Punteggio totale: {0}/138\nRango: {1}\n\nDettaglio:\n- Luoghi visitati: {2}\n- Interazioni: {3}\n- Misteri risolti: {4}"
   },
   {
     "Chiave": "engine.score.breakdown",
     "IDLingua": 2,
-    "Messaggio": "Total score: {0}/134\nRank: {1}\n\nBreakdown:\n- Visited places: {2}\n- Interactions: {3}\n- Solved mysteries: {4}"
+    "Messaggio": "Total score: {0}/138\nRank: {1}\n\nBreakdown:\n- Visited places: {2}\n- Interactions: {3}\n- Solved mysteries: {4}"
   },
   {
     "Chiave": "engine.rank.novice",

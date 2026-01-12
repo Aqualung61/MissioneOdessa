@@ -322,7 +322,7 @@ function applyStats(stats) {
   const scoreEl = document.getElementById('scoreCount');
   if (scoreEl && typeof stats.score === 'number') {
     currentScore = stats.score;
-    scoreEl.textContent = `Punteggio: ${currentScore}/134`;
+    scoreEl.textContent = `Punteggio: ${currentScore}/138`;
   }
 
   const rankEl = document.getElementById('rankCount');

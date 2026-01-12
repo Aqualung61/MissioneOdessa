@@ -1125,12 +1125,12 @@ function executeCommandLegacy(parseResult) {
             const interazioni = gameState.punteggio.interazioniPunteggio.size;
             const misteri = gameState.punteggio.misteriRisolti.size;
             
-            // Ranghi basati su punteggio massimo 134 (localizzati)
+            // Ranghi basati su soglie (localizzati)
             let rangoKey = 'engine.rank.novice';
             if (totale >= 100) rangoKey = 'engine.rank.master';
             else if (totale >= 67) rangoKey = 'engine.rank.investigator';
             else if (totale >= 34) rangoKey = 'engine.rank.explorer';
-            if (totale === 134) rangoKey = 'engine.rank.perfectionist';
+            if (totale >= 134) rangoKey = 'engine.rank.perfectionist';
             
             const rango = getSystemMessage(rangoKey, gameState.currentLingua);
             const breakdown = getSystemMessage('engine.score.breakdown', gameState.currentLingua, [

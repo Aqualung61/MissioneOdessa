@@ -22,7 +22,7 @@ function computeStatsFromState(state) {
   if (score >= 100) rank = 'Maestro';
   else if (score >= 67) rank = 'Investigatore';
   else if (score >= 34) rank = 'Esploratore';
-  if (score === 134) rank = 'Perfezionista';
+  if (score >= 134) rank = 'Perfezionista';
 
   return { visitedPlaces, interactions, mysteries, score, rank };
 }
@@ -370,12 +370,12 @@ router.get('/stats', (req, res, next) => {
     const mysteries = state.punteggio?.misteriRisolti?.length || 0;
     const score = state.punteggio?.totale || 0;
     
-    // Calcola rango basato su punteggio massimo 134
+    // Calcola rango basato su soglie
     let rank = 'Novizio';
     if (score >= 100) rank = 'Maestro';
     else if (score >= 67) rank = 'Investigatore';
     else if (score >= 34) rank = 'Esploratore';
-    if (score === 134) rank = 'Perfezionista';
+    if (score >= 134) rank = 'Perfezionista';
     
     res.json({ ok: true, visitedPlaces, interactions, mysteries, score, rank });
   } catch (err) {
