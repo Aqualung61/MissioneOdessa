@@ -39,7 +39,6 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(message).toContain('<i>Direzioni:');
     expect(message).toContain('<i>Sistema:');
     expect(message).toContain('<i>Azioni:');
-    expect(message).toContain('<b>Oggetti nel gioco:</b>');
     expect(message).toContain('</i>');
   });
 
@@ -68,11 +67,9 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(message).toContain('Esamina');
   });
 
-  it('generateHelpMessage include oggetti del gioco', () => {
+  it('generateHelpMessage non include lista oggetti', () => {
     const message = generateHelpMessage(1);
-    
-    // Verifica che ci siano oggetti elencati con formattazione
-    expect(message).toMatch(/<b>Oggetti nel gioco:<\/b>\n<i>.+<\/i>/);
+    expect(message).not.toContain('Oggetti nel gioco');
   });
 
   it('AIUTO viene riconosciuto e eseguito correttamente', async () => {

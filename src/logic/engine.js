@@ -435,7 +435,7 @@ function capitalizeCommand(str) {
 }
 
 // Funzione isolata per generare messaggio di aiuto
-export function generateHelpMessage(idLingua = 1) {
+export function generateHelpMessage() {
   const termini = global.odessaData.TerminiLessico || [];
   
   // Filtra e ordina comandi di direzione
@@ -456,18 +456,11 @@ export function generateHelpMessage(idLingua = 1) {
     .map(t => capitalizeCommand(t.Concetto))
     .sort();
   
-  // Filtra oggetti per lingua e ordina (solo visibili)
-  const oggetti = (global.odessaData.Oggetti || [])
-    .filter(o => o.IDLingua === idLingua && o.Attivo >= 1)
-    .map(o => o.Oggetto)
-    .sort();
-  
   // Costruisci messaggio con formattazione HTML
   let msg = '<b>Comandi disponibili:</b>\n';
   msg += '<i>Direzioni: ' + direzioni.join(', ') + '</i>\n';
   msg += '<i>Sistema: ' + sistema.join(', ') + '</i>\n';
   msg += '<i>Azioni: ' + verbi.join(', ') + '</i>\n\n';
-  msg += '<b>Oggetti nel gioco:</b>\n<i>' + oggetti.join(', ') + '</i>';
   
   return msg;
 }
