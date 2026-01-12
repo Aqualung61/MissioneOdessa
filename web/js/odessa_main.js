@@ -228,22 +228,27 @@ function displayGameOverMessage(message) {
  * Usato sia per vittoria che per risposta "NO" al game over
  */
 function displayGameEndedMessage() {
-  gameEnded = true;
-  awaitingRestart = false;
-  userInput.value = '';
-  userInput.disabled = true;
-  userInput.placeholder = '';
+  // Idempotente: non aggiungere più volte il banner nel feed.
+  if (endedMessageShown) {
+    applyEndedUiState();
+    return;
+  }
+
+  applyEndedUiState();
   
   const feed = document.getElementById('placeFeed');
   if (feed) {
     const msg = document.createElement('div');
     msg.className = 'feed-msg system';
+    msg.classList.add('game-ended');
     msg.style.fontWeight = 'bold';
     msg.style.color = '#d60000';
     msg.textContent = window.i18n ? window.i18n.msg('ui.game.ended') : 'Gioco terminato. Ricarica la pagina per giocare di nuovo.';
     feed.appendChild(msg);
     feed.scrollTop = feed.scrollHeight;
   }
+
+  endedMessageShown = true;
 }
 
 // Funzione di gestione click direzione
@@ -288,7 +293,17 @@ let current = null;
 let awaitingRestart = false;
 let awaitingConfirmEnd = false;
 let gameEnded = false;
+let endedMessageShown = false;
 let currentScore = 0; // Punteggio corrente dal server
+
+function applyEndedUiState() {
+  gameEnded = true;
+  awaitingRestart = false;
+  awaitingConfirmEnd = false;
+  userInput.value = '';
+  userInput.disabled = true;
+  userInput.placeholder = '';
+}
 
 function appendFeedMessage({ kind, text, html }) {
   const feed = document.getElementById('placeFeed');
@@ -352,9 +367,10 @@ function syncFlagsFromState(state) {
   if (!state || typeof state !== 'object') return;
   awaitingRestart = !!state.awaitingRestart;
   awaitingConfirmEnd = !!state.awaitingEndConfirm;
-  if (state.ended === true) {
-    displayGameEndedMessage();
-  }
+  // Importante: NON mostrare qui il banner "Gioco terminato".
+  // In caso di vittoria, il server ritorna state.ended=true insieme al testo finale:
+  // il banner deve essere aggiunto DOPO il messaggio conclusivo (gestito in executeCommandOnServer).
+  if (state.ended === true) applyEndedUiState();
 }
 
 async function executeCommandOnServer(input) {
@@ -402,6 +418,8 @@ async function executeCommandOnServer(input) {
   const engine = executeResult.engine;
   if (!engine) return;
 
+  const stateEnded = executeResult && executeResult.state && executeResult.state.ended === true;
+
   // GAME OVER
   if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
     // Mostra prima la location corrente (se la UI l'ha aggiornata) e poi il messaggio.
@@ -416,8 +434,11 @@ async function executeCommandOnServer(input) {
   }
 
   // VITTORIA / ENDED
-  if (engine.ended === true && engine.message) {
-    appendFeedMessage({ kind: 'system', html: engine.message });
+  // Nota: per alcuni flussi (es. risposta "NO" al game over) il server può segnare ended solo in state.
+  if (engine.ended === true || stateEnded) {
+    if (engine.message) {
+      appendFeedMessage({ kind: 'system', html: engine.message });
+    }
     displayGameEndedMessage();
     return;
   }
