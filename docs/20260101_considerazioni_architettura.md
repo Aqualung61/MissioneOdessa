@@ -2,15 +2,15 @@
 
 **Versione documento:** 1.2  
 **Data documento:** 01 gennaio 2026  
-**Ultimo aggiornamento:** 09 gennaio 2026  
+**Ultimo aggiornamento:** 12 gennaio 2026  
 **Contesto:** Analisi post-sviluppo per valutazione refactoring e strategia testing  
 **Riferimenti:** `specifica-tecnica-completa-integrata.md` v2.0
 
 ## Nota di mantenimento (anti-obsolescenza)
 Questo documento nasce come analisi “post-sviluppo” al 2026-01-01.
 
-Stato al 2026-01-09 (repo attuale):
-- L’app è in versione **1.3.0** (vedi `package.json`).
+Stato al 2026-01-12 (repo attuale):
+- L’app è in versione **1.3.1-beta** (vedi `package.json`).
 - Sono presenti test automatici significativi (Vitest) su aree critiche (engine, punteggio, timer/effects, API).  
    Di conseguenza, le sezioni che scoraggiano in blocco i test unit vanno lette come snapshot storico.
 - La logica dei timer/condizioni è organizzata in **turn effects** (es. `src/logic/turnEffects/interceptEffect.js`, `gameOverEffect.js`, `victoryEffect.js`).
@@ -88,7 +88,9 @@ flowchart TD
    G --> H[Client calls load client state]
    H --> I[Client reloads luoghi]
    I --> J[Client reloads engine state]
-   J --> K[Client shows current]
+   J --> K[Client refreshes direzioni]
+   K --> L[Client refreshes stats/HUD]
+   L --> M[Client shows current]
 ```
 
 ---
