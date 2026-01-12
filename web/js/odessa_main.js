@@ -482,11 +482,32 @@ async function executeCommandOnServer(input) {
           })
           .then(r => r.json())
           .then(stateResult => {
-            if (stateResult.ok) {
-              current = luoghi.find(l => l.ID === stateResult.state.currentLocationId) || luoghi[0];
-              showCurrent();
-              appendFeedMessage({ kind: 'system', text: window.i18n ? window.i18n.msg('ui.game.loaded') : 'Gioco caricato con successo.' });
-            }
+            if (!stateResult || stateResult.ok !== true || !stateResult.state) return;
+
+            // Riallinea flag UI (restart/end confirm/ended) e location corrente
+            syncFlagsFromState(stateResult.state);
+            const locationId = stateResult.state.currentLocationId;
+            current = luoghi.find(l => l.ID === locationId) || luoghi[0];
+
+            // Riallinea direzioni dinamiche (toggle/sblocchi) e contatori dal server.
+            // Nota: senza questo, la UI rimane con valori pre-load finché non si esegue un comando.
+            return fetch(basePath + `api/engine/direzioni/${locationId}`)
+              .then(r2 => r2.json())
+              .then(dirResult => {
+                if (dirResult && dirResult.ok && dirResult.direzioni && current) {
+                  Object.assign(current, dirResult.direzioni);
+                  const luogoInArray = luoghi.find(l => current && l.ID === current.ID);
+                  if (luogoInArray) Object.assign(luogoInArray, dirResult.direzioni);
+                }
+              })
+              .catch(() => {
+                // ignore: fallback a direzioni statiche
+              })
+              .finally(() => {
+                showCurrent();
+                updateGameStats();
+                appendFeedMessage({ kind: 'system', text: window.i18n ? window.i18n.msg('ui.game.loaded') : 'Gioco caricato con successo.' });
+              });
           })
           .catch(err => {
             console.error('Errore nel caricamento:', err);

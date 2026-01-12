@@ -25,6 +25,15 @@ Obiettivo: verificare rapidamente che la migrazione “thin client + pipeline un
 - Risposta `NO` al prompt → gioco terminato (input disabilitato).
 - Risposta `SI` al prompt → ripartenza a luogo 1 e HUD azzerato (luoghi visitati=1, punteggio=1, turn counters=0).
 
+## Smoke (UI / save-load)
+
+- Esegui `SALVA` → deve partire il download di un JSON.
+- Esegui `CARICA` → seleziona il JSON appena salvato.
+- Verifica che, subito dopo il caricamento (senza digitare altri comandi), siano coerenti:
+  - luogo corrente mostrato
+  - direzioni nel pannello
+  - HUD/contatori (luoghi visitati, interazioni, misteri, punteggio)
+
 ## Compatibilità / legacy
 
 - (Se `DISABLE_LEGACY_ENDPOINTS=1`) verificare che:

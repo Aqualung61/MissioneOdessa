@@ -50,6 +50,11 @@
 
 ## Unreleased
 
+### 2026-01-12 - Save/Load: HUD riallineato dopo CARICA
+
+#### Cambiamenti principali
+- Dopo `CARICA` (upload del salvataggio), la UI aggiorna subito contatori/HUD e direzioni coerenti con lo stato caricato (senza dover eseguire un comando).
+
 ### 2026-01-12 - Gameplay: intercettazione a 4 turni
 
 #### Cambiamenti principali

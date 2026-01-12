@@ -58,6 +58,12 @@ localStorage.setItem('linguaSelezionata', '2');
 location.reload();
 ```
 
+### Salvataggi (SALVA / CARICA)
+
+- In gioco sono disponibili i comandi `SALVA` e `CARICA`.
+- `SALVA` scarica un file JSON del salvataggio.
+- `CARICA` permette di selezionare un JSON e ripristina subito luogo e contatori (HUD) coerenti con lo stato caricato.
+
 4. Le API sono disponibili su:
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
   - [http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1](http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1)
