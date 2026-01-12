@@ -146,7 +146,7 @@ Vedi anche: [.env.example](.env.example).
 
 - `GAME_MAX_TURNS_CONSUMED`: limite massimo di turni che consumano tempo (esclude comandi `SYSTEM`).
    - Se la variabile non è impostata, il limite è disabilitato.
-   - Valore consigliato: vedi `.env.example` (impostato a 120).
+   - Valore consigliato: vedi `.env.example` (impostato a 250).
 
 Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
 

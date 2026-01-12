@@ -5,6 +5,7 @@ dist/
 # Env
 .env
 .env.*
+!.env.example
 
 # SQLite
 dbbuild/
