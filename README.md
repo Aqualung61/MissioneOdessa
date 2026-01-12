@@ -4,6 +4,8 @@
 
 **Versione 1.3.1** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
+- Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
+
 ## 📜 Diritti e Licenza
 
 Questo progetto contiene il porting in JavaScript del videogioco Missione Odessa sviluppato in BASIC per Commodore 64 negli anni '80.
