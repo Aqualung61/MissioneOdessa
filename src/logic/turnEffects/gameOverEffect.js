@@ -66,9 +66,10 @@ export function gameOverEffect(gameState, result, _parseResult) {
   }
 
   // === CHECK 3: INTERCETTAZIONE ===
-  // 3 turni consuming in danger zone (luoghi 51,52,53,55,56,58)
-  // Sprint 3.3.5.C: Morte dopo 3 turni in zone pericolose
-  if (gameState.turn.turnsInDangerZone >= 3) {
+  // N turni consuming in danger zone (luoghi 51,52,53,55,56,58)
+  // Sprint 3.3.5.C: Sistema intercettazione pattuglie
+  const INTERCEPT_TURNS_TO_DIE = 4;
+  if (gameState.turn.turnsInDangerZone >= INTERCEPT_TURNS_TO_DIE) {
     const interceptMsg = getSystemMessage('game.intercept.death', gameState.currentLingua);
     result.accepted = false;
     result.resultType = 'GAME_OVER';

@@ -185,9 +185,9 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
   });
 
   describe('CHECK 3: Intercettazione (Sprint 3.3.5.C)', () => {
-    it('dovrebbe triggare game over con turnsInDangerZone >= 3', () => {
+    it('dovrebbe triggare game over con turnsInDangerZone >= 4', () => {
       const state = getGameState();
-      state.turn.turnsInDangerZone = 3;
+      state.turn.turnsInDangerZone = 4;
       
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
@@ -200,9 +200,9 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.message).toContain('INTERCETTATO'); // Verifica messaggio IT
     });
 
-    it('NON dovrebbe triggare con turnsInDangerZone = 2', () => {
+    it('NON dovrebbe triggare con turnsInDangerZone = 3', () => {
       const state = getGameState();
-      state.turn.turnsInDangerZone = 2;
+      state.turn.turnsInDangerZone = 3;
       
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
@@ -210,7 +210,7 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       expect(result.gameOver).toBe(false);
     });
 
-    it('NON dovrebbe triggerare con turnsInDangerZone < 3', () => {
+    it('NON dovrebbe triggerare con turnsInDangerZone < 4', () => {
       const state = getGameState();
       state.turn.turnsInDangerZone = 2;
       

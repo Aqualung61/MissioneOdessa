@@ -7,7 +7,7 @@
  * - Reset automatico quando si esce dalla danger zone
  * - Esclusione automatica comandi SYSTEM (non consumano turno)
  * 
- * NOTA: Il game over (morte dopo 3 turni) è gestito da gameOverEffect.js
+ * NOTA: Il game over (morte dopo 4 turni) è gestito da gameOverEffect.js
  * che DEVE essere eseguito DOPO questo effect per valutare il contatore aggiornato.
  * 
  * Dipendenza: DEVE essere eseguito DOPO gameOverEffect perché gameOverEffect

@@ -384,7 +384,7 @@ export function applyTurnEffects(result, parseResult) {
   
   // Sprint 3.3.5.A: ✅ Sistema Torcia (spegnimento dopo 6 turni)
   // Sprint 3.3.5.B: ✅ Sistema Buio (morte dopo 3 turni senza luce)
-  // Sprint 3.3.5.C: ✅ Sistema Intercettazione (morte dopo 3 turni in danger zone)
+  // Sprint 3.3.5.C: ✅ Sistema Intercettazione (morte dopo 4 turni in danger zone)
   // Nota: i misteri vengono gestiti dal “Sistema Punteggio Misteri” (Sprint 3.2.2) in questo file.
   
   // === DEBUG: Monitor stato turni ===
