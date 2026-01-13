@@ -22,17 +22,19 @@ Questo documento sintetizza i prossimi step di sviluppo di **Missione Odessa App
   - `docs/` documentazione e note tecniche
 
 ## Elenco issues (snapshot 2026-01-13)
-| ID | Titolo | Stato | Milestone | Labels principali | Link |
+| ID | Titolo | Stato (open/closed) | Milestone | Labels principali | Link |
 |---:|---|---|---|---|---|
-| 55 | Parser: validazione + messaggi per input/comandi invalidi | Open | 1.3.2 (Stability e UX) | `type:chore`, `area:parser`, `priority:P1`, `stability` | https://github.com/Aqualung61/MissioneOdessa/issues/55 |
-| 56 | HELP: ridurre hints (spoiler-free) e rendere l’aiuto più neutro | Closed | 1.3.2 (Stability e UX) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/56 |
-| 57 | Rapid input/race: prevenire doppie esecuzioni e desync UI/server | Open | 1.3.2 (Stability e UX) | `type:chore`, `priority:P1`, `stability`, `ux` | https://github.com/Aqualung61/MissioneOdessa/issues/57 |
-| 58 | Scoring/intercettazione/game over: debug esteso + invarianti + test | Open | 1.3.2 (Stability e UX) | `type:chore`, `type:test`, `area:engine`, `priority:P2`, `stability` | https://github.com/Aqualung61/MissioneOdessa/issues/58 |
-| 59 | i18n: completare messaggi e label mancanti (backend + frontend) | Open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P1`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/59 |
-| 60 | Lingua: selettore + persistenza in pagina storia | Open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/60 |
-| 61 | QA cross-browser + mobile: checklist riproducibile (intro/storia/main) | Open | v1.3.4 (Cross-browser QA) | `type:chore`, `type:test`, `ux`, `portability` | https://github.com/Aqualung61/MissioneOdessa/issues/61 |
-| 62 | Release readiness: checklist pubblicazione repo (pre-public) | Open | v1.4.0 (Release readiness) | `enhancement`, `documentation`, `priority:P1` | https://github.com/Aqualung61/MissioneOdessa/issues/62 |
-| 63 | ESLint complexity rules + refactor di executeCommand()/ensureVocabulary() | Open | v1.4.0 (Release readiness) | `type:feature`, `area:ci`, `area:engine`, `area:parser`, `priority:P2` | https://github.com/Aqualung61/MissioneOdessa/issues/63 |
+| 55 | Parser: validazione + messaggi per input/comandi invalidi | open | 1.3.2 (Stability e UX) | `type:chore`, `area:parser`, `priority:P1`, `stability` | https://github.com/Aqualung61/MissioneOdessa/issues/55 |
+| 56 | HELP: ridurre hints (spoiler-free) e rendere l’aiuto più neutro | closed | 1.3.2 (Stability e UX) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/56 |
+| 57 | Rapid input/race: prevenire doppie esecuzioni e desync UI/server | open | 1.3.2 (Stability e UX) | `type:chore`, `priority:P1`, `stability`, `ux` | https://github.com/Aqualung61/MissioneOdessa/issues/57 |
+| 58 | Scoring/intercettazione/game over: debug esteso + invarianti + test | open | 1.3.2 (Stability e UX) | `type:chore`, `type:test`, `area:engine`, `priority:P2`, `stability` | https://github.com/Aqualung61/MissioneOdessa/issues/58 |
+| 59 | i18n: completare messaggi e label mancanti (backend + frontend) | open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P1`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/59 |
+| 60 | Lingua: selettore + persistenza in pagina storia | open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/60 |
+| 61 | QA cross-browser + mobile: checklist riproducibile (intro/storia/main) | open | v1.3.4 (Cross-browser QA) | `type:chore`, `type:test`, `ux`, `portability` | https://github.com/Aqualung61/MissioneOdessa/issues/61 |
+| 62 | Release readiness: checklist pubblicazione repo (pre-public) | open | v1.4.0 (Release readiness) | `enhancement`, `documentation`, `priority:P1` | https://github.com/Aqualung61/MissioneOdessa/issues/62 |
+| 63 | ESLint complexity rules + refactor di executeCommand()/ensureVocabulary() | open | v1.4.0 (Release readiness) | `type:feature`, `area:ci`, `area:engine`, `area:parser`, `priority:P2` | https://github.com/Aqualung61/MissioneOdessa/issues/63 |
+
+Nota: il **dettaglio** sotto include solo le issue **open**; le issue **closed** restano elencate solo nella tabella.
 
 ## Collegamento Issues ↔ Milestones (Mermaid)
 ```mermaid
@@ -58,12 +60,15 @@ flowchart TB
     I62["#62 Pre-public checklist"]
     I63["#63 ESLint complexity + refactor"]
   end
+
+  classDef closed fill:#f2f2f2,stroke:#999,stroke-dasharray: 5 5,color:#555;
+  class I56 closed;
 ```
 
 ---
 
 ## Issue #55 — Parser: validazione + messaggi per input/comandi invalidi
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `priority:P1`, `area:parser`, `type:chore`, `stability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/55
@@ -90,34 +95,8 @@ Alcuni input non previsti/scorretti possono generare risposte incoerenti (o erro
 
 ---
 
-## Issue #56 — HELP: ridurre hints (spoiler-free) e rendere l’aiuto più neutro
-- **Stato:** Closed
-- **Milestone:** 1.3.2 (Stability e UX)
-- **Labels:** `type:chore`, `priority:P2`, `ux`, `i18n`
-- **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/56
-
-### Descrizione
-**Contesto**
-L’help attuale può includere esempi troppo “risolutivi” (spoiler). Serve un help più neutro: comandi base, pochissimi esempi generici, tono coerente.
-
-**Soluzione proposta**
-- Rivedere i testi HELP per:
-  - limitare esempi specifici legati a puzzle/luoghi
-  - privilegiare spiegazioni “di sistema” (verbi base, struttura comandi)
-  - mantenere un set minimo di esempi generici (es. “GUARDA”, “INVENTARIO”, “AIUTO”)
-- Se esistono livelli di hint, introdurre (o predisporre) una distinzione: HELP base vs HINT espliciti (eventuale fase successiva).
-- Aggiornare IT/EN in modo simmetrico.
-
-**Criteri di accettazione**
-- HELP non contiene riferimenti diretti a soluzioni/passi risolutivi.
-- HELP contiene una lista di comandi base e una sintassi minima (verbo + oggetto).
-- IT/EN coerenti.
-- Nessuna regressione su test esistenti (se coprono HELP).
-
----
-
 ## Issue #57 — Rapid input/race: prevenire doppie esecuzioni e desync UI/server
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `priority:P1`, `type:chore`, `stability`, `ux`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/57
@@ -143,7 +122,7 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 ---
 
 ## Issue #58 — Scoring/intercettazione/game over: debug esteso + invarianti + test
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `area:engine`, `type:chore`, `type:test`, `priority:P2`, `stability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/58
@@ -171,7 +150,7 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 ---
 
 ## Issue #59 — i18n: completare messaggi e label mancanti (backend + frontend)
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** v1.3.3 (i18n + polish)
 - **Labels:** `priority:P1`, `type:chore`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/59
@@ -194,7 +173,7 @@ Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve comple
 ---
 
 ## Issue #60 — Lingua: selettore + persistenza in pagina storia
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** v1.3.3 (i18n + polish)
 - **Labels:** `type:chore`, `priority:P2`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/60
@@ -218,7 +197,7 @@ Serve poter cambiare lingua nella pagina storia e mantenere la scelta (persisten
 ---
 
 ## Issue #61 — QA cross-browser + mobile: checklist riproducibile (intro/storia/main)
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** v1.3.4 (Cross-browser QA)
 - **Labels:** `type:chore`, `type:test`, `ux`, `portability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/61
@@ -244,7 +223,7 @@ Serve verificare compatibilità e UX su browser principali (Edge/Safari) e su mo
 ---
 
 ## Issue #62 — Release readiness: checklist pubblicazione repo (pre-public)
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** v1.4.0 (Release readiness)
 - **Labels:** `enhancement`, `documentation`, `priority:P1`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/62
@@ -270,7 +249,7 @@ Per rendere il progetto pubblicabile servono controlli “pre-public”: segreti
 ---
 
 ## Issue #63 — ESLint complexity rules + refactor di executeCommand()/ensureVocabulary()
-- **Stato:** Open
+- **Stato:** open
 - **Milestone:** v1.4.0 (Release readiness)
 - **Labels:** `type:feature`, `area:engine`, `area:parser`, `area:ci`, `priority:P2`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/63
