@@ -4,6 +4,11 @@ import { ParseErrorType } from '../src/logic/parser.js';
 import { mapParseErrorToUserMessage } from '../src/logic/messages.js';
 import { getSystemMessage } from '../src/logic/systemMessages.js';
 
+type ParseResultLike = {
+  Error: string;
+  UnknownNounToken?: string;
+};
+
 describe('Issue #55.1 — taxonomy errori e chiavi i18n', () => {
   const languages = [1, 2] as const;
 
@@ -53,7 +58,7 @@ describe('Issue #55.1 — taxonomy errori e chiavi i18n', () => {
     ] as const;
 
     for (const err of knownErrors) {
-      const parseResult: any = { Error: err };
+      const parseResult: ParseResultLike = { Error: err };
       if (err === ParseErrorType.SYNTAX_NOUN_UNKNOWN) {
         parseResult.UnknownNounToken = 'Chiave';
       }
