@@ -8,14 +8,14 @@
 
 ## 📜 Diritti e Licenza
 
-Questo progetto contiene il porting in JavaScript del videogioco Missione Odessa sviluppato in BASIC per Commodore 64 negli anni '80.
+Questo progetto contiene il porting su piattaforma node.js del videogioco Missione Odessa sviluppato in BASIC per Commodore 64/Spectrum negli anni '80.
 
 ### 👤 Autore originale
 L’opera originale è stata creata da **Paolo Giorgi** e pubblicata da Jackson Editore negli anni '80.
 L’autore originale conserva tutti i diritti sull’opera del 1986. La pubblicazione del porting avviene con autorizzazione esplicita dell’autore originale.
 
 ### 🧩 Porting
-Il porting in JavaScript è stato realizzato da **Mauro Giorgi** come opera derivata.
+Il porting sulla piattaforma Node.js è stato realizzato da **Mauro Giorgi** come opera derivata. Utilizzando **VS Code**. **Meno del 5% del codice è stato sviluppato direttamente.**
 
 ### 📖 Licenza
 Il codice del porting è distribuito con licenza **MIT**, come indicato nel file [LICENSE](LICENSE). Questa licenza si applica esclusivamente al porting e non modifica in alcun modo i diritti sull’opera originale.
@@ -95,7 +95,6 @@ curl -s http://localhost:3001/api/version
   - `src/api/` — router API Express (es. `routes.js`, `linguaRoutes.js`)
   - `src/server.js` — entry point server Express (statico + API)
 - `web/` — file frontend statici (es. `odessa_main.html`, `odessa_intro.html`, `js/odessa_main.js`, `js/odessa_intro.js`)
-- `backup/` — backup e archivi
 - `docs/` — documentazione e note di modellazione
 - `tests/` — suite Vitest
 - `.env` — variabili opzionali (es. `PORT`, `BASE_PATH`, flag security)
@@ -193,7 +192,6 @@ Test: `tests/api.errorhandler.test.ts`.
 - Il server carica i dati da file JSON statici in `src/data-internal/` e serve sia API che file statici dalla stessa porta.
 - La logica di parsing e la presentazione sono modulari e facilmente estendibili.
 - I test sono in `tests/` (Vitest).
-- I backup sono in `backup/`.
 
 Nota deploy Railway (root `https://missioneodessa.up.railway.app/`):
 - lasciare `BASE_PATH` vuoto
