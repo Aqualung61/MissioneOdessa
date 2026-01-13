@@ -11,6 +11,31 @@ Questo documento sintetizza i prossimi step di sviluppo di **Missione Odessa App
 
 **Fonte di verità operativa:** GitHub (Issues + Milestones). Questo documento è una sintesi/indice.
 
+### Workflow operativo (Branch + Pull Request)
+Anche se il branch `main` non è protetto, usare le Pull Request (PR) come “contenitore” di ogni sprint rende più semplice tracciare cosa è stato fatto e (se desiderato) automatizza la chiusura delle issue.
+
+**Concetti chiave**
+- **PR (Pull Request)**: proposta di merge di un branch in `main` con diff, review e (se presenti) check automatici.
+- **Milestone**: avanza automaticamente quando si chiudono le issue assegnate alla milestone.
+
+**Keywords GitHub (Issue linking/closing)**
+- `Refs #NN` / `Part of #NN`: collega la PR alla issue senza chiuderla (consigliato per sprint intermedi).
+- `Fixes #NN` / `Closes #NN` / `Resolves #NN`: chiude automaticamente la issue #NN quando la PR viene mergiata in `main`.
+
+**Convenzione consigliata per gli sprint**
+- **1 branch per sprint**: `issue-55/sprint-55.2-validation` (o equivalente).
+- **Titolo PR**: `#55.2 Input validation uniformata (API)`.
+- **Descrizione PR**:
+  - Sprint intermedio: include `Part of #55`.
+  - Sprint finale che soddisfa i criteri di accettazione della issue: include `Fixes #55`.
+
+**Definition of Done (DoD) minima per PR di sprint**
+- Test verdi (almeno `npm test`) e niente regressioni note.
+- Nessun leak tecnico user-facing (stack trace/path) e nessun `500` introdotto in casi “invalid input”.
+- Note d’impatto in PR (se cambia contract/shape o UX).
+
+Nota: l’assegnazione della issue alla milestone si fa una sola volta sulla issue; l’avanzamento della milestone avviene automaticamente quando la issue viene chiusa.
+
 ### Contesto di progetto
 - **Prodotto:** adventure testuale (single-player) con backend Node.js/Express, frontend statico e API REST basate su JSON caricati in memoria.
 - **Stato sviluppo:** codebase consolidata, con test automatizzati (Vitest) e workflow di lint/build/test.
@@ -150,6 +175,11 @@ flowchart TB
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `priority:P1`, `area:parser`, `type:chore`, `stability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/55
+
+### Operatività (branch/PR)
+- PR per sprint consigliate: `#55.1` → `#55.6` (una PR piccola per ogni sprint, con test verdi).
+- PR intermedie: includere `Part of #55` nella descrizione.
+- PR finale (quando tutti i criteri sono soddisfatti): includere `Fixes #55` per chiusura automatica della issue e avanzamento milestone.
 
 ### Descrizione
 **Contesto**
@@ -325,6 +355,11 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - **Labels:** `priority:P1`, `type:chore`, `stability`, `ux`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/57
 
+### Operatività (branch/PR)
+- PR per sprint: `#57.1` → `#57.4` (una PR per “policy”, una per “UI lock/busy”, una per “requestId/out-of-order”, una per test/checklist).
+- PR intermedie: includere `Part of #57`.
+- PR finale: includere `Fixes #57`.
+
 ### Descrizione
 **Contesto**
 Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verificarsi doppie esecuzioni o desincronizzazione tra UI e stato server.
@@ -421,6 +456,11 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `area:engine`, `type:chore`, `type:test`, `priority:P2`, `stability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/58
+
+### Operatività (branch/PR)
+- PR per sprint: `#58.1` → `#58.4` (invarianti, debug dev/test, test invarianti, refactor mirato solo se serve).
+- PR intermedie: includere `Part of #58`.
+- PR finale: includere `Fixes #58`.
 
 ### Descrizione
 **Contesto**
@@ -520,6 +560,11 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 - **Labels:** `priority:P1`, `type:chore`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/59
 
+### Operatività (branch/PR)
+- PR per sprint: `#59.1` → `#59.3` (inventario, traduzioni, test anti-regressione i18n).
+- PR intermedie: includere `Part of #59`.
+- PR finale: includere `Fixes #59`.
+
 ### Descrizione
 **Contesto**
 Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve completare e uniformare la terminologia su backend e frontend.
@@ -597,6 +642,11 @@ Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve comple
 - **Milestone:** v1.3.3 (i18n + polish)
 - **Labels:** `type:chore`, `priority:P2`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/60
+
+### Operatività (branch/PR)
+- PR per sprint: `#60.1` → `#60.3` (UI+wiring, persistenza, rifiniture CSP/UX).
+- PR intermedie: includere `Part of #60`.
+- PR finale: includere `Fixes #60`.
 
 ### Descrizione
 **Contesto**
@@ -679,6 +729,11 @@ Serve poter cambiare lingua nella pagina storia e mantenere la scelta (persisten
 - **Labels:** `type:chore`, `type:test`, `ux`, `portability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/61
 
+### Operatività (branch/PR)
+- PR per sprint: `#61.1` (draft checklist). Per `#61.2`/`#61.3` valuta se versionare anche l’esito della run o solo la checklist (scelta di progetto).
+- PR intermedie: includere `Part of #61`.
+- PR finale: includere `Fixes #61` quando la checklist è completa e l’esecuzione è tracciata (PASS o issue aperte per gap).
+
 ### Descrizione
 **Contesto**
 Serve verificare compatibilità e UX su browser principali (Edge/Safari) e su mobile, con una checklist ripetibile per evitare regressioni.
@@ -757,6 +812,11 @@ Serve verificare compatibilità e UX su browser principali (Edge/Safari) e su mo
 - **Milestone:** v1.4.0 (Release readiness)
 - **Labels:** `enhancement`, `documentation`, `priority:P1`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/62
+
+### Operatività (branch/PR)
+- PR per sprint: `#62.1` (checklist), `#62.2` (esecuzione) e `#62.3` (issue gap) se vuoi tenere tutto versionato.
+- PR intermedie: includere `Part of #62`.
+- PR finale: includere `Fixes #62` quando la checklist è definita ed eseguita con esito (PASS o issue aperte per gap).
 
 ### Descrizione
 **Contesto**
@@ -838,6 +898,11 @@ Per rendere il progetto pubblicabile servono controlli “pre-public”: segreti
 - **Milestone:** v1.4.0 (Release readiness)
 - **Labels:** `type:feature`, `area:engine`, `area:parser`, `area:ci`, `priority:P2`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/63
+
+### Operatività (branch/PR)
+- PR per sprint: `#63.1` → `#63.4` (baseline warn, refactor mirati, poi enforcement).
+- PR intermedie: includere `Part of #63`.
+- PR finale: includere `Fixes #63` quando le regole sono in enforcement e i refactor sono completi.
 
 ### Descrizione
 **Contesto**
@@ -933,3 +998,41 @@ Obiettivo: prevenire regressioni future e rendere il refactor “misurabile” i
 - Evitare refactor “estetici”: focalizzarsi su separazione responsabilità e riduzione branch.
 
 ---
+
+\pagebreak
+
+## Appendice — Template PR (sprint)
+Template unico, pensato per sprint intermedi e sprint finali.
+
+```markdown
+Titolo PR:
+  #NN.X <Titolo sprint breve>
+
+Descrizione PR:
+
+  Link alla issue:
+  - Part of #NN   (sprint intermedio: NON chiude la issue)
+  - Fixes #NN     (sprint finale: chiude automaticamente la issue al merge)
+
+  Contesto
+  - <1-3 righe: perché serve>
+
+  Cosa cambia
+  - <bullet 1>
+  - <bullet 2>
+  - <bullet 3 (opzionale)>
+
+  Come verificare
+  - `npm test`
+  - <eventuali comandi extra / scenario manuale>
+
+  Impatti / Rischi
+  - Contract/shape API: <no|sì + dettagli>
+  - UX/Test che matchano stringhe: <no|sì + dettagli>
+
+  DoD (minima)
+  - [ ] Test verdi (`npm test`)
+  - [ ] Nessun 500 introdotto nei casi coperti
+  - [ ] Nessun leak tecnico user-facing (stack trace/path)
+  - [ ] Note in PR su cambiamenti di contract/UX (se applicabile)
+```
