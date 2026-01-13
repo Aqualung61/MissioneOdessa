@@ -34,6 +34,11 @@ Anche se il branch `main` non è protetto, usare le Pull Request (PR) come “co
 - Nessun leak tecnico user-facing (stack trace/path) e nessun `500` introdotto in casi “invalid input”.
 - Note d’impatto in PR (se cambia contract/shape o UX).
 
+**Cleanup (regola) quando una issue è completata**
+- Quando la issue viene chiusa (tipicamente tramite PR finale con `Fixes #NN`), si considera chiusa anche la “sequenza di sprint” associata.
+- Cleanup tecnico: eliminare le branch di sprint (remota via GitHub “Delete branch”, e locale se non serve più).
+- Cleanup documentale: rimuovere da questo documento la breakdown dettagliata degli sprint di quell’issue (o spostarla in sezione “obsolete/archivio”), mantenendo solo il link alla issue e, se utile, alla PR finale.
+
 Nota: l’assegnazione della issue alla milestone si fa una sola volta sulla issue; l’avanzamento della milestone avviene automaticamente quando la issue viene chiusa.
 
 ### Contesto di progetto
