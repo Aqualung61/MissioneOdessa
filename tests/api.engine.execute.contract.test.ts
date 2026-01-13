@@ -125,6 +125,45 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.stats.visitedPlaces).toBe('number');
   });
 
+  it('invalid input: vuoto/solo spazi -> 400 ok=false, error INVALID_INPUT e userMessage', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: '   ' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe('INVALID_INPUT');
+    expect(body.details).toBe('EMPTY_INPUT');
+    expect(typeof body.userMessage).toBe('string');
+
+    expect(body.parseResult).toBeDefined();
+    expect(body.parseResult.IsValid).toBe(false);
+
+    // Contract: in invalid-input non deve esserci engine/command
+    expect(body.engine).toBe(null);
+    expect(body.command).toBe(null);
+
+    // Sprint 4.1.3: anche su errori torna snapshot + ui + stats
+    expect(body.state).toBeDefined();
+    expect(typeof body.state.currentLocationId).toBe('number');
+    expect(body.ui).toBeDefined();
+    expect(typeof body.ui.location.id).toBe('number');
+    expect(body.stats).toBeDefined();
+    expect(typeof body.stats.visitedPlaces).toBe('number');
+  });
+
   it('awaitingRestart: bypass parser e ritorna parseResult=null, command=null, engine normalizzato', async () => {
     // Imposta stato in attesa riavvio prima della request
     const state = getGameState();

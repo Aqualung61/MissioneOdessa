@@ -75,6 +75,31 @@ describe('M2 validation + body limits', () => {
     const body = await res.json();
     expect(body.IsValid).toBe(false);
     expect(body.Error).toBe('INVALID_INPUT');
+    expect(body.Details).toBe('LENGTH_OUT_OF_RANGE');
+  });
+
+  it('parser/parse: input vuoto/solo spazi -> 400 IsValid=false (EMPTY_INPUT)', async () => {
+    const app = express();
+    app.use(express.json());
+    app.post('/api/parser/parse', validateCommandInput({ mode: 'parser' }), (_req, res) => {
+      res.json({ IsValid: true });
+    });
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/parser/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: '   ' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.IsValid).toBe(false);
+    expect(body.Error).toBe('INVALID_INPUT');
+    expect(body.Details).toBe('EMPTY_INPUT');
   });
 
   it('engine/execute: control chars -> 400 ok=false', async () => {
@@ -97,6 +122,32 @@ describe('M2 validation + body limits', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.ok).toBe(false);
+    expect(body.error).toBe('INVALID_INPUT');
+    expect(body.details).toBe('CONTROL_CHARS');
+  });
+
+  it('engine/execute: input vuoto/solo spazi -> 400 ok=false (EMPTY_INPUT)', async () => {
+    const app = express();
+    app.use(express.json());
+    app.post('/api/engine/execute', validateCommandInput({ mode: 'engine' }), (_req, res) => {
+      res.json({ ok: true });
+    });
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: '   ' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe('INVALID_INPUT');
+    expect(body.details).toBe('EMPTY_INPUT');
   });
 
   it('load-client-state: array enorme -> 400', async () => {
