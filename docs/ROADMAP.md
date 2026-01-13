@@ -61,6 +61,10 @@ Milestones già create su GitHub (nomi allineati alla UI):
    - Obiettivo: checklist pre-public (segreti, .env.example, hardening, attribution/licenze, contenuti).
    - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/62
 
+9) **Quality gate: ESLint complexity rules + refactor funzioni critiche**
+   - Obiettivo: rendere misurabile la manutenibilità (limiti ESLint) e ridurre complessità di `executeCommand()`/`ensureVocabulary()`.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/63
+
 ## Convenzioni consigliate (Issues)
 
 - Titoli brevi e azionabili (es. `Parser: messaggi per input invalidi`).

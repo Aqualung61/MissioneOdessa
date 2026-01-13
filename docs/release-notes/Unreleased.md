@@ -23,6 +23,7 @@ Pulizia del progetto e allineamento runtime/documentazione: rimossi i test E2E/P
   - CSS inline consolidato in `web/css/base.css` e `web/css/odessa_main.css`.
 - Documentazione
   - Allineati i documenti tecnici a rimozione Playwright/test runner e rinomina `odessa1.js` → `odessa_main.js`.
+  - Tracking: aggiornata la roadmap con link alle issue GitHub (incl. release-readiness: ESLint complexity/refactor, #63).
 
 ## Quality gates
 - Build: PASS
