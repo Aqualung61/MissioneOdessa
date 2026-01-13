@@ -14,40 +14,52 @@ Suggerimento: quando apri una PR, usa `Fixes #<id>` nella descrizione per chiude
 
 ## Milestones suggerite
 
-- **v1.3.2 (Stability + UX)**
+Milestones già create su GitHub (nomi allineati alla UI):
+
+- **1.3.2 (Stability e UX)**
 - **v1.3.3 (i18n + polish)**
 - **v1.3.4 (Cross-browser QA)**
-- **v1.4.0 (Release readiness / pubblicazione)**
+- **v1.4.0 (Release readiness)**
 
 ## Now (prossima iterazione)
 
 1) **Parser: validazione e messaggi per comandi non previsti/scorretti**
    - Obiettivo: messaggi coerenti, nessun 500/stack leak, IT/EN allineati.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/55
 
-2) **HELP: ridurre hints (spoiler-free)**
-   - Obiettivo: help più “neutro”, con comandi base e pochi esempi non risolutivi.
-
-3) **Comandi troppo veloci (race/rapid input): analisi + soluzione**
+2) **Comandi troppo veloci (race/rapid input): analisi + soluzione**
    - Obiettivo: evitare doppie esecuzioni/desync UI/server quando l’utente invia input molto rapidamente.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/57
+
+## Done (recent)
+
+- **HELP: ridurre hints (spoiler-free)**
+  - Obiettivo: help più “neutro”, con comandi base e pochi esempi non risolutivi.
+  - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/56 (chiusa)
 
 ## Next
 
 4) **Debug esteso scoring/intercettazione/game over + invarianti**
    - Obiettivo: definire invarianti (es. punteggio monotono, game-over blocca, contatori coerenti) e aumentare copertura test dove serve.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/58
 
 5) **i18n: completamento messaggi e label (backend + frontend)**
    - Obiettivo: eliminare chiavi mancanti/fallback, coerenza terminologica IT/EN.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/59
 
 6) **Cambio lingua in `odessa_storia.html`**
    - Obiettivo: selettore lingua con persistenza (localStorage) e UI coerente.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/60
 
 ## Later
 
 7) **QA cross-browser (Edge/Safari) + mobile**
    - Obiettivo: checklist riproducibile su pagine storia/intro/main, viewport e input.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/61
 
 8) **Pubblicazione progetto (repo pubblico)**
    - Obiettivo: checklist pre-public (segreti, .env.example, hardening, attribution/licenze, contenuti).
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/62
 
 ## Convenzioni consigliate (Issues)
 
