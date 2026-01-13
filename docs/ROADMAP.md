@@ -3,6 +3,9 @@
 Questo file è una **sintesi** dei prossimi step.
 La **fonte di verità operativa** (stato, discussione, assegnazioni, chiusura automatica via PR) deve restare su **GitHub Issues + Milestones**.
 
+Documento operativo (da usare come TODO dettagliato, con HLD/TD/Plan per ogni issue):
+- [docs/20260113_nextsteps.md](20260113_nextsteps.md)
+
 ## Link rapidi (GitHub)
 
 - Issues aperte: https://github.com/Aqualung61/MissioneOdessa/issues

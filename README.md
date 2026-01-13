@@ -5,6 +5,7 @@
 **Versione 1.3.1** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 - Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
+- Piano operativo (TODO dettagliato): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
 - Tracking (fonte di verità):
    - Issues: https://github.com/Aqualung61/MissioneOdessa/issues
    - Milestones: https://github.com/Aqualung61/MissioneOdessa/milestones
