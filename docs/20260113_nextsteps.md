@@ -163,7 +163,7 @@ flowchart TB
       end
       subgraph I55S["#55 Input invalido: validazione + messaggi"]
         direction LR
-        S551["#55.1 Taxonomy errori"] --> S552["#55.2 Parser: codici/shape"] --> S553["#55.3 Engine: mapping"] --> S554["#55.4 Legacy: coerenza"] --> S555["#55.5 Test"] --> S556["#55.6 Doc"]
+        S551["#55.1 Taxonomy errori"] --> S552["#55.2 Validazione API"] --> S553["#55.3 Parser contract"] --> S554["#55.4 Engine integration"] --> S555["#55.5 Test"] --> S556["#55.6 Doc"]
       end
       %% Forza ordine verticale issue: 58 -> 57 -> 55
       S581 ~~~ S571 ~~~ S551
@@ -261,6 +261,7 @@ Punti di intervento nel codice (indicativi):
 Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output verificabile.
 
 #### Sprint #55.1 — Error taxonomy & i18n keys
+**Stato:** completato (mergiato)
 **Descrizione**
 - Definire un set minimo di codici errore “user-facing” (es. `EMPTY_INPUT`, `CONTROL_CHARS`, `LENGTH_OUT_OF_RANGE`, `COMMAND_UNKNOWN`, `SYNTAX_*`).
 - Associare ogni codice a una chiave i18n (IT/EN) e a regole su eventuali placeholder (es. token sconosciuto).
@@ -274,6 +275,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - Esistono messaggi IT/EN per ciascun codice del set minimo.
 
 #### Sprint #55.2 — Input validation uniformata (API)
+**Stato:** completato (mergiato)
 **Descrizione**
 - Allineare la validazione preliminare usando/estendendo `validateCommandInput` (`src/middleware/validation.js`).
 - Rendere esplicita la classificazione: vuoto/solo spazi, control chars, out-of-range.
@@ -287,6 +289,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - Nessun 500 su input invalidi a livello HTTP.
 
 #### Sprint #55.3 — Parser contract (parseResult coerente)
+**Stato:** completato (mergiato)
 **Descrizione**
 - Verificare che `parseCommand()` produca un `parseResult` coerente quando `IsValid=false`:
   - `Error` canonico
@@ -302,6 +305,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - Nessuna stringa “tecnica” viene propagata come errore utente.
 
 #### Sprint #55.4 — Engine integration (messaggi user-facing)
+**Stato:** da fare
 **Descrizione**
 - Aggiornare la pipeline engine per evitare messaggi tecnici quando `parseResult.IsValid !== true`.
 - Usare il mapping centralizzato (`src/logic/messages.js` → `mapParseErrorToUserMessage`) o fallback user-safe.
@@ -315,6 +319,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - In `NODE_ENV=production` non vengono esposti stack/path/diagnostica.
 
 #### Sprint #55.5 — Test & regressioni
+**Stato:** da fare
 **Descrizione**
 - Estendere i test esistenti (es. `tests/api.validation.test.ts` e test parser/engine) per:
   - vuoto/solo spazi
@@ -332,6 +337,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - I test falliscono se ricompare un 500 o se il parser/engine emettono messaggi tecnici.
 
 #### Sprint #55.6 — Pulizia e documentazione
+**Stato:** da fare
 **Descrizione**
 - Consolidare la documentazione minima del comportamento “invalid input”.
 - Se necessario, aggiornare le note in docs/ROADMAP e/o guida per contributor.
