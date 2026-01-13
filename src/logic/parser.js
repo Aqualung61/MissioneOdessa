@@ -17,6 +17,7 @@ export const CommandType = {
 
 export const ParseErrorType = {
   NONE: 'NONE',
+  INVALID_INPUT: 'INVALID_INPUT',
   COMMAND_UNKNOWN: 'COMMAND_UNKNOWN',
   SYNTAX_ACTION_INCOMPLETE: 'SYNTAX_ACTION_INCOMPLETE',
   SYNTAX_NOUN_UNKNOWN: 'SYNTAX_NOUN_UNKNOWN',
@@ -129,6 +130,15 @@ function isDigits(str) {
   return /^\d+$/.test(str);
 }
 
+function hasControlChars(s) {
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    const isControl = (code >= 0 && code <= 8) || code === 11 || code === 12 || (code >= 14 && code <= 31) || code === 127;
+    if (isControl) return true;
+  }
+  return false;
+}
+
 // Alcuni verbi d'azione non richiedono oggetto
 // DORMI: azione senza oggetto
 // ESAMINA/GUARDA: possono essere usati senza oggetto per descrivere il luogo
@@ -137,11 +147,50 @@ const ACTION_NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
 export async function parseCommand(dbPath, input, gameState = null) {
   const vocab = await ensureVocabulary(gameState);
   const { tokenMap } = vocab;
-  const OriginalInput = input;
+  const OriginalInput = typeof input === 'string' ? input : '';
+
+  // Contract: non deve mai throware per input invalido; deve ritornare un parseResult deterministico.
+  const base = {
+    IsValid: false,
+    OriginalInput,
+    NormalizedInput: '',
+    CommandType: null,
+    CanonicalVerb: null,
+    CanonicalNoun: null,
+    NounIndex: null,
+    // campi diagnostici/canonici aggiuntivi (additivi)
+    VerbTermId: null,
+    VerbConcept: null,
+    NounTermId: null,
+    NounConcept: null,
+    Error: ParseErrorType.NONE,
+    Details: null,
+    // campi diagnostici per errori specifici
+    UnknownToken: null,
+    UnknownNounToken: null,
+  };
+
+  if (typeof input !== 'string') {
+    return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'NOT_A_STRING' };
+  }
+
+  if (hasControlChars(input)) {
+    return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'CONTROL_CHARS' };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed.length === 0) {
+    return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'EMPTY_INPUT' };
+  }
+
+  if (trimmed.length > 500) {
+    return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'LENGTH_OUT_OF_RANGE' };
+  }
+
   const NormalizedInput = normalizeInput(input);
   const rawTokens = NormalizedInput.length ? NormalizedInput.split(' ') : [];
   // Preserva i token originali (senza normalizzazione uppercase) per messaggi utente
-  const originalTokens = input.trim().length ? input.trim().split(/\s+/) : [];
+  const originalTokens = trimmed.length ? trimmed.split(/\s+/) : [];
 
   // Mappa token -> info e filtra STOPWORD
   const looked = rawTokens.map((t) => tokenMap.get(t) || null);
@@ -154,38 +203,20 @@ export async function parseCommand(dbPath, input, gameState = null) {
     filteredOriginalTokens.push(originalTokens[i] || rawTokens[i]);
   }
 
-  // Helper per risultato
-  const base = {
-    IsValid: false,
-    OriginalInput,
-    NormalizedInput,
-    CommandType: null,
-    CanonicalVerb: null,
-    CanonicalNoun: null,
-    NounIndex: null,
-    // campi diagnostici/canonici aggiuntivi (additivi)
-    VerbTermId: null,
-    VerbConcept: null,
-    NounTermId: null,
-    NounConcept: null,
-    Error: ParseErrorType.NONE,
-    // campi diagnostici per errori specifici
-    UnknownToken: null,
-    UnknownNounToken: null,
-  };
+  const baseWithNormalized = { ...base, NormalizedInput };
 
   // Nessun token utile
   if (filteredTokens.length === 0) {
-    return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN };
+    return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN };
   }
 
   // Caso 1 token
   if (filteredTokens.length === 1) {
     const { token, info } = filteredTokens[0];
-    if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
+    if (!info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
     if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
       return {
-        ...base,
+        ...baseWithNormalized,
         IsValid: true,
         CommandType: info.type,
         CanonicalVerb: info.canonical,
@@ -197,7 +228,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
       // Verbi che non richiedono oggetto
       if (ACTION_NO_OBJECT.has(info.canonical)) {
         return {
-          ...base,
+          ...baseWithNormalized,
           IsValid: true,
           CommandType: CommandType.ACTION,
           CanonicalVerb: info.canonical,
@@ -205,10 +236,10 @@ export async function parseCommand(dbPath, input, gameState = null) {
           VerbConcept: info.concept,
         };
       }
-      return { ...base, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
+      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
     }
     // NOUN singolo o altro
-    return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
   }
 
   // Caso 2 o 3 token (supporto indice numerico opzionale come terzo token)
@@ -216,20 +247,20 @@ export async function parseCommand(dbPath, input, gameState = null) {
     const [t1, t2, t3] = filteredTokens;
     const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
     const extra = filteredTokens.length === 3 && idx === null;
-    if (extra) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    if (extra) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 
-    if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+    if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 
     if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
       // Non devono avere oggetto
-      return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
     }
 
     if (t1.info.type === CommandType.ACTION) {
-      if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
-      if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      if (!t2.info) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
+      if (t2.info.type !== CommandType.NOUN) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
       return {
-        ...base,
+        ...baseWithNormalized,
         IsValid: true,
         CommandType: CommandType.ACTION,
         CanonicalVerb: t1.info.canonical,
@@ -243,10 +274,10 @@ export async function parseCommand(dbPath, input, gameState = null) {
     }
 
     // T1 NOUN o altro -> struttura non valida
-    return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
   }
 
   // Troppi token
-  return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+  return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 }
 
