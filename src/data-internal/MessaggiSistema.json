@@ -50,6 +50,56 @@
     "Messaggio": "?I DON'T UNDERSTAND."
   },
   {
+    "Chiave": "parse.error.invalidInputGeneric",
+    "IDLingua": 1,
+    "Messaggio": "?INPUT NON VALIDO."
+  },
+  {
+    "Chiave": "parse.error.invalidInputGeneric",
+    "IDLingua": 2,
+    "Messaggio": "?INVALID INPUT."
+  },
+  {
+    "Chiave": "parse.error.emptyInput",
+    "IDLingua": 1,
+    "Messaggio": "?INSERISCI UN COMANDO."
+  },
+  {
+    "Chiave": "parse.error.emptyInput",
+    "IDLingua": 2,
+    "Messaggio": "?PLEASE ENTER A COMMAND."
+  },
+  {
+    "Chiave": "parse.error.controlChars",
+    "IDLingua": 1,
+    "Messaggio": "?CARATTERI NON AMMESSI NEL COMANDO."
+  },
+  {
+    "Chiave": "parse.error.controlChars",
+    "IDLingua": 2,
+    "Messaggio": "?INVALID CHARACTERS IN COMMAND."
+  },
+  {
+    "Chiave": "parse.error.lengthOutOfRange",
+    "IDLingua": 1,
+    "Messaggio": "?COMANDO TROPPO LUNGO O TROPPO CORTO."
+  },
+  {
+    "Chiave": "parse.error.lengthOutOfRange",
+    "IDLingua": 2,
+    "Messaggio": "?COMMAND TOO LONG OR TOO SHORT."
+  },
+  {
+    "Chiave": "parse.error.notAString",
+    "IDLingua": 1,
+    "Messaggio": "?COMANDO NON VALIDO."
+  },
+  {
+    "Chiave": "parse.error.notAString",
+    "IDLingua": 2,
+    "Messaggio": "?INVALID COMMAND."
+  },
+  {
     "Chiave": "engine.error.noParseResult",
     "IDLingua": 1,
     "Messaggio": "Nessun risultato di parsing"
