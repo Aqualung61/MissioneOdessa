@@ -7,6 +7,21 @@ import { getSystemMessage } from './systemMessages.js';
 export function mapParseErrorToUserMessage(parseResult, idLingua = 1) {
   const code = parseResult?.Error || 'NONE';
   switch (code) {
+    case 'INVALID_INPUT': {
+      const details = parseResult?.Details;
+      switch (details) {
+        case 'EMPTY_INPUT':
+          return getSystemMessage('parse.error.emptyInput', idLingua);
+        case 'CONTROL_CHARS':
+          return getSystemMessage('parse.error.controlChars', idLingua);
+        case 'LENGTH_OUT_OF_RANGE':
+          return getSystemMessage('parse.error.lengthOutOfRange', idLingua);
+        case 'NOT_A_STRING':
+          return getSystemMessage('parse.error.notAString', idLingua);
+        default:
+          return getSystemMessage('parse.error.invalidInputGeneric', idLingua);
+      }
+    }
     case 'COMMAND_UNKNOWN':
       return getSystemMessage('parse.error.commandUnknown', idLingua);
     case 'SYNTAX_ACTION_INCOMPLETE':
