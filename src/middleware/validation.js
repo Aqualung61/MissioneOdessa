@@ -25,7 +25,7 @@ function respondInvalid(req, res, mode, details) {
   if (mode === 'suite') {
     return res.status(400).json({ ok: false, error: 'INVALID_SUITE', details });
   }
-  return res.status(400).json({ ok: false, error: 'Invalid input', details });
+  return res.status(400).json({ ok: false, error: 'INVALID_INPUT', details });
 }
 
 /**
@@ -36,24 +36,49 @@ export function validateCommandInput(options = {}) {
   const minLen = options.minLen ?? 1;
   const maxLen = options.maxLen ?? 500;
   const mode = options.mode ?? 'engine'; // 'engine' | 'parser'
+  const behavior = options.behavior ?? (options.attach ? 'attach' : 'respond'); // 'respond' | 'attach'
 
   return function validateCommandInputMiddleware(req, res, next) {
     const raw = req.body?.[field];
     if (typeof raw !== 'string') {
-      return respondInvalid(req, res, mode, 'NOT_A_STRING');
+      const details = 'NOT_A_STRING';
+      if (behavior === 'attach') {
+        req.commandInputValidationError = { error: 'INVALID_INPUT', details };
+        return next();
+      }
+      return respondInvalid(req, res, mode, details);
     }
 
     const value = raw.trim();
+    // Normalize input for downstream handlers (consistent behavior)
+    req.body[field] = value;
+
+    if (value.length === 0) {
+      const details = 'EMPTY_INPUT';
+      if (behavior === 'attach') {
+        req.commandInputValidationError = { error: 'INVALID_INPUT', details };
+        return next();
+      }
+      return respondInvalid(req, res, mode, details);
+    }
+
     if (value.length < minLen || value.length > maxLen) {
-      return respondInvalid(req, res, mode, 'LENGTH_OUT_OF_RANGE');
+      const details = 'LENGTH_OUT_OF_RANGE';
+      if (behavior === 'attach') {
+        req.commandInputValidationError = { error: 'INVALID_INPUT', details };
+        return next();
+      }
+      return respondInvalid(req, res, mode, details);
     }
 
     if (hasControlChars(value)) {
-      return respondInvalid(req, res, mode, 'CONTROL_CHARS');
+      const details = 'CONTROL_CHARS';
+      if (behavior === 'attach') {
+        req.commandInputValidationError = { error: 'INVALID_INPUT', details };
+        return next();
+      }
+      return respondInvalid(req, res, mode, details);
     }
-
-    // Normalize input for downstream handlers (consistent behavior)
-    req.body[field] = value;
     return next();
   };
 }

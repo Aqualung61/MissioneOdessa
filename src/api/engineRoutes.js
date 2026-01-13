@@ -3,6 +3,7 @@ import { parseCommand } from '../logic/parser.js';
 import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmEnd, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
+import { getSystemMessage } from '../logic/systemMessages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
 import { appVersion } from '../version.js';
 
@@ -84,14 +85,50 @@ function normalizeEngineResult(engine) {
   return normalized;
 }
 
-router.post('/execute', validateCommandInput({ mode: 'engine' }), async (req, res, next) => {
+function mapInvalidInputDetailsToI18nKey(details) {
+  switch (details) {
+    case 'EMPTY_INPUT':
+      return 'parse.error.emptyInput';
+    case 'CONTROL_CHARS':
+      return 'parse.error.controlChars';
+    case 'LENGTH_OUT_OF_RANGE':
+      return 'parse.error.lengthOutOfRange';
+    case 'NOT_A_STRING':
+      return 'parse.error.notAString';
+    default:
+      return 'parse.error.invalidInputGeneric';
+  }
+}
+
+router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
   try {
+    if (req.commandInputValidationError) {
+      const state = getGameStateSnapshot();
+      const details = req.commandInputValidationError.details;
+      const i18nKey = mapInvalidInputDetailsToI18nKey(details);
+      const userMessage = getSystemMessage(i18nKey, state.currentLingua);
+      return res.status(400).json({
+        ok: false,
+        error: 'INVALID_INPUT',
+        details,
+        userMessage,
+        parseResult: { IsValid: false, Error: 'INVALID_INPUT', Details: details },
+        command: null,
+        engine: null,
+        state,
+        ui: buildUiFromState(state),
+        stats: computeStatsFromState(state),
+      });
+    }
+
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
       const state = getGameStateSnapshot();
       return res.status(400).json({
         ok: false,
-        error: 'Invalid input',
+        error: 'INVALID_INPUT',
+        details: 'NOT_A_STRING',
+        userMessage: getSystemMessage('parse.error.notAString', state.currentLingua),
         parseResult: null,
         command: null,
         engine: null,
