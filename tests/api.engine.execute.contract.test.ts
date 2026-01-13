@@ -288,8 +288,6 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(chosen).toBeDefined();
     if (!chosen) throw new Error('Nessuna direzione valida trovata a partire da luogo 1');
     const expectedNextId = luogo1[chosen];
-    expect(typeof expectedNextId).toBe('number');
-    expect(expectedNextId).toBeGreaterThan(0);
     if (typeof expectedNextId !== 'number' || expectedNextId <= 0) {
       throw new Error(`Direzione valida '${chosen}' ma nextId non valido: ${String(expectedNextId)}`);
     }
