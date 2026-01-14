@@ -25,9 +25,8 @@ type OdessaData = {
   Luoghi?: Luogo[];
 };
 
-declare global {
-  // Popolato da tests/setup.ts
-  var odessaData: OdessaData | undefined;
+function getOdessaData(): OdessaData {
+  return (globalThis.odessaData ?? {}) as OdessaData;
 }
 
 type StartedServer = { server: Server; baseUrl: string };
@@ -43,7 +42,7 @@ function startServer(app: express.Express): Promise<StartedServer> {
 }
 
 function getLuoghiLingua1(): Luogo[] {
-  return (globalThis.odessaData?.Luoghi ?? []).filter((l) => l.IDLingua === 1);
+  return (getOdessaData().Luoghi ?? []).filter((l) => l.IDLingua === 1);
 }
 
 function getDirs(fromId: number): Partial<Record<DirectionKey, number>> {

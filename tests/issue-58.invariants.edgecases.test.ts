@@ -52,10 +52,6 @@ type OdessaData = {
   Interazioni?: unknown;
 };
 
-declare global {
-  var odessaData: OdessaData | undefined;
-}
-
 type StartedServer = { server: Server; baseUrl: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
