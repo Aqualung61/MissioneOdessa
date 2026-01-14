@@ -292,16 +292,29 @@ const basePath = getBasePath();
 // Sprint #57.4: debug mode per riprodurre race/out-of-order in modo deterministico.
 // Nota: la pagina carica questo file come ES module (type="module"), quindi le funzioni
 // top-level non sono disponibili in Console a meno di esporle su window.
-const debugRaceMode = new URLSearchParams(window.location.search).get('debugRace') === '1';
+const debugRaceParams = new URLSearchParams(window.location.search);
+const debugRaceMode = debugRaceParams.get('debugRace') === '1';
+
+const debugRaceDelayMs = (() => {
+  const raw = debugRaceParams.get('debugRaceDelayMs');
+  if (!raw) return 800;
+  const parsed = parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 800;
+})();
 
 if (debugRaceMode) {
-  console.log('[debugRace] enabled');
+  document.documentElement.dataset.debugRace = '1';
+  document.title = `[debugRace] ${document.title}`;
+  console.warn('[debugRace] enabled (testing mode)');
+  console.log('[debugRace] enabled', { delayMs: debugRaceDelayMs });
 }
 
 function debugRaceArtificialDelayMsForRequest(requestId) {
   if (!debugRaceMode) return 0;
   // Ritarda le request dispari per forzare risposte fuori ordine in modo prevedibile.
-  return requestId % 2 === 1 ? 800 : 0;
+  // Nota: il delay viene applicato PRIMA del controllo di staleness (requestId), così anche
+  // una risposta "veloce" può essere resa obsoleta dall'invio immediato di una richiesta più recente.
+  return requestId % 2 === 1 ? debugRaceDelayMs : 0;
 }
 
 let luoghi = [];
@@ -632,6 +645,7 @@ async function executeCommandOnServer(input) {
 try {
   window.executeCommandOnServer = executeCommandOnServer;
   window.debugRaceMode = debugRaceMode;
+  window.debugRaceDelayMs = debugRaceDelayMs;
 } catch {
   // ignore
 }

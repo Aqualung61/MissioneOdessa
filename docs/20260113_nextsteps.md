@@ -364,7 +364,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 \pagebreak
 
 ## Issue #57 — Rapid input/race: prevenire doppie esecuzioni e desync UI/server
-- **Stato:** open (Sprint #57.4 in corso; #57.1–#57.3 completati)
+- **Stato:** open (Sprint #57.4 completato; in review su PR #74)
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `priority:P1`, `type:chore`, `stability`, `ux`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/57
@@ -482,7 +482,7 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - Aggiungere un test di integrazione oppure una checklist manuale riproducibile con passi e risultato atteso.
 
 **Stato**
-- In corso.
+- Completato (in PR #74; merge pending).
 
 **Checklist (manuale, riproducibile)**
 
