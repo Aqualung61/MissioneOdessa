@@ -18,9 +18,9 @@ export function resetEngineDebugTrace() {
 export function pushEngineDebugEvent(event) {
   if (!isEngineDebugEnabled()) return;
   const safeEvent = {
+    ...event,
     id: nextId++,
     ts: new Date().toISOString(),
-    ...event,
   };
 
   events.push(safeEvent);

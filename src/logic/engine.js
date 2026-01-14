@@ -659,8 +659,8 @@ export function setCurrentLocation(locationId) {
     
     // Assegna +1 punto SOLO se NON è luogo terminale
     const luogo = global.odessaData?.Luoghi?.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
-    const isTerminal = !!(luogo && luogo.Terminale === -1);
-    if (!isTerminal) {
+    const isTerminal = luogo ? luogo.Terminale === -1 : null;
+    if (luogo && !isTerminal) {
       gameState.punteggio.totale += 1;
     }
 
