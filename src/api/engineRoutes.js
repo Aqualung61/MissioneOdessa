@@ -6,6 +6,7 @@ import { mapParseErrorToUserMessage } from '../logic/messages.js';
 import { getSystemMessage } from '../logic/systemMessages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
 import { appVersion } from '../version.js';
+import { getEngineDebugTrace, isEngineDebugEnabled } from '../logic/engineDebug.js';
 
 const router = express.Router();
 
@@ -100,6 +101,11 @@ function mapInvalidInputDetailsToI18nKey(details) {
   }
 }
 
+function maybeAttachDebug(payload) {
+  if (!isEngineDebugEnabled()) return payload;
+  return { ...payload, debug: getEngineDebugTrace() };
+}
+
 router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
   try {
     if (req.commandInputValidationError) {
@@ -107,7 +113,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
       const details = req.commandInputValidationError.details;
       const i18nKey = mapInvalidInputDetailsToI18nKey(details);
       const userMessage = getSystemMessage(i18nKey, state.currentLingua);
-      return res.status(400).json({
+      return res.status(400).json(maybeAttachDebug({
         ok: false,
         error: 'INVALID_INPUT',
         details,
@@ -118,13 +124,13 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         state,
         ui: buildUiFromState(state),
         stats: computeStatsFromState(state),
-      });
+      }));
     }
 
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
       const state = getGameStateSnapshot();
-      return res.status(400).json({
+      return res.status(400).json(maybeAttachDebug({
         ok: false,
         error: 'INVALID_INPUT',
         details: 'NOT_A_STRING',
@@ -135,7 +141,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         state,
         ui: buildUiFromState(state),
         stats: computeStatsFromState(state),
-      });
+      }));
     }
     // ensureVocabulary ora chiamata automaticamente in parseCommand
     const state = getGameStateSnapshot();
@@ -143,7 +149,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
     if (state.awaitingEndConfirm) {
       const engine = normalizeEngineResult(confirmEnd(input));
       const nextState = getGameStateSnapshot();
-      return res.json({
+      return res.json(maybeAttachDebug({
         ok: true,
         parseResult: null,
         command: null,
@@ -151,13 +157,13 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         state: nextState,
         ui: buildUiFromState(nextState),
         stats: computeStatsFromState(nextState),
-      });
+      }));
     }
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
       const engine = normalizeEngineResult(await confirmRestart(input)); // dbPath rimosso
       const nextState = getGameStateSnapshot();
-      return res.json({
+      return res.json(maybeAttachDebug({
         ok: true,
         parseResult: null,
         command: null,
@@ -165,13 +171,13 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         state: nextState,
         ui: buildUiFromState(nextState),
         stats: computeStatsFromState(nextState),
-      });
+      }));
     }
     const parsed = await parseCommand(null, input, state); // passa gameState
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
       const currentState = getGameStateSnapshot();
-      return res.status(400).json({
+      return res.status(400).json(maybeAttachDebug({
         ok: false,
         parseResult: parsed,
         command: null,
@@ -181,12 +187,12 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         state: currentState,
         ui: buildUiFromState(currentState),
         stats: computeStatsFromState(currentState),
-      });
+      }));
     }
     const command = toCommandDTO(parsed);
     const engine = normalizeEngineResult(await executeCommandAsync(parsed)); // dbPath rimosso
     const nextState = getGameStateSnapshot();
-    res.json({
+    res.json(maybeAttachDebug({
       ok: true,
       parseResult: parsed,
       command,
@@ -194,7 +200,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
       state: nextState,
       ui: buildUiFromState(nextState),
       stats: computeStatsFromState(nextState),
-    });
+    }));
   } catch (err) {
     return next(err);
   }
@@ -204,7 +210,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
 router.get('/state', (req, res, next) => {
   try {
     const snap = getGameStateSnapshot();
-    res.json({ ok: true, state: snap });
+    res.json(maybeAttachDebug({ ok: true, state: snap }));
   } catch (err) {
     return next(err);
   }
@@ -216,7 +222,7 @@ router.post('/reset', (req, res, next) => {
     const { idLingua } = req.body || {};
     resetGameState(idLingua);
     const snap = getGameStateSnapshot();
-    res.json({ ok: true, state: snap });
+    res.json(maybeAttachDebug({ ok: true, state: snap }));
   } catch (err) {
     return next(err);
   }
