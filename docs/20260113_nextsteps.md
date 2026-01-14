@@ -590,6 +590,10 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 **Descrizione**
 - Formalizzare invarianti: monotonicità/variazioni consentite, comportamento post-game-over, coerenza contatori.
 
+**Deliverable (Sprint #58.1)**
+- ✅ 2026-01-14: invarianti documentate in [docs/20260114_issue_58_invarianti.md](20260114_issue_58_invarianti.md)
+- ✅ 2026-01-14: test invarianti in [tests/scoring.invariants.test.ts](../tests/scoring.invariants.test.ts)
+
 **Valutazione impatto**
 - **Impatto funzionale:** nullo.
 - **Rischio regressione:** nullo.
