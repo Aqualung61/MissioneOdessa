@@ -1401,7 +1401,10 @@ export function executeCommand(parseResult) {
           score: (debugAfter.score ?? 0) - (debugBefore.score ?? 0),
           totalTurnsConsumed: (debugAfter.totalTurnsConsumed ?? 0) - (debugBefore.totalTurnsConsumed ?? 0),
           turnsInDangerZone: (debugAfter.turnsInDangerZone ?? 0) - (debugBefore.turnsInDangerZone ?? 0),
-          awaitingRestart: (debugAfter.awaitingRestart ?? false) !== (debugBefore.awaitingRestart ?? false),
+          awaitingRestart:
+            (debugAfter.awaitingRestart ?? false) === (debugBefore.awaitingRestart ?? false)
+              ? 0
+              : 1,
         },
         before: debugBefore,
         after: debugAfter,
@@ -1424,7 +1427,10 @@ export function executeCommand(parseResult) {
         score: (debugAfter.score ?? 0) - (debugBefore.score ?? 0),
         totalTurnsConsumed: (debugAfter.totalTurnsConsumed ?? 0) - (debugBefore.totalTurnsConsumed ?? 0),
         turnsInDangerZone: (debugAfter.turnsInDangerZone ?? 0) - (debugBefore.turnsInDangerZone ?? 0),
-        awaitingRestart: (debugAfter.awaitingRestart ?? false) !== (debugBefore.awaitingRestart ?? false),
+        awaitingRestart:
+          (debugAfter.awaitingRestart ?? false) === (debugBefore.awaitingRestart ?? false)
+            ? 0
+            : 1,
       },
       before: debugBefore,
       after: debugAfter,

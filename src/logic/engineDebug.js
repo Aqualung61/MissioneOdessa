@@ -7,7 +7,7 @@ let nextId = 1;
 let events = [];
 
 export function isEngineDebugEnabled() {
-  return isTruthy(String(process.env.ENGINE_DEBUG || '').toLowerCase());
+  return isTruthy((process.env.ENGINE_DEBUG || '').toLowerCase());
 }
 
 export function resetEngineDebugTrace() {
@@ -23,10 +23,10 @@ export function pushEngineDebugEvent(event) {
     ts: new Date().toISOString(),
   };
 
-  events.push(safeEvent);
-  if (events.length > MAX_EVENTS) {
-    events = events.slice(events.length - MAX_EVENTS);
+  if (events.length >= MAX_EVENTS) {
+    events.shift();
   }
+  events.push(safeEvent);
 }
 
 export function getEngineDebugTrace() {
