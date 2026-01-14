@@ -1,12 +1,71 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'http';
+import { request as httpRequest } from 'node:http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
 import { initializeOriginalData, resetGameState, executeCommand, getGameState, setCurrentLocation } from '../src/logic/engine.js';
 import { getEngineDebugTrace, pushEngineDebugEvent, resetEngineDebugTrace } from '../src/logic/engineDebug.js';
 
 type StartedServer = { server: Server; baseUrl: string };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function assertRecord(value: unknown, name = 'value'): asserts value is Record<string, unknown> {
+  if (!isRecord(value)) {
+    throw new Error(`${name} is not an object`);
+  }
+}
+
+async function httpJson(
+  url: string,
+  options?: { method?: string; body?: unknown; headers?: Record<string, string> },
+): Promise<{ status: number; json: unknown }> {
+  return await new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const bodyString = options?.body === undefined ? undefined : JSON.stringify(options.body);
+
+    const req = httpRequest(
+      {
+        hostname: u.hostname,
+        port: u.port,
+        path: `${u.pathname}${u.search}`,
+        method: options?.method ?? (bodyString ? 'POST' : 'GET'),
+        headers: {
+          Accept: 'application/json',
+          ...(bodyString
+            ? {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(bodyString).toString(),
+              }
+            : null),
+          ...(options?.headers ?? null),
+        },
+      },
+      (res) => {
+        let data = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            const json: unknown = data.length ? JSON.parse(data) : null;
+            resolve({ status: res.statusCode ?? 0, json });
+          } catch (error) {
+            reject(error);
+          }
+        });
+      },
+    );
+
+    req.on('error', reject);
+    if (bodyString) req.write(bodyString);
+    req.end();
+  });
+}
 
 function startServer(app: express.Express): Promise<StartedServer> {
   return new Promise<StartedServer>((resolve) => {
@@ -128,25 +187,31 @@ describe('Sprint #58.2 - Engine debug trace (dev/test)', () => {
     const started = await startServer(app);
     const { server, baseUrl } = started;
     try {
-      const stateRes = await fetch(`${baseUrl}/api/engine/state`);
+      const stateRes = await httpJson(`${baseUrl}/api/engine/state`);
       expect(stateRes.status).toBe(200);
-      const stateBody = await stateRes.json();
+
+      assertRecord(stateRes.json, 'stateBody');
+      const stateBody = stateRes.json;
       expect(stateBody.ok).toBe(true);
-      expect(stateBody.debug?.enabled).toBe(true);
 
-      const execRes = await fetch(`${baseUrl}/api/engine/execute`, {
+      assertRecord(stateBody.debug, 'stateBody.debug');
+      expect(stateBody.debug.enabled).toBe(true);
+
+      const execRes = await httpJson(`${baseUrl}/api/engine/execute`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: 'INVENTARIO' }),
+        body: { input: 'INVENTARIO' },
       });
-
       expect(execRes.status).toBe(200);
-      const execBody = await execRes.json();
+
+      assertRecord(execRes.json, 'execBody');
+      const execBody = execRes.json;
       expect(execBody.ok).toBe(true);
-      expect(execBody.debug?.enabled).toBe(true);
-      expect(execBody.debug?.size).toBeGreaterThanOrEqual(1);
+
+      assertRecord(execBody.debug, 'execBody.debug');
+      expect(execBody.debug.enabled).toBe(true);
+      expect(execBody.debug.size).toBeGreaterThanOrEqual(1);
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
-  });
+  }, 15_000);
 });
