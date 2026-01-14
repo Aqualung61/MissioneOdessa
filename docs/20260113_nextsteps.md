@@ -337,10 +337,13 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - I test falliscono se ricompare un 500 o se il parser/engine emettono messaggi tecnici.
 
 #### Sprint #55.6 — Pulizia e documentazione
-**Stato:** da fare
+**Stato:** completato (in PR)
 **Descrizione**
 - Consolidare la documentazione minima del comportamento “invalid input”.
 - Se necessario, aggiornare le note in docs/ROADMAP e/o guida per contributor.
+
+**Output**
+- Sintesi contratti e taxonomy: `docs/20260114_invalid_input_e_parse_errors.md`
 
 **Valutazione impatto**
 - **Impatto funzionale:** nullo.

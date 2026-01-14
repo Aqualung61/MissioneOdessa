@@ -26,15 +26,15 @@ Milestones già create su GitHub (nomi allineati alla UI):
 
 ## Now (prossima iterazione)
 
-1) **Parser: validazione e messaggi per comandi non previsti/scorretti**
-   - Obiettivo: messaggi coerenti, nessun 500/stack leak, IT/EN allineati.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/55
-
-2) **Comandi troppo veloci (race/rapid input): analisi + soluzione**
+1) **Comandi troppo veloci (race/rapid input): analisi + soluzione**
    - Obiettivo: evitare doppie esecuzioni/desync UI/server quando l’utente invia input molto rapidamente.
    - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/57
 
 ## Done (recent)
+
+- **Parser: validazione e messaggi per comandi non previsti/scorretti**
+   - Obiettivo: messaggi coerenti, nessun 500/stack leak, IT/EN allineati.
+   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/55
 
 - **HELP: ridurre hints (spoiler-free)**
   - Obiettivo: help più “neutro”, con comandi base e pochi esempi non risolutivi.
