@@ -455,6 +455,12 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - Introdurre `requestId` incrementale lato client.
 - Scartare risposte con id < dell’ultimo accettato.
 
+**Implementazione (Sprint #57.3)**
+- Introdotto un contatore incrementale `executeRequestId` lato client per le chiamate a `/api/engine/execute`.
+- Ogni invio cattura un `requestId` locale; quando arriva la risposta (o un errore), l’UI **applica side-effect** (aggiornamento UI/stats/feed) **solo se** `requestId` è ancora quello più recente.
+- Il rilascio dello stato `inFlight` e del “busy” UI avviene nel `finally` ma è **condizionato** al `requestId` più recente, per evitare che una risposta tardiva sblocchi l’UI mentre una richiesta più nuova è ancora in corso.
+- Nessun cambiamento al protocollo server: `requestId` è usato solo per correlazione e hardening lato client.
+
 **Valutazione impatto**
 - **Impatto funzionale:** medio.
 - **Rischio regressione:** medio (compatibilità server/legacy).

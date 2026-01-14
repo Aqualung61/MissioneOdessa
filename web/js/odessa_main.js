@@ -297,6 +297,7 @@ let gameEnded = false;
 let endedMessageShown = false;
 let currentScore = 0; // Punteggio corrente dal server
 let inFlight = false;
+let executeRequestId = 0;
 
 function updateSendButtonDisabledState(isBusy) {
   if (sendBtn) sendBtn.disabled = !!isBusy || gameEnded;
@@ -390,6 +391,9 @@ async function executeCommandOnServer(input) {
   inFlight = true;
   updateSendButtonDisabledState(true);
 
+  // Sprint #57.3: requestId incrementale per scartare risposte fuori ordine.
+  const requestId = ++executeRequestId;
+
   try {
     const prevLocationId = current && typeof current.ID === 'number' ? current.ID : null;
 
@@ -414,6 +418,9 @@ async function executeCommandOnServer(input) {
       appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.internal') : 'Errore interno.' });
       return;
     }
+
+    // Sprint #57.3: se nel frattempo è partita una richiesta più recente, ignora questa risposta.
+    if (requestId !== executeRequestId) return;
 
     // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
     if (executeResult && executeResult.stats) applyStats(executeResult.stats);
@@ -580,8 +587,11 @@ async function executeCommandOnServer(input) {
       showCurrent();
     }
   } finally {
-    inFlight = false;
-    updateSendButtonDisabledState(false);
+    // Sprint #57.3: evita che una risposta tardiva sblocchi l'UI se esiste una richiesta più recente.
+    if (requestId === executeRequestId) {
+      inFlight = false;
+      updateSendButtonDisabledState(false);
+    }
   }
 }
 
