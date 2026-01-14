@@ -253,7 +253,7 @@ function displayGameEndedMessage() {
 
 // Funzione di gestione click direzione
 async function handleDirectionClick(dir) {
-  if (awaitingRestart || gameEnded) return;
+  if (awaitingRestart || gameEnded || inFlight) return;
   await executeCommandOnServer(dir);
 }
 
@@ -264,6 +264,7 @@ async function handleDirectionClick(dir) {
 const output = document.getElementById('output');
 const inputForm = document.getElementById('inputArea');
 const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
 
 // Determina base path per deployment in sottodirectory
 // Supporta qualsiasi path custom (es. /missioneodessa/, /test/, /produzione/)
@@ -295,11 +296,18 @@ let awaitingConfirmEnd = false;
 let gameEnded = false;
 let endedMessageShown = false;
 let currentScore = 0; // Punteggio corrente dal server
+let inFlight = false;
+
+function setBusyUiState(isBusy) {
+  if (sendBtn) sendBtn.disabled = !!isBusy || gameEnded;
+}
 
 function applyEndedUiState() {
   gameEnded = true;
   awaitingRestart = false;
   awaitingConfirmEnd = false;
+  inFlight = false;
+  setBusyUiState(false);
   userInput.value = '';
   userInput.disabled = true;
   userInput.placeholder = '';
@@ -377,193 +385,203 @@ async function executeCommandOnServer(input) {
   const raw = String(input || '').trim();
   if (!raw) return;
 
-  const prevLocationId = current && typeof current.ID === 'number' ? current.ID : null;
+  // Sprint #57.2: lock one-at-a-time per prevenire doppie esecuzioni.
+  if (inFlight) return;
+  inFlight = true;
+  setBusyUiState(true);
 
-  let res;
   try {
-    res = await fetch(basePath + 'api/engine/execute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: raw })
-    });
-  } catch (err) {
-    console.error('Errore chiamata execute:', err);
-    appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.communication') : 'Errore di comunicazione.' });
-    return;
-  }
+    const prevLocationId = current && typeof current.ID === 'number' ? current.ID : null;
 
-  let executeResult;
-  try {
-    executeResult = await res.json();
-  } catch (err) {
-    console.error('Errore parsing JSON execute:', err);
-    appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.internal') : 'Errore interno.' });
-    return;
-  }
-
-  // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
-  if (executeResult && executeResult.stats) applyStats(executeResult.stats);
-  if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
-  if (executeResult && executeResult.state) syncFlagsFromState(executeResult.state);
-
-  // Errori di parsing/input
-  if (!executeResult || executeResult.ok !== true) {
-    const msg = executeResult && typeof executeResult.userMessage === 'string'
-      ? executeResult.userMessage
-      : (window.i18n ? window.i18n.msg('ui.error.unknownCommand') : 'Comando sconosciuto.');
-    appendFeedMessage({ kind: 'error', text: msg });
-    return;
-  }
-
-  const engine = executeResult.engine;
-  if (!engine) return;
-
-  const stateEnded = executeResult && executeResult.state && executeResult.state.ended === true;
-
-  // GAME OVER
-  if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
-    // Mostra prima la location corrente (se la UI l'ha aggiornata) e poi il messaggio.
-    // Altrimenti, in caso di luogo terminale dopo NAVIGATION, si vede solo il messaggio.
+    let res;
     try {
-      showCurrent();
-    } catch {
-      // ignore: fallback a solo messaggio game over
+      res = await fetch(basePath + 'api/engine/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: raw })
+      });
+    } catch (err) {
+      console.error('Errore chiamata execute:', err);
+      appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.communication') : 'Errore di comunicazione.' });
+      return;
     }
-    displayGameOverMessage(engine.message);
-    return;
-  }
 
-  // VITTORIA / ENDED
-  // Nota: per alcuni flussi (es. risposta "NO" al game over) il server può segnare ended solo in state.
-  if (engine.ended === true || stateEnded) {
+    let executeResult;
+    try {
+      executeResult = await res.json();
+    } catch (err) {
+      console.error('Errore parsing JSON execute:', err);
+      appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.internal') : 'Errore interno.' });
+      return;
+    }
+
+    // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
+    if (executeResult && executeResult.stats) applyStats(executeResult.stats);
+    if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
+    if (executeResult && executeResult.state) syncFlagsFromState(executeResult.state);
+
+    // Errori di parsing/input
+    if (!executeResult || executeResult.ok !== true) {
+      const msg = executeResult && typeof executeResult.userMessage === 'string'
+        ? executeResult.userMessage
+        : (window.i18n ? window.i18n.msg('ui.error.unknownCommand') : 'Comando sconosciuto.');
+      appendFeedMessage({ kind: 'error', text: msg });
+      return;
+    }
+
+    const engine = executeResult.engine;
+    if (!engine) return;
+
+    const stateEnded = executeResult && executeResult.state && executeResult.state.ended === true;
+
+    // GAME OVER
+    if (engine.gameOver === true || engine.resultType === 'GAME_OVER') {
+      // Mostra prima la location corrente (se la UI l'ha aggiornata) e poi il messaggio.
+      // Altrimenti, in caso di luogo terminale dopo NAVIGATION, si vede solo il messaggio.
+      try {
+        showCurrent();
+      } catch {
+        // ignore: fallback a solo messaggio game over
+      }
+      displayGameOverMessage(engine.message);
+      return;
+    }
+
+    // VITTORIA / ENDED
+    // Nota: per alcuni flussi (es. risposta "NO" al game over) il server può segnare ended solo in state.
+    if (engine.ended === true || stateEnded) {
+      if (engine.message) {
+        appendFeedMessage({ kind: 'system', html: engine.message });
+      }
+      displayGameEndedMessage();
+      return;
+    }
+
+    // Conferma fine gioco (gestione client-side esistente)
+    if (engine.resultType === 'CONFIRM_END') {
+      awaitingConfirmEnd = true;
+    }
+
+    // Salvataggio
+    if (engine.resultType === 'SAVE_GAME') {
+      fetch(basePath + 'api/engine/save-client-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ luoghi: luoghi })
+      })
+      .then(res2 => {
+        if (!res2.ok) throw new Error('Errore nel salvataggio: ' + res2.status);
+        return res2.json();
+      })
+      .then(saveData => {
+        const stateJson = JSON.stringify(saveData, null, 2);
+        const blob = new Blob([stateJson], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const now = new Date();
+        const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
+        const filename = `MissioneOdessa_Save_${timestamp}.json`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        appendFeedMessage({ kind: 'system', text: `Gioco salvato come ${filename}.` });
+      })
+      .catch(err => {
+        console.error('Errore nel salvataggio:', err);
+        appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel salvataggio del gioco.' });
+      });
+    }
+
+    // Caricamento
+    if (engine.resultType === 'LOAD_GAME') {
+      const inputEl = document.createElement('input');
+      inputEl.type = 'file';
+      inputEl.accept = '.json';
+      inputEl.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const saveData = JSON.parse(ev.target.result);
+            fetch(basePath + 'api/engine/load-client-state', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(saveData)
+            })
+            .then(r => r.json())
+            .then(result => {
+              if (!result.ok) throw new Error(result.error);
+              return fetch(basePath + 'api/luoghi');
+            })
+            .then(r => r.json())
+            .then(data => {
+              luoghi = Array.isArray(data) ? data : [];
+              return fetch(basePath + 'api/engine/state');
+            })
+            .then(r => r.json())
+            .then(stateResult => {
+              if (!stateResult || stateResult.ok !== true || !stateResult.state) return;
+
+              // Riallinea flag UI (restart/end confirm/ended) e location corrente
+              syncFlagsFromState(stateResult.state);
+              const locationId = stateResult.state.currentLocationId;
+              current = luoghi.find(l => l.ID === locationId) || luoghi[0];
+
+              // Riallinea direzioni dinamiche (toggle/sblocchi) e contatori dal server.
+              // Nota: senza questo, la UI rimane con valori pre-load finché non si esegue un comando.
+              return fetch(basePath + `api/engine/direzioni/${locationId}`)
+                .then(r2 => r2.json())
+                .then(dirResult => {
+                  if (dirResult && dirResult.ok && dirResult.direzioni && current) {
+                    Object.assign(current, dirResult.direzioni);
+                    const luogoInArray = luoghi.find(l => current && l.ID === current.ID);
+                    if (luogoInArray) Object.assign(luogoInArray, dirResult.direzioni);
+                  }
+                })
+                .catch(() => {
+                  // ignore: fallback a direzioni statiche
+                })
+                .finally(() => {
+                  showCurrent();
+                  updateGameStats();
+                  appendFeedMessage({ kind: 'system', text: window.i18n ? window.i18n.msg('ui.game.loaded') : 'Gioco caricato con successo.' });
+                });
+            })
+            .catch(err => {
+              console.error('Errore nel caricamento:', err);
+              appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel caricamento del gioco.' });
+            });
+          } catch {
+            appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.invalidFile') : 'File di salvataggio non valido.' });
+          }
+        };
+        reader.readAsText(file);
+      };
+      inputEl.click();
+    }
+
     if (engine.message) {
       appendFeedMessage({ kind: 'system', html: engine.message });
     }
-    displayGameEndedMessage();
-    return;
-  }
 
-  // Conferma fine gioco (gestione client-side esistente)
-  if (engine.resultType === 'CONFIRM_END') {
-    awaitingConfirmEnd = true;
-  }
+    const nextId = executeResult && executeResult.ui && executeResult.ui.location && typeof executeResult.ui.location.id === 'number'
+      ? executeResult.ui.location.id
+      : null;
 
-  // Salvataggio
-  if (engine.resultType === 'SAVE_GAME') {
-    fetch(basePath + 'api/engine/save-client-state', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ luoghi: luoghi })
-    })
-    .then(res2 => {
-      if (!res2.ok) throw new Error('Errore nel salvataggio: ' + res2.status);
-      return res2.json();
-    })
-    .then(saveData => {
-      const stateJson = JSON.stringify(saveData, null, 2);
-      const blob = new Blob([stateJson], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const now = new Date();
-      const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
-      const filename = `MissioneOdessa_Save_${timestamp}.json`;
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      appendFeedMessage({ kind: 'system', text: `Gioco salvato come ${filename}.` });
-    })
-    .catch(err => {
-      console.error('Errore nel salvataggio:', err);
-      appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel salvataggio del gioco.' });
-    });
-  }
+    // In caso di restart (awaitingRestart bypass parser), il submit handler pulisce il feed.
+    // Qui riallineiamo la UI mostrando subito la location corrente.
+    const isRestartAccepted = executeResult && executeResult.parseResult === null && engine && engine.resultType === 'OK';
 
-  // Caricamento
-  if (engine.resultType === 'LOAD_GAME') {
-    const inputEl = document.createElement('input');
-    inputEl.type = 'file';
-    inputEl.accept = '.json';
-    inputEl.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const saveData = JSON.parse(ev.target.result);
-          fetch(basePath + 'api/engine/load-client-state', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(saveData)
-          })
-          .then(r => r.json())
-          .then(result => {
-            if (!result.ok) throw new Error(result.error);
-            return fetch(basePath + 'api/luoghi');
-          })
-          .then(r => r.json())
-          .then(data => {
-            luoghi = Array.isArray(data) ? data : [];
-            return fetch(basePath + 'api/engine/state');
-          })
-          .then(r => r.json())
-          .then(stateResult => {
-            if (!stateResult || stateResult.ok !== true || !stateResult.state) return;
-
-            // Riallinea flag UI (restart/end confirm/ended) e location corrente
-            syncFlagsFromState(stateResult.state);
-            const locationId = stateResult.state.currentLocationId;
-            current = luoghi.find(l => l.ID === locationId) || luoghi[0];
-
-            // Riallinea direzioni dinamiche (toggle/sblocchi) e contatori dal server.
-            // Nota: senza questo, la UI rimane con valori pre-load finché non si esegue un comando.
-            return fetch(basePath + `api/engine/direzioni/${locationId}`)
-              .then(r2 => r2.json())
-              .then(dirResult => {
-                if (dirResult && dirResult.ok && dirResult.direzioni && current) {
-                  Object.assign(current, dirResult.direzioni);
-                  const luogoInArray = luoghi.find(l => current && l.ID === current.ID);
-                  if (luogoInArray) Object.assign(luogoInArray, dirResult.direzioni);
-                }
-              })
-              .catch(() => {
-                // ignore: fallback a direzioni statiche
-              })
-              .finally(() => {
-                showCurrent();
-                updateGameStats();
-                appendFeedMessage({ kind: 'system', text: window.i18n ? window.i18n.msg('ui.game.loaded') : 'Gioco caricato con successo.' });
-              });
-          })
-          .catch(err => {
-            console.error('Errore nel caricamento:', err);
-            appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.command') : 'Errore nel caricamento del gioco.' });
-          });
-        } catch {
-          appendFeedMessage({ kind: 'error', text: window.i18n ? window.i18n.msg('ui.error.invalidFile') : 'File di salvataggio non valido.' });
-        }
-      };
-      reader.readAsText(file);
-    };
-    inputEl.click();
-  }
-
-  if (engine.message) {
-    appendFeedMessage({ kind: 'system', html: engine.message });
-  }
-
-  const nextId = executeResult && executeResult.ui && executeResult.ui.location && typeof executeResult.ui.location.id === 'number'
-    ? executeResult.ui.location.id
-    : null;
-
-  // In caso di restart (awaitingRestart bypass parser), il submit handler pulisce il feed.
-  // Qui riallineiamo la UI mostrando subito la location corrente.
-  const isRestartAccepted = executeResult && executeResult.parseResult === null && engine && engine.resultType === 'OK';
-
-  if (engine.showLocation || isRestartAccepted || (prevLocationId && nextId && prevLocationId !== nextId)) {
-    showCurrent();
+    if (engine.showLocation || isRestartAccepted || (prevLocationId && nextId && prevLocationId !== nextId)) {
+      showCurrent();
+    }
+  } finally {
+    inFlight = false;
+    setBusyUiState(false);
   }
 }
 
@@ -672,6 +690,9 @@ function showCurrent() {
 }
 inputForm.addEventListener('submit', async function(e) {
   e.preventDefault();
+
+  // Sprint #57.2: se c'è una richiesta in corso, ignora l'invio (senza cancellare l'input).
+  if (inFlight) return;
   
   // Blocca input se gioco terminato
   if (gameEnded) {

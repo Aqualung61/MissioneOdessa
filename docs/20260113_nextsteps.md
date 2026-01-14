@@ -414,6 +414,14 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - Scegliere una policy primaria: (A) lock one-at-a-time, oppure (B) accodamento con scarto duplicati.
 - Definire cosa succede su ripetizione identica e su comandi diversi inviati in rapida sequenza.
 
+**Policy scelta (2026-01-14)**
+- **A — lock one-at-a-time (default)**: esiste **al massimo 1 richiesta in-flight** verso `/api/engine/execute`.
+- Mentre `inFlight=true`:
+  - l’UI **non invia** nuove richieste (Enter ripetuto / doppio click non devono generare POST aggiuntivi)
+  - l’utente può **continuare a digitare**, ma l’azione di invio è bloccata/ignorata fino a completamento (o errore/timeout)
+- Alla risposta (successo/errore) il lock viene rilasciato; su errore/timeout l’UI torna “ready” con messaggio user-safe.
+- Non c’è accodamento implicito: gli invii extra durante `inFlight=true` sono **ignorati**.
+
 **Valutazione impatto**
 - **Impatto funzionale:** medio.
 - **Rischio regressione:** medio.
@@ -425,6 +433,14 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 **Descrizione**
 - Implementare lock “in-flight” in `web/js/odessa_main.js`.
 - Disabilitare input e invio finché non arriva risposta (o timeout).
+
+**Implementazione (Sprint #57.2)**
+- Introdotto flag `inFlight` (lock) lato client.
+- Durante `inFlight=true`:
+  - `#sendBtn` è `disabled` (segnale UX “busy”)
+  - submit via Enter/doppio click viene ignorato (non parte alcuna nuova POST)
+  - click sulle direzioni viene ignorato
+- L’input resta editabile: l’utente può continuare a digitare, ma l’invio è bloccato finché la request non termina.
 
 **Valutazione impatto**
 - **Impatto funzionale:** medio.
