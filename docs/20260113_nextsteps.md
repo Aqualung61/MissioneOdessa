@@ -319,7 +319,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - In `NODE_ENV=production` non vengono esposti stack/path/diagnostica.
 
 #### Sprint #55.5 — Test & regressioni
-**Stato:** da fare
+**Stato:** completato (mergiato)
 **Descrizione**
 - Estendere i test esistenti (es. `tests/api.validation.test.ts` e test parser/engine) per:
   - vuoto/solo spazi
