@@ -622,6 +622,9 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 **Descrizione**
 - Aggiungere test mirati che falliscono se si viola un’invariante.
 
+**Deliverable (Sprint #58.3)**
+- ✅ 2026-01-14: test invarianti + edge cases in [tests/issue-58.invariants.edgecases.test.ts](../tests/issue-58.invariants.edgecases.test.ts)
+
 **Valutazione impatto**
 - **Impatto funzionale:** nullo.
 - **Rischio regressione:** basso.
