@@ -4,6 +4,7 @@ import type { Server } from 'http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
 import { initializeOriginalData, resetGameState, getGameState } from '../src/logic/engine.js';
+import { getSystemMessage } from '../src/logic/systemMessages.js';
 
 type LuogoRow = {
   ID: number;
@@ -123,6 +124,80 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.ui.location.id).toBe('number');
     expect(body.stats).toBeDefined();
     expect(typeof body.stats.visitedPlaces).toBe('number');
+  });
+
+  it('parse error: verbo sconosciuto -> 400 error=COMMAND_UNKNOWN e userMessage localizzato', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'ASDFGHJKLQWERTY' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe('COMMAND_UNKNOWN');
+    expect(body.parseResult?.IsValid).toBe(false);
+    expect(typeof body.parseResult?.UnknownToken).toBe('string');
+    expect(body.userMessage).toBe(getSystemMessage('parse.error.commandUnknown', 1));
+  });
+
+  it('parse error: NOUN sconosciuto -> 400 error=SYNTAX_NOUN_UNKNOWN + placeholder risolto', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'PRENDI ZZZ' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe('SYNTAX_NOUN_UNKNOWN');
+    expect(body.parseResult?.IsValid).toBe(false);
+    expect(body.parseResult?.UnknownNounToken).toBe('ZZZ');
+    expect(body.userMessage).toBe(getSystemMessage('parse.error.syntaxNounUnknown', 1, ['zzz']));
+  });
+
+  it('parse error: struttura non parsabile -> 400 error=SYNTAX_INVALID_STRUCTURE e userMessage localizzato', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'N LAMPADA' }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe('SYNTAX_INVALID_STRUCTURE');
+    expect(body.parseResult?.IsValid).toBe(false);
+    expect(body.userMessage).toBe(getSystemMessage('parse.error.syntaxInvalidStructure', 1));
   });
 
   it('awaitingRestart: bypass parser e ritorna parseResult=null, command=null, engine normalizzato', async () => {

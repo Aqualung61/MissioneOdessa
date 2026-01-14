@@ -70,4 +70,68 @@ describe('Contract: POST /api/parser/parse (legacy)', () => {
     expect(body.Error).toBe('INVALID_INPUT');
     expect(body.Details).toBe('CONTROL_CHARS');
   });
+
+  it('parse error: verbo sconosciuto -> 200 IsValid=false, Error=COMMAND_UNKNOWN', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/parser', parserRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/parser/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'ASDFGHJKLQWERTY' }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.IsValid).toBe(false);
+    expect(body.Error).toBe('COMMAND_UNKNOWN');
+  });
+
+  it('parse error: NOUN sconosciuto -> 200 IsValid=false, Error=SYNTAX_NOUN_UNKNOWN', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/parser', parserRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/parser/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'PRENDI ZZZ' }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.IsValid).toBe(false);
+    expect(body.Error).toBe('SYNTAX_NOUN_UNKNOWN');
+    expect(body.UnknownNounToken).toBe('ZZZ');
+  });
+
+  it('parse error: struttura non parsabile -> 200 IsValid=false, Error=SYNTAX_INVALID_STRUCTURE', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/parser', parserRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const res = await fetch(`${baseUrl}/api/parser/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'N LAMPADA' }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.IsValid).toBe(false);
+    expect(body.Error).toBe('SYNTAX_INVALID_STRUCTURE');
+  });
 });

@@ -47,6 +47,21 @@ describe('Parser REQ01 - casi base', () => {
     const res = await parseCommand(null, 'PRENDI ZZZ');
     expect(res.IsValid).toBe(false);
     expect(res.Error).toBe('SYNTAX_NOUN_UNKNOWN');
+    expect(res.UnknownNounToken).toBe('ZZZ');
+  });
+
+  it('Verbo sconosciuto: ASDF... => COMMAND_UNKNOWN + UnknownToken', async () => {
+    const res = await parseCommand(null, 'ASDFGHJKLQWERTY');
+    expect(res.IsValid).toBe(false);
+    expect(res.Error).toBe('COMMAND_UNKNOWN');
+    expect(typeof res.UnknownToken).toBe('string');
+    expect(res.UnknownToken?.length).toBeGreaterThan(0);
+  });
+
+  it('Struttura non parsabile: N LAMPADA => SYNTAX_INVALID_STRUCTURE', async () => {
+    const res = await parseCommand(null, 'N LAMPADA');
+    expect(res.IsValid).toBe(false);
+    expect(res.Error).toBe('SYNTAX_INVALID_STRUCTURE');
   });
 
   it('Tolleranza punteggiatura: PRENDI, LA LAMPADA! => valido', async () => {
