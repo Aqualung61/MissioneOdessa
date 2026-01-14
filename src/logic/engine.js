@@ -9,6 +9,8 @@ import { applyAllTurnEffects } from './turnEffects/index.js';
 
 import { isEngineDebugEnabled, pushEngineDebugEvent, resetEngineDebugTrace } from './engineDebug.js';
 
+import { appVersion } from '../version.js';
+
 // Stub: entra in luogo terminale (da implementare secondo logica app)
 export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
@@ -749,7 +751,7 @@ export function getGameStateSnapshot() {
     // Metadata per chiarezza
     currentLocationName: currentLocation ? currentLocation.Nome : 'Sconosciuto',
     timestamp: new Date().toISOString(),
-    version: '1.4.0',
+    version: appVersion,
   };
   return snapshot;
 }

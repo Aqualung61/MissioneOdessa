@@ -1,3 +1,15 @@
+## v1.3.2 (14 gennaio 2026)
+
+### Patch release: milestone chiusa
+
+#### Cambiamenti principali
+- Save/Load: dopo `CARICA` la UI riallinea subito contatori/HUD e direzioni coerenti con lo stato caricato.
+- Gameplay: intercettazione in luoghi pericolosi dopo **4** turni consuming (prima: 3).
+- Lingua/URL: lingua UI persistita solo in `localStorage` (default=1, whitelist {1,2}); ripulite querystring legacy e canonical/og:url senza query.
+- Cleanup: rimozione artefatti/rename script e semplificazione entrypoint (redirect verso `web/odessa_storia.html`).
+
+---
+
 ## v1.3.1 (12 gennaio 2026)
 
 ### Navigation: migrazione full-server (Sprint 4.1.x)
@@ -49,43 +61,10 @@
 - Test documentation aggiornata
 - Copilot instructions aggiornate
 
----
 
 ## Unreleased
 
-### 2026-01-12 - Save/Load: HUD riallineato dopo CARICA
-
-#### Cambiamenti principali
-- Dopo `CARICA` (upload del salvataggio), la UI aggiorna subito contatori/HUD e direzioni coerenti con lo stato caricato (senza dover eseguire un comando).
-
-### 2026-01-12 - Gameplay: intercettazione a 4 turni
-
-#### Cambiamenti principali
-- Luoghi pericolosi (intercettazione): game over dopo **4** turni consuming in danger zone (prima: 3).
-
-### 2026-01-12 - Lingua: localStorage e URL pulite
-
-#### Cambiamenti principali
-- Lingua UI persistita solo in `localStorage` (default=1, whitelist {1,2}); rimossa propagazione via querystring tra pagine.
-- Bootstrap: cleanup di parametri legacy `idLingua`/`Lingua` da bookmark e vecchi link (History API).
-- SEO: `canonical` e `og:url` senza querystring.
-- Cleanup frontend: rimosso `web/js/index.js` (logica link PDF gestita in `web/js/odessa_storia.js`).
-
-### 2026-01-10 - Pulizia test/entrypoint e allineamento documentazione
-
-#### Cambiamenti principali
-- Rimossi test E2E Playwright e ogni integrazione di esecuzione test via endpoint (nessun `/api/run-tests`).
-- `index.html` semplificato: redirect verso `web/odessa_storia.html` (lingua default IT) con gestione `file://`.
-- Script frontend rinominati/estratti:
-	- `web/js/odessa1.js` → `web/js/odessa_main.js`
-	- logica intro estratta in `web/js/odessa_intro.js`
-	- nuova logica storia/landing estratta in `web/js/odessa_storia.js`
-	- SEO/i18n meta estratto in `web/js/seo-i18n.js`
-	- redirect entrypoint estratto in `web/js/index-redirect.js`
-- CSS consolidato in file dedicati (riduzione inline CSS).
-
-#### Docs
-- Allineati i documenti tecnici a rename script e rimozione test runner (senza toccare note freeze storiche).
+- (in preparazione)
 
 ---
 
