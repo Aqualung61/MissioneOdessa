@@ -26,9 +26,7 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 import MessaggiSistema from '../src/data-internal/MessaggiSistema.json';
 import Interazioni from '../src/data-internal/Interazioni.json';
 
-function score() {
-  return getGameState().punteggio.totale;
-}
+import { score } from './testUtils/score.js';
 
 describe('Issue #58 — Invarianti minime (Sprint #58.1)', () => {
   beforeAll(() => {

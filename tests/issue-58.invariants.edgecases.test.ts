@@ -19,6 +19,22 @@ import {
   setCurrentLocation,
 } from '../src/logic/engine.js';
 
+import { score } from './testUtils/score.js';
+
+import Introduzione from '../src/data-internal/Introduzione.json';
+import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
+import Lingue from '../src/data-internal/Lingue.json';
+import Luoghi from '../src/data-internal/Luoghi.json';
+import LuoghiLogici from '../src/data-internal/LuoghiLogici.json';
+import Oggetti from '../src/data-internal/Oggetti.json';
+import Piattaforme from '../src/data-internal/Piattaforme.json';
+import Software from '../src/data-internal/Software.json';
+import TerminiLessico from '../src/data-internal/TerminiLessico.json';
+import TipiLessico from '../src/data-internal/TipiLessico.json';
+import VociLessico from '../src/data-internal/VociLessico.json';
+import MessaggiSistema from '../src/data-internal/MessaggiSistema.json';
+import Interazioni from '../src/data-internal/Interazioni.json';
+
 type StartedServer = { server: Server; baseUrl: string };
 
 function startServer(app: express.Express): Promise<StartedServer> {
@@ -71,17 +87,24 @@ function httpJson(baseUrl: string, path: string, options?: { method?: string; bo
   });
 }
 
-function score() {
-  return getGameState().punteggio.totale;
-}
-
 describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
   beforeAll(() => {
-    // Assumiamo che global.odessaData venga inizializzato da tests/setup.ts
-    // (vedi configurazione Vitest). Se non è presente, falliamo in modo esplicito.
-    if (!(globalThis as any).odessaData) {
-      throw new Error('global.odessaData must be initialized by tests/setup.ts before running issue-58 invariants tests');
-    }
+    // Allineato al pattern di altri test: rendiamo il file autosufficiente.
+    (globalThis as any).odessaData = {
+      Introduzione,
+      LessicoSoftware,
+      Lingue,
+      Luoghi,
+      LuoghiLogici,
+      Oggetti,
+      Piattaforme,
+      Software,
+      TerminiLessico,
+      TipiLessico,
+      VociLessico,
+      MessaggiSistema,
+      Interazioni,
+    };
     initializeOriginalData();
   });
 
