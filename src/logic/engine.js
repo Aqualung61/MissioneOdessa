@@ -1,6 +1,9 @@
 // Sprint 1: i18n - importa helper per messaggi di sistema
 import { getSystemMessage } from './systemMessages.js';
 
+// Sprint 4.1.x: messaggi utente per errori parser/invalid input
+import { mapParseErrorToUserMessage } from './messages.js';
+
 // Sprint 3.3.5: Sistema Turn Effects (middleware per effetti temporali)
 import { applyAllTurnEffects } from './turnEffects/index.js';
 
@@ -1009,10 +1012,11 @@ function executeCommandLegacy(parseResult) {
     return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
   }
   if (parseResult.IsValid !== true) {
+    const userMessage = mapParseErrorToUserMessage(parseResult, gameState.currentLingua);
     return {
       accepted: false,
       resultType: 'ERROR',
-      message: `Parse non valido: ${parseResult.Error || 'UNKNOWN'}`,
+      message: userMessage || getSystemMessage('parse.error.invalidInputGeneric', gameState.currentLingua),
     };
   }
   // Esecuzione minimale con stato per alcuni comandi
@@ -1284,10 +1288,11 @@ export function executeCommand(parseResult) {
     return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
   }
   if (parseResult.IsValid !== true) {
+    const userMessage = mapParseErrorToUserMessage(parseResult, gameState.currentLingua);
     return {
       accepted: false,
       resultType: 'ERROR',
-      message: `Parse non valido: ${parseResult.Error || 'UNKNOWN'}`,
+      message: userMessage || getSystemMessage('parse.error.invalidInputGeneric', gameState.currentLingua),
     };
   }
 
