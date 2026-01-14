@@ -364,7 +364,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 \pagebreak
 
 ## Issue #57 — Rapid input/race: prevenire doppie esecuzioni e desync UI/server
-- **Stato:** open
+- **Stato:** open (Sprint #57.4 in corso; #57.1–#57.3 completati)
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `priority:P1`, `type:chore`, `stability`, `ux`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/57
@@ -414,6 +414,9 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - Scegliere una policy primaria: (A) lock one-at-a-time, oppure (B) accodamento con scarto duplicati.
 - Definire cosa succede su ripetizione identica e su comandi diversi inviati in rapida sequenza.
 
+**Stato**
+- Completato (mergiato in PR #72).
+
 **Policy scelta (2026-01-14)**
 - **A — lock one-at-a-time (default)**: esiste **al massimo 1 richiesta in-flight** verso `/api/engine/execute`.
 - Mentre `inFlight=true`:
@@ -433,6 +436,9 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 **Descrizione**
 - Implementare lock “in-flight” in `web/js/odessa_main.js`.
 - Disabilitare input e invio finché non arriva risposta (o timeout).
+
+**Stato**
+- Completato (mergiato in PR #72).
 
 **Implementazione (Sprint #57.2)**
 - Introdotto flag `inFlight` (lock) lato client.
@@ -455,6 +461,9 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 - Introdurre `requestId` incrementale lato client.
 - Scartare risposte con id < dell’ultimo accettato.
 
+**Stato**
+- Completato (mergiato in PR #73).
+
 **Implementazione (Sprint #57.3)**
 - Introdotto un contatore incrementale `executeRequestId` lato client per le chiamate a `/api/engine/execute`.
 - Ogni invio cattura un `requestId` locale; quando arriva la risposta (o un errore), l’UI **applica side-effect** (aggiornamento UI/stats/feed) **solo se** `requestId` è ancora quello più recente.
@@ -471,6 +480,45 @@ Con input molto rapido (invio ripetuto, key repeat, doppio click) possono verifi
 #### Sprint #57.4 — Test o checklist riproducibile
 **Descrizione**
 - Aggiungere un test di integrazione oppure una checklist manuale riproducibile con passi e risultato atteso.
+
+**Stato**
+- In corso.
+
+**Checklist (manuale, riproducibile)**
+
+**Prerequisiti**
+- Avviare il server in locale (porta default: `3001`).
+- Aprire la UI: `/web/odessa_main.html`.
+- (Consigliato) DevTools → tab **Network**: spuntare **Disable cache**.
+
+**Caso A — Lock one-at-a-time (Sprint #57.2)**
+- Impostare throttling su **Slow 3G** (o equivalente).
+- Inserire un comando valido (es. `INVENTARIO`) e premere **Invia**.
+- Mentre la request è pending, premere ripetutamente **Enter** e/o cliccare **Invia** più volte.
+- (Se presenti) cliccare rapidamente più direzioni.
+
+**Atteso (PASS)**
+- In Network si osserva **al massimo 1** `POST /api/engine/execute` in-flight.
+- Il bottone **Invia** risulta `disabled` durante la request.
+- Nessuna doppia esecuzione: l’output/feed non mostra “duplicati” attribuibili a invii ripetuti.
+
+**Caso B — Difesa da out-of-order (Sprint #57.3, debug mode)**
+Obiettivo: dimostrare che una risposta “vecchia” non può sovrascrivere lo stato/UI più recente.
+
+- Aprire la pagina con `?debugRace=1` (es. `/web/odessa_main.html?debugRace=1`).
+- Aprire DevTools → tab **Console**.
+- Eseguire due invii back-to-back (senza attendere la prima risposta), ad esempio:
+  - `window.executeCommandOnServer('INVENTARIO');`
+  - `window.executeCommandOnServer('GUARDA');`
+
+**Atteso (PASS)**
+- L’UI applica side-effect (feed/UI/stats) **solo** per l’ultimo invio.
+- Se la prima risposta arriva dopo, viene ignorata (nessun “rollback” visivo o ri-sovrascrittura della UI).
+
+**Criteri FAIL (regressione)**
+- Si osservano 2+ `POST /api/engine/execute` simultanee (fuori da debug mode).
+- Output/feed “rimbalza” indietro: una risposta tardiva sovrascrive l’ultimo stato.
+- `Invia` resta bloccato (`disabled`) oltre la fine della request (deadlock UI).
 
 **Valutazione impatto**
 - **Impatto funzionale:** nullo.
