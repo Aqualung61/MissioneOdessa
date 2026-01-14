@@ -253,7 +253,7 @@ function displayGameEndedMessage() {
 
 // Funzione di gestione click direzione
 async function handleDirectionClick(dir) {
-  if (awaitingRestart || gameEnded || inFlight) return;
+  if (awaitingRestart || gameEnded || (inFlight && !debugRaceMode)) return;
   await executeCommandOnServer(dir);
 }
 
@@ -288,6 +288,34 @@ function getBasePath() {
   return '/' + pathParts[0] + '/';
 }
 const basePath = getBasePath();
+
+// Sprint #57.4: debug mode per riprodurre race/out-of-order in modo deterministico.
+// Nota: la pagina carica questo file come ES module (type="module"), quindi le funzioni
+// top-level non sono disponibili in Console a meno di esporle su window.
+const debugRaceParams = new URLSearchParams(window.location.search);
+const debugRaceMode = debugRaceParams.get('debugRace') === '1';
+
+const debugRaceDelayMs = (() => {
+  const raw = debugRaceParams.get('debugRaceDelayMs');
+  if (!raw) return 800;
+  const parsed = parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 800;
+})();
+
+if (debugRaceMode) {
+  document.documentElement.dataset.debugRace = '1';
+  document.title = `[debugRace] ${document.title}`;
+  console.warn('[debugRace] enabled (testing mode)');
+  console.log('[debugRace] enabled', { delayMs: debugRaceDelayMs });
+}
+
+function debugRaceArtificialDelayMsForRequest(requestId) {
+  if (!debugRaceMode) return 0;
+  // Ritarda le request dispari per forzare risposte fuori ordine in modo prevedibile.
+  // Nota: il delay viene applicato PRIMA del controllo di staleness (requestId), così anche
+  // una risposta "veloce" può essere resa obsoleta dall'invio immediato di una richiesta più recente.
+  return requestId % 2 === 1 ? debugRaceDelayMs : 0;
+}
 
 let luoghi = [];
 let current = null;
@@ -387,12 +415,18 @@ async function executeCommandOnServer(input) {
   if (!raw) return;
 
   // Sprint #57.2: lock one-at-a-time per prevenire doppie esecuzioni.
-  if (inFlight) return;
-  inFlight = true;
-  updateSendButtonDisabledState(true);
+  if (!debugRaceMode) {
+    if (inFlight) return;
+    inFlight = true;
+    updateSendButtonDisabledState(true);
+  }
 
   // Sprint #57.3: requestId incrementale per scartare risposte fuori ordine.
   const requestId = ++executeRequestId;
+
+  if (debugRaceMode) {
+    console.log('[debugRace] execute start', { requestId, input: raw });
+  }
 
   try {
     const prevLocationId = current && typeof current.ID === 'number' ? current.ID : null;
@@ -419,8 +453,21 @@ async function executeCommandOnServer(input) {
       return;
     }
 
+    if (debugRaceMode) {
+      const delayMs = debugRaceArtificialDelayMsForRequest(requestId);
+      if (delayMs > 0) {
+        console.log('[debugRace] delaying response apply', { requestId, delayMs });
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+
     // Sprint #57.3: se nel frattempo è partita una richiesta più recente, ignora questa risposta.
-    if (requestId !== executeRequestId) return;
+    if (requestId !== executeRequestId) {
+      if (debugRaceMode) {
+        console.log('[debugRace] Ignorata risposta fuori ordine', { requestId, latest: executeRequestId });
+      }
+      return;
+    }
     // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
     if (executeResult && executeResult.stats) applyStats(executeResult.stats);
     if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
@@ -587,11 +634,20 @@ async function executeCommandOnServer(input) {
     }
   } finally {
     // Sprint #57.3: evita che una risposta tardiva sblocchi l'UI se esiste una richiesta più recente.
-    if (requestId === executeRequestId) {
+    if (!debugRaceMode && requestId === executeRequestId) {
       inFlight = false;
       updateSendButtonDisabledState(false);
     }
   }
+}
+
+// Espone helper per smoke test/checklist in DevTools (lo script è type="module").
+try {
+  window.executeCommandOnServer = executeCommandOnServer;
+  window.debugRaceMode = debugRaceMode;
+  window.debugRaceDelayMs = debugRaceDelayMs;
+} catch {
+  // ignore
 }
 
 function updateDynamicPlaceImage() {
@@ -701,7 +757,7 @@ inputForm.addEventListener('submit', async function(e) {
   e.preventDefault();
 
   // Sprint #57.2: se c'è una richiesta in corso, ignora l'invio (senza cancellare l'input).
-  if (inFlight) return;
+  if (inFlight && !debugRaceMode) return;
   
   // Blocca input se gioco terminato
   if (gameEnded) {
