@@ -298,7 +298,7 @@ let endedMessageShown = false;
 let currentScore = 0; // Punteggio corrente dal server
 let inFlight = false;
 
-function setBusyUiState(isBusy) {
+function updateSendButtonDisabledState(isBusy) {
   if (sendBtn) sendBtn.disabled = !!isBusy || gameEnded;
 }
 
@@ -307,7 +307,7 @@ function applyEndedUiState() {
   awaitingRestart = false;
   awaitingConfirmEnd = false;
   inFlight = false;
-  setBusyUiState(false);
+  updateSendButtonDisabledState(false);
   userInput.value = '';
   userInput.disabled = true;
   userInput.placeholder = '';
@@ -388,7 +388,7 @@ async function executeCommandOnServer(input) {
   // Sprint #57.2: lock one-at-a-time per prevenire doppie esecuzioni.
   if (inFlight) return;
   inFlight = true;
-  setBusyUiState(true);
+  updateSendButtonDisabledState(true);
 
   try {
     const prevLocationId = current && typeof current.ID === 'number' ? current.ID : null;
@@ -581,7 +581,7 @@ async function executeCommandOnServer(input) {
     }
   } finally {
     inFlight = false;
-    setBusyUiState(false);
+    updateSendButtonDisabledState(false);
   }
 }
 
