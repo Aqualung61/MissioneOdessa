@@ -305,7 +305,7 @@ Pianificazione per sprint (convenzione `#55.x`). Ogni sprint produce un output v
 - Nessuna stringa “tecnica” viene propagata come errore utente.
 
 #### Sprint #55.4 — Engine integration (messaggi user-facing)
-**Stato:** da fare
+**Stato:** completato (mergiato)
 **Descrizione**
 - Aggiornare la pipeline engine per evitare messaggi tecnici quando `parseResult.IsValid !== true`.
 - Usare il mapping centralizzato (`src/logic/messages.js` → `mapParseErrorToUserMessage`) o fallback user-safe.
