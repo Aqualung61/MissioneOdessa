@@ -155,7 +155,7 @@ flowchart TB
       direction TB
       subgraph I58S["#58 Scoring/intercettazione invarianti"]
         direction LR
-        S581["#58.1 Invarianti"] --> S582["#58.2 Debug dev/test"] --> S583["#58.3 Test"] --> S584["#58.4 Refactor mirato"]
+        S581["#58.1 Invarianti"] --> S582["#58.2 Debug dev/test"] --> S583["#58.3 Test"] --> S584["#58.4 Refactor (skipped)"]
       end
       subgraph I57S["#57 Anti-race UI/server"]
         direction LR
@@ -536,13 +536,13 @@ Obiettivo: dimostrare che una risposta “vecchia” non può sovrascrivere lo s
 \pagebreak
 
 ## Issue #58 — Scoring/intercettazione/game over: debug esteso + invarianti + test
-- **Stato:** open
+- **Stato:** closed (Sprint #58.1–#58.3 completati; #58.4 non necessario)
 - **Milestone:** 1.3.2 (Stability e UX)
 - **Labels:** `area:engine`, `type:chore`, `type:test`, `priority:P2`, `stability`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/58
 
 ### Operatività (branch/PR)
-- PR per sprint: `#58.1` → `#58.4` (invarianti, debug dev/test, test invarianti, refactor mirato solo se serve).
+- PR per sprint: `#58.1` → `#58.3` (invarianti, debug dev/test, test invarianti). `#58.4` valutato ma scelto come non necessario.
 - PR intermedie: includere `Part of #58`.
 - PR finale: includere `Fixes #58`.
 
@@ -635,6 +635,9 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 #### Sprint #58.4 — Refactor mirato (solo se serve)
 **Descrizione**
 - Se emergono punti critici, estrarre helper e ridurre branch annidati nelle parti scoring/game over.
+
+**Stato**
+- ⏭️ 2026-01-14: valutato e scelto come non necessario (suite test copre regressioni e non sono emersi punti critici da refactor immediato).
 
 **Valutazione impatto**
 - **Impatto funzionale:** potenzialmente medio.
