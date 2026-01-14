@@ -35,7 +35,36 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 import MessaggiSistema from '../src/data-internal/MessaggiSistema.json';
 import Interazioni from '../src/data-internal/Interazioni.json';
 
+type OdessaData = {
+  [key: string]: unknown;
+  Introduzione?: unknown;
+  LessicoSoftware?: unknown;
+  Lingue?: unknown;
+  Luoghi?: unknown;
+  LuoghiLogici?: unknown;
+  Oggetti?: unknown;
+  Piattaforme?: unknown;
+  Software?: unknown;
+  TerminiLessico?: unknown;
+  TipiLessico?: unknown;
+  VociLessico?: unknown;
+  MessaggiSistema?: unknown;
+  Interazioni?: unknown;
+};
+
+declare global {
+  var odessaData: OdessaData | undefined;
+}
+
 type StartedServer = { server: Server; baseUrl: string };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function assertRecord(value: unknown, message = 'Expected a JSON object'): asserts value is Record<string, unknown> {
+  if (!isRecord(value)) throw new Error(message);
+}
 
 function startServer(app: express.Express): Promise<StartedServer> {
   return new Promise<StartedServer>((resolve) => {
@@ -52,7 +81,7 @@ function httpJson(baseUrl: string, path: string, options?: { method?: string; bo
   const method = options?.method ?? 'GET';
   const bodyText = options?.body !== undefined ? JSON.stringify(options.body) : null;
 
-  return new Promise<{ status: number; json: any }>((resolve, reject) => {
+  return new Promise<{ status: number; json: unknown }>((resolve, reject) => {
     const req = httpRequest(
       {
         method,
@@ -90,7 +119,7 @@ function httpJson(baseUrl: string, path: string, options?: { method?: string; bo
 describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
   beforeAll(() => {
     // Allineato al pattern di altri test: rendiamo il file autosufficiente.
-    (globalThis as any).odessaData = {
+    globalThis.odessaData = {
       Introduzione,
       LessicoSoftware,
       Lingue,
@@ -104,7 +133,7 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
       VociLessico,
       MessaggiSistema,
       Interazioni,
-    };
+    } satisfies OdessaData;
     initializeOriginalData();
   });
 
@@ -138,22 +167,31 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
       const res1 = await httpJson(baseUrl, '/api/engine/execute', { method: 'POST', body: { input: 'ASDFGHJKLQWERTY' } });
       expect(res1.status).toBe(200);
       const body1 = res1.json;
+      assertRecord(body1);
       expect(body1.ok).toBe(true);
       expect(body1.parseResult).toBeNull();
       expect(body1.command).toBeNull();
       expect(body1.engine).toBeDefined();
+      assertRecord(body1.engine);
       expect(body1.engine.accepted).toBe(false);
       expect(body1.engine.resultType).toBe('ERROR');
+      expect(body1.state).toBeDefined();
+      assertRecord(body1.state);
       expect(body1.state.awaitingRestart).toBe(true);
 
       // NO -> termina partita (ENDED) e spegne awaitingRestart
       const res2 = await httpJson(baseUrl, '/api/engine/execute', { method: 'POST', body: { input: 'NO' } });
       expect(res2.status).toBe(200);
       const body2 = res2.json;
+      assertRecord(body2);
       expect(body2.ok).toBe(true);
       expect(body2.parseResult).toBeNull();
       expect(body2.command).toBeNull();
-      expect(body2.engine?.resultType).toBe('ENDED');
+      expect(body2.engine).toBeDefined();
+      assertRecord(body2.engine);
+      expect(body2.engine.resultType).toBe('ENDED');
+      expect(body2.state).toBeDefined();
+      assertRecord(body2.state);
       expect(body2.state.ended).toBe(true);
       expect(body2.state.awaitingRestart).toBe(false);
     } finally {
