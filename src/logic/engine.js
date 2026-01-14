@@ -7,6 +7,8 @@ import { mapParseErrorToUserMessage } from './messages.js';
 // Sprint 3.3.5: Sistema Turn Effects (middleware per effetti temporali)
 import { applyAllTurnEffects } from './turnEffects/index.js';
 
+import { isEngineDebugEnabled, pushEngineDebugEvent, resetEngineDebugTrace } from './engineDebug.js';
+
 // Stub: entra in luogo terminale (da implementare secondo logica app)
 export async function enterLocation(locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
@@ -136,6 +138,29 @@ let gameState = {
   continueCallback: null             // Funzione da eseguire alla pressione di BARRA
 };
 
+function getDebugStateSnapshot() {
+  return {
+    awaitingRestart: !!gameState.awaitingRestart,
+    ended: !!gameState.ended,
+    currentLocationId: gameState.currentLocationId,
+    score: gameState?.punteggio?.totale ?? null,
+    totalTurnsConsumed: gameState?.turn?.totalTurnsConsumed ?? null,
+    turnsInDangerZone: gameState?.turn?.turnsInDangerZone ?? null,
+    globalTurnNumber: gameState?.turn?.globalTurnNumber ?? null,
+  };
+}
+
+function summarizeParseResult(parseResult) {
+  if (!parseResult || typeof parseResult !== 'object') return null;
+  return {
+    commandType: parseResult.CommandType ?? null,
+    canonicalVerb: parseResult.CanonicalVerb ?? null,
+    verbConcept: parseResult.VerbConcept ?? null,
+    canonicalNoun: parseResult.CanonicalNoun ?? null,
+    nounConcept: parseResult.NounConcept ?? null,
+  };
+}
+
 // Copia immutabile dei dati originali (salvata all'avvio, non modificata dal caricamento)
 let originalOggetti = [];
 
@@ -155,6 +180,7 @@ export function getGameState() {
 // Funzione per resettare lo stato di gioco
 export function resetGameState(idLingua = 1) {
   console.log('Inizializzazione gameState con lingua:', idLingua);
+  resetEngineDebugTrace();
   gameState = {
     openStates: { BOTOLA: false },
     awaitingEndConfirm: false,
@@ -623,6 +649,8 @@ export function setGameState(newState) {
 }
 // Funzione per impostare il luogo corrente
 export function setCurrentLocation(locationId) {
+  const before = isEngineDebugEnabled() ? getDebugStateSnapshot() : null;
+
   gameState.currentLocationId = locationId;
   
   // Sincronizzazione visitedPlaces
@@ -630,10 +658,43 @@ export function setCurrentLocation(locationId) {
     gameState.visitedPlaces.add(locationId);
     
     // Assegna +1 punto SOLO se NON è luogo terminale
-    const luogo = global.odessaData.Luoghi.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
-    if (luogo && luogo.Terminale !== -1) {
+    const luogo = global.odessaData?.Luoghi?.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
+    const isTerminal = luogo ? luogo.Terminale === -1 : null;
+    if (luogo && !isTerminal) {
       gameState.punteggio.totale += 1;
     }
+
+    if (before) {
+      const after = getDebugStateSnapshot();
+      pushEngineDebugEvent({
+        kind: 'SET_CURRENT_LOCATION',
+        fromLocationId: before.currentLocationId,
+        toLocationId: after.currentLocationId,
+        wasNewVisit: true,
+        isTerminal,
+        delta: {
+          score: (after.score ?? 0) - (before.score ?? 0),
+        },
+        before,
+        after,
+      });
+    }
+    return;
+  }
+
+  if (before) {
+    const after = getDebugStateSnapshot();
+    pushEngineDebugEvent({
+      kind: 'SET_CURRENT_LOCATION',
+      fromLocationId: before.currentLocationId,
+      toLocationId: after.currentLocationId,
+      wasNewVisit: false,
+      delta: {
+        score: (after.score ?? 0) - (before.score ?? 0),
+      },
+      before,
+      after,
+    });
   }
 }
 
@@ -1283,6 +1344,9 @@ function executeCommandLegacy(parseResult) {
 // Sprint 3.3.5.A: PARTIAL activation (prepareTurnContext + applyTurnEffects TORCH only)
 
 export function executeCommand(parseResult) {
+  const debugEnabled = isEngineDebugEnabled();
+  const debugBefore = debugEnabled ? getDebugStateSnapshot() : null;
+
   // Phase 0: Validation (preserved from original)
   if (!parseResult) {
     return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', gameState.currentLingua) };
@@ -1301,14 +1365,76 @@ export function executeCommand(parseResult) {
 
   // Phase 2: Run pre-execution checks (ACTIVE - Sprint 3.3.5.B: awaitingRestart)
   const preCheck = runPreExecutionChecks(parseResult);
-  if (preCheck) return preCheck;
+  if (preCheck) {
+    if (debugEnabled) {
+      pushEngineDebugEvent({
+        kind: 'EXECUTE_COMMAND_BLOCKED',
+        parse: summarizeParseResult(parseResult),
+        result: {
+          accepted: !!preCheck.accepted,
+          resultType: preCheck.resultType ?? null,
+        },
+        before: debugBefore,
+        after: getDebugStateSnapshot(),
+      });
+    }
+    return preCheck;
+  }
 
   // Phase 3: Execute core command logic (ACTIVE - unchanged legacy)
   const result = executeCommandLegacy(parseResult);
 
   // Phase 4: Apply turn effects (ACTIVE - Sprint 3.3.5.A: torch, 3.3.5.B: darkness)
   if (result.accepted && shouldConsumeTurn(parseResult)) {
-    return applyTurnEffects(result, parseResult);
+    const finalResult = applyTurnEffects(result, parseResult);
+    if (debugEnabled) {
+      const debugAfter = getDebugStateSnapshot();
+      pushEngineDebugEvent({
+        kind: 'EXECUTE_COMMAND',
+        parse: summarizeParseResult(parseResult),
+        consumesTurn: true,
+        result: {
+          accepted: !!finalResult.accepted,
+          resultType: finalResult.resultType ?? null,
+        },
+        delta: {
+          score: (debugAfter.score ?? 0) - (debugBefore.score ?? 0),
+          totalTurnsConsumed: (debugAfter.totalTurnsConsumed ?? 0) - (debugBefore.totalTurnsConsumed ?? 0),
+          turnsInDangerZone: (debugAfter.turnsInDangerZone ?? 0) - (debugBefore.turnsInDangerZone ?? 0),
+          awaitingRestart:
+            (debugAfter.awaitingRestart ?? false) === (debugBefore.awaitingRestart ?? false)
+              ? 0
+              : 1,
+        },
+        before: debugBefore,
+        after: debugAfter,
+      });
+    }
+    return finalResult;
+  }
+
+  if (debugEnabled) {
+    const debugAfter = getDebugStateSnapshot();
+    pushEngineDebugEvent({
+      kind: 'EXECUTE_COMMAND',
+      parse: summarizeParseResult(parseResult),
+      consumesTurn: false,
+      result: {
+        accepted: !!result.accepted,
+        resultType: result.resultType ?? null,
+      },
+      delta: {
+        score: (debugAfter.score ?? 0) - (debugBefore.score ?? 0),
+        totalTurnsConsumed: (debugAfter.totalTurnsConsumed ?? 0) - (debugBefore.totalTurnsConsumed ?? 0),
+        turnsInDangerZone: (debugAfter.turnsInDangerZone ?? 0) - (debugBefore.turnsInDangerZone ?? 0),
+        awaitingRestart:
+          (debugAfter.awaitingRestart ?? false) === (debugBefore.awaitingRestart ?? false)
+            ? 0
+            : 1,
+      },
+      before: debugBefore,
+      after: debugAfter,
+    });
   }
 
   return result;

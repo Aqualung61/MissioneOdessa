@@ -605,6 +605,12 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 **Descrizione**
 - Introdurre debug non invasivo per osservare delta punteggio, trigger intercettazione e transizione game over.
 
+**Deliverable (Sprint #58.2)**
+- ✅ 2026-01-14: debug trace engine (flag `ENGINE_DEBUG`) in [src/logic/engineDebug.js](../src/logic/engineDebug.js)
+- ✅ 2026-01-14: debug trace opzionale su API engine in [src/api/engineRoutes.js](../src/api/engineRoutes.js)
+- ✅ 2026-01-14: test base debug trace in [tests/engine.debug.trace.test.ts](../tests/engine.debug.trace.test.ts)
+- ✅ 2026-01-14: flag documentata in [.env.example](../.env.example)
+
 **Valutazione impatto**
 - **Impatto funzionale:** basso (dev/test).
 - **Rischio regressione:** basso.
