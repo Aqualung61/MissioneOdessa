@@ -14,6 +14,8 @@ Questo documento riassume il comportamento **atteso e testato** degli endpoint c
 
 La validazione preliminare è centralizzata (`validateCommandInput`), con codici coerenti tra endpoint:
 
+`Details`/`details` contiene **un singolo valore** (non una lista), uno tra:
+
 - `EMPTY_INPUT` (vuoto o solo spazi)
 - `CONTROL_CHARS` (caratteri di controllo)
 - `LENGTH_OUT_OF_RANGE` (troppo corto/lungo rispetto ai limiti)
@@ -47,9 +49,9 @@ Questo è l’endpoint **raccomandato** per l’input del gioco (parsing + esecu
 {
   "ok": false,
   "error": "INVALID_INPUT",
-  "details": "EMPTY_INPUT|CONTROL_CHARS|LENGTH_OUT_OF_RANGE|NOT_A_STRING",
+  "details": "EMPTY_INPUT",
   "userMessage": "...",
-  "parseResult": { "IsValid": false, "Error": "INVALID_INPUT", "Details": "..." }
+  "parseResult": { "IsValid": false, "Error": "INVALID_INPUT", "Details": "EMPTY_INPUT" }
 }
 ```
 
@@ -97,7 +99,7 @@ Endpoint **deprecato** e disabilitabile (`DISABLE_LEGACY_ENDPOINTS=1` → `410`)
 {
   "IsValid": false,
   "Error": "INVALID_INPUT",
-  "Details": "EMPTY_INPUT|CONTROL_CHARS|LENGTH_OUT_OF_RANGE|NOT_A_STRING"
+  "Details": "EMPTY_INPUT"
 }
 ```
 
