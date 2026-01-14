@@ -421,7 +421,6 @@ async function executeCommandOnServer(input) {
 
     // Sprint #57.3: se nel frattempo è partita una richiesta più recente, ignora questa risposta.
     if (requestId !== executeRequestId) return;
-
     // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
     if (executeResult && executeResult.stats) applyStats(executeResult.stats);
     if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
