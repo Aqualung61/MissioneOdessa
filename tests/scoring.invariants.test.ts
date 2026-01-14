@@ -55,6 +55,11 @@ describe('Issue #58 — Invarianti minime (Sprint #58.1)', () => {
   });
 
   it('I58.1.A: punteggio >= 1 e non diminuisce durante partita attiva', () => {
+    // Precondizione: partita attiva
+    const state0 = getGameState();
+    expect(state0.awaitingRestart).toBe(false);
+    expect(state0.ended).toBe(false);
+
     // Baseline
     const s0 = score();
     expect(s0).toBeGreaterThanOrEqual(1);
@@ -63,8 +68,8 @@ describe('Issue #58 — Invarianti minime (Sprint #58.1)', () => {
     executeCommand({
       IsValid: true,
       CommandType: 'SYSTEM',
-      Concept: 'Concetto: Inventario',
       CanonicalVerb: 'INVENTARIO',
+      VerbConcept: 'INVENTARIO',
       Error: null,
     });
     const s1 = score();

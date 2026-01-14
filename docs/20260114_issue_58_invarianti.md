@@ -42,7 +42,7 @@ Nota: dopo un **reset** (riavvio confermato) il punteggio riparte dalla baseline
 ## 3) Invarianti intercettazione (danger zones)
 
 ### I58.1.E — Concetto
-- `turn.turnsInDangerZone` rappresenta **solo** turni *consuming* trascorsi in danger zone.
+- `turn.turnsInDangerZone` rappresenta **solo** turni che consumano tempo trascorsi in danger zone.
 - Il game over per intercettazione si innesca quando `turn.turnsInDangerZone` raggiunge la soglia prevista (attualmente 4).
 
 Nota: questa sezione definisce l’invariante a livello concettuale. I test di dettaglio (sequenze, edge cases, reset contatore su uscita) sono nel piano Sprint #58.3.
