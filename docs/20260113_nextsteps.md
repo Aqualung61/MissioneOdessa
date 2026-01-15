@@ -661,7 +661,7 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/59
 
 ### Operatività (branch/PR)
-- PR per sprint: `#59.1` → `#59.3` (inventario, traduzioni, test anti-regressione i18n).
+- PR per sprint: `#59.1` → `#59.7` (inventario, dati gioco, messaggi, hardcoded UI, test anti-regressione).
 - PR intermedie: includere `Part of #59`.
 - PR finale: includere `Fixes #59`.
 
@@ -681,18 +681,45 @@ Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve comple
 - Test automatico (o check) che fallisce se compaiono chiavi mancanti nelle aree coperte.
 
 ### HLD (High Level Design)
-- Centralizzare la “fonte di verità” delle stringhe (backend e frontend) e ridurre fallback silenziosi.
-- Definire un glossario minimo (termini ricorrenti) e applicarlo in modo coerente.
-- Garantire che ogni chiave i18n abbia almeno IT/EN, con meccanismo di check automatizzato.
+Obiettivo: completare e rendere verificabile l’i18n separando i problemi in cluster indipendenti e testabili.
+
+**Regola generale (record localizzati)**
+- Per ogni dataset che usa `IDLingua`, un record IT/EN è “equivalente” se ha lo stesso `ID` e cambia solo `IDLingua` (1=IT, 2=EN).
+- Duplicando per lingua, **l’`ID` non cambia**.
+
+**Cluster di lavoro (ordine consigliato)**
+1) **Dati di gioco (contenuto) — `src/data-internal`**
+  - Introduzione/Storia/Luoghi/Oggetti/VociLessico/Interazioni
+2) **Messaggi (cataloghi) — `MessaggiFrontend.json` + `MessaggiSistema.json`**
+  - Coverage IT/EN + chiavi usate/mancanti + policy fallback
+3) **Hardcoded UI/API — HTML/JS/API**
+  - label, aria-label, noscript, placeholder, messaggi API non localizzati
+4) **Residuali**
+  - tutto ciò che resta fuori dai cluster precedenti
+
+Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke test ripetibile.
 
 ### TD (Technical Design)
-- Inventario:
-  - Frontend: rivedere `web/js/i18n.js`, `web/js/seo-i18n.js` e le pagine `web/odessa_*.html` per chiavi mancanti.
-  - Backend: rivedere `src/logic/systemMessages.js` e mappature in `src/logic/messages.js` per messaggi standard.
-- Consistenza:
-  - Aggiungere un check/test che verifica che un set di chiavi critiche abbia IT/EN (no placeholder).
-- Test:
-  - Nuovo test dedicato (o estensione dei test esistenti) che fallisce su missing/placeholder.
+**A) Data-internal (contenuto)**
+- Verificare copertura IT/EN (per `ID`):
+  - `Introduzione.json`, `Storia.json`, `Luoghi.json`, `Oggetti.json`, `VociLessico.json`
+- `Interazioni.json`:
+  - verificare anche il codice: l’accesso ai dati deve essere sempre filtrato per lingua corrente (accesso non filtrato = bug da correggere).
+- Out of scope contenuto: `LessicoSoftware.json`, `TerminiLessico.json`, `TipiLessico.json`, `Piattaforme.json`, `Software.json`, `LuoghiLogici.json`.
+
+**B) Messaggi (cataloghi)**
+- Frontend: `MessaggiFrontend.json` + consumer in `web/js/i18n.js` e `web/js/seo-i18n.js`.
+- Backend/engine: `MessaggiSistema.json` + `src/logic/systemMessages.js` e mapping in `src/logic/messages.js`.
+- Identificare e rimuovere hardcoded user-facing in API (quando applicabile) o mapparli su chiavi i18n.
+
+**C) Hardcoded UI/API**
+- HTML: migrare progressivamente testi/label/aria/placeholder (e testi `noscript`) verso chiavi i18n.
+- JS: ridurre fallback non centralizzati e far convergere su `MessaggiFrontend`.
+
+**D) Anti-regressione**
+- Aggiungere check/test che fallisce su:
+  - chiavi critiche senza IT/EN
+  - placeholder visibili (es. `[{key}]` o `[Missing: key]`) nelle aree coperte
 
 ### Plan
 #### Sprint #59.1 — Inventario chiavi e gap
@@ -706,32 +733,78 @@ Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve comple
 **Condizione di accettazione**
 - Lista di chiavi/gap prioritarizzata e collegata alle aree interessate.
 
-#### Sprint #59.2 — Completamento traduzioni IT/EN
+#### Sprint #59.2 — Data-internal: contenuti core (Luoghi + Oggetti)
 **Descrizione**
-- Compilare le traduzioni mancanti.
-- Uniformare tono e terminologia (glossario minimo).
+- Rendere disponibili i record EN (`IDLingua=2`) equivalenti a quelli IT per `Luoghi.json` e `Oggetti.json` (stesso `ID`).
+
+**Smoke test (manuale, ripetibile)**
+- Chiamare le API principali con lingua 1 e 2 e verificare che il payload sia coerente e senza errori (es. intro/storia/engine/UI).
+- In UI: aprire `/web/odessa_main.html` in lingua 2 e verificare che le descrizioni/nomi mostrati (dove derivano da questi dataset) siano in EN.
 
 **Valutazione impatto**
-- **Impatto funzionale:** basso (solo testi).
-- **Rischio regressione:** basso-medio (test che matchano stringhe).
+- **Impatto funzionale:** medio (cambia contenuto presentato in EN).
+- **Rischio regressione:** basso-medio (dimensione dataset, possibili assunzioni su unicità).
 
 **Condizione di accettazione**
-- Nessuna chiave placeholder nelle aree coperte (intro/storia/main + messaggi engine principali).
+- Per ogni `ID` presente in IT esiste il corrispondente EN.
 
-#### Sprint #59.3 — Test anti-regressione i18n
+#### Sprint #59.3 — Data-internal: lessico (VociLessico)
 **Descrizione**
-- Aggiungere un test che fallisce se una chiave critica manca in IT/EN o se compare un placeholder.
+- Verificare e completare `VociLessico.json` in modo che ogni voce “localizzata” abbia IT/EN.
 
-**Valutazione impatto**
-- **Impatto funzionale:** nullo.
-- **Rischio regressione:** basso.
+**Smoke test**
+- In UI/engine: verificare che HELP e/o voci lessico mostrate in lingua 2 siano effettivamente EN.
 
 **Condizione di accettazione**
-- Suite verde; test fallisce introducendo artificialmente una chiave mancante.
+- Nessuna voce prevista risulta IT-only quando `IDLingua=2`.
+
+#### Sprint #59.4 — Data-internal: Interazioni (dati + access pattern)
+**Descrizione**
+- Verificare che ogni accesso a `Interazioni.json` sia filtrato per lingua corrente.
+- Completare i record EN equivalenti (stesso `ID`, `IDLingua=2`).
+- Segnalare ed eliminare eventuali record senza `IDLingua` o con valori fuori whitelist.
+
+**Smoke test**
+- Eseguire una o più interazioni note in lingua 1 e 2 e verificare che il testo/effetto sia correttamente localizzato.
+
+**Condizione di accettazione**
+- Nessun accesso non filtrato; copertura EN completa per gli ID presenti in IT.
+
+#### Sprint #59.5 — Messaggi: Frontend/Sistema + hardcoded API
+**Descrizione**
+- Garantire coerenza IT/EN per i messaggi user-facing (frontend e engine).
+- Eliminare o mappare su chiavi i18n i messaggi hardcoded user-facing in API (dove applicabile).
+- Definire una policy fallback (placeholder visibili vs fallback silenziosi) coerente.
+
+**Smoke test**
+- Chiamare `/api/frontend-messages/1` e `/api/frontend-messages/2` e verificare presenza chiavi critiche.
+- In UI: generare 4-5 messaggi (help, errore comando, save/load, game over) e verificare lingua corretta.
+
+**Condizione di accettazione**
+- Nessuna chiave critica mancante/placeholder nelle aree coperte.
+
+#### Sprint #59.6 — Hardcoded UI: HTML/JS
+**Descrizione**
+- Migrare progressivamente label/aria/placeholder/noscript e testi principali dalle pagine (`index.html`, `web/odessa_*.html`, JS correlati) verso i meccanismi i18n.
+
+**Smoke test**
+- Aprire `index.html`, `odessa_storia.html`, `odessa_intro.html`, `odessa_main.html` in lingua 1 e 2 e verificare che i testi visibili (label, bottoni, hint) cambino lingua correttamente.
+
+**Condizione di accettazione**
+- Nessun testo core rimane hardcoded IT-only nelle pagine principali.
+
+#### Sprint #59.7 — Test anti-regressione i18n
+**Descrizione**
+- Aggiungere test/check automatici per prevenire regressioni su:
+  - copertura IT/EN (per `ID` o `Chiave` a seconda del dataset)
+  - placeholder visibili
+
+**Condizione di accettazione**
+- Suite verde; il test fallisce se si introduce una chiave/record mancante.
 
 **Note (attenzioni e rischi)**
 - Preferire asserzioni su presenza chiavi rispetto a stringhe complete quando possibile.
-- Verificare coerenza tra testi UI e messaggi engine (terminologia costante).
+- Verificare coerenza terminologica tra UI e engine (glossario minimo).
 
 ---
 
