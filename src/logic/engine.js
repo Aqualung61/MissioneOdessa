@@ -245,7 +245,10 @@ export function resetGameState(idLingua = 1) {
   };
   // Aggiungi Oggetti a gameState dai dati originali
   const oggettiPerLingua = originalOggetti.filter(
-    (o) => o?.IDLingua == null || o.IDLingua === idLingua
+    (o) =>
+      o?.IDLingua === idLingua ||
+      o?.IDLingua === null ||
+      o?.IDLingua === undefined
   );
   if (oggettiPerLingua.length > 0) {
     gameState.Oggetti = JSON.parse(JSON.stringify(oggettiPerLingua)); // Deep copy dai dati originali
