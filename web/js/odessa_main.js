@@ -8,10 +8,17 @@ try {
   const current = String(idLingua);
   if (prev !== current) {
     localStorage.setItem('linguaSelezionata', current);
-    localStorage.removeItem('linguaDescrizione');
   }
 } catch {
   // ignore
+}
+
+// Opzione A: la descrizione lingua mostrata in main deve derivare sempre da idLingua,
+// senza dipendere da cache locali che possono diventare stale (es. linguaDescrizione).
+function resolveLinguaDescrizioneFromId(id) {
+  const n = parseInt(String(id), 10);
+  if (n === 2) return 'English';
+  return 'Italiano';
 }
 
 function setLinguaScelta(descrizione) {
@@ -50,28 +57,8 @@ if (window.i18n) {
       window.i18n.initHTML();
       console.log('Testi HTML localizzati');
       
-      // Mostra lingua selezionata localizzata
-      let descrizione = localStorage.getItem('linguaDescrizione') || '';
-      if (!descrizione && idLingua) {
-        // Fallback: recupera nome lingua dal backend
-        // NOTA: basePath definito più avanti, ma hoisting consente l'uso qui tramite funzione
-        const bp = getBasePath();
-        fetch(bp + 'api/lingue')
-          .then(res => res.json())
-          .then(data => {
-            const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
-            if (lingua) {
-              const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
-              descrizione = nome || '';
-              if (descrizione) {
-                setLinguaScelta(descrizione);
-                localStorage.setItem('linguaDescrizione', descrizione);
-              }
-            }
-          });
-      } else if (descrizione) {
-        setLinguaScelta(descrizione);
-      }
+      // Mostra lingua selezionata (sempre derivata da idLingua)
+      setLinguaScelta(resolveLinguaDescrizioneFromId(idLingua));
     })
     .catch(err => console.error('Errore caricamento i18n:', err));
 }
@@ -79,26 +66,7 @@ if (window.i18n) {
 // Se l'i18n non è disponibile, mostriamo comunque la lingua (best-effort)
 if (!window.i18n) {
   try {
-    let descrizione = localStorage.getItem('linguaDescrizione') || '';
-    if (descrizione) {
-      setLinguaScelta(descrizione);
-    } else if (idLingua) {
-      const bp = getBasePath();
-      fetch(bp + 'api/lingue')
-        .then(res => res.json())
-        .then(data => {
-          const lingua = data.find(l => String(l.ID_Lingua ?? l.ID ?? l.id ?? l.Id) === String(idLingua));
-          if (!lingua) return;
-          const nome = lingua.NomeLingua ?? lingua.Descrizione ?? lingua.nome ?? lingua.nomeLingua;
-          descrizione = nome || '';
-          if (!descrizione) return;
-          setLinguaScelta(descrizione);
-          localStorage.setItem('linguaDescrizione', descrizione);
-        })
-        .catch(() => {
-          // ignore
-        });
-    }
+    setLinguaScelta(resolveLinguaDescrizioneFromId(idLingua));
   } catch {
     // ignore
   }

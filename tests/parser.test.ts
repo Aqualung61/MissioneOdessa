@@ -37,6 +37,14 @@ describe('Parser REQ01 - casi base', () => {
     expect(res.CommandType).toBe('NAVIGATION');
   });
 
+  it('SYSTEM alias: ? => INVENTARIO anche in lingua EN', async () => {
+    const res = await parseCommand(null, '?', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('SYSTEM');
+    expect(res.CanonicalVerb).toBe('INVENTARIO');
+    expect(res.VerbConcept).toBe('INVENTARIO');
+  });
+
   it('Errore sintassi: PRENDI => SYNTAX_ACTION_INCOMPLETE', async () => {
     const res = await parseCommand(null, 'PRENDI');
     expect(res.IsValid).toBe(false);

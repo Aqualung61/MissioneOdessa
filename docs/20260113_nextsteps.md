@@ -80,7 +80,7 @@ flowchart TB
   end
 
   subgraph M133["v1.3.3 (i18n + polish)"]
-    I59["#59 i18n completamento"]
+    I59["#59 i18n completamento (pre: multi-session)"]
     I60["#60 Lingua in pagina storia"]
   end
 
@@ -143,9 +143,9 @@ flowchart TB
         direction LR
         S601["#60.1 UI+wiring"] --> S602["#60.2 Persistenza"] --> S603["#60.3 CSP+UX"]
       end
-      subgraph I59S["#59 i18n completamento"]
+      subgraph I59S["#59 i18n completamento (+ prerequisito multi-session)"]
         direction LR
-        S591["#59.1 Inventario"] --> S592["#59.2 Traduzioni"] --> S593["#59.3 Test i18n"]
+        S591["#59.1 Multi-session (pre)"] --> S592["#59.2 Inventario gap"] --> S593["#59.3 Luoghi+Oggetti"] --> S594["#59.4 Lessico"] --> S595["#59.5 Interazioni"] --> S596["#59.6 Messaggi"] --> S597["#59.7 Hardcoded UI"] --> S598["#59.8 Test anti-regressione"]
       end
       %% Forza ordine verticale issue: 60 -> 59
       S601 ~~~ S591

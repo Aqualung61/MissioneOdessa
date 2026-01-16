@@ -24,13 +24,14 @@ export const ParseErrorType = {
   SYNTAX_INVALID_STRUCTURE: 'SYNTAX_INVALID_STRUCTURE',
 };
 
-// Cache interna del vocabolario per processo
-let vocabCache = null;
+// Cache interna del vocabolario per processo, separata per lingua.
+// Questo evita che una prima costruzione (es. IT) venga riusata impropriamente per altre lingue (es. EN).
+const vocabCacheByLingua = new Map();
 
 // Rimossi vocabDbPath, ora usa global.odessaData sempre disponibile
 
 export function resetVocabularyCache() {
-  vocabCache = null;
+  vocabCacheByLingua.clear();
 }
 
 // Carica il vocabolario da global.odessaData e costruisce:
@@ -38,10 +39,11 @@ export function resetVocabularyCache() {
 // - canonicalByTerm: Map<termId, canonicalToken>
 export async function ensureVocabulary(gameState = null) {
   // Usa global.odessaData
-  if (vocabCache) return vocabCache;
-
   // Determina la lingua corrente dal gameState, default 1
   const currentLingua = gameState?.currentLingua || 1;
+
+  const cached = vocabCacheByLingua.get(currentLingua);
+  if (cached) return cached;
 
   // Simula la query JOIN usando filtri su global.odessaData
   const rows = global.odessaData.VociLessico
@@ -89,9 +91,10 @@ export async function ensureVocabulary(gameState = null) {
     const token = r.Voce.toUpperCase();
     // Canonico per termine:
     // - NAVIGAZIONE: forziamo il concetto come canonico stabile (es. NORD, BASSO)
-    // - altri tipi: prendi il minimo lessicografico tra le voci IT
+    // - SISTEMA: forziamo il concetto come canonico stabile (es. AIUTO, INVENTARIO)
+    // - altri tipi: prendi il minimo lessicografico tra le voci della lingua corrente
     const prev = canonicalByTerm.get(r.TermineID);
-    if (type === CommandType.NAVIGATION) {
+    if (type === CommandType.NAVIGATION || type === CommandType.SYSTEM) {
       canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
     } else if (!prev || token < prev) {
       canonicalByTerm.set(r.TermineID, token);
@@ -110,8 +113,9 @@ export async function ensureVocabulary(gameState = null) {
     tokenMap.set(tok, { ...info, canonical: canon });
   }
 
-  vocabCache = { tokenMap };
-  return vocabCache;
+  const built = { tokenMap };
+  vocabCacheByLingua.set(currentLingua, built);
+  return built;
 }// Preprocess: rimuove punteggiatura comune (ma preserva '?'), rimuove accenti, normalizza spazi
 function normalizeInput(input) {
   const withoutPunct = input
