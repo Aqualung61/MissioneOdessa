@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
+import { ensureVocabulary, parseCommand, resetVocabularyCache } from '../src/logic/parser.js';
 import { executeCommand, generateHelpMessage, initializeOriginalData } from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
@@ -95,5 +95,15 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(res.resultType).toBe('OK');
     expect(res.message).toContain('<b>Comandi disponibili:</b>');
     expect(res.showLocation).toBe(true);
+  });
+
+  it('HELP viene riconosciuto anche in lingua EN (Canonico=AIUTO)', async () => {
+    resetVocabularyCache();
+    await ensureVocabulary({ currentLingua: 2 });
+
+    const parsed = await parseCommand(null, 'HELP', { currentLingua: 2 });
+    expect(parsed.IsValid).toBe(true);
+    expect(parsed.CommandType).toBe('SYSTEM');
+    expect(parsed.CanonicalVerb).toBe('AIUTO');
   });
 });

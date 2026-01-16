@@ -24,6 +24,12 @@
     "ID_Lingua": 1
   },
   {
+    "ID_Voce": 132,
+    "Voce": "?",
+    "ID_Termine": 2,
+    "ID_Lingua": 2
+  },
+  {
     "ID_Voce": 5,
     "Voce": "IL",
     "ID_Termine": 3,
@@ -551,6 +557,12 @@
     "Voce": "HELP",
     "ID_Termine": 58,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 131,
+    "Voce": "HELP",
+    "ID_Termine": 58,
+    "ID_Lingua": 2
   },
   {
     "ID_Voce": 97,

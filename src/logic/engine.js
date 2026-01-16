@@ -244,8 +244,11 @@ export function resetGameState(idLingua = 1) {
     continueCallback: null
   };
   // Aggiungi Oggetti a gameState dai dati originali
-  if (originalOggetti.length > 0) {
-    gameState.Oggetti = JSON.parse(JSON.stringify(originalOggetti)); // Deep copy dai dati originali
+  const oggettiPerLingua = originalOggetti.filter(
+    (o) => o?.IDLingua == null || o.IDLingua === idLingua
+  );
+  if (oggettiPerLingua.length > 0) {
+    gameState.Oggetti = JSON.parse(JSON.stringify(oggettiPerLingua)); // Deep copy dai dati originali
     console.log('Caricamento Oggetti in gameState: Sì, numero di record: ' + gameState.Oggetti.length);
   } else {
     gameState.Oggetti = [];
