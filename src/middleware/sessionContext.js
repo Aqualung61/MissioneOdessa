@@ -3,12 +3,52 @@ import { randomUUID } from 'node:crypto';
 const SESSION_ID_HEADER = 'X-Session-Id';
 const GAME_ID_HEADER = 'X-Game-Id';
 
+function parsePositiveInt(value) {
+  const n = Number.parseInt(String(value ?? ''), 10);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+// Sprint #59.1: guardrails per evitare crescita illimitata in produzione.
+// Nota: con l'approccio per-session module instance (import con query string), il
+// modulo rimane in cache ESM. Questi limiti impediscono un numero illimitato di
+// sessioni (e quindi di moduli/engine) nel tempo.
+const MAX_SESSIONS = parsePositiveInt(process.env.SESSION_MAX_SESSIONS) ?? 200;
+const SESSION_IDLE_TTL_MS = parsePositiveInt(process.env.SESSION_IDLE_TTL_MS) ?? (6 * 60 * 60 * 1000); // 6h
+const SESSION_ABSOLUTE_TTL_MS = parsePositiveInt(process.env.SESSION_ABSOLUTE_TTL_MS) ?? (24 * 60 * 60 * 1000); // 24h
+
 /**
  * In-memory session store.
  * Key: sessionId
  * Value: { gameId: string, engine: any, createdAt: number, lastAccessAt: number }
  */
 const sessions = new Map();
+
+function cleanupExpiredSessions(now = Date.now()) {
+  for (const [sessionId, session] of sessions.entries()) {
+    const idleAge = now - (session.lastAccessAt || session.createdAt || 0);
+    const absoluteAge = now - (session.createdAt || 0);
+    if (idleAge > SESSION_IDLE_TTL_MS || absoluteAge > SESSION_ABSOLUTE_TTL_MS) {
+      sessions.delete(sessionId);
+    }
+  }
+}
+
+function evictLeastRecentlyUsedSession() {
+  let oldestId = undefined;
+  let oldestTs = Number.POSITIVE_INFINITY;
+
+  for (const [sessionId, session] of sessions.entries()) {
+    const ts = session.lastAccessAt || session.createdAt || 0;
+    if (ts < oldestTs) {
+      oldestTs = ts;
+      oldestId = sessionId;
+    }
+  }
+
+  if (oldestId) {
+    sessions.delete(oldestId);
+  }
+}
 
 function isValidUuid(value) {
   if (typeof value !== 'string') return false;
@@ -39,6 +79,8 @@ async function importEngineModuleForSession(sessionId) {
 }
 
 async function getOrCreateSession(req) {
+  cleanupExpiredSessions();
+
   const incomingSessionId = normalizeHeader(req.get(SESSION_ID_HEADER));
   const incomingGameId = normalizeHeader(req.get(GAME_ID_HEADER));
 
@@ -46,6 +88,11 @@ async function getOrCreateSession(req) {
 
   let session = sessions.get(sessionId);
   if (!session) {
+    // Enforce an upper bound on sessions to avoid unbounded growth.
+    if (sessions.size >= MAX_SESSIONS) {
+      evictLeastRecentlyUsedSession();
+    }
+
     const engine = await importEngineModuleForSession(sessionId);
     const gameId = isValidUuid(incomingGameId) ? incomingGameId : randomUUID();
 
