@@ -326,8 +326,8 @@ export function shouldConsumeTurn(parseResult) {
  */
 export function hasFonteLuceAttiva() {
   // Verifica torcia elettrica (ID=37) nell'inventario e non spenta.
-  // Nota: per compatibilità storica con i test/unit, la torcia è considerata
-  // "attiva" solo se marcata esplicitamente con `Inventario=true`.
+  // Nota: la torcia è considerata "attiva" solo se marcata esplicitamente con `Inventario=true`.
+  // (Flag canonical per indicare possesso/inventario nell'attuale modello dati.)
   const torcia = gameState.Oggetti.find((o) => o.ID === 37);
   const torciaInInventario = torcia?.Inventario === true;
   if (torciaInInventario && !gameState.timers.torciaDifettosa) return true;

@@ -15,6 +15,15 @@ const router = express.Router();
 // Sprint #59.1: multi-session per-tab (no cookie)
 router.use(attachEngineSession);
 
+function getEngineOrSendError(req, res) {
+  const engine = req.odessaSession?.engine;
+  if (!engine) {
+    res.status(500).json({ ok: false, error: 'ENGINE_SESSION_MISSING' });
+    return null;
+  }
+  return engine;
+}
+
 function isTruthy(value) {
   return value === '1' || value === 'true' || value === 'yes';
 }
@@ -115,10 +124,8 @@ function maybeAttachDebug(payload) {
 
 router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
-    if (!engine) {
-      return res.status(500).json({ ok: false, error: 'ENGINE_SESSION_MISSING' });
-    }
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
 
     if (req.commandInputValidationError) {
       const state = engine.getGameStateSnapshot();
@@ -221,7 +228,8 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
 // Stato engine: snapshot
 router.get('/state', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const snap = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({ ok: true, state: snap }));
   } catch (err) {
@@ -232,7 +240,8 @@ router.get('/state', (req, res, next) => {
 // Stato engine: reset
 router.post('/reset', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { idLingua } = req.body || {};
     const newGameId = randomUUID();
     req.odessaSession?.setGameId(newGameId);
@@ -247,7 +256,8 @@ router.post('/reset', (req, res, next) => {
 // Stato engine: set location
 router.post('/set-location', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     // Legacy endpoint: usare POST /api/engine/execute (NAVIGATION) invece di set-location.
     res.set('Deprecation', 'true');
     res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
@@ -351,7 +361,8 @@ router.post('/set-location', (req, res, next) => {
 // Nuovo endpoint per salvare stato client
 router.post('/save-client-state', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { luoghi } = req.body;
     if (!Array.isArray(luoghi)) {
       return res.status(400).json({ ok: false, error: 'Invalid luoghi data' });
@@ -384,7 +395,8 @@ router.post('/save-client-state', (req, res, next) => {
 // Nuovo endpoint per caricare stato client
 router.post('/load-client-state', validateSaveData(), (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { gameState, odessaData } = req.body;
     if (!gameState || !odessaData || !Array.isArray(odessaData.Luoghi)) {
       return res.status(400).json({ ok: false, error: 'Invalid save data' });
@@ -430,7 +442,8 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
 // Integrato con turn pipeline per Sprint 3.3.5.A (Torcia)
 router.get('/direzioni/:idLuogo', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const idLuogo = parseInt(req.params.idLuogo, 10);
     if (isNaN(idLuogo)) {
       return res.status(400).json({ ok: false, error: 'Invalid location ID' });
@@ -447,7 +460,8 @@ router.get('/direzioni/:idLuogo', (req, res, next) => {
 // Endpoint per ottenere statistiche di gioco (luoghi visitati + interazioni + misteri + punteggio + rango)
 router.get('/stats', (req, res, next) => {
   try {
-    const engine = req.odessaSession?.engine;
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const state = engine.getGameStateSnapshot();
     const visitedPlaces = state.visitedPlaces?.length || 0;
     const interactions = state.punteggio?.interazioniPunteggio?.length || 0;

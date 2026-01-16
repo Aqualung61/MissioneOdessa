@@ -247,7 +247,9 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       const torcia = state.Oggetti.find(o => o.ID === 37);
       
       // Senza luce
-      if (torcia) torcia.IDLuogo = 1; // Torcia non in inventario
+      if (torcia) {
+        torcia.Inventario = false;
+      }
       state.timers.lampadaAccesa = false;
       prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(false);
