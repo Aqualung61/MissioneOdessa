@@ -257,6 +257,65 @@ function getBasePath() {
 }
 const basePath = getBasePath();
 
+// Sprint #59.1: multi-session per-tab (no cookie)
+// Persistiamo gli id in sessionStorage per isolamento tra tab.
+const SESSION_ID_KEY = 'odessa.sessionId';
+const GAME_ID_KEY = 'odessa.gameId';
+
+function generateUuidBestEffort() {
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+  } catch {
+    // ignore
+  }
+  // Fallback (non-UUID): il server farà self-healing e restituirà un UUID valido.
+  return `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getOrCreateSessionValue(key) {
+  try {
+    const existing = sessionStorage.getItem(key);
+    if (existing && existing.trim()) return existing.trim();
+    const created = generateUuidBestEffort();
+    sessionStorage.setItem(key, created);
+    return created;
+  } catch {
+    // sessionStorage non disponibile: fallback in-memory
+    return generateUuidBestEffort();
+  }
+}
+
+let sessionId = getOrCreateSessionValue(SESSION_ID_KEY);
+let gameId = getOrCreateSessionValue(GAME_ID_KEY);
+
+function syncSessionFromResponse(res) {
+  try {
+    const sid = res && res.headers ? res.headers.get('X-Session-Id') : null;
+    const gid = res && res.headers ? res.headers.get('X-Game-Id') : null;
+    if (sid && sid.trim()) {
+      sessionId = sid.trim();
+      try { sessionStorage.setItem(SESSION_ID_KEY, sessionId); } catch { /* ignore */ }
+    }
+    if (gid && gid.trim()) {
+      gameId = gid.trim();
+      try { sessionStorage.setItem(GAME_ID_KEY, gameId); } catch { /* ignore */ }
+    }
+  } catch {
+    // ignore
+  }
+}
+
+async function apiFetchWithSession(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  headers.set('X-Session-Id', sessionId);
+  headers.set('X-Game-Id', gameId);
+  const res = await fetch(url, { ...options, headers });
+  syncSessionFromResponse(res);
+  return res;
+}
+
 // Sprint #57.4: debug mode per riprodurre race/out-of-order in modo deterministico.
 // Nota: la pagina carica questo file come ES module (type="module"), quindi le funzioni
 // top-level non sono disponibili in Console a meno di esporle su window.
@@ -401,7 +460,7 @@ async function executeCommandOnServer(input) {
 
     let res;
     try {
-      res = await fetch(basePath + 'api/engine/execute', {
+      res = await apiFetchWithSession(basePath + 'api/engine/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input: raw })
@@ -485,7 +544,7 @@ async function executeCommandOnServer(input) {
 
     // Salvataggio
     if (engine.resultType === 'SAVE_GAME') {
-      fetch(basePath + 'api/engine/save-client-state', {
+      apiFetchWithSession(basePath + 'api/engine/save-client-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ luoghi: luoghi })
@@ -528,7 +587,7 @@ async function executeCommandOnServer(input) {
         reader.onload = (ev) => {
           try {
             const saveData = JSON.parse(ev.target.result);
-            fetch(basePath + 'api/engine/load-client-state', {
+            apiFetchWithSession(basePath + 'api/engine/load-client-state', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(saveData)
@@ -541,7 +600,7 @@ async function executeCommandOnServer(input) {
             .then(r => r.json())
             .then(data => {
               luoghi = Array.isArray(data) ? data : [];
-              return fetch(basePath + 'api/engine/state');
+              return apiFetchWithSession(basePath + 'api/engine/state');
             })
             .then(r => r.json())
             .then(stateResult => {
@@ -554,7 +613,7 @@ async function executeCommandOnServer(input) {
 
               // Riallinea direzioni dinamiche (toggle/sblocchi) e contatori dal server.
               // Nota: senza questo, la UI rimane con valori pre-load finché non si esegue un comando.
-              return fetch(basePath + `api/engine/direzioni/${locationId}`)
+              return apiFetchWithSession(basePath + `api/engine/direzioni/${locationId}`)
                 .then(r2 => r2.json())
                 .then(dirResult => {
                   if (dirResult && dirResult.ok && dirResult.direzioni && current) {
@@ -639,7 +698,7 @@ function updateDynamicPlaceImage() {
 
 function updateGameStats() {
   // Recupera entrambi i contatori dal server (source of truth)
-  fetch(basePath + 'api/engine/stats')
+  apiFetchWithSession(basePath + 'api/engine/stats')
     .then(res => res.json())
     .then(data => {
       if (data.ok) {
@@ -702,8 +761,8 @@ function showCurrent() {
     placeFeed.appendChild(spacer);
     placeFeed.scrollTop = placeFeed.scrollHeight;
 
-    // Carica e mostra oggetti nel luogo
-    fetch(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=${idLingua}`)
+    // Carica e mostra oggetti nel luogo (session-aware: multi-session per-tab)
+    apiFetchWithSession(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=${idLingua}`)
       .then(res => res.json())
       .then(oggetti => {
         if (oggetti.length > 0) {
@@ -779,8 +838,8 @@ fetch(basePath + 'api/luoghi')
       return;
     }
 
-    // Reset del gameState sul server all'avvio
-    fetch(basePath + 'api/engine/reset', { 
+    // Reset del gameState sul server all'avvio (session-aware: multi-session per-tab)
+    apiFetchWithSession(basePath + 'api/engine/reset', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idLingua })

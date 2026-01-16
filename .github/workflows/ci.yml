@@ -18,7 +18,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18, 20]
+        # Nota: alcune devDependencies richiedono Node >= 18.18.
+        # Pinniamo a una patch recente per evitare runner con 18.<18.18.
+        node-version: [18.20.x, 20.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,4 +41,5 @@ jobs:
         run: npm run build
 
       - name: Test
-        run: npm test
+        # Evita timeout del runner in caso di test lunghi senza output.
+        run: npm test -- --reporter=verbose

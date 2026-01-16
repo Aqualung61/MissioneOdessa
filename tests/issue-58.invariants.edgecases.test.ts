@@ -6,7 +6,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'http';
-import { request as httpRequest } from 'node:http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
 import {
@@ -20,6 +19,7 @@ import {
 } from '../src/logic/engine.js';
 
 import { score } from './testUtils/score.js';
+import { createSessionState, fetchWithSession } from './testUtils/sessionFetch.js';
 
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
@@ -72,46 +72,6 @@ function startServer(app: express.Express): Promise<StartedServer> {
   });
 }
 
-function httpJson(baseUrl: string, path: string, options?: { method?: string; body?: unknown }) {
-  const url = new URL(path, baseUrl);
-  const method = options?.method ?? 'GET';
-  const bodyText = options?.body !== undefined ? JSON.stringify(options.body) : null;
-
-  return new Promise<{ status: number; json: unknown }>((resolve, reject) => {
-    const req = httpRequest(
-      {
-        method,
-        hostname: url.hostname,
-        port: url.port,
-        path: url.pathname + url.search,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(bodyText ? { 'Content-Length': Buffer.byteLength(bodyText) } : {}),
-        },
-      },
-      (res) => {
-        let data = '';
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          const status = res.statusCode ?? 0;
-          try {
-            const json = data.length ? JSON.parse(data) : null;
-            resolve({ status, json });
-          } catch (err) {
-            reject(err);
-          }
-        });
-      }
-    );
-    req.on('error', reject);
-    if (bodyText) req.write(bodyText);
-    req.end();
-  });
-}
-
 describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
   beforeAll(() => {
     // Allineato al pattern di altri test: rendiamo il file autosufficiente.
@@ -156,13 +116,47 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
     const { server, baseUrl } = started;
 
     try {
+      // Multi-session: manteniamo la stessa sessione tra chiamate API.
+      const session = createSessionState();
+
       // Forza stato in attesa riavvio (equivalente a game over già avvenuto)
-      await enterLocation(8);
+      // dentro *la stessa sessione* dell'API.
+      const stateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+      expect(stateRes.status).toBe(200);
+      const stateBody = await stateRes.json();
+      assertRecord(stateBody);
+      const currentState = stateBody.state;
+      assertRecord(currentState);
+
+      const nextGameState = {
+        ...currentState,
+        awaitingRestart: true,
+        currentLocationId: 8,
+      };
+
+      const loadRes = await fetchWithSession(
+        `${baseUrl}/api/engine/load-client-state`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameState: nextGameState, odessaData: { Luoghi } }),
+        },
+        session
+      );
+      expect(loadRes.status).toBe(200);
 
       // Input NON parsabile: deve comunque bypassare parser (status 200, parseResult=null)
-      const res1 = await httpJson(baseUrl, '/api/engine/execute', { method: 'POST', body: { input: 'ASDFGHJKLQWERTY' } });
+      const res1 = await fetchWithSession(
+        `${baseUrl}/api/engine/execute`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: 'ASDFGHJKLQWERTY' }),
+        },
+        session
+      );
       expect(res1.status).toBe(200);
-      const body1 = res1.json;
+      const body1 = await res1.json();
       assertRecord(body1);
       expect(body1.ok).toBe(true);
       expect(body1.parseResult).toBeNull();
@@ -176,9 +170,17 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
       expect(body1.state.awaitingRestart).toBe(true);
 
       // NO -> termina partita (ENDED) e spegne awaitingRestart
-      const res2 = await httpJson(baseUrl, '/api/engine/execute', { method: 'POST', body: { input: 'NO' } });
+      const res2 = await fetchWithSession(
+        `${baseUrl}/api/engine/execute`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: 'NO' }),
+        },
+        session
+      );
       expect(res2.status).toBe(200);
-      const body2 = res2.json;
+      const body2 = await res2.json();
       assertRecord(body2);
       expect(body2.ok).toBe(true);
       expect(body2.parseResult).toBeNull();
@@ -199,7 +201,7 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
         }
       });
     }
-  });
+  }, 30000);
 
   it('I58.1.E: turnsInDangerZone conta solo turni consuming in danger zone (integrazione pipeline)', () => {
     // Danger zone nota: 51

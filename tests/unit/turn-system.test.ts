@@ -90,6 +90,15 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
 
   describe('hasFonteLuceAttiva', () => {
     it('dovrebbe restituire false inizialmente (senza torcia né lampada)', () => {
+      const state = getGameState();
+      const torcia = state.Oggetti.find(o => o.ID === 37);
+      if (torcia) {
+        // Rende esplicito lo scenario “senza torcia”: torcia non in inventario
+        torcia.Inventario = false;
+      }
+      state.timers.lampadaAccesa = false;
+      state.timers.torciaDifettosa = false;
+
       expect(hasFonteLuceAttiva()).toBe(false);
     });
 
@@ -235,8 +244,13 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
 
     it('current.hasLight dovrebbe riflettere hasFonteLuceAttiva()', () => {
       const state = getGameState();
+      const torcia = state.Oggetti.find(o => o.ID === 37);
       
       // Senza luce
+      if (torcia) {
+        torcia.Inventario = false;
+      }
+      state.timers.lampadaAccesa = false;
       prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(false);
       

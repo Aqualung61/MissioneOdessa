@@ -1,14 +1,28 @@
 import express from 'express';
+import { randomUUID } from 'node:crypto';
 import { parseCommand } from '../logic/parser.js';
-import { toCommandDTO, executeCommandAsync, getGameStateSnapshot, resetGameState, confirmEnd, confirmRestart, setCurrentLocation, setGameState, getDirezioniLuogo, prepareTurnContext, applyTurnEffects } from '../logic/engine.js';
+import { toCommandDTO } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
 import { getSystemMessage } from '../logic/systemMessages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
 import { appVersion } from '../version.js';
 import { getEngineDebugTrace, isEngineDebugEnabled } from '../logic/engineDebug.js';
+import { attachEngineSession } from '../middleware/sessionContext.js';
 
 const router = express.Router();
+
+// Sprint #59.1: multi-session per-tab (no cookie)
+router.use(attachEngineSession);
+
+function getEngineOrSendError(req, res) {
+  const engine = req.odessaSession?.engine;
+  if (!engine) {
+    res.status(500).json({ ok: false, error: 'ENGINE_SESSION_MISSING' });
+    return null;
+  }
+  return engine;
+}
 
 function isTruthy(value) {
   return value === '1' || value === 'true' || value === 'yes';
@@ -29,9 +43,11 @@ function computeStatsFromState(state) {
   return { visitedPlaces, interactions, mysteries, score, rank };
 }
 
-function buildUiFromState(state) {
+function buildUiFromState(state, engine) {
   const locationId = state?.currentLocationId;
-  const direzioni = typeof locationId === 'number' ? getDirezioniLuogo(locationId) : {};
+  const direzioni = typeof locationId === 'number' && engine && typeof engine.getDirezioniLuogo === 'function'
+    ? engine.getDirezioniLuogo(locationId)
+    : {};
   const availableDirections = Object.entries(direzioni)
     .filter(([, value]) => typeof value === 'number' && value >= 1)
     .map(([key]) => key);
@@ -108,8 +124,11 @@ function maybeAttachDebug(payload) {
 
 router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
+
     if (req.commandInputValidationError) {
-      const state = getGameStateSnapshot();
+      const state = engine.getGameStateSnapshot();
       const details = req.commandInputValidationError.details;
       const i18nKey = mapInvalidInputDetailsToI18nKey(details);
       const userMessage = getSystemMessage(i18nKey, state.currentLingua);
@@ -122,14 +141,14 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         command: null,
         engine: null,
         state,
-        ui: buildUiFromState(state),
+        ui: buildUiFromState(state, engine),
         stats: computeStatsFromState(state),
       }));
     }
 
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
-      const state = getGameStateSnapshot();
+      const state = engine.getGameStateSnapshot();
       return res.status(400).json(maybeAttachDebug({
         ok: false,
         error: 'INVALID_INPUT',
@@ -139,44 +158,44 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         command: null,
         engine: null,
         state,
-        ui: buildUiFromState(state),
+        ui: buildUiFromState(state, engine),
         stats: computeStatsFromState(state),
       }));
     }
     // ensureVocabulary ora chiamata automaticamente in parseCommand
-    const state = getGameStateSnapshot();
+    const state = engine.getGameStateSnapshot();
     // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
     if (state.awaitingEndConfirm) {
-      const engine = normalizeEngineResult(confirmEnd(input));
-      const nextState = getGameStateSnapshot();
+      const engineResult = normalizeEngineResult(engine.confirmEnd(input));
+      const nextState = engine.getGameStateSnapshot();
       return res.json(maybeAttachDebug({
         ok: true,
         parseResult: null,
         command: null,
-        engine,
+        engine: engineResult,
         state: nextState,
-        ui: buildUiFromState(nextState),
+        ui: buildUiFromState(nextState, engine),
         stats: computeStatsFromState(nextState),
       }));
     }
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
-      const engine = normalizeEngineResult(await confirmRestart(input)); // dbPath rimosso
-      const nextState = getGameStateSnapshot();
+      const engineResult = normalizeEngineResult(await engine.confirmRestart(input)); // dbPath rimosso
+      const nextState = engine.getGameStateSnapshot();
       return res.json(maybeAttachDebug({
         ok: true,
         parseResult: null,
         command: null,
-        engine,
+        engine: engineResult,
         state: nextState,
-        ui: buildUiFromState(nextState),
+        ui: buildUiFromState(nextState, engine),
         stats: computeStatsFromState(nextState),
       }));
     }
     const parsed = await parseCommand(null, input, state); // passa gameState
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
-      const currentState = getGameStateSnapshot();
+      const currentState = engine.getGameStateSnapshot();
       return res.status(400).json(maybeAttachDebug({
         ok: false,
         parseResult: parsed,
@@ -185,20 +204,20 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         error: parsed.Error,
         userMessage,
         state: currentState,
-        ui: buildUiFromState(currentState),
+        ui: buildUiFromState(currentState, engine),
         stats: computeStatsFromState(currentState),
       }));
     }
     const command = toCommandDTO(parsed);
-    const engine = normalizeEngineResult(await executeCommandAsync(parsed)); // dbPath rimosso
-    const nextState = getGameStateSnapshot();
+    const engineResult = normalizeEngineResult(await engine.executeCommandAsync(parsed)); // dbPath rimosso
+    const nextState = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({
       ok: true,
       parseResult: parsed,
       command,
-      engine,
+      engine: engineResult,
       state: nextState,
-      ui: buildUiFromState(nextState),
+      ui: buildUiFromState(nextState, engine),
       stats: computeStatsFromState(nextState),
     }));
   } catch (err) {
@@ -209,7 +228,9 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
 // Stato engine: snapshot
 router.get('/state', (req, res, next) => {
   try {
-    const snap = getGameStateSnapshot();
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
+    const snap = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({ ok: true, state: snap }));
   } catch (err) {
     return next(err);
@@ -219,9 +240,13 @@ router.get('/state', (req, res, next) => {
 // Stato engine: reset
 router.post('/reset', (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { idLingua } = req.body || {};
-    resetGameState(idLingua);
-    const snap = getGameStateSnapshot();
+    const newGameId = randomUUID();
+    req.odessaSession?.setGameId(newGameId);
+    engine.resetGameState(idLingua);
+    const snap = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({ ok: true, state: snap }));
   } catch (err) {
     return next(err);
@@ -231,6 +256,8 @@ router.post('/reset', (req, res, next) => {
 // Stato engine: set location
 router.post('/set-location', (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     // Legacy endpoint: usare POST /api/engine/execute (NAVIGATION) invece di set-location.
     res.set('Deprecation', 'true');
     res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
@@ -250,7 +277,7 @@ router.post('/set-location', (req, res, next) => {
     }
     
     // Check awaiting restart: blocca navigazione se in attesa conferma riavvio
-    const state = getGameStateSnapshot();
+    const state = engine.getGameStateSnapshot();
     if (state.awaitingRestart) {
       return res.json({ 
         ok: false, 
@@ -260,7 +287,7 @@ router.post('/set-location', (req, res, next) => {
       });
     }
     
-    setCurrentLocation(locationId);
+    engine.setCurrentLocation(locationId);
     
     // Se consumeTurn=true, applica effetti turn system (per navigazione stella)
     const turnMessages = [];
@@ -274,11 +301,11 @@ router.post('/set-location', (req, res, next) => {
       };
       
       // Prepara context e applica effetti
-      prepareTurnContext(fakeParseResult);
+      engine.prepareTurnContext(fakeParseResult);
       
       // Crea result fittizio per applyTurnEffects
       const fakeResult = { accepted: true, resultType: 'OK', message: '', effects: [] };
-      const resultWithEffects = applyTurnEffects(fakeResult, fakeParseResult);
+      const resultWithEffects = engine.applyTurnEffects(fakeResult, fakeParseResult);
       
       // Check game over triggato da turn effects (darkness, terminale, ecc.)
       if (resultWithEffects.gameOver === true) {
@@ -334,19 +361,22 @@ router.post('/set-location', (req, res, next) => {
 // Nuovo endpoint per salvare stato client
 router.post('/save-client-state', (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { luoghi } = req.body;
     if (!Array.isArray(luoghi)) {
       return res.status(400).json({ ok: false, error: 'Invalid luoghi data' });
     }
     // Ottieni gameState dal server
-    const gameState = getGameStateSnapshot();
+    const gameState = engine.getGameStateSnapshot();
     // Crea saveData con luoghi e oggetti aggiornati
     const saveData = {
       gameState,
-      odessaData: { 
-        ...global.odessaData, 
+      // Nota: per compatibilità con save preesistenti manteniamo odessaData.Luoghi,
+      // ma lato server NON applichiamo mai mutazioni a global.odessaData per singolo player.
+      odessaData: {
         Luoghi: luoghi,
-        Oggetti: gameState.Oggetti
+        Oggetti: gameState.Oggetti,
       },
       timestamp: new Date().toISOString(),
       version: appVersion
@@ -365,6 +395,8 @@ router.post('/save-client-state', (req, res, next) => {
 // Nuovo endpoint per caricare stato client
 router.post('/load-client-state', validateSaveData(), (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const { gameState, odessaData } = req.body;
     if (!gameState || !odessaData || !Array.isArray(odessaData.Luoghi)) {
       return res.status(400).json({ ok: false, error: 'Invalid save data' });
@@ -372,7 +404,7 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
 
     // Guardrail (lingua): il caricamento è consentito solo se la lingua del save coincide
     // con la lingua corrente della sessione. In caso di mismatch, non applicare modifiche.
-    const currentState = getGameStateSnapshot();
+    const currentState = engine.getGameStateSnapshot();
     const saveLanguage = typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : undefined;
     const sessionLanguage = typeof currentState?.currentLingua === 'number' ? currentState.currentLingua : undefined;
 
@@ -394,12 +426,7 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
     }
 
     // Ripristina gameState
-    setGameState(gameState);
-    // Aggiorna odessaData.Luoghi e Oggetti
-    global.odessaData.Luoghi = odessaData.Luoghi;
-    if (Array.isArray(odessaData.Oggetti)) {
-      global.odessaData.Oggetti = odessaData.Oggetti;
-    }
+    engine.setGameState(gameState);
     
     // BUGFIX: Reset parser vocabulary cache dopo caricamento
     // La cache del parser deve essere ricostruita con i nuovi dati
@@ -415,13 +442,15 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
 // Integrato con turn pipeline per Sprint 3.3.5.A (Torcia)
 router.get('/direzioni/:idLuogo', (req, res, next) => {
   try {
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
     const idLuogo = parseInt(req.params.idLuogo, 10);
     if (isNaN(idLuogo)) {
       return res.status(400).json({ ok: false, error: 'Invalid location ID' });
     }
 
     // Ottieni direzioni valide (senza avanzare il sistema di turni/torcia)
-    const direzioni = getDirezioniLuogo(idLuogo);
+    const direzioni = engine.getDirezioniLuogo(idLuogo);
     res.json({ ok: true, direzioni, messages: [] });
   } catch (err) {
     return next(err);
@@ -431,7 +460,9 @@ router.get('/direzioni/:idLuogo', (req, res, next) => {
 // Endpoint per ottenere statistiche di gioco (luoghi visitati + interazioni + misteri + punteggio + rango)
 router.get('/stats', (req, res, next) => {
   try {
-    const state = getGameStateSnapshot();
+    const engine = getEngineOrSendError(req, res);
+    if (!engine) return;
+    const state = engine.getGameStateSnapshot();
     const visitedPlaces = state.visitedPlaces?.length || 0;
     const interactions = state.punteggio?.interazioniPunteggio?.length || 0;
     const mysteries = state.punteggio?.misteriRisolti?.length || 0;
