@@ -697,6 +697,11 @@ Obiettivo: completare e rendere verificabile l’i18n separando i problemi in cl
   - `gameId` che cambia a ogni restart (e a ogni “nuova partita”, es. cambio lingua da storia quando sarà implementato)
 - Lingua: oggi default IT; in futuro selezionabile solo in `odessa_storia.html` e **immutabile durante la partita** (cambio lingua => nuova partita => nuovo `gameId`).
 
+**Regola save/load (lingua)**
+- Il file di salvataggio deve includere la lingua della partita (es. `gameState.currentLingua`).
+- `load` è consentito **solo** se la lingua del salvataggio coincide con la lingua corrente della sessione.
+- Se la lingua non coincide: il server deve rifiutare il caricamento (es. `409 LANGUAGE_MISMATCH`) e non deve applicare modifiche parziali allo stato.
+
 Documento di riferimento: `docs/20260115_Multi_session_architecture_01.md`.
 
 **Regola generale (record localizzati)**
