@@ -1,6 +1,8 @@
-# Issue #59 — Sprint 59.1: Inventario i18n (frontend + backend)
+# Issue #59 — Inventario i18n (rinumerato: Sprint #59.2)
 
 Data: 2026-01-14
+
+Nota (2026-01-15): questo documento è stato prodotto come “Sprint 59.1”. Dopo l’introduzione del prerequisito multi-session (nuovo Sprint #59.1), l’inventario è stato rinumerato come Sprint #59.2.
 
 ## Scopo dello sprint
 Produrre un inventario dei testi/label e dei meccanismi i18n esistenti, identificando:
