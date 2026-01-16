@@ -94,4 +94,59 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
       }
     }
   });
+
+  it('consente il load quando la lingua coincide e applica lo stato', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/engine', engineRoutes);
+
+    const started = await startServer(app);
+    server = started.server;
+    baseUrl = started.baseUrl;
+
+    const originalLuoghi = getOdessaDataGlobal().Luoghi;
+    try {
+      // Metti la sessione in lingua IT (1)
+      const resetRes = await fetch(`${baseUrl}/api/engine/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idLingua: 1 }),
+      });
+      expect(resetRes.status).toBe(200);
+
+      const stateRes = await fetch(`${baseUrl}/api/engine/state`);
+      expect(stateRes.status).toBe(200);
+      const stateBody = await stateRes.json();
+      expect(stateBody.ok).toBe(true);
+
+      const loadedGameState = {
+        ...stateBody.state,
+        currentLingua: 1,
+        unusefulCommandsCounter: 123,
+      };
+
+      const res = await fetch(`${baseUrl}/api/engine/load-client-state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameState: loadedGameState,
+          odessaData: { Luoghi: [] },
+        }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.ok).toBe(true);
+
+      const afterRes = await fetch(`${baseUrl}/api/engine/state`);
+      expect(afterRes.status).toBe(200);
+      const afterBody = await afterRes.json();
+      expect(afterBody.ok).toBe(true);
+      expect(afterBody.state.currentLingua).toBe(1);
+      expect(afterBody.state.unusefulCommandsCounter).toBe(123);
+    } finally {
+      // Ripristina Luoghi per evitare side-effect su altri test/worker
+      const data = getOdessaDataGlobal();
+      data.Luoghi = originalLuoghi;
+    }
+  });
 });
