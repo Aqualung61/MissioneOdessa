@@ -1,3 +1,13 @@
+## Unreleased
+
+- Sprint #59.1: multi-session per-tab (no cookie) via header `X-Session-Id` / `X-Game-Id`.
+	- Frontend: persistenza per-tab in `sessionStorage` (isolamento tra tab).
+	- Backend: engine isolato per sessione + self-healing degli id; `/reset` genera un nuovo `X-Game-Id`.
+	- Guardrail produzione: TTL idle/assoluto + limite sessioni (LRU) configurabili via `.env`.
+- CI: pin Node a `18.20.x` e `20.x` + reporter test verbose per evitare timeout da assenza output.
+
+---
+
 ## v1.3.2 (14 gennaio 2026)
 
 ### Patch release: milestone chiusa
@@ -60,11 +70,6 @@
 - Sprint 3.3.5.D completato al 100%
 - Test documentation aggiornata
 - Copilot instructions aggiornate
-
-
-## Unreleased
-
-- (in preparazione)
 
 ---
 
