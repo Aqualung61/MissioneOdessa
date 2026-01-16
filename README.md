@@ -75,6 +75,21 @@ location.reload();
   - [http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1](http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1)
   - [http://localhost:3001/api/version](http://localhost:3001/api/version) — restituisce la versione dell'applicazione
 
+## Multi-session per-tab (Sprint #59.1)
+
+L'app supporta sessioni di gioco **isolate tra tab** senza cookie:
+
+- Il frontend salva gli id in `sessionStorage` (per-tab):
+   - `odessa.sessionId`
+   - `odessa.gameId`
+- Ogni chiamata stateful invia gli header:
+   - `X-Session-Id`
+   - `X-Game-Id`
+- Il server fa **self-healing**: se gli header mancano o sono invalidi, genera id validi e li ritorna in response.
+- `POST /api/engine/reset` genera un nuovo `X-Game-Id` (nuova partita) mantenendo lo stesso `X-Session-Id`.
+
+Debug rapido: in due tab diverse, verifica che i valori in `sessionStorage` siano diversi e che le azioni non si influenzino.
+
 ## Versionamento API e applicazione
 
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
