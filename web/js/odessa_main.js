@@ -460,7 +460,7 @@ async function executeCommandOnServer(input) {
 
     let res;
     try {
-      res = await fetch(basePath + 'api/engine/execute', {
+      res = await apiFetchWithSession(basePath + 'api/engine/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input: raw })
@@ -493,8 +493,8 @@ async function executeCommandOnServer(input) {
       if (debugRaceMode) {
         console.log('[debugRace] Ignorata risposta fuori ordine', { requestId, latest: executeRequestId });
       }
-        try {
-          res = await apiFetchWithSession(basePath + 'api/engine/execute', {
+      return;
+    }
     // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
     if (executeResult && executeResult.stats) applyStats(executeResult.stats);
     if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
@@ -544,7 +544,7 @@ async function executeCommandOnServer(input) {
 
     // Salvataggio
     if (engine.resultType === 'SAVE_GAME') {
-      fetch(basePath + 'api/engine/save-client-state', {
+      apiFetchWithSession(basePath + 'api/engine/save-client-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ luoghi: luoghi })
@@ -578,7 +578,7 @@ async function executeCommandOnServer(input) {
     // Caricamento
     if (engine.resultType === 'LOAD_GAME') {
       const inputEl = document.createElement('input');
-          apiFetchWithSession(basePath + 'api/engine/save-client-state', {
+      inputEl.type = 'file';
       inputEl.accept = '.json';
       inputEl.onchange = (e) => {
         const file = e.target.files[0];
@@ -587,7 +587,7 @@ async function executeCommandOnServer(input) {
         reader.onload = (ev) => {
           try {
             const saveData = JSON.parse(ev.target.result);
-            fetch(basePath + 'api/engine/load-client-state', {
+            apiFetchWithSession(basePath + 'api/engine/load-client-state', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(saveData)
@@ -613,7 +613,7 @@ async function executeCommandOnServer(input) {
 
               // Riallinea direzioni dinamiche (toggle/sblocchi) e contatori dal server.
               // Nota: senza questo, la UI rimane con valori pre-load finché non si esegue un comando.
-              return fetch(basePath + `api/engine/direzioni/${locationId}`)
+              return apiFetchWithSession(basePath + `api/engine/direzioni/${locationId}`)
                 .then(r2 => r2.json())
                 .then(dirResult => {
                   if (dirResult && dirResult.ok && dirResult.direzioni && current) {
@@ -621,7 +621,7 @@ async function executeCommandOnServer(input) {
                     const luogoInArray = luoghi.find(l => current && l.ID === current.ID);
                     if (luogoInArray) Object.assign(luogoInArray, dirResult.direzioni);
                   }
-                apiFetchWithSession(basePath + 'api/engine/load-client-state', {
+                })
                 .catch(() => {
                   // ignore: fallback a direzioni statiche
                 })
@@ -698,7 +698,7 @@ function updateDynamicPlaceImage() {
 
 function updateGameStats() {
   // Recupera entrambi i contatori dal server (source of truth)
-    apiFetchWithSession(basePath + 'api/engine/stats')
+  apiFetchWithSession(basePath + 'api/engine/stats')
     .then(res => res.json())
     .then(data => {
       if (data.ok) {
@@ -761,7 +761,7 @@ function showCurrent() {
     placeFeed.appendChild(spacer);
     placeFeed.scrollTop = placeFeed.scrollHeight;
 
-    // Carica e mostra oggetti nel luogo
+    // Carica e mostra oggetti nel luogo (session-aware: multi-session per-tab)
     apiFetchWithSession(basePath + `api/luogo-oggetti?idLuogo=${current.ID}&idLingua=${idLingua}`)
       .then(res => res.json())
       .then(oggetti => {
@@ -838,7 +838,7 @@ fetch(basePath + 'api/luoghi')
       return;
     }
 
-    // Reset del gameState sul server all'avvio
+    // Reset del gameState sul server all'avvio (session-aware: multi-session per-tab)
     apiFetchWithSession(basePath + 'api/engine/reset', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
