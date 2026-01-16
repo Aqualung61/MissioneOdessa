@@ -1,5 +1,5 @@
 import express from 'express';
-import { getOggetti } from '../logic/engine.js';
+import { attachEngineSession } from '../middleware/sessionContext.js';
 
 const router = express.Router();
 
@@ -61,12 +61,13 @@ router.get('/luoghi', async (req, res) => {
 });
 
 // GET /api/luogo-oggetti - restituisce gli oggetti in un luogo specifico
-router.get('/luogo-oggetti', async (req, res) => {
+router.get('/luogo-oggetti', attachEngineSession, async (req, res) => {
   const { idLuogo, idLingua } = req.query;
   if (!idLuogo || !idLingua) {
     return res.status(400).json({ error: 'Parametri idLuogo e idLingua richiesti' });
   }
-  const data = getOggetti();
+  const engine = req.odessaSession?.engine;
+  const data = engine.getOggetti();
   const filtered = data
     .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua && item.Attivo >= 1);
   const oggetti = filtered

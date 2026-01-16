@@ -3,8 +3,9 @@ import express from 'express';
 import type { Server } from 'http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
-import { initializeOriginalData, resetGameState, getGameState } from '../src/logic/engine.js';
+import { initializeOriginalData, resetGameState } from '../src/logic/engine.js';
 import { getSystemMessage } from '../src/logic/systemMessages.js';
+import { createSessionState, fetchWithSession } from './testUtils/sessionFetch';
 
 type LuogoRow = {
   ID: number;
@@ -201,10 +202,6 @@ describe('M0 contract: POST /api/engine/execute', () => {
   });
 
   it('awaitingRestart: bypass parser e ritorna parseResult=null, command=null, engine normalizzato', async () => {
-    // Imposta stato in attesa riavvio prima della request
-    const state = getGameState();
-    state.awaitingRestart = true;
-
     const app = express();
     app.use(express.json());
     app.use('/api/engine', engineRoutes);
@@ -213,11 +210,30 @@ describe('M0 contract: POST /api/engine/execute', () => {
     server = started.server;
     baseUrl = started.baseUrl;
 
-    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+    const session = createSessionState();
+
+    // Imposta stato in attesa riavvio nella sessione (via load-client-state)
+    const stateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    expect(stateRes.status).toBe(200);
+    const stateBody = await stateRes.json();
+    const snap = stateBody?.state;
+    expect(snap).toBeDefined();
+
+    const loadRes = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameState: { ...snap, awaitingRestart: true },
+        odessaData: { Luoghi: [] },
+      }),
+    }, session);
+    expect(loadRes.status).toBe(200);
+
+    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'SI' }),
-    });
+    }, session);
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -250,22 +266,24 @@ describe('M0 contract: POST /api/engine/execute', () => {
     server = started.server;
     baseUrl = started.baseUrl;
 
-    const res1 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const session = createSessionState();
+
+    const res1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'FINE' }),
-    });
+    }, session);
     expect(res1.status).toBe(200);
     const body1 = await res1.json();
     expect(body1.ok).toBe(true);
     expect(body1.engine?.resultType).toBe('CONFIRM_END');
     expect(body1.state?.awaitingEndConfirm).toBe(true);
 
-    const res2 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const res2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'N' }),
-    });
+    }, session);
     expect(res2.status).toBe(200);
     const body2 = await res2.json();
     expect(body2.ok).toBe(true);
@@ -287,21 +305,23 @@ describe('M0 contract: POST /api/engine/execute', () => {
     server = started.server;
     baseUrl = started.baseUrl;
 
-    const r1 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const session = createSessionState();
+
+    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'FINE' }),
-    });
+    }, session);
     expect(r1.status).toBe(200);
     const b1 = await r1.json();
     expect(b1.ok).toBe(true);
     expect(b1.state?.awaitingEndConfirm).toBe(true);
 
-    const r2 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'SI' }),
-    });
+    }, session);
     expect(r2.status).toBe(200);
     const b2 = await r2.json();
     expect(b2.ok).toBe(true);
@@ -313,11 +333,11 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(b2.state?.awaitingEndConfirm).toBe(false);
     expect(b2.state?.awaitingRestart).toBe(true);
 
-    const r3 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r3 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'SI' }),
-    });
+    }, session);
     expect(r3.status).toBe(200);
     const b3 = await r3.json();
     expect(b3.ok).toBe(true);

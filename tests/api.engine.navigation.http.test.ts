@@ -1,16 +1,10 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
-import {
-  initializeOriginalData,
-  resetGameState,
-  setCurrentLocation,
-  getGameStateSnapshot,
-  getDirezioniLuogo,
-} from '../src/logic/engine.js';
 import { ensureVocabulary } from '../src/logic/parser.js';
+import { createSessionState, fetchWithSession } from './testUtils/sessionFetch';
 
 type DirectionKey = 'Nord' | 'Est' | 'Sud' | 'Ovest' | 'Su' | 'Giu';
 
@@ -18,6 +12,12 @@ type Luogo = {
   ID: number;
   IDLingua: number;
   Terminale?: number;
+  Nord?: number;
+  Est?: number;
+  Sud?: number;
+  Ovest?: number;
+  Su?: number;
+  Giu?: number;
 };
 
 type OdessaData = {
@@ -45,8 +45,15 @@ function getLuoghiLingua1(): Luogo[] {
   return (getOdessaData().Luoghi ?? []).filter((l) => l.IDLingua === 1);
 }
 
-function getDirs(fromId: number): Partial<Record<DirectionKey, number>> {
-  return getDirezioniLuogo(fromId) as unknown as Partial<Record<DirectionKey, number>>;
+function getDirsFromLuogo(luogo: Luogo): Partial<Record<DirectionKey, number>> {
+  return {
+    Nord: luogo.Nord,
+    Est: luogo.Est,
+    Sud: luogo.Sud,
+    Ovest: luogo.Ovest,
+    Su: luogo.Su,
+    Giu: luogo.Giu,
+  };
 }
 
 function keyToVerb(key: DirectionKey): string {
@@ -72,7 +79,7 @@ function findAnyValidMove(): { fromId: number; key: DirectionKey; toId: number }
 
   for (const luogo of luoghi) {
     const fromId = luogo.ID;
-    const dirs = getDirs(fromId);
+    const dirs = getDirsFromLuogo(luogo);
     for (const key of keys) {
       const toId = dirs?.[key];
       if (typeof toId === 'number' && toId >= 1) {
@@ -90,7 +97,7 @@ function findAnyBlockedMove(): { fromId: number; key: DirectionKey } {
 
   for (const luogo of luoghi) {
     const fromId = luogo.ID;
-    const dirs = getDirs(fromId);
+    const dirs = getDirsFromLuogo(luogo);
     for (const key of keys) {
       const toId = dirs?.[key];
       if (toId === 0) {
@@ -112,7 +119,7 @@ function findAnyTerminalMove(): { fromId: number; key: DirectionKey; terminalId:
     if (fromId === 1) continue;
     if (fromId === 59) continue;
 
-    const dirs = getDirs(fromId);
+    const dirs = getDirsFromLuogo(luogo);
     for (const key of keys) {
       const toId = dirs?.[key];
       if (typeof toId === 'number' && terminalIds.has(toId)) {
@@ -129,12 +136,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   let baseUrl = '';
 
   beforeAll(async () => {
-    initializeOriginalData();
     await ensureVocabulary();
-  });
-
-  beforeEach(() => {
-    resetGameState(1);
   });
 
   afterEach(async () => {
@@ -157,14 +159,22 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   it('direzione valida: 200, resultType=OK e state/ui su nuova location', async () => {
     await startEngineApi();
 
-    const pick = findAnyValidMove();
-    setCurrentLocation(pick.fromId);
+    const session = createSessionState();
 
-    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+    const pick = findAnyValidMove();
+
+    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locationId: pick.fromId }),
+    }, session);
+    expect(setLoc.status).toBe(200);
+
+    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    });
+    }, session);
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -185,15 +195,27 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   it('direzione bloccata (0): 200, resultType=ERROR e location invariata', async () => {
     await startEngineApi();
 
-    const pick = findAnyBlockedMove();
-    setCurrentLocation(pick.fromId);
-    const before = getGameStateSnapshot().currentLocationId;
+    const session = createSessionState();
 
-    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+    const pick = findAnyBlockedMove();
+
+    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locationId: pick.fromId }),
+    }, session);
+    expect(setLoc.status).toBe(200);
+
+    const beforeStateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    expect(beforeStateRes.status).toBe(200);
+    const beforeStateBody = await beforeStateRes.json();
+    const before = beforeStateBody?.state?.currentLocationId;
+
+    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    });
+    }, session);
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -209,14 +231,22 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   it('luogo terminale: 200, resultType=GAME_OVER e awaitingRestart=true', async () => {
     await startEngineApi();
 
-    const pick = findAnyTerminalMove();
-    setCurrentLocation(pick.fromId);
+    const session = createSessionState();
 
-    const res = await fetch(`${baseUrl}/api/engine/execute`, {
+    const pick = findAnyTerminalMove();
+
+    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locationId: pick.fromId }),
+    }, session);
+    expect(setLoc.status).toBe(200);
+
+    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    });
+    }, session);
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -233,25 +263,35 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   it('awaitingRestart: NO -> parseResult=null, command=null, resultType=ENDED e ended=true', async () => {
     await startEngineApi();
 
+    const session = createSessionState();
+
     const pick = findAnyTerminalMove();
-    setCurrentLocation(pick.fromId);
+
+    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locationId: pick.fromId }),
+    }, session);
+    expect(setLoc.status).toBe(200);
 
     // Porta lo stato in awaitingRestart
-    const r1 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    });
+    }, session);
     expect(r1.status).toBe(200);
 
-    const snap1 = getGameStateSnapshot();
-    expect(snap1.awaitingRestart).toBe(true);
+    const snap1Res = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    expect(snap1Res.status).toBe(200);
+    const snap1Body = await snap1Res.json();
+    expect(snap1Body?.state?.awaitingRestart).toBe(true);
 
-    const r2 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'NO' }),
-    });
+    }, session);
     expect(r2.status).toBe(200);
     const body2 = await r2.json();
 
@@ -266,25 +306,35 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
   it('awaitingRestart: SI -> hard reset (currentLocationId=1, stats e turn azzerati)', async () => {
     await startEngineApi();
 
+    const session = createSessionState();
+
     const pick = findAnyTerminalMove();
-    setCurrentLocation(pick.fromId);
+
+    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locationId: pick.fromId }),
+    }, session);
+    expect(setLoc.status).toBe(200);
 
     // Porta lo stato in awaitingRestart
-    const r1 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    });
+    }, session);
     expect(r1.status).toBe(200);
 
-    const snap1 = getGameStateSnapshot();
-    expect(snap1.awaitingRestart).toBe(true);
+    const snap1Res = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    expect(snap1Res.status).toBe(200);
+    const snap1Body = await snap1Res.json();
+    expect(snap1Body?.state?.awaitingRestart).toBe(true);
 
-    const r2 = await fetch(`${baseUrl}/api/engine/execute`, {
+    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: 'SI' }),
-    });
+    }, session);
 
     expect(r2.status).toBe(200);
     const body2 = await r2.json();
