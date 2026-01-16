@@ -6,6 +6,14 @@ import engineRoutes from '../src/api/engineRoutes.js';
 
 type StartedServer = { server: Server; baseUrl: string };
 
+type OdessaDataGlobal = {
+  Luoghi?: unknown;
+};
+
+function getOdessaDataGlobal(): OdessaDataGlobal {
+  return (globalThis as unknown as { odessaData?: OdessaDataGlobal }).odessaData ?? {};
+}
+
 function startServer(app: express.Express): Promise<StartedServer> {
   return new Promise((resolve) => {
     const server = http.createServer(app);
@@ -49,7 +57,7 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
     });
     expect(resetRes.status).toBe(200);
 
-    const luoghiRef = (global as any).odessaData?.Luoghi;
+    const luoghiRef = getOdessaDataGlobal().Luoghi;
     const luoghiLen = Array.isArray(luoghiRef) ? luoghiRef.length : null;
 
     // Prova a caricare un save in lingua EN (2)
@@ -77,7 +85,7 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
     expect(stateBody.state.currentLingua).toBe(1);
 
     // Verifica che i Luoghi globali non siano stati sostituiti
-    const luoghiAfter = (global as any).odessaData?.Luoghi;
+    const luoghiAfter = getOdessaDataGlobal().Luoghi;
     expect(luoghiAfter).toBe(luoghiRef);
     if (luoghiLen !== null) {
       expect(luoghiAfter.length).toBe(luoghiLen);
