@@ -369,6 +369,30 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
     if (!gameState || !odessaData || !Array.isArray(odessaData.Luoghi)) {
       return res.status(400).json({ ok: false, error: 'Invalid save data' });
     }
+
+    // Guardrail (lingua): il caricamento è consentito solo se la lingua del save coincide
+    // con la lingua corrente della sessione. In caso di mismatch, non applicare modifiche.
+    const currentState = getGameStateSnapshot();
+    const saveLanguage = typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : undefined;
+    const sessionLanguage = typeof currentState?.currentLingua === 'number' ? currentState.currentLingua : undefined;
+
+    // Nota: la validazione del payload di load è volutamente permissiva (per non rompere vecchi save).
+    // Per questo applichiamo il blocco di mismatch solo per codici lingua supportati (1=IT, 2=EN).
+    // Altri valori numerici (es. 0/3/undefined) sono ignorati intenzionalmente.
+    const isSupportedLanguageCode = (value) => value === 1 || value === 2;
+    if (
+      isSupportedLanguageCode(saveLanguage) &&
+      isSupportedLanguageCode(sessionLanguage) &&
+      saveLanguage !== sessionLanguage
+    ) {
+      return res.status(409).json({
+        ok: false,
+        error: 'LANGUAGE_MISMATCH',
+        saveLanguage,
+        sessionLanguage
+      });
+    }
+
     // Ripristina gameState
     setGameState(gameState);
     // Aggiorna odessaData.Luoghi e Oggetti
