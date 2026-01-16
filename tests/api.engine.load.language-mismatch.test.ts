@@ -88,7 +88,10 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
     const luoghiAfter = getOdessaDataGlobal().Luoghi;
     expect(luoghiAfter).toBe(luoghiRef);
     if (luoghiLen !== null) {
-      expect(luoghiAfter.length).toBe(luoghiLen);
+      expect(Array.isArray(luoghiAfter)).toBe(true);
+      if (Array.isArray(luoghiAfter)) {
+        expect(luoghiAfter.length).toBe(luoghiLen);
+      }
     }
   });
 });
