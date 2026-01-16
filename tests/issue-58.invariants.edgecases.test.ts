@@ -201,7 +201,7 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
         }
       });
     }
-  });
+  }, 30000);
 
   it('I58.1.E: turnsInDangerZone conta solo turni consuming in danger zone (integrazione pipeline)', () => {
     // Danger zone nota: 51

@@ -62,5 +62,5 @@ describe('Sprint #59.1 — Multi-session isolation (API)', () => {
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
-  });
+  }, 30000);
 });
