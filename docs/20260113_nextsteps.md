@@ -661,7 +661,7 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/59
 
 ### Operatività (branch/PR)
-- PR per sprint: `#59.1` → `#59.7` (inventario, dati gioco, messaggi, hardcoded UI, test anti-regressione).
+- PR per sprint: `#59.1` → `#59.8`.
 - PR intermedie: includere `Part of #59`.
 - PR finale: includere `Fixes #59`.
 
@@ -669,19 +669,35 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 **Contesto**
 Ci sono testi/label non completati o fallback incoerenti tra IT/EN. Serve completare e uniformare la terminologia su backend e frontend.
 
+Aggiornamento (2026-01-15): è emerso un prerequisito architetturale bloccante per finalizzare correttamente i18n runtime su `/web/odessa_main.html` e su `/api/engine/*`: l’engine oggi usa stato globale in memoria e non isola le partite tra utenti/tab. Questo rende non affidabili gli smoke test i18n e rischia debito tecnico.
+
 **Soluzione proposta**
+- Rendere l’engine **multi-session / per-player session isolation** (senza cookie), come prerequisito.
 - Inventariare chiavi/testi mancanti o incoerenti (backend + frontend).
 - Completare traduzioni IT/EN, rimuovere fallback “silenziosi” dove non desiderati.
 - Uniformare terminologia (glossario minimo: verbi, stati, messaggi standard).
 - Aggiungere test “anti-regressione” (es. nessuna chiave mancante o placeholder).
 
 **Criteri di accettazione**
+- Due tab/utenti concorrenti non condividono lo stato della partita (precondizione per i18n runtime affidabile).
 - Nessuna chiave mancante/placeholder nelle viste principali e nei messaggi engine.
 - IT/EN coerenti (stesso concetto, stesso tono).
 - Test automatico (o check) che fallisce se compaiono chiavi mancanti nelle aree coperte.
 
 ### HLD (High Level Design)
 Obiettivo: completare e rendere verificabile l’i18n separando i problemi in cluster indipendenti e testabili.
+
+**Prerequisito architetturale (multi-session / per-player session isolation)**
+- Il server deve poter servire più utenti concorrenti senza condividere stato partita.
+- La sessione/partita nasce alla prima chiamata a `/api/engine/*`.
+- Isolamento per tab (aprire una nuova tab = nuova sessione).
+- No cookie: identificatori passati via header + persistenza client in `sessionStorage`.
+- Modello id robusto:
+  - `sessionId` stabile per tab
+  - `gameId` che cambia a ogni restart (e a ogni “nuova partita”, es. cambio lingua da storia quando sarà implementato)
+- Lingua: oggi default IT; in futuro selezionabile solo in `odessa_storia.html` e **immutabile durante la partita** (cambio lingua => nuova partita => nuovo `gameId`).
+
+Documento di riferimento: `docs/20260115_Multi_session_architecture_01.md`.
 
 **Regola generale (record localizzati)**
 - Per ogni dataset che usa `IDLingua`, un record IT/EN è “equivalente” se ha lo stesso `ID` e cambia solo `IDLingua` (1=IT, 2=EN).
@@ -722,9 +738,30 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
   - placeholder visibili (es. `[{key}]` o `[Missing: key]`) nelle aree coperte
 
 ### Plan
-#### Sprint #59.1 — Inventario chiavi e gap
+#### Sprint #59.1 — Revisione architetturale: multi-session (precondizione)
+**Descrizione**
+- Implementare (o predisporre) l’isolamento per-player/session a livello di engine e API `/api/engine/*`, senza cookie.
+- Eliminare effetti globali tra utenti: nessun endpoint deve mutare dati globali di gioco (`global.odessaData`) per effetto del singolo player.
+
+**Deliverable**
+- SessionId/GameId (headers) + persistenza per-tab in `sessionStorage`.
+- Engine state isolato (non singleton condiviso tra utenti).
+- Smoke test ripetibile con due tab concorrenti.
+
+**Valutazione impatto**
+- **Impatto funzionale:** alto (cambia il modello di stato).
+- **Rischio regressione:** alto (tocca core engine/API).
+
+**Condizione di accettazione**
+- Due tab diverse possono giocare in parallelo senza influenzarsi (posizione, inventario, punteggio, lingua).
+- Restart/reset e save/load non impattano altre sessioni.
+
+#### Sprint #59.2 — Inventario chiavi e gap
 **Descrizione**
 - Elencare chiavi mancanti e/o fallback incoerenti su backend e frontend.
+
+**Deliverable (report)**
+- `docs/issue-59.1-inventario-i18n.md` (documento nato come “59.1”, rinumerato in “59.2” dopo introduzione del prerequisito multi-session).
 
 **Valutazione impatto**
 - **Impatto funzionale:** nullo.
@@ -733,7 +770,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Lista di chiavi/gap prioritarizzata e collegata alle aree interessate.
 
-#### Sprint #59.2 — Data-internal: contenuti core (Luoghi + Oggetti)
+#### Sprint #59.3 — Data-internal: contenuti core (Luoghi + Oggetti)
 **Descrizione**
 - Rendere disponibili i record EN (`IDLingua=2`) equivalenti a quelli IT per `Luoghi.json` e `Oggetti.json` (stesso `ID`).
 
@@ -748,7 +785,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Per ogni `ID` presente in IT esiste il corrispondente EN.
 
-#### Sprint #59.3 — Data-internal: lessico (VociLessico)
+#### Sprint #59.4 — Data-internal: lessico (VociLessico)
 **Descrizione**
 - Verificare e completare `VociLessico.json` in modo che ogni voce “localizzata” abbia IT/EN.
 
@@ -758,7 +795,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Nessuna voce prevista risulta IT-only quando `IDLingua=2`.
 
-#### Sprint #59.4 — Data-internal: Interazioni (dati + access pattern)
+#### Sprint #59.5 — Data-internal: Interazioni (dati + access pattern)
 **Descrizione**
 - Verificare che ogni accesso a `Interazioni.json` sia filtrato per lingua corrente.
 - Completare i record EN equivalenti (stesso `ID`, `IDLingua=2`).
@@ -770,7 +807,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Nessun accesso non filtrato; copertura EN completa per gli ID presenti in IT.
 
-#### Sprint #59.5 — Messaggi: Frontend/Sistema + hardcoded API
+#### Sprint #59.6 — Messaggi: Frontend/Sistema + hardcoded API
 **Descrizione**
 - Garantire coerenza IT/EN per i messaggi user-facing (frontend e engine).
 - Eliminare o mappare su chiavi i18n i messaggi hardcoded user-facing in API (dove applicabile).
@@ -783,7 +820,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Nessuna chiave critica mancante/placeholder nelle aree coperte.
 
-#### Sprint #59.6 — Hardcoded UI: HTML/JS
+#### Sprint #59.7 — Hardcoded UI: HTML/JS
 **Descrizione**
 - Migrare progressivamente label/aria/placeholder/noscript e testi principali dalle pagine (`index.html`, `web/odessa_*.html`, JS correlati) verso i meccanismi i18n.
 
@@ -793,7 +830,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 **Condizione di accettazione**
 - Nessun testo core rimane hardcoded IT-only nelle pagine principali.
 
-#### Sprint #59.7 — Test anti-regressione i18n
+#### Sprint #59.8 — Test anti-regressione i18n
 **Descrizione**
 - Aggiungere test/check automatici per prevenire regressioni su:
   - copertura IT/EN (per `ID` o `Chiave` a seconda del dataset)
