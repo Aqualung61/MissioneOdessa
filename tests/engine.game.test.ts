@@ -170,7 +170,7 @@ describe('Engine gameplay base EN: TAKE/DROP e INVENTORY', () => {
       VociLessico,
     };
     initializeOriginalData();
-    await ensureVocabulary({ currentLingua: 2 } as any);
+    await ensureVocabulary({ currentLingua: 2 });
   });
 
   beforeEach(() => {
@@ -181,7 +181,7 @@ describe('Engine gameplay base EN: TAKE/DROP e INVENTORY', () => {
     const { setCurrentLocation } = await import('../src/logic/engine.js');
     setCurrentLocation(6);
 
-    const parsed = await parseCommand(null, 'TAKE LAMP', { currentLingua: 2 } as any);
+    const parsed = await parseCommand(null, 'TAKE LAMP', { currentLingua: 2 });
     expect(parsed.IsValid).toBe(true);
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
