@@ -280,6 +280,26 @@
     "Messaggio": "Mission Odessa: interactive text adventure."
   },
   {
+    "Chiave": "seo.title.default",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa"
+  },
+  {
+    "Chiave": "seo.title.default",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa"
+  },
+  {
+    "Chiave": "seo.description.default",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa: avventura testuale interattiva."
+  },
+  {
+    "Chiave": "seo.description.default",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa: interactive text adventure."
+  },
+  {
     "Chiave": "ui.heading",
     "IDLingua": 1,
     "Messaggio": "Missione Odessa - Adventure"

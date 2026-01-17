@@ -28,19 +28,32 @@ function isTruthy(value) {
   return value === '1' || value === 'true' || value === 'yes';
 }
 
+function computeRankKey(score) {
+  if (score >= 134) return 'engine.rank.perfectionist';
+  if (score >= 100) return 'engine.rank.master';
+  if (score >= 67) return 'engine.rank.investigator';
+  if (score >= 34) return 'engine.rank.explorer';
+  return 'engine.rank.novice';
+}
+
 function computeStatsFromState(state) {
   const visitedPlaces = state?.visitedPlaces?.length || 0;
   const interactions = state?.punteggio?.interazioniPunteggio?.length || 0;
   const mysteries = state?.punteggio?.misteriRisolti?.length || 0;
   const score = state?.punteggio?.totale || 0;
 
-  let rank = 'Novizio';
-  if (score >= 100) rank = 'Maestro';
-  else if (score >= 67) rank = 'Investigatore';
-  else if (score >= 34) rank = 'Esploratore';
-  if (score >= 134) rank = 'Perfezionista';
+  const rankKey = computeRankKey(score);
+  const lingua = typeof state?.currentLingua === 'number' ? state.currentLingua : 1;
+  const rank = getSystemMessage(rankKey, lingua);
 
-  return { visitedPlaces, interactions, mysteries, score, rank };
+  return {
+    visitedPlaces,
+    interactions,
+    mysteries,
+    score,
+    rank,
+    rankKey,
+  };
 }
 
 function buildUiFromState(state, engine) {
@@ -465,19 +478,8 @@ router.get('/stats', (req, res, next) => {
     const engine = getEngineOrSendError(req, res);
     if (!engine) return;
     const state = engine.getGameStateSnapshot();
-    const visitedPlaces = state.visitedPlaces?.length || 0;
-    const interactions = state.punteggio?.interazioniPunteggio?.length || 0;
-    const mysteries = state.punteggio?.misteriRisolti?.length || 0;
-    const score = state.punteggio?.totale || 0;
-    
-    // Calcola rango basato su soglie
-    let rank = 'Novizio';
-    if (score >= 100) rank = 'Maestro';
-    else if (score >= 67) rank = 'Investigatore';
-    else if (score >= 34) rank = 'Esploratore';
-    if (score >= 134) rank = 'Perfezionista';
-    
-    res.json({ ok: true, visitedPlaces, interactions, mysteries, score, rank });
+    const stats = computeStatsFromState(state);
+    res.json({ ok: true, ...stats });
   } catch (err) {
     return next(err);
   }
