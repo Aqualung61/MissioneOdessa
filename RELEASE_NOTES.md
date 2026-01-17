@@ -1,6 +1,14 @@
 ## Unreleased
 
-- Sprint #59.1: multi-session per-tab (no cookie) via header `X-Session-Id` / `X-Game-Id`.
+- 
+
+---
+
+## v1.3.3 (17 gennaio 2026)
+
+### Sprint #59.1: Multi-session per-tab
+
+- Multi-session per-tab (no cookie) via header `X-Session-Id` / `X-Game-Id`.
 	- Frontend: persistenza per-tab in `sessionStorage` (isolamento tra tab).
 	- Backend: engine isolato per sessione + self-healing degli id; `/reset` genera un nuovo `X-Game-Id`.
 	- Guardrail produzione: TTL idle/assoluto + limite sessioni (LRU) configurabili via `.env`.
