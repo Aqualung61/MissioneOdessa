@@ -16,6 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const idLingua = localStorage.getItem('linguaSelezionata') || '1';
 
+  // Applica i18n HTML (non bloccante) per data-i18n/data-i18n-*.
+  try {
+    if (window.i18n && typeof window.i18n.load === 'function') {
+      window.i18n.load(parseInt(idLingua, 10) || 1)
+        .then(() => {
+          if (typeof window.i18n.initHTML === 'function') window.i18n.initHTML();
+        })
+        .catch(() => {});
+    }
+  } catch {
+    // ignore
+  }
+
   function applyContinueLinkHref() {
     if (!continueImageLinkEl) return;
 

@@ -340,6 +340,236 @@
     "Messaggio": "Selected language: {0}"
   },
   {
+    "Chiave": "ui.label.command",
+    "IDLingua": 1,
+    "Messaggio": "Comando"
+  },
+  {
+    "Chiave": "ui.label.command",
+    "IDLingua": 2,
+    "Messaggio": "Command"
+  },
+  {
+    "Chiave": "ui.aria.placesSection",
+    "IDLingua": 1,
+    "Messaggio": "Luoghi Missione Odessa"
+  },
+  {
+    "Chiave": "ui.aria.placesSection",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa places"
+  },
+  {
+    "Chiave": "ui.aria.consoleSection",
+    "IDLingua": 1,
+    "Messaggio": "Console di gioco"
+  },
+  {
+    "Chiave": "ui.aria.consoleSection",
+    "IDLingua": 2,
+    "Messaggio": "Game console"
+  },
+  {
+    "Chiave": "ui.aria.outputWrapper",
+    "IDLingua": 1,
+    "Messaggio": "Output di gioco"
+  },
+  {
+    "Chiave": "ui.aria.outputWrapper",
+    "IDLingua": 2,
+    "Messaggio": "Game output"
+  },
+  {
+    "Chiave": "ui.aria.outputDescription",
+    "IDLingua": 1,
+    "Messaggio": "Descrizione del luogo"
+  },
+  {
+    "Chiave": "ui.aria.outputDescription",
+    "IDLingua": 2,
+    "Messaggio": "Location description"
+  },
+  {
+    "Chiave": "ui.aria.openIntro",
+    "IDLingua": 1,
+    "Messaggio": "Apri introduzione"
+  },
+  {
+    "Chiave": "ui.aria.openIntro",
+    "IDLingua": 2,
+    "Messaggio": "Open introduction"
+  },
+  {
+    "Chiave": "ui.image.place.alt",
+    "IDLingua": 1,
+    "Messaggio": "Immagine del luogo"
+  },
+  {
+    "Chiave": "ui.image.place.alt",
+    "IDLingua": 2,
+    "Messaggio": "Location image"
+  },
+  {
+    "Chiave": "ui.stats.visitedPlaces",
+    "IDLingua": 1,
+    "Messaggio": "Luoghi visitati: {0}"
+  },
+  {
+    "Chiave": "ui.stats.visitedPlaces",
+    "IDLingua": 2,
+    "Messaggio": "Visited places: {0}"
+  },
+  {
+    "Chiave": "ui.stats.interactions",
+    "IDLingua": 1,
+    "Messaggio": "Interazioni: {0}"
+  },
+  {
+    "Chiave": "ui.stats.interactions",
+    "IDLingua": 2,
+    "Messaggio": "Interactions: {0}"
+  },
+  {
+    "Chiave": "ui.stats.mysteries",
+    "IDLingua": 1,
+    "Messaggio": "Misteri risolti: {0}"
+  },
+  {
+    "Chiave": "ui.stats.mysteries",
+    "IDLingua": 2,
+    "Messaggio": "Solved mysteries: {0}"
+  },
+  {
+    "Chiave": "ui.stats.score",
+    "IDLingua": 1,
+    "Messaggio": "Punteggio: {0}/{1}"
+  },
+  {
+    "Chiave": "ui.stats.score",
+    "IDLingua": 2,
+    "Messaggio": "Score: {0}/{1}"
+  },
+  {
+    "Chiave": "ui.stats.rank",
+    "IDLingua": 1,
+    "Messaggio": "Livello: {0}"
+  },
+  {
+    "Chiave": "ui.stats.rank",
+    "IDLingua": 2,
+    "Messaggio": "Rank: {0}"
+  },
+  {
+    "Chiave": "ui.version.running",
+    "IDLingua": 1,
+    "Messaggio": "Versione: {0}"
+  },
+  {
+    "Chiave": "ui.version.running",
+    "IDLingua": 2,
+    "Messaggio": "Version: {0}"
+  },
+  {
+    "Chiave": "ui.version.unavailable",
+    "IDLingua": 1,
+    "Messaggio": "Versione: non disponibile"
+  },
+  {
+    "Chiave": "ui.version.unavailable",
+    "IDLingua": 2,
+    "Messaggio": "Version: unavailable"
+  },
+  {
+    "Chiave": "story.aria.start",
+    "IDLingua": 1,
+    "Messaggio": "Avvio Missione Odessa"
+  },
+  {
+    "Chiave": "story.aria.start",
+    "IDLingua": 2,
+    "Messaggio": "Start Mission Odessa"
+  },
+  {
+    "Chiave": "story.aria.pdf",
+    "IDLingua": 1,
+    "Messaggio": "Documenti PDF"
+  },
+  {
+    "Chiave": "story.aria.pdf",
+    "IDLingua": 2,
+    "Messaggio": "PDF documents"
+  },
+  {
+    "Chiave": "story.aria.more",
+    "IDLingua": 1,
+    "Messaggio": "Testo aggiuntivo"
+  },
+  {
+    "Chiave": "story.aria.more",
+    "IDLingua": 2,
+    "Messaggio": "Additional text"
+  },
+  {
+    "Chiave": "story.link.ready64",
+    "IDLingua": 1,
+    "Messaggio": "Scheda Ready64.org"
+  },
+  {
+    "Chiave": "story.link.ready64",
+    "IDLingua": 2,
+    "Messaggio": "Ready64.org page"
+  },
+  {
+    "Chiave": "story.link.englishVersion",
+    "IDLingua": 1,
+    "Messaggio": "Versione inglese"
+  },
+  {
+    "Chiave": "story.link.englishVersion",
+    "IDLingua": 2,
+    "Messaggio": "English version"
+  },
+  {
+    "Chiave": "story.link.playOnline",
+    "IDLingua": 1,
+    "Messaggio": "Gioca online"
+  },
+  {
+    "Chiave": "story.link.playOnline",
+    "IDLingua": 2,
+    "Messaggio": "Play online"
+  },
+  {
+    "Chiave": "story.pdf.brochure",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Brochure"
+  },
+  {
+    "Chiave": "story.pdf.brochure",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Brochure"
+  },
+  {
+    "Chiave": "story.pdf.solutionMap",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Soluzione + mappa"
+  },
+  {
+    "Chiave": "story.pdf.solutionMap",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Solution + map"
+  },
+  {
+    "Chiave": "story.pdf.instructions",
+    "IDLingua": 1,
+    "Messaggio": "Missione Odessa - Istruzioni"
+  },
+  {
+    "Chiave": "story.pdf.instructions",
+    "IDLingua": 2,
+    "Messaggio": "Mission Odessa - Instructions"
+  },
+  {
     "Chiave": "ui.game",
     "IDLingua": 1,
     "Messaggio": "Gioco"

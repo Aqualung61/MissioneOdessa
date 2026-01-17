@@ -4,13 +4,28 @@
 let frontendMessages = [];
 let currentLanguage = 1; // Default IT
 
+function ensureBasePath(path) {
+  if (!path || typeof path !== 'string') return '/';
+  let normalized = path;
+  if (!normalized.startsWith('/')) normalized = '/' + normalized;
+  if (!normalized.endsWith('/')) normalized = normalized + '/';
+  return normalized;
+}
+
+function getBasePath() {
+  return typeof window.basePath === 'string' && window.basePath
+    ? ensureBasePath(window.basePath)
+    : '/';
+}
+
 /**
  * Carica messaggi frontend dal backend
  * @param {number} lingua - ID lingua (1=IT, 2=EN)
  */
 async function loadFrontendMessages(lingua) {
   try {
-    const response = await fetch(`/api/frontend-messages/${lingua}`);
+    const basePath = getBasePath();
+    const response = await fetch(`${basePath}api/frontend-messages/${lingua}`);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -93,6 +108,22 @@ function initHTMLTexts() {
     const key = el.getAttribute('data-i18n-title');
     if (key) {
       el.title = msg(key);
+    }
+  });
+
+  // data-i18n-aria-label per aria-label
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    const key = el.getAttribute('data-i18n-aria-label');
+    if (key) {
+      el.setAttribute('aria-label', msg(key));
+    }
+  });
+
+  // data-i18n-alt per alt (img)
+  document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+    const key = el.getAttribute('data-i18n-alt');
+    if (key) {
+      el.setAttribute('alt', msg(key));
     }
   });
 

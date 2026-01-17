@@ -34,7 +34,15 @@ function setLinguaScelta(descrizione) {
 function setVersioneRunning(ver) {
   const el = document.getElementById('versioneRunning');
   if (!el) return;
-  el.textContent = ver ? `Versione: ${ver}` : '';
+  if (!ver) {
+    el.textContent = '';
+    return;
+  }
+  if (ver === 'unavailable') {
+    el.textContent = window.i18n ? window.i18n.msg('ui.version.unavailable') : 'Versione: non disponibile';
+    return;
+  }
+  el.textContent = window.i18n ? window.i18n.msg('ui.version.running', ver) : `Versione: ${ver}`;
 }
 
 // Recupera la versione dall'API (mostrata sotto la lingua)
@@ -45,9 +53,9 @@ try {
     .then(data => {
       if (data && data.version) setVersioneRunning(data.version);
     })
-    .catch(() => setVersioneRunning('non disponibile'));
+    .catch(() => setVersioneRunning('unavailable'));
 } catch {
-  setVersioneRunning('non disponibile');
+  setVersioneRunning('unavailable');
 }
 
 // Carica messaggi i18n frontend
@@ -385,28 +393,38 @@ function applyStats(stats) {
 
   const visitedEl = document.getElementById('visitedCount');
   if (visitedEl && typeof stats.visitedPlaces === 'number') {
-    visitedEl.textContent = `Luoghi visitati: ${stats.visitedPlaces}`;
+    visitedEl.textContent = window.i18n
+      ? window.i18n.msg('ui.stats.visitedPlaces', stats.visitedPlaces)
+      : `Luoghi visitati: ${stats.visitedPlaces}`;
   }
 
   const interactionsEl = document.getElementById('interactionsCount');
   if (interactionsEl && typeof stats.interactions === 'number') {
-    interactionsEl.textContent = `Interazioni: ${stats.interactions}`;
+    interactionsEl.textContent = window.i18n
+      ? window.i18n.msg('ui.stats.interactions', stats.interactions)
+      : `Interazioni: ${stats.interactions}`;
   }
 
   const mysteriesEl = document.getElementById('mysteriesCount');
   if (mysteriesEl && typeof stats.mysteries === 'number') {
-    mysteriesEl.textContent = `Misteri risolti: ${stats.mysteries}`;
+    mysteriesEl.textContent = window.i18n
+      ? window.i18n.msg('ui.stats.mysteries', stats.mysteries)
+      : `Misteri risolti: ${stats.mysteries}`;
   }
 
   const scoreEl = document.getElementById('scoreCount');
   if (scoreEl && typeof stats.score === 'number') {
     currentScore = stats.score;
-    scoreEl.textContent = `Punteggio: ${currentScore}/138`;
+    scoreEl.textContent = window.i18n
+      ? window.i18n.msg('ui.stats.score', currentScore, 138)
+      : `Punteggio: ${currentScore}/138`;
   }
 
   const rankEl = document.getElementById('rankCount');
   if (rankEl && stats.rank) {
-    rankEl.textContent = `Livello: ${stats.rank}`;
+    rankEl.textContent = window.i18n
+      ? window.i18n.msg('ui.stats.rank', stats.rank)
+      : `Livello: ${stats.rank}`;
   }
 }
 

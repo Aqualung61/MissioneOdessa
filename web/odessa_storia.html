@@ -25,29 +25,32 @@
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script src="js/seo-i18n.js" defer></script>
   <script src="js/bootstrap.js"></script>
+  <script src="js/i18n.js"></script>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/odessa_storia.css" />
 </head>
 <body class="page-intro page-index">
   <header class="visually-hidden">
-    <h1>Missione Odessa</h1>
+    <h1 data-i18n="ui.title">Missione Odessa</h1>
   </header>
   <noscript>
     <p>
-      JavaScript è consigliato. Puoi comunque aprire
+      JavaScript is recommended. You can still open
+      <a href="odessa_intro.html">the introduction</a>.
+      / JavaScript è consigliato. Puoi comunque aprire
       <a href="odessa_intro.html">l’introduzione</a>.
     </p>
   </noscript>
 
   <main id="introduzione">
     <div class="index-two-col">
-      <section class="col-left" aria-label="Avvio Missione Odessa">
-        <a id="continueImageLink" href="odessa_intro.html" aria-label="Apri introduzione">
-          <img class="index-hero-img" src="../images/dummy.png" alt="Missione Odessa" width="1024" height="1024" decoding="async" loading="eager" />
+      <section class="col-left" aria-label="" data-i18n-aria-label="story.aria.start">
+        <a id="continueImageLink" href="odessa_intro.html" aria-label="" data-i18n-aria-label="ui.aria.openIntro">
+          <img class="index-hero-img" src="../images/dummy.png" alt="" data-i18n-alt="ui.title" width="1024" height="1024" decoding="async" loading="eager" />
         </a>
       </section>
 
-      <section class="col-right" aria-label="Documenti PDF">
+      <section class="col-right" aria-label="" data-i18n-aria-label="story.aria.pdf">
         <div id="storiaTesto1"></div>
         <p id="autoreLine">Autore: Paolo Giorgi (con il contributo di Mauro Giorgi e Enrico Colombini)</p>
         <p id="genereLine">Genere: Avventura testuale, spionaggio, Guerra Fredda.</p>
@@ -59,6 +62,7 @@
             target="_blank"
             rel="noopener noreferrer"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.link.ready64"
             >Scheda Ready64.org</a
           >
         </p>
@@ -68,6 +72,7 @@
             target="_blank"
             rel="noopener noreferrer"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.link.englishVersion"
             >English version</a
           >
         </p>
@@ -77,6 +82,7 @@
             target="_blank"
             rel="noopener noreferrer"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.link.playOnline"
             >Gioca on line</a
           >
         </p>
@@ -90,6 +96,7 @@
             rel="noopener noreferrer"
             type="application/pdf"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.pdf.brochure"
             >Missione Odessa - Brochure</a
           >
         </p>
@@ -101,6 +108,7 @@
             rel="noopener noreferrer"
             type="application/pdf"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.pdf.solutionMap"
             >Missione Odessa - Soluzione + mappa</a
           >
         </p>
@@ -112,15 +120,16 @@
             rel="noopener noreferrer"
             type="application/pdf"
             class="hover-effect font-normal not-italic underline"
+            data-i18n="story.pdf.instructions"
             >Missione Odessa - Istruzioni</a
           >
         </p>
       </section>
     </div>
 
-    <section class="index-below" aria-label="Testo aggiuntivo">
+    <section class="index-below" aria-label="" data-i18n-aria-label="story.aria.more">
       <div id="storiaTesto2"></div>
-      <div id="continueHint" class="continue-hint no-select">Clicca sull'immagine per continuare</div>
+      <div id="continueHint" class="continue-hint no-select" data-i18n="ui.hint.clickImageToContinue"></div>
     </section>
   </main>
 

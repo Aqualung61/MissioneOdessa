@@ -24,23 +24,25 @@
   <link rel="icon" href="../images/MissioneOdessa.ico" type="image/x-icon" />
   <script src="js/seo-i18n.js" defer></script>
   <script src="js/bootstrap.js"></script>
+  <script src="js/i18n.js"></script>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/odessa_main.css" />
 </head>
   <body class="page-main">
   <header class="visually-hidden">
-    <h1>Missione Odessa</h1>
+    <h1 data-i18n="ui.title">Missione Odessa</h1>
   </header>
   <noscript>
     <p>
-      Questa pagina richiede JavaScript per funzionare.
-      Puoi tornare a <a href="../index.html">Missione Odessa</a> oppure aprire <a href="odessa_intro.html">l’introduzione</a>.
+      This page requires JavaScript to work. / Questa pagina richiede JavaScript per funzionare.
+      You can go back to <a href="../index.html">Missione Odessa</a> or open <a href="odessa_intro.html">the introduction</a>.
+      / Puoi tornare a <a href="../index.html">Missione Odessa</a> oppure aprire <a href="odessa_intro.html">l’introduzione</a>.
     </p>
   </noscript>
   <main class="layout">
-    <section class="left" aria-label="Luoghi Missione Odessa">
+    <section class="left" aria-label="" data-i18n-aria-label="ui.aria.placesSection">
         <div class="temp-img-wrapper">
-          <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" width="1024" height="1024" decoding="async" />
+          <img id="dynamicPlaceImage" src="" alt="" data-i18n-alt="ui.image.place.alt" width="1024" height="1024" decoding="async" />
           <div id="placeNameOverlay"></div>
       </div>
       <!-- Numero luoghi visitati -->
@@ -54,24 +56,24 @@
       <!-- Livello/Rango -->
         <div id="rankCount" class="hud-stat hud-stat--rank"></div>
     </section>
-    <section class="right" aria-label="Console di gioco">
-      <div id="outputWrapper" aria-label="Output di gioco">
+    <section class="right" aria-label="" data-i18n-aria-label="ui.aria.consoleSection">
+      <div id="outputWrapper" aria-label="" data-i18n-aria-label="ui.aria.outputWrapper">
         <!-- Riquadro descrizioni e feed del gioco -->
           <div id="placeFeed" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
         <!-- Output principale del gioco (descrizione luogo attuale) -->
-        <div id="output" role="region" aria-label="Descrizione del luogo"></div>
+        <div id="output" role="region" aria-label="" data-i18n-aria-label="ui.aria.outputDescription"></div>
         <!-- Messaggi di sistema, azioni, feedback -->
         <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
       <div id="inputBar">
         <!-- Area di input per i comandi dell'utente -->
         <form id="inputArea" autocomplete="off">
-          <label for="userInput" class="visually-hidden">Comando</label>
-          <input id="userInput" type="text" placeholder="Inserisci un comando (es. Nord, Inventario, Esamina Lampada)" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" />
-          <button id="sendBtn" type="submit">Invia</button>
+          <label for="userInput" class="visually-hidden" data-i18n="ui.label.command">Comando</label>
+          <input id="userInput" type="text" placeholder="" data-i18n-placeholder="ui.input.placeholder" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" />
+          <button id="sendBtn" type="submit" data-i18n="ui.button.submit">Invia</button>
         </form>
       </div>
-      <div id="linguaScelta">Lingua selezionata:</div>
+      <div id="linguaScelta"></div>
       <!-- Versione attuale dell'app -->
       <div id="versioneRunning"></div>
     </section>
