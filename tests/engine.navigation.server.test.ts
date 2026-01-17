@@ -9,6 +9,8 @@ import {
   getDirezioniLuogo,
   executeCommand,
 } from '../src/logic/engine.js';
+
+import type { GameState } from '../types/game-state';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 
 type DirectionKey = 'Nord' | 'Est' | 'Sud' | 'Ovest' | 'Su' | 'Giu';
@@ -219,14 +221,11 @@ describe('Sprint 4.1.2 - NAVIGATION server-side (engine)', () => {
     const pick = findAnyValidMoveAvoidingSpecials();
     setCurrentLocation(pick.fromId);
 
-    // Prima esegui un comando non-movimento per sincronizzare turn.current.location
-    // (evita edge case dove previous.location non riflette setCurrentLocation al primo comando)
-    const noop = await parseCommand(null, 'INVENTARIO');
-    expect(noop.IsValid).toBe(true);
-    expect(noop.CommandType).toBe('SYSTEM');
-    executeCommand(noop);
+    // Allinea esplicitamente il turn tracking con la location forzata (più robusto del workaround via "noop command")
+    const state = getGameState() as GameState;
+    state.turn.current.location = pick.fromId;
+    state.turn.previous.location = pick.fromId;
 
-    const state = getGameState();
     const lampada = (state.Oggetti ?? []).find((o) => o.ID === 27);
     if (!lampada) {
       throw new Error('Lampada (ID=27) non presente nei dati');
@@ -236,7 +235,11 @@ describe('Sprint 4.1.2 - NAVIGATION server-side (engine)', () => {
     lampada.IDLuogo = pick.fromId;
     state.timers.lampadaAccesa = true;
 
-    // Nessuna torcia funzionante in inventario
+    // Nessuna torcia funzionante in inventario (forza esplicitamente sia il flag sia la posizione della torcia)
+    const torcia = (state.Oggetti ?? []).find((o) => o.ID === 37);
+    if (torcia) {
+      torcia.IDLuogo = 999; // non in inventario
+    }
     state.timers.torciaDifettosa = true;
 
     const verb = keyToVerb(pick.key);
