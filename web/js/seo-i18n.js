@@ -25,7 +25,12 @@
   }
 
   function resolveIdLingua() {
-    return localStorage.getItem('linguaSelezionata') || '1';
+    try {
+      var raw = sessionStorage.getItem('linguaSelezionata') || '1';
+      return String(raw).trim() === '2' ? '2' : '1';
+    } catch {
+      return '1';
+    }
   }
 
   function resolveLangConfig(idLingua) {

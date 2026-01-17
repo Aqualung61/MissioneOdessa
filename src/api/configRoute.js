@@ -23,7 +23,16 @@ export function registerApiConfigRoutes(app, { basePath = '', limiter } = {}) {
   const basePathNormalized = normalizeBasePath(basePath);
 
   function sendApiConfig(_req, res) {
-    res.json({ basePath: basePathNormalized });
+    const lingueRaw = global?.odessaData?.Lingue;
+    const lingue = Array.isArray(lingueRaw)
+      ? lingueRaw.map((row) => ({
+        ID: row?.ID,
+        IDLingua: row?.IDLingua,
+        Descrizione: row?.Descrizione,
+      }))
+      : [];
+
+    res.json({ basePath: basePathNormalized, lingue });
   }
 
   if (limiter) {

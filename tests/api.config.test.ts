@@ -35,7 +35,9 @@ describe('M0 api config: basePath esposto e normalizzato', () => {
 
     const res = await fetch(`${baseUrl}/api/config`);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ basePath: '/' });
+    const body = await res.json();
+    expect(body).toMatchObject({ basePath: '/' });
+    expect(Array.isArray(body.lingue)).toBe(true);
 
     const res2 = await fetch(`${baseUrl}/missioneodessa/api/config`);
     expect(res2.status).toBe(404);
@@ -51,10 +53,14 @@ describe('M0 api config: basePath esposto e normalizzato', () => {
 
     const r1 = await fetch(`${baseUrl}/api/config`);
     expect(r1.status).toBe(200);
-    expect(await r1.json()).toEqual({ basePath: '/missioneodessa/' });
+    const b1 = await r1.json();
+    expect(b1).toMatchObject({ basePath: '/missioneodessa/' });
+    expect(Array.isArray(b1.lingue)).toBe(true);
 
     const r2 = await fetch(`${baseUrl}/missioneodessa/api/config`);
     expect(r2.status).toBe(200);
-    expect(await r2.json()).toEqual({ basePath: '/missioneodessa/' });
+    const b2 = await r2.json();
+    expect(b2).toMatchObject({ basePath: '/missioneodessa/' });
+    expect(Array.isArray(b2.lingue)).toBe(true);
   });
 });

@@ -1,13 +1,23 @@
-// Lingua persistita in localStorage (bootstrap.js scrive subito il default=1)
-const idLingua = parseInt(localStorage.getItem('linguaSelezionata')) || 1;
+// Lingua per-tab in sessionStorage con validazione data-driven (Lingue via /api/config).
+const idLingua = await (async () => {
+  try {
+    if (window.odessa && typeof window.odessa.resolveLinguaId === 'function') {
+      return await window.odessa.resolveLinguaId();
+    }
+    const n = parseInt(sessionStorage.getItem('linguaSelezionata') || '1', 10);
+    return n || 1;
+  } catch {
+    return 1;
+  }
+})();
 console.log('ID Lingua corrente (odessa_main.js):', idLingua);
 
-// Persistenza lingua: utile se l'utente apre direttamente odessa_main.html senza query.
+// Persistenza lingua (per-tab): utile se l'utente apre direttamente odessa_main.html senza query.
 try {
-  const prev = localStorage.getItem('linguaSelezionata');
+  const prev = sessionStorage.getItem('linguaSelezionata');
   const current = String(idLingua);
   if (prev !== current) {
-    localStorage.setItem('linguaSelezionata', current);
+    sessionStorage.setItem('linguaSelezionata', current);
   }
 } catch {
   // ignore
@@ -38,11 +48,21 @@ function setVersioneRunning(ver) {
     el.textContent = '';
     return;
   }
+
+  // Evita warning: window.i18n può esistere prima che i messaggi siano caricati.
+  const canUseI18n = Boolean(
+    window.i18n &&
+    typeof window.i18n.msg === 'function' &&
+    typeof window.i18n.getLanguage === 'function' &&
+    (typeof window.i18n.isReady !== 'function' || window.i18n.isReady()) &&
+    window.i18n.getLanguage() === idLingua
+  );
+
   if (ver === 'unavailable') {
-    el.textContent = window.i18n ? window.i18n.msg('ui.version.unavailable') : 'Versione: non disponibile';
+    el.textContent = canUseI18n ? window.i18n.msg('ui.version.unavailable') : 'Versione: non disponibile';
     return;
   }
-  el.textContent = window.i18n ? window.i18n.msg('ui.version.running', ver) : `Versione: ${ver}`;
+  el.textContent = canUseI18n ? window.i18n.msg('ui.version.running', ver) : `Versione: ${ver}`;
 }
 
 let versioneRunningFromApi = null;

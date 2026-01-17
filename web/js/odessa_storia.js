@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const testo1El = document.getElementById('storiaTesto1');
   const testo2El = document.getElementById('storiaTesto2');
   const documentiLabelEl = document.getElementById('documentiLabel');
@@ -11,10 +11,96 @@ document.addEventListener('DOMContentLoaded', () => {
   const continueHintEl = document.getElementById('continueHint');
   const continueImageLinkEl = document.getElementById('continueImageLink');
   const heroImageEl = continueImageLinkEl?.querySelector('img') || null;
+  const linguaSelectEl = document.getElementById('linguaSelect');
 
   if (!testo1El || !testo2El) return;
 
-  const idLingua = localStorage.getItem('linguaSelezionata') || '1';
+  // Risolve lingua per-tab con validazione data-driven (Lingue via /api/config).
+  let idLingua = '1';
+  try {
+    if (window.odessa && typeof window.odessa.resolveLinguaId === 'function') {
+      idLingua = String(await window.odessa.resolveLinguaId());
+    } else {
+      idLingua = sessionStorage.getItem('linguaSelezionata') || '1';
+    }
+  } catch {
+    idLingua = sessionStorage.getItem('linguaSelezionata') || '1';
+  }
+
+  async function loadLingueFromApiConfig() {
+    if (window.odessa && typeof window.odessa.loadConfig === 'function') {
+      const data = await window.odessa.loadConfig();
+      return Array.isArray(data?.lingue) ? data.lingue : [];
+    }
+
+    const basePath = typeof window.basePath === 'string' ? window.basePath : '';
+    const res = await fetch(basePath + 'api/config');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data?.lingue) ? data.lingue : [];
+  }
+
+  function populateLingueSelect(lingue) {
+    if (!linguaSelectEl) return;
+    linguaSelectEl.innerHTML = '';
+
+    const items = Array.isArray(lingue) ? lingue : [];
+    items.forEach((row) => {
+      const id = row?.ID;
+      const descrizione = row?.Descrizione;
+      if (id === null || id === undefined) return;
+      const opt = document.createElement('option');
+      opt.value = String(id);
+      opt.textContent = String(descrizione || id);
+      linguaSelectEl.appendChild(opt);
+    });
+
+    // Best-effort: seleziona la lingua corrente se presente.
+    try {
+      linguaSelectEl.value = String(idLingua);
+    } catch {
+      // ignore
+    }
+  }
+
+  function restartIfLinguaChanged(nextLingua) {
+    const next = String(nextLingua || '').trim();
+    const current = String(idLingua || '1').trim();
+    if (!next || next === current) return;
+
+    try { sessionStorage.setItem('linguaSelezionata', next); } catch { /* ignore */ }
+
+    // Restart (opzione 3): reset contesto per-tab per forzare nuova partita.
+    try {
+      sessionStorage.removeItem('odessa.sessionId');
+      sessionStorage.removeItem('odessa.gameId');
+    } catch {
+      // ignore
+    }
+
+    window.location.reload();
+  }
+
+  // UI selettore lingua: menu popolato dai record Lingue (via /api/config).
+  if (linguaSelectEl) {
+    loadLingueFromApiConfig()
+      .then((lingue) => {
+        populateLingueSelect(lingue);
+      })
+      .catch((err) => {
+        console.warn('Lingue non disponibili da /api/config:', err);
+        // Degrada senza rompere la pagina: mostra solo il default (IT).
+        try {
+          populateLingueSelect([{ ID: 1, Descrizione: 'Italiano' }]);
+        } catch {
+          // ignore
+        }
+      });
+
+    linguaSelectEl.addEventListener('change', () => {
+      restartIfLinguaChanged(linguaSelectEl.value);
+    });
+  }
 
   // Applica i18n HTML (non bloccante) per data-i18n/data-i18n-*.
   try {

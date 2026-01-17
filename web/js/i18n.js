@@ -84,6 +84,15 @@ function getCurrentLanguage() {
 }
 
 /**
+ * Indica se i messaggi per la lingua corrente sono stati caricati.
+ * Utile per evitare warning quando window.i18n esiste ma il load() non è ancora completato.
+ * @returns {boolean}
+ */
+function isReady() {
+  return Array.isArray(frontendMessages) && frontendMessages.length > 0;
+}
+
+/**
  * Inizializza testi HTML con attributi data-i18n
  */
 function initHTMLTexts() {
@@ -141,5 +150,6 @@ window.i18n = {
   msg: msg,
   setLanguage: setCurrentLanguage,
   getLanguage: getCurrentLanguage,
+  isReady: isReady,
   initHTML: initHTMLTexts
 };

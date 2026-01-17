@@ -1,10 +1,10 @@
 /* eslint-env browser */
 
 (function bootstrapOdessa() {
-  // Bootstrap lingua (preferenza UI) su localStorage.
-  // Requisiti:
-  // - default = 1
-  // - whitelist = {1,2}
+  // Bootstrap lingua (preferenza UI) per-tab su sessionStorage.
+  // Requisiti (Opzione B):
+  // - default per nuova tab = 1 (IT)
+  // - whitelist derivata da `Lingue` via /api/config (no hardcode)
   // - scrivere subito il default se mancante/invalida
   (function bootstrapLingua() {
     var STORAGE_KEY = 'linguaSelezionata';
@@ -12,15 +12,18 @@
 
     function normalizeLingua(raw) {
       var v = String(raw || '').trim();
-      return v === '2' ? '2' : '1';
+      if (!/^\d+$/.test(v)) return DEFAULT_LINGUA;
+      var n = parseInt(v, 10);
+      if (!isFinite(n) || n <= 0) return DEFAULT_LINGUA;
+      return String(n);
     }
 
-    // Normalizza/scrive subito in storage
+    // Normalizza/scrive subito in storage (per-tab)
     try {
-      var current = localStorage.getItem(STORAGE_KEY);
+      var current = sessionStorage.getItem(STORAGE_KEY);
       var normalized = normalizeLingua(current || DEFAULT_LINGUA);
       if (current !== normalized) {
-        localStorage.setItem(STORAGE_KEY, normalized);
+        sessionStorage.setItem(STORAGE_KEY, normalized);
       }
     } catch {
       // ignore
@@ -60,6 +63,105 @@
 
   var basePath = computeBasePath();
   window.basePath = basePath;
+
+  // === Helpers globali (lingua per-tab) ===
+  // Espone metodi riusabili per validare la lingua usando /api/config (data-driven).
+  (function exposeOdessaHelpers() {
+    var STORAGE_KEY = 'linguaSelezionata';
+    var DEFAULT_ID = 1;
+    var cachedConfigPromise = null;
+
+    function normalizeToPositiveInt(raw) {
+      var v = String(raw || '').trim();
+      if (!/^\d+$/.test(v)) return DEFAULT_ID;
+      var n = parseInt(v, 10);
+      if (!isFinite(n) || n <= 0) return DEFAULT_ID;
+      return n;
+    }
+
+    function getLinguaIdSync() {
+      try {
+        return normalizeToPositiveInt(sessionStorage.getItem(STORAGE_KEY));
+      } catch {
+        return DEFAULT_ID;
+      }
+    }
+
+    function setLinguaIdSync(id) {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, String(normalizeToPositiveInt(id)));
+      } catch {
+        // ignore
+      }
+    }
+
+    function loadApiConfigOnce() {
+      if (cachedConfigPromise) return cachedConfigPromise;
+
+      cachedConfigPromise = (function () {
+        try {
+          var bp = typeof window.basePath === 'string' ? window.basePath : '/';
+          return fetch(bp + 'api/config')
+            .then(function (res) {
+              if (!res.ok) return null;
+              return res.json();
+            })
+            .catch(function () {
+              return null;
+            });
+        } catch {
+          return Promise.resolve(null);
+        }
+      })();
+
+      return cachedConfigPromise;
+    }
+
+    async function resolveLinguaId() {
+      var current = getLinguaIdSync();
+      var cfg = await loadApiConfigOnce();
+
+      // Se non possiamo validare (API/config non disponibile), degrada al default (IT).
+      if (!cfg || !Array.isArray(cfg.lingue)) {
+        if (current !== DEFAULT_ID) {
+          current = DEFAULT_ID;
+          setLinguaIdSync(current);
+        }
+        return current;
+      }
+
+      var lingue = cfg && Array.isArray(cfg.lingue) ? cfg.lingue : [];
+      if (lingue.length === 0) {
+        if (current !== DEFAULT_ID) {
+          current = DEFAULT_ID;
+          setLinguaIdSync(current);
+        }
+        return current;
+      }
+      if (lingue.length > 0) {
+        var allowed = new Set(
+          lingue
+            .map(function (row) {
+              return row && row.ID !== undefined && row.ID !== null ? String(row.ID) : null;
+            })
+            .filter(Boolean)
+        );
+
+        if (allowed.size > 0 && !allowed.has(String(current))) {
+          current = DEFAULT_ID;
+          setLinguaIdSync(current);
+        }
+      }
+
+      return current;
+    }
+
+    window.odessa = window.odessa || {};
+    window.odessa.getLinguaId = getLinguaIdSync;
+    window.odessa.setLinguaId = setLinguaIdSync;
+    window.odessa.loadConfig = loadApiConfigOnce;
+    window.odessa.resolveLinguaId = resolveLinguaId;
+  })();
 
   // Se la pagina è aperta come file:// le API relative (/api/...) non funzionano.
   // Reindirizza automaticamente al server locale mantenendo i parametri query.

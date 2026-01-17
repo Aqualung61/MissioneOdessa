@@ -60,13 +60,13 @@ Nota: l’assegnazione della issue alla milestone si fa una sola volta sulla iss
 | 56 | HELP: ridurre hints (spoiler-free) e rendere l’aiuto più neutro | closed | 1.3.2 (Stability e UX) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/56 |
 | 57 | Rapid input/race: prevenire doppie esecuzioni e desync UI/server | open | 1.3.2 (Stability e UX) | `type:chore`, `priority:P1`, `stability`, `ux` | https://github.com/Aqualung61/MissioneOdessa/issues/57 |
 | 58 | Scoring/intercettazione/game over: debug esteso + invarianti + test | open | 1.3.2 (Stability e UX) | `type:chore`, `type:test`, `area:engine`, `priority:P2`, `stability` | https://github.com/Aqualung61/MissioneOdessa/issues/58 |
-| 59 | i18n: completare messaggi e label mancanti (backend + frontend) | open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P1`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/59 |
-| 60 | Lingua: selettore + persistenza in pagina storia | open | v1.3.3 (i18n + polish) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/60 |
+| 59 | feat: i18n (IT/EN) — prerequisito multi-session (per-player isolation) + completamento runtime | closed | v1.3.3 (i18n + multi-session prereq) | `type:chore`, `priority:P1`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/59 |
+| 60 | Lingua: selettore + persistenza in pagina storia | open | v1.3.3 (i18n + multi-session prereq) | `type:chore`, `priority:P2`, `ux`, `i18n` | https://github.com/Aqualung61/MissioneOdessa/issues/60 |
 | 61 | QA cross-browser + mobile: checklist riproducibile (intro/storia/main) | open | v1.3.4 (Cross-browser QA) | `type:chore`, `type:test`, `ux`, `portability` | https://github.com/Aqualung61/MissioneOdessa/issues/61 |
 | 62 | Release readiness: checklist pubblicazione repo (pre-public) | open | v1.4.0 (Release readiness) | `enhancement`, `documentation`, `priority:P1` | https://github.com/Aqualung61/MissioneOdessa/issues/62 |
 | 63 | ESLint complexity rules + refactor di executeCommand()/ensureVocabulary() | open | v1.4.0 (Release readiness) | `type:feature`, `area:ci`, `area:engine`, `area:parser`, `priority:P2` | https://github.com/Aqualung61/MissioneOdessa/issues/63 |
 
-Nota: il **dettaglio** sotto include solo le issue **open**; le issue **closed** restano elencate solo nella tabella.
+Nota: il **dettaglio** sotto include solo le issue **open**; alcune issue **closed** recenti possono mantenere temporaneamente il dettaglio fino a cleanup.
 
 ## Collegamento Issues ↔ Milestones (Mermaid)
 ```mermaid
@@ -79,8 +79,8 @@ flowchart TB
     I56["#56 HELP spoiler-free (closed)"]
   end
 
-  subgraph M133["v1.3.3 (i18n + polish)"]
-    I59["#59 i18n completamento (pre: multi-session)"]
+  subgraph M133["v1.3.3 (i18n + multi-session prereq)"]
+    I59["#59 i18n completamento (pre: multi-session) (closed)"]
     I60["#60 Lingua in pagina storia"]
   end
 
@@ -95,6 +95,7 @@ flowchart TB
 
   classDef closed fill:#f2f2f2,stroke:#999,stroke-dasharray: 5 5,color:#555;
   class I56 closed;
+  class I59 closed;
 ```
 
 ---
@@ -137,7 +138,7 @@ flowchart TB
       end
     end
 
-    subgraph M133S["v1.3.3 (i18n + polish)"]
+    subgraph M133S["v1.3.3 (i18n + multi-session prereq)"]
       direction TB
       subgraph I60S["#60 Lingua: storia + persistenza"]
         direction LR
@@ -654,9 +655,9 @@ Serve rendere più verificabile e robusta la logica di scoring/intercettazione e
 
 \pagebreak
 
-## Issue #59 — i18n: completare messaggi e label mancanti (backend + frontend)
-- **Stato:** open
-- **Milestone:** v1.3.3 (i18n + polish)
+## Issue #59 — feat: i18n (IT/EN) — prerequisito multi-session (per-player isolation) + completamento runtime
+- **Stato:** closed (2026-01-17)
+- **Milestone:** v1.3.3 (i18n + multi-session prereq)
 - **Labels:** `priority:P1`, `type:chore`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/59
 
@@ -854,7 +855,7 @@ Principio: ogni sprint produce un output verificabile (report/patch) e uno smoke
 
 ## Issue #60 — Lingua: selettore + persistenza in pagina storia
 - **Stato:** open
-- **Milestone:** v1.3.3 (i18n + polish)
+- **Milestone:** v1.3.3 (i18n + multi-session prereq)
 - **Labels:** `type:chore`, `priority:P2`, `ux`, `i18n`
 - **Link:** https://github.com/Aqualung61/MissioneOdessa/issues/60
 
@@ -869,29 +870,40 @@ Serve poter cambiare lingua nella pagina storia e mantenere la scelta (persisten
 
 **Soluzione proposta**
 - Aggiungere selettore lingua in `web/odessa_storia.html`.
-- Persistenza della scelta (localStorage) e applicazione al caricamento pagina.
+- Il selettore deve essere un menu basato sui record presenti in `src/data-internal/Lingue.json` (no hardcode delle opzioni).
+- Recupero lingue: esporre l’elenco lingue tramite endpoint pubblico `/api/config` (esteso) e usarlo in pagina storia.
+- Persistenza della scelta **per-tab** (`sessionStorage`) e applicazione al caricamento pagina (default sempre `1` se assente/non valida).
 - Allineare stile/UI al resto delle pagine (posizione, label, accessibilità minima).
-- Garantire che la scelta lingua influenzi correttamente i contenuti testuali della pagina storia.
+- Cambio lingua: se la lingua selezionata è diversa da quella corrente, applicare “restart” (opzione 3): aggiornare storage, resettare contesto per-tab (session/game) e ricaricare.
+- Garantire che la scelta lingua influenzi correttamente i contenuti testuali della pagina storia (testi + meta/SEO).
 
 **Criteri di accettazione**
 - Selettore lingua visibile e funzionante.
 - Lingua persistita su refresh e su navigazione (quando si torna alla pagina).
 - Nessun JS inline (coerenza con policy CSP adottata: script esterni).
 - IT/EN completi nella pagina.
+- Le lingue selezionabili sono solo quelle presenti in `Lingue.json`.
+- Cambio lingua da selettore esegue restart (opzione 3) quando il valore cambia.
 
 ### HLD (High Level Design)
 - Estendere il pattern i18n esistente anche alla pagina storia, mantenendo coerenza con intro/main.
-- Persistenza preferenza lingua in `localStorage` come “single source of truth” lato client.
+- Persistenza lingua **per-tab** in `sessionStorage` come “single source of truth” lato client.
 - UI del selettore coerente e accessibile (label chiara, focus visibile).
+- Validazione lingua: whitelist derivata dai record `Lingue` (non hardcoded).
+- Cambio lingua = nuova partita: restart per garantire coerenza con multi-session (per-tab) e con l’invariante “lingua immutabile durante la partita”.
 
 ### TD (Technical Design)
 - UI:
   - Aggiornare `web/odessa_storia.html` per includere il selettore (markup) senza script inline.
+  - Posizionamento richiesto: ultima riga prima dell’hint “clicca per continuare”.
+  - Aggiungere una `label` associata al selettore, gestita via i18n (IT: “Seleziona lingua del gioco”).
 - JS:
   - Aggiornare `web/js/odessa_storia.js` per:
-    - leggere/scrivere lingua su `localStorage`
+    - caricare `/api/config` e leggere l’elenco lingue (record `Lingue`)
+    - popolare il menu con i record presenti (value=`ID`, testo=`Descrizione`)
+    - leggere/scrivere lingua su `sessionStorage` (stessa chiave delle altre pagine)
     - applicare lingua al load della pagina
-    - reagire al cambio del selettore
+    - reagire al cambio del selettore: se cambia lingua, eseguire restart (opzione 3) resettando `sessionStorage` (chiavi session/game per-tab) e ricaricando la pagina
   - Riutilizzare helper in `web/js/i18n.js` per evitare duplicazioni.
 - CSP:
   - Verificare compatibilità con policy CSP (script esterni già adottati).
@@ -899,18 +911,19 @@ Serve poter cambiare lingua nella pagina storia e mantenere la scelta (persisten
 ### Plan
 #### Sprint #60.1 — UI selettore + wiring base
 **Descrizione**
-- Inserire selettore lingua nella pagina storia e collegarlo a handler JS.
+- Inserire selettore lingua nella pagina storia, popolarlo dai record `Lingue` (via `/api/config`) e collegarlo a handler JS.
 
 **Valutazione impatto**
 - **Impatto funzionale:** medio.
 - **Rischio regressione:** basso.
 
 **Condizione di accettazione**
-- Selettore visibile e il cambio lingua aggiorna i testi senza reload.
+- Selettore visibile; il cambio lingua aggiorna la scelta e avvia il restart (opzione 3).
 
 #### Sprint #60.2 — Persistenza e ripristino
 **Descrizione**
-- Salvare la scelta su `localStorage` e applicarla su refresh/rientro pagina.
+- Salvare la scelta su `sessionStorage` e applicarla su refresh/rientro pagina (stessa tab).
+- Validare la lingua su load con whitelist derivata da `Lingue` (se non valida → default `1`).
 
 **Valutazione impatto**
 - **Impatto funzionale:** medio.
@@ -933,6 +946,7 @@ Serve poter cambiare lingua nella pagina storia e mantenere la scelta (persisten
 
 **Note (attenzioni e rischi)**
 - Assicurare che la pagina storia usi la stessa chiave storage della main (evitare duplicati).
+- Se `/api/config` non è raggiungibile, il menu lingue può degradare al solo default (IT) senza rompere la pagina.
 
 ---
 

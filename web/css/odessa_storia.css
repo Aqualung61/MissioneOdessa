@@ -80,6 +80,33 @@ body.page-index .index-hero-img {
   margin-right: auto;
 }
 
+body.page-index .language-selector-row {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body.page-index .language-selector-row label {
+  font-weight: 600;
+}
+
+body.page-index .language-selector-row select {
+  min-width: 220px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+}
+
+body.page-index .language-selector-row select:focus-visible {
+  outline: 3px solid rgba(198, 151, 73, 0.85);
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   body.page-index .index-two-col {
     flex-direction: column;
@@ -94,5 +121,14 @@ body.page-index .index-hero-img {
 
   body.page-index .col-right {
     padding-left: 0;
+  }
+
+  body.page-index .language-selector-row {
+    align-items: stretch;
+  }
+
+  body.page-index .language-selector-row select {
+    width: 100%;
+    min-width: 0;
   }
 }
