@@ -91,7 +91,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.stats.score).toBe('number');
   });
 
-  it('parse error: ritorna 400 con ok=false, userMessage e parseResult', async () => {
+  it('parse error: ritorna 200 con ok=false, userMessage e parseResult', async () => {
     const app = express();
     app.use(express.json());
     app.use('/api/engine', engineRoutes);
@@ -106,7 +106,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
       body: JSON.stringify({ input: 'ASDFGHJKLQWERTY' }),
     });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
     const body = await res.json();
 
     expect(body.ok).toBe(false);
@@ -127,7 +127,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.stats.visitedPlaces).toBe('number');
   });
 
-  it('parse error: verbo sconosciuto -> 400 error=COMMAND_UNKNOWN e userMessage localizzato', async () => {
+  it('parse error: verbo sconosciuto -> 200 error=COMMAND_UNKNOWN e userMessage localizzato', async () => {
     const app = express();
     app.use(express.json());
     app.use('/api/engine', engineRoutes);
@@ -142,7 +142,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
       body: JSON.stringify({ input: 'ASDFGHJKLQWERTY' }),
     });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
     const body = await res.json();
 
     expect(body.ok).toBe(false);
@@ -152,7 +152,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(body.userMessage).toBe(getSystemMessage('parse.error.commandUnknown', 1));
   });
 
-  it('parse error: NOUN sconosciuto -> 400 error=SYNTAX_NOUN_UNKNOWN + placeholder risolto', async () => {
+  it('parse error: NOUN sconosciuto -> 200 error=SYNTAX_NOUN_UNKNOWN + placeholder risolto', async () => {
     const app = express();
     app.use(express.json());
     app.use('/api/engine', engineRoutes);
@@ -167,7 +167,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
       body: JSON.stringify({ input: 'PRENDI ZZZ' }),
     });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
     const body = await res.json();
 
     expect(body.ok).toBe(false);
@@ -177,7 +177,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(body.userMessage).toBe(getSystemMessage('parse.error.syntaxNounUnknown', 1, ['zzz']));
   });
 
-  it('parse error: struttura non parsabile -> 400 error=SYNTAX_INVALID_STRUCTURE e userMessage localizzato', async () => {
+  it('parse error: struttura non parsabile -> 200 error=SYNTAX_INVALID_STRUCTURE e userMessage localizzato', async () => {
     const app = express();
     app.use(express.json());
     app.use('/api/engine', engineRoutes);
@@ -192,7 +192,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
       body: JSON.stringify({ input: 'N LAMPADA' }),
     });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
     const body = await res.json();
 
     expect(body.ok).toBe(false);

@@ -89,16 +89,28 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
   });
 
   describe('hasFonteLuceAttiva', () => {
-    it('dovrebbe restituire false inizialmente (senza torcia né lampada)', () => {
+    it('dovrebbe restituire true inizialmente se la torcia è in inventario (IDLuogo=0)', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
-      if (torcia) {
-        // Rende esplicito lo scenario “senza torcia”: torcia non in inventario
-        torcia.Inventario = false;
-      }
       state.timers.lampadaAccesa = false;
       state.timers.torciaDifettosa = false;
 
+      if (torcia && torcia.IDLuogo === 0) {
+        expect(hasFonteLuceAttiva()).toBe(true);
+      } else {
+        // Se nei dati la torcia non è presente o non è in inventario, allora non c'è luce.
+        expect(hasFonteLuceAttiva()).toBe(false);
+      }
+    });
+
+    it('dovrebbe restituire false se la torcia non è in inventario e la lampada è spenta', () => {
+      const state = getGameState();
+      const torcia = state.Oggetti.find(o => o.ID === 37);
+      if (torcia) {
+        torcia.IDLuogo = 999; // non in inventario
+      }
+      state.timers.lampadaAccesa = false;
+      state.timers.torciaDifettosa = false;
       expect(hasFonteLuceAttiva()).toBe(false);
     });
 
@@ -106,7 +118,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
       if (torcia) {
-        torcia.Inventario = true;
+        torcia.IDLuogo = 0;
         state.timers.torciaDifettosa = false;
         expect(hasFonteLuceAttiva()).toBe(true);
       } else {
@@ -124,7 +136,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
       if (torcia) {
-        torcia.Inventario = true;
+        torcia.IDLuogo = 0;
         state.timers.torciaDifettosa = true; // Difettosa
         expect(hasFonteLuceAttiva()).toBe(false);
       } else {
@@ -136,7 +148,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
       if (torcia) {
-        torcia.Inventario = true;
+        torcia.IDLuogo = 0;
         state.timers.torciaDifettosa = false;
         state.timers.lampadaAccesa = true;
         expect(hasFonteLuceAttiva()).toBe(true);
@@ -248,8 +260,9 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       
       // Senza luce
       if (torcia) {
-        torcia.Inventario = false;
+        torcia.IDLuogo = 999; // non in inventario
       }
+      state.timers.torciaDifettosa = false;
       state.timers.lampadaAccesa = false;
       prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(false);

@@ -2,102 +2,102 @@
   {
     "Chiave": "parse.error.commandUnknown",
     "IDLingua": 1,
-    "Messaggio": "?NON CAPISCO QUESTA PAROLA."
+    "Messaggio": "Non capisco questa parola."
   },
   {
     "Chiave": "parse.error.commandUnknown",
     "IDLingua": 2,
-    "Messaggio": "?I DON'T UNDERSTAND THIS WORD."
+    "Messaggio": "I don't understand this word."
   },
   {
     "Chiave": "parse.error.syntaxActionIncomplete",
     "IDLingua": 1,
-    "Messaggio": "?COSA VUOI?"
+    "Messaggio": "Cosa vuoi?"
   },
   {
     "Chiave": "parse.error.syntaxActionIncomplete",
     "IDLingua": 2,
-    "Messaggio": "?WHAT DO YOU WANT?"
+    "Messaggio": "What do you want?"
   },
   {
     "Chiave": "parse.error.syntaxNounUnknown",
     "IDLingua": 1,
-    "Messaggio": "?NON VEDO NESSUN \"{0}\" QUI."
+    "Messaggio": "Non vedo nessun \"{0}\" qui."
   },
   {
     "Chiave": "parse.error.syntaxNounUnknown",
     "IDLingua": 2,
-    "Messaggio": "?I DON'T SEE ANY \"{0}\" HERE."
+    "Messaggio": "I don't see any \"{0}\" here."
   },
   {
     "Chiave": "parse.error.syntaxNounUnknownGeneric",
     "IDLingua": 1,
-    "Messaggio": "?NON VEDO QUESTO OGGETTO QUI."
+    "Messaggio": "Non vedo questo oggetto qui."
   },
   {
     "Chiave": "parse.error.syntaxNounUnknownGeneric",
     "IDLingua": 2,
-    "Messaggio": "?I DON'T SEE THIS OBJECT HERE."
+    "Messaggio": "I don't see this object here."
   },
   {
     "Chiave": "parse.error.syntaxInvalidStructure",
     "IDLingua": 1,
-    "Messaggio": "?NON CAPISCO."
+    "Messaggio": "Non capisco."
   },
   {
     "Chiave": "parse.error.syntaxInvalidStructure",
     "IDLingua": 2,
-    "Messaggio": "?I DON'T UNDERSTAND."
+    "Messaggio": "I don't understand."
   },
   {
     "Chiave": "parse.error.invalidInputGeneric",
     "IDLingua": 1,
-    "Messaggio": "?INPUT NON VALIDO."
+    "Messaggio": "Input non valido."
   },
   {
     "Chiave": "parse.error.invalidInputGeneric",
     "IDLingua": 2,
-    "Messaggio": "?INVALID INPUT."
+    "Messaggio": "Invalid input."
   },
   {
     "Chiave": "parse.error.emptyInput",
     "IDLingua": 1,
-    "Messaggio": "?INSERISCI UN COMANDO."
+    "Messaggio": "Inserisci un comando."
   },
   {
     "Chiave": "parse.error.emptyInput",
     "IDLingua": 2,
-    "Messaggio": "?PLEASE ENTER A COMMAND."
+    "Messaggio": "Please enter a command."
   },
   {
     "Chiave": "parse.error.controlChars",
     "IDLingua": 1,
-    "Messaggio": "?CARATTERI NON AMMESSI NEL COMANDO."
+    "Messaggio": "Caratteri non ammessi nel comando."
   },
   {
     "Chiave": "parse.error.controlChars",
     "IDLingua": 2,
-    "Messaggio": "?INVALID CHARACTERS IN COMMAND."
+    "Messaggio": "Invalid characters in command."
   },
   {
     "Chiave": "parse.error.lengthOutOfRange",
     "IDLingua": 1,
-    "Messaggio": "?COMANDO TROPPO LUNGO O TROPPO CORTO."
+    "Messaggio": "Comando troppo lungo o troppo corto."
   },
   {
     "Chiave": "parse.error.lengthOutOfRange",
     "IDLingua": 2,
-    "Messaggio": "?COMMAND TOO LONG OR TOO SHORT."
+    "Messaggio": "Command too long or too short."
   },
   {
     "Chiave": "parse.error.notAString",
     "IDLingua": 1,
-    "Messaggio": "?COMANDO NON VALIDO."
+    "Messaggio": "Comando non valido."
   },
   {
     "Chiave": "parse.error.notAString",
     "IDLingua": 2,
-    "Messaggio": "?INVALID COMMAND."
+    "Messaggio": "Invalid command."
   },
   {
     "Chiave": "engine.error.noParseResult",
@@ -350,6 +350,16 @@
     "Messaggio": "You took {0}."
   },
   {
+    "Chiave": "engine.location.objectsPresent",
+    "IDLingua": 1,
+    "Messaggio": "Oggetti presenti:"
+  },
+  {
+    "Chiave": "engine.location.objectsPresent",
+    "IDLingua": 2,
+    "Messaggio": "Objects present:"
+  },
+  {
     "Chiave": "engine.drop.success",
     "IDLingua": 1,
     "Messaggio": "Hai posato {0}."
@@ -438,6 +448,16 @@
     "Chiave": "timer.lamp.dropped",
     "IDLingua": 2,
     "Messaggio": "You dropped the lamp. It stays lit, but now you're in the dark."
+  },
+  {
+    "Chiave": "timer.lamp.abandoned.death",
+    "IDLingua": 1,
+    "Messaggio": "💀 BUIO MORTALE\n\nLasciare la lampada accesa in un'altra stanza è stato un errore imperdonabile. Nel momento in cui varchi la soglia, l'oscurità ti avvolge completamente. Sei morto!\n\nSuggerimento: PRENDI LAMPADA prima di lasciare una stanza."
+  },
+  {
+    "Chiave": "timer.lamp.abandoned.death",
+    "IDLingua": 2,
+    "Messaggio": "💀 DEADLY DARKNESS\n\nLeaving the lamp lit in another room was an unforgivable mistake. As you cross the threshold, darkness engulfs you completely. You are dead!\n\nTip: TAKE LAMP before leaving a room."
   },
   {
     "Chiave": "timer.darkness.death",

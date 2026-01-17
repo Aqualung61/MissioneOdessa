@@ -196,7 +196,9 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
       const currentState = engine.getGameStateSnapshot();
-      return res.status(400).json(maybeAttachDebug({
+      // Parse error = errore "utente" (comando sconosciuto / sintassi): non è un Bad Request.
+      // Restituiamo 200 per evitare rumore in console (F12) e gestiamo il messaggio a livello UI.
+      return res.status(200).json(maybeAttachDebug({
         ok: false,
         parseResult: parsed,
         command: null,

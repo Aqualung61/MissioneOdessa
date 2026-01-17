@@ -578,5 +578,585 @@
     ],
     "ripetibile": false,
     "IDLingua": 1
+  },
+  {
+    "id": "sposta_quadro_24",
+    "trigger": {
+      "verbo": "SPOSTARE",
+      "oggetto": "Painting"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": []
+    },
+    "risposta": "You move the dusty painting. To your surprise, you reveal a safe set into the wall!",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Safe",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "sposta_arazzo_20",
+    "trigger": {
+      "verbo": "SPOSTARE",
+      "oggetto": "Tapestry in terrible condition"
+    },
+    "condizioni": {
+      "luogo": 20,
+      "prerequisiti": []
+    },
+    "risposta": "Behind the tapestry there's a strange circular shape on the wall.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Circular shape",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "muovi_fermacarte_25",
+    "trigger": {
+      "verbo": "SPOSTARE",
+      "oggetto": "Paperweight"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_LUOGO",
+          "target": "Paperweight",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "You slide the paperweight along the guide: with a creak, a secret compartment opens on the side of the desk.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Secret compartment",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_scomparto_25",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Secret compartment"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Secret compartment",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "Inside the compartment there's a typed sheet.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Sheet",
+        "valore": 3
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "infila_medaglione_forma_20",
+    "trigger": {
+      "verbo": "INFILARE",
+      "oggetto": "Medallion"
+    },
+    "condizioni": {
+      "luogo": 20,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medallion"
+        },
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Circular shape",
+          "luogo": 20
+        }
+      ]
+    },
+    "risposta": "You insert the medallion into the shape and suddenly the south wall starts to rotate, revealing a secret room.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Medallion",
+        "da_luogo": 0,
+        "a_luogo": 20
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 20,
+        "direzione": "Sud",
+        "destinazione": 21
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 21,
+        "direzione": "Nord",
+        "destinazione": 20
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "infila_statuetta_nicchia_27",
+    "trigger": {
+      "verbo": "INFILARE",
+      "oggetto": "Statuette"
+    },
+    "condizioni": {
+      "luogo": 27,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Statuette"
+        }
+      ]
+    },
+    "risposta": "You place the statuette into the empty niche: its bottom lowers and a mechanism clicks, opening an otherwise invisible door to the north.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Statuette",
+        "da_luogo": 0,
+        "a_luogo": 27
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Open door",
+        "valore": 1
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 27,
+        "direzione": "Nord",
+        "destinazione": 28
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 28,
+        "direzione": "Sud",
+        "destinazione": 27
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "infila_medaglione_forma_36",
+    "trigger": {
+      "verbo": "INFILARE",
+      "oggetto": "Medallion"
+    },
+    "condizioni": {
+      "luogo": 36,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medallion"
+        },
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Circular shape",
+          "luogo": 36
+        }
+      ]
+    },
+    "risposta": "You insert the medallion into the shape and suddenly the west wall starts to rotate, revealing the torture room.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Medallion",
+        "da_luogo": 0,
+        "a_luogo": 36
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 36,
+        "direzione": "Ovest",
+        "destinazione": 37
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 37,
+        "direzione": "Est",
+        "destinazione": 36
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "carica_pesa_57",
+    "trigger": {
+      "verbo": "METTERE",
+      "oggetto": "Weight"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Weight"
+        }
+      ]
+    },
+    "risposta": "You load the weight: the pan is now balanced against the arm of the scale. With a strange sound, the lid of a hatch opens in the floor in front of you.",
+    "effetti": [
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Weight",
+        "da_luogo": 0,
+        "a_luogo": 57
+      },
+      {
+        "tipo": "VISIBILITA",
+        "target": "Hatch",
+        "valore": 1
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_botola_57",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Hatch"
+    },
+    "condizioni": {
+      "luogo": 57
+    },
+    "risposta": "The hatch reveals a small hiding place in the floor. Inside there's a dossier.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Dossier",
+        "valore": 3
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "premi_pulsante_44",
+    "trigger": {
+      "verbo": "PREMERE",
+      "oggetto": "Button"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta_apri": "You press the button and the door to the east opens with an ominous creak.",
+    "risposta_chiudi": "You press the button and the door to the east closes with an ominous creak.",
+    "effetti": [
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 44,
+        "direzione": "Est",
+        "destinazione": 45
+      },
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 45,
+        "direzione": "Ovest",
+        "destinazione": 44
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "ruota_sedile_42",
+    "trigger": {
+      "verbo": "RUOTARE",
+      "oggetto": "Seat"
+    },
+    "condizioni": {
+      "luogo": 42,
+      "prerequisiti": []
+    },
+    "risposta_apri": "You rotate the seat: a mechanism opens a hatch on the east wall.",
+    "risposta_chiudi": "You rotate the seat: a mechanism closes a hatch on the east wall.",
+    "effetti": [
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 42,
+        "direzione": "Est",
+        "destinazione": 43
+      },
+      {
+        "tipo": "TOGGLE_DIREZIONE",
+        "luogo": 43,
+        "direzione": "Ovest",
+        "destinazione": 42
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "scava_macerie_49",
+    "trigger": {
+      "verbo": "SCAVARE",
+      "oggetto": "Rubble"
+    },
+    "condizioni": {
+      "luogo": 49,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Rusty spade"
+        }
+      ]
+    },
+    "risposta": "By digging you widen the passage to the west.",
+    "effetti": [
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 49,
+        "direzione": "Ovest",
+        "destinazione": 50
+      },
+      {
+        "tipo": "SBLOCCA_DIREZIONE",
+        "luogo": 50,
+        "direzione": "Est",
+        "destinazione": 49
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_macerie_dopo_scavo_49",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Rubble"
+    },
+    "condizioni": {
+      "luogo": 49,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "scava_macerie_49"
+        }
+      ]
+    },
+    "risposta": "Rubble cleared from the passage to the west.",
+    "effetti": [],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "porgi_documenti_59",
+    "trigger": {
+      "verbo": "PORGERE",
+      "oggetto": "Documents"
+    },
+    "condizioni": {
+      "luogo": 59,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Documents"
+        }
+      ]
+    },
+    "risposta": "You hand over the documents and the guard examines them carefully. These are crucial moments.\n\nThe guard looks at you, smiles, and hands the documents back. Then he raises the barrier and signals you to pass.\n\nYou made it. You're in the American sector and soon you'll be on a plane bound for Linz. The documents will reach their destination through the intelligence channels managed by Ferenc. Mission accomplished!! You're a first-rate agent: see you on your next mission, Liebermann.",
+    "effetti": [
+      {
+        "tipo": "VITTORIA"
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "ruota_destra_cassaforte_24",
+    "trigger": {
+      "verbo": "RUOTARE",
+      "oggetto": "DESTRA"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta_step": "Click click. Done.",
+    "risposta_completa": "The safe opens silently.",
+    "risposta_errore": "You entered the wrong combination. The safe locks and you must start over.",
+    "effetti": [
+      {
+        "tipo": "SEQUENZA",
+        "target": "cassaforte_24",
+        "direzione": "DESTRA",
+        "pattern": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
+        "effetti_completamento": []
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "ruota_sinistra_cassaforte_24",
+    "trigger": {
+      "verbo": "RUOTARE",
+      "oggetto": "SINISTRA"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta_step": "Click click. Done.",
+    "risposta_completa": "The safe opens silently.",
+    "risposta_errore": "You entered the wrong combination. The safe locks and you must start over.",
+    "effetti": [
+      {
+        "tipo": "SEQUENZA",
+        "target": "cassaforte_24",
+        "direzione": "SINISTRA",
+        "pattern": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
+        "effetti_completamento": []
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_cassaforte_vuota_24",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        },
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Medallion"
+        }
+      ]
+    },
+    "risposta": "The safe is open and empty.",
+    "effetti": [],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_cassaforte_con_medaglione_24",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "With the safe open, you see a medallion inside.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Medallion",
+        "valore": 3
+      }
+    ],
+    "ripetibile": true,
+    "IDLingua": 2
+  },
+  {
+    "id": "accendi_lampada",
+    "trigger": {
+      "verbo": "ACCENDERE",
+      "oggetto": "Lamp"
+    },
+    "condizioni": {
+      "luogo": null,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Lamp"
+        },
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Matches"
+        },
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "timers.lampadaAccesa"
+        }
+      ]
+    },
+    "risposta": "You light the lamp with the matches. A warm, steady light illuminates the area.",
+    "risposta_no_lampada": "You don't have the lamp.",
+    "risposta_no_fiammiferi": "You don't have any matches to light the lamp.",
+    "risposta_gia_eseguita": "The lamp is already lit.",
+    "effetti": [
+      {
+        "tipo": "SET_FLAG",
+        "flag": "timers.lampadaAccesa",
+        "valore": true
+      },
+      {
+        "tipo": "RESET_COUNTER",
+        "counter": "turn.turnsInDarkness"
+      }
+    ],
+    "ripetibile": false,
+    "IDLingua": 2
   }
 ]

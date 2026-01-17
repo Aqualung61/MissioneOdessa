@@ -326,11 +326,11 @@ export function shouldConsumeTurn(parseResult) {
  */
 export function hasFonteLuceAttiva() {
   // Verifica torcia elettrica (ID=37) nell'inventario e non spenta.
-  // Nota: la torcia è considerata "attiva" solo se marcata esplicitamente con `Inventario=true`.
-  // (Flag canonical per indicare possesso/inventario nell'attuale modello dati.)
+  // Source of truth inventario: `IDLuogo === 0` (come in v1.3.2).
   const torcia = gameState.Oggetti.find((o) => o.ID === 37);
-  const torciaInInventario = torcia?.Inventario === true;
-  if (torciaInInventario && !gameState.timers.torciaDifettosa) return true;
+  if (torcia && torcia.IDLuogo === 0 && !gameState.timers.torciaDifettosa) {
+    return true;
+  }
 
   // Verifica lampada (ID=27) accesa
   if (gameState.timers.lampadaAccesa) {
@@ -489,33 +489,82 @@ function capitalizeCommand(str) {
 }
 
 // Funzione isolata per generare messaggio di aiuto
-export function generateHelpMessage() {
+export function generateHelpMessage(idLingua = gameState?.currentLingua ?? 1) {
+  const lingua = Number(idLingua) === 2 ? 2 : 1;
   const termini = global.odessaData.TerminiLessico || [];
-  
-  // Filtra e ordina comandi di direzione
+
+  // IT: manteniamo il comportamento storico (concetti canonici + capitalizzazione).
+  if (lingua === 1) {
+    const direzioni = termini
+      .filter(t => t.ID_TipoLessico === 2)
+      .map(t => capitalizeCommand(t.Concetto))
+      .sort();
+
+    const sistema = termini
+      .filter(t => t.ID_TipoLessico === 3)
+      .map(t => capitalizeCommand(t.Concetto))
+      .sort();
+
+    const verbi = termini
+      .filter(t => t.ID_TipoLessico === 1)
+      .map(t => capitalizeCommand(t.Concetto))
+      .sort();
+
+    let msg = '<b>Comandi disponibili:</b>\n';
+    msg += '<i>Direzioni: ' + direzioni.join(', ') + '</i>\n';
+    msg += '<i>Sistema: ' + sistema.join(', ') + '</i>\n';
+    msg += '<i>Azioni: ' + verbi.join(', ') + '</i>\n\n';
+    return msg;
+  }
+
+  // EN: usa VociLessico per mostrare comandi in lingua selezionata.
+  const voci = global.odessaData.VociLessico || [];
+
+  function voicesForTerm(termId) {
+    return voci
+      .filter(v => v.ID_Termine === termId && v.ID_Lingua === 2)
+      .map(v => String(v.Voce || '').trim())
+      .filter(Boolean);
+  }
+
+  function pickPrimaryVoice(termId) {
+    const voices = Array.from(new Set(voicesForTerm(termId)))
+      .sort((a, b) => a.localeCompare(b, 'en'));
+    if (!voices.length) return null;
+    // Preferisci una voce "lunga" (es. NORTH) rispetto a abbreviazioni (es. N)
+    const long = voices.find(v => v.length > 1);
+    return long || voices[0];
+  }
+
+  function pickDirectionVoice(termId) {
+    const voices = Array.from(new Set(voicesForTerm(termId)))
+      .sort((a, b) => a.localeCompare(b, 'en'));
+    if (!voices.length) return null;
+    const long = voices.find(v => v.length > 1);
+    const short = voices.find(v => v.length === 1);
+    if (long && short) return `${long} (${short})`;
+    return long || short || voices[0];
+  }
+
   const direzioni = termini
     .filter(t => t.ID_TipoLessico === 2)
-    .map(t => capitalizeCommand(t.Concetto))
-    .sort();
-  
-  // Filtra e ordina comandi di sistema
+    .map(t => pickDirectionVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
+    .sort((a, b) => a.localeCompare(b, 'en'));
+
   const sistema = termini
     .filter(t => t.ID_TipoLessico === 3)
-    .map(t => capitalizeCommand(t.Concetto))
-    .sort();
-  
-  // Filtra e ordina verbi azione
+    .map(t => pickPrimaryVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
+    .sort((a, b) => a.localeCompare(b, 'en'));
+
   const verbi = termini
     .filter(t => t.ID_TipoLessico === 1)
-    .map(t => capitalizeCommand(t.Concetto))
-    .sort();
-  
-  // Costruisci messaggio con formattazione HTML
-  let msg = '<b>Comandi disponibili:</b>\n';
-  msg += '<i>Direzioni: ' + direzioni.join(', ') + '</i>\n';
-  msg += '<i>Sistema: ' + sistema.join(', ') + '</i>\n';
-  msg += '<i>Azioni: ' + verbi.join(', ') + '</i>\n\n';
-  
+    .map(t => pickPrimaryVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
+    .sort((a, b) => a.localeCompare(b, 'en'));
+
+  let msg = '<b>Available commands:</b>\n';
+  msg += '<i>Directions: ' + direzioni.join(', ') + '</i>\n';
+  msg += '<i>System: ' + sistema.join(', ') + '</i>\n';
+  msg += '<i>Actions: ' + verbi.join(', ') + '</i>\n\n';
   return msg;
 }
 
@@ -532,7 +581,7 @@ export function generaDescrizioneLuogoConOggetti(idLuogo) {
   );
   
   if (oggettiPresenti.length > 0) {
-    messaggio += '\n<b><i>Oggetti presenti:</i></b>\n';
+    messaggio += `\n<b><i>${getSystemMessage('engine.location.objectsPresent', gameState.currentLingua)}</i></b>\n`;
     oggettiPresenti.forEach(obj => {
       messaggio += `<i>  - ${obj.Oggetto}</i>\n`;
     });
@@ -1193,7 +1242,7 @@ function executeCommandLegacy(parseResult) {
             };
           }
           case 'AIUTO': {
-            const message = generateHelpMessage(1); // Default lingua 1
+            const message = generateHelpMessage(gameState.currentLingua);
             return { accepted: true, resultType: 'OK', message, effects: [], showLocation: true };
           }
           case 'SALVARE': {
@@ -1276,12 +1325,13 @@ function executeCommandLegacy(parseResult) {
           return { accepted: true, resultType: 'OK', message: text, effects: [] };
         }
         // APRI / CHIUDI (elementi apribili)
-        if (verb === 'APRI' || verb === 'CHIUDI') {
+        if (concept === 'APRIRE' || concept === 'CHIUDERE' || verb === 'APRI' || verb === 'CHIUDI') {
           if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
           if (!canOpen) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.openClose.cannotDo', gameState.currentLingua, [verb.toLowerCase(), noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           const openNow = !!gameState.openStates[noun];
-          if (verb === 'APRI') {
+          const isOpenCommand = concept === 'APRIRE' || verb === 'APRI';
+          if (isOpenCommand) {
             if (openNow) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.open.alreadyOpen', gameState.currentLingua), effects: [] };
             gameState.openStates[noun] = true;
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.open.success', gameState.currentLingua, [noun]), effects: [] };
@@ -1291,7 +1341,7 @@ function executeCommandLegacy(parseResult) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.close.success', gameState.currentLingua, [noun]), effects: [] };
           }
         }
-        if (verb === 'PRENDI') {
+        if (concept === 'PRENDERE' || verb === 'PRENDI') {
           // Controlla limite inventario (max 5 oggetti)
           const oggettiInInventario = (gameState.Oggetti || []).filter(obj => obj.IDLuogo === 0 && obj.Attivo >= 3);
           if (oggettiInInventario.length >= 5) {
@@ -1315,7 +1365,7 @@ function executeCommandLegacy(parseResult) {
           }
           return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
         }
-        if (verb === 'POSA' || verb === 'LASCIA') {
+        if (concept === 'POSARE' || concept === 'LASCIARE' || verb === 'POSA' || verb === 'LASCIA') {
           // Trova l'oggetto nell'inventario
           const normalizeForComparison = (str) => str.toUpperCase().replace(/\s+/g, '_');
           const oggetto = (gameState.Oggetti || []).find(obj => 

@@ -8,8 +8,21 @@ describe('Schema Luoghi allineato (Terminale INTEGER, not null)', () => {
     expect(typeof sample.Terminale).toBe('number');
   });
 
-  it('conteggio righe coerente (>= 59)', () => {
-    expect(Luoghi.length).toBeGreaterThanOrEqual(59);
+  it('conteggio righe coerente (>= 118, IT+EN)', () => {
+    expect(Luoghi.length).toBeGreaterThanOrEqual(118);
+  });
+
+  it('copertura i18n completa per ID (IT=1, EN=2)', () => {
+    const byId = new Map<number, Set<number>>();
+
+    for (const luogo of Luoghi) {
+      if (!byId.has(luogo.ID)) byId.set(luogo.ID, new Set());
+      byId.get(luogo.ID)?.add(luogo.IDLingua);
+    }
+
+    for (const [id, langs] of byId.entries()) {
+      expect([id, Array.from(langs).sort((a, b) => a - b)]).toEqual([id, [1, 2]]);
+    }
   });
 
   it('valori Terminale attesi su subset (8,40,54 = -1; altri = 0)', () => {

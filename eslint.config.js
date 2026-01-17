@@ -22,6 +22,7 @@ export default [
       'web/js/marked.min.js',
       'web/js/odessa1.js',
       'types/**/*.d.ts',
+      'scripts/**/*.cjs',
     ],
   },
   js.configs.recommended,

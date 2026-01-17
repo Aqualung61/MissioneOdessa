@@ -43,7 +43,7 @@ describe('Sprint 3.3.4 - Shadow Export Wrapper', () => {
       expect(result.accepted).toBe(false);
       expect(result.resultType).toBe('ERROR');
       // Non deve leakare testo tecnico, ma restituire un messaggio user-facing.
-      expect(result.message).toBe('?INPUT NON VALIDO.');
+      expect(result.message).toBe('Input non valido.');
     });
 
     it('dovrebbe mappare INVALID_INPUT (details) in messaggio utente', () => {
@@ -51,7 +51,7 @@ describe('Sprint 3.3.4 - Shadow Export Wrapper', () => {
 
       expect(result.accepted).toBe(false);
       expect(result.resultType).toBe('ERROR');
-      expect(result.message).toBe('?INSERISCI UN COMANDO.');
+      expect(result.message).toBe('Inserisci un comando.');
     });
   });
 
