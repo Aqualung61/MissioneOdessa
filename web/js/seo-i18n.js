@@ -162,6 +162,8 @@
       var messages = Array.isArray(data && data.messages) ? data.messages : [];
       var titleKey = 'seo.title.' + pageKey;
       var descKey = 'seo.description.' + pageKey;
+      var defaultTitleKey = 'seo.title.default';
+      var defaultDescKey = 'seo.description.default';
 
       var titleRow = messages.find(function (m) {
         return m && m.Chiave === titleKey;
@@ -169,6 +171,18 @@
       var descRow = messages.find(function (m) {
         return m && m.Chiave === descKey;
       });
+
+      if (!titleRow) {
+        titleRow = messages.find(function (m) {
+          return m && m.Chiave === defaultTitleKey;
+        });
+      }
+
+      if (!descRow) {
+        descRow = messages.find(function (m) {
+          return m && m.Chiave === defaultDescKey;
+        });
+      }
 
       var title = titleRow && typeof titleRow.Messaggio === 'string' ? titleRow.Messaggio.trim() : '';
       var description = descRow && typeof descRow.Messaggio === 'string' ? descRow.Messaggio.trim() : '';
