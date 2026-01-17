@@ -415,13 +415,14 @@ function applyUiFromExecute(ui) {
 
   const locationId = ui.location && typeof ui.location.id === 'number' ? ui.location.id : null;
   if (locationId) {
-    const next = luoghi.find(l => l.ID === locationId);
+    // Importante: /api/luoghi ritorna IT+EN. Seleziona sempre la riga in lingua corrente.
+    const next = luoghi.find(l => l.ID === locationId && l.IDLingua === idLingua) || luoghi.find(l => l.ID === locationId);
     if (next) current = next;
   }
 
   if (current && ui.direzioni && typeof ui.direzioni === 'object') {
     Object.assign(current, ui.direzioni);
-    const luogoInArray = luoghi.find(l => current && l.ID === current.ID);
+    const luogoInArray = luoghi.find(l => current && l.ID === current.ID && l.IDLingua === idLingua) || luoghi.find(l => current && l.ID === current.ID);
     if (luogoInArray) Object.assign(luogoInArray, ui.direzioni);
     updateDirectionUI(current);
   }
@@ -846,7 +847,10 @@ fetch(basePath + 'api/luoghi')
     })
       .catch(err => console.error('Errore reset engine iniziale:', err));
 
-    current = luoghi.find(l => l.ID === 1) || luoghi[0];
+    current =
+      luoghi.find(l => l.ID === 1 && l.IDLingua === idLingua) ||
+      luoghi.find(l => l.ID === 1) ||
+      luoghi[0];
     showCurrent();
 
     // Fallback: carica statistiche iniziali.

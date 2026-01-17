@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ensureVocabulary, parseCommand, resetVocabularyCache } from '../src/logic/parser.js';
-import { executeCommand, generateHelpMessage, initializeOriginalData } from '../src/logic/engine.js';
+import { executeCommand, generateHelpMessage, initializeOriginalData, resetGameState } from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -72,6 +72,21 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(message).not.toContain('Oggetti nel gioco');
   });
 
+  it('generateHelpMessage (EN) genera messaggio con sezioni e comandi in inglese', () => {
+    const message = generateHelpMessage(2);
+
+    expect(message).toContain('<b>Available commands:</b>');
+    expect(message).toContain('<i>Directions:');
+    expect(message).toContain('<i>System:');
+    expect(message).toContain('<i>Actions:');
+    expect(message).toContain('NORTH');
+    expect(message).toContain('SOUTH');
+    expect(message).toContain('EAST');
+    expect(message).toContain('WEST');
+    expect(message).toContain('HELP');
+    expect(message).toContain('INVENTORY');
+  });
+
   it('AIUTO viene riconosciuto e eseguito correttamente', async () => {
     const parsed = await parseCommand(null, 'AIUTO');
     expect(parsed.IsValid).toBe(true);
@@ -105,5 +120,22 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(parsed.IsValid).toBe(true);
     expect(parsed.CommandType).toBe('SYSTEM');
     expect(parsed.CanonicalVerb).toBe('AIUTO');
+  });
+
+  it('HELP in EN esegue AIUTO e produce messaggio EN (non IT)', async () => {
+    resetVocabularyCache();
+    await ensureVocabulary({ currentLingua: 2 });
+    resetGameState(2);
+
+    const parsed = await parseCommand(null, 'HELP', { currentLingua: 2 });
+    expect(parsed.IsValid).toBe(true);
+    expect(parsed.CommandType).toBe('SYSTEM');
+    expect(parsed.CanonicalVerb).toBe('AIUTO');
+
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.resultType).toBe('OK');
+    expect(res.message).toContain('<b>Available commands:</b>');
+    expect(res.message).not.toContain('<b>Comandi disponibili:</b>');
   });
 });

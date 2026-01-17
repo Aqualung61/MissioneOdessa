@@ -137,9 +137,9 @@ La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
 
 #### Casi Speciali
 1. **Posa torcia dopo 3 turni + nessuna lampada** → Torcia si spegne → Start countdown buio (3 turni)
-2. **Posa lampada accesa** → (design) Lampada resta accesa nel luogo, giocatore al buio → Start countdown (3 turni)
-  - **Nota as-is:** questo caso non è attualmente distinguibile dal solo flag `timers.lampadaAccesa` (vedi nota sopra su inventario).
-3. **Torna a prendere lampada entro 3 turni** → (design) Countdown resettato
+2. **Posa lampada accesa + torcia NON disponibile** → (design) Game Over immediato al primo movimento (cambio stanza)
+  - **Nota:** la regola si applica solo se la lampada era l'unica luce (torcia non in inventario o difettosa).
+3. **Posa lampada accesa + torcia disponibile** → (design) nessun Game Over per “lampada abbandonata” (la torcia copre il movimento)
 4. **Accende lampada durante countdown** → Countdown resettato, gioco prosegue normalmente
 
 ### 1.2.2 Evento B: Intercettazione (3 comandi + 1 in zona pericolosa)
@@ -192,9 +192,14 @@ La funzione `hasFonteLuceAttiva()` è l'unica fonte di verità:
 
 ### 1.2.3 Evento C: Lampada Abbandonata
 - **Contesto:** La lampada è l'unica fonte di luce affidabile dopo che la torcia si esaurisce.
-- **Regola:** Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo.
+- **Regola (design, implementata):** Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo **senza avere un'altra fonte di luce**.
 - **Conseguenza (design):** Game Over immediato al cambio stanza con messaggio "Buio Mortale".
-- **Stato implementazione (as-is):** non risulta implementato come regola autonoma nel motore/turn effects; la logica luce si basa sul flag `timers.lampadaAccesa`.
+- **Condizioni (implementazione):**
+  - `timers.lampadaAccesa === true`
+  - lampada (Oggetto ID=27) non in inventario (`IDLuogo !== 0`)
+  - comando `NAVIGATION` che porta fuori dal luogo della lampada (cambio stanza)
+  - torcia NON disponibile come alternativa (torcia non in inventario o `timers.torciaDifettosa === true`)
+- **Messaggio (i18n):** `timer.lamp.abandoned.death`
 - **Soluzione (design):** Usare `PRENDI LAMPADA` prima di muoversi se è stata lasciata a terra.
 
 ### 1.2.4 Messaggi Game Over
@@ -1640,20 +1645,19 @@ if (hasFonteLuceAttiva()) {
 > PRENDI LAMPADA
 > ACCENDI LAMPADA
 > POSA LAMPADA (lasci a terra)
-> NORD (as-is: lampada considerata ancora fonte luce se timers.lampadaAccesa=true)
-> SUD
-> OVEST
-✅ Atteso (design/target): Morte per buio (lampada accesa ma non in inventario = no luce)
-✅ Atteso (as-is): Gioco prosegue senza morte, turnsInDarkness = 0
+> NORD
+✅ Atteso (design/target): Game Over immediato (Buio Mortale) se la torcia non è disponibile (torcia difettosa o non in inventario)
+✅ Atteso (design/target): Nessun Game Over se la torcia è ancora disponibile come luce alternativa
 ```
 
 **Scenario 4 - Recupero lampada in tempo:**
 ```
 > (Accendi lampada, poi posa)
 > NORD
-> SUD (2° comando)
+> (Se il gioco non è già in game over perché la torcia è disponibile)
+> SUD
 > PRENDI LAMPADA
-✅ Atteso (as-is): Gioco prosegue, turnsInDarkness = 0
+✅ Atteso (design/target): Gioco prosegue (la regola “lampada abbandonata” non si applica se la torcia era disponibile durante lo spostamento)
 ```
 
 **Effort:** 40 min (25 min implementazione + 15 min test)

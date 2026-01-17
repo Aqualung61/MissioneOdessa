@@ -749,5 +749,539 @@
     "Voce": "ILLUMINARE",
     "ID_Termine": 61,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1000,
+    "Voce": "TAKE",
+    "ID_Termine": 1,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1001,
+    "Voce": "THE",
+    "ID_Termine": 3,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1002,
+    "Voce": "Lamp",
+    "ID_Termine": 4,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1003,
+    "Voce": "NORTH",
+    "ID_Termine": 5,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1004,
+    "Voce": "N",
+    "ID_Termine": 5,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1005,
+    "Voce": "EAST",
+    "ID_Termine": 6,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1006,
+    "Voce": "E",
+    "ID_Termine": 6,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1007,
+    "Voce": "SOUTH",
+    "ID_Termine": 7,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1008,
+    "Voce": "S",
+    "ID_Termine": 7,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1009,
+    "Voce": "WEST",
+    "ID_Termine": 8,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1010,
+    "Voce": "W",
+    "ID_Termine": 8,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1011,
+    "Voce": "UP",
+    "ID_Termine": 9,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1012,
+    "Voce": "U",
+    "ID_Termine": 9,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1013,
+    "Voce": "DOWN",
+    "ID_Termine": 10,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1014,
+    "Voce": "D",
+    "ID_Termine": 10,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1015,
+    "Voce": "SLEEP",
+    "ID_Termine": 11,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1016,
+    "Voce": "EXAMINE",
+    "ID_Termine": 12,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1017,
+    "Voce": "OPEN",
+    "ID_Termine": 13,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1018,
+    "Voce": "DROP",
+    "ID_Termine": 14,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1019,
+    "Voce": "SAVE",
+    "ID_Termine": 15,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1020,
+    "Voce": "LOAD",
+    "ID_Termine": 16,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1021,
+    "Voce": "Hatch",
+    "ID_Termine": 17,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1022,
+    "Voce": "CLOSE",
+    "ID_Termine": 18,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1023,
+    "Voce": "END",
+    "ID_Termine": 19,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1024,
+    "Voce": "Command baton",
+    "ID_Termine": 20,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1025,
+    "Voce": "Large table",
+    "ID_Termine": 21,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1026,
+    "Voce": "Chairs",
+    "ID_Termine": 22,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1027,
+    "Voce": "Rusty spade",
+    "ID_Termine": 23,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1028,
+    "Voce": "Tapestry in terrible condition",
+    "ID_Termine": 24,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1029,
+    "Voce": "Duty roster",
+    "ID_Termine": 25,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1030,
+    "Voce": "Desk",
+    "ID_Termine": 26,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1031,
+    "Voce": "Statuette",
+    "ID_Termine": 27,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1032,
+    "Voce": "Trophies on the walls",
+    "ID_Termine": 28,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1033,
+    "Voce": "Paperweight",
+    "ID_Termine": 29,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1034,
+    "Voce": "Empty shelves",
+    "ID_Termine": 30,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1035,
+    "Voce": "Empty niche",
+    "ID_Termine": 31,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1036,
+    "Voce": "Bed",
+    "ID_Termine": 32,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1037,
+    "Voce": "Seat",
+    "ID_Termine": 33,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1038,
+    "Voce": "Folder",
+    "ID_Termine": 34,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1039,
+    "Voce": "Door",
+    "ID_Termine": 37,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1040,
+    "Voce": "Weight",
+    "ID_Termine": 38,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1041,
+    "Voce": "Workbench",
+    "ID_Termine": 39,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1042,
+    "Voce": "Scale",
+    "ID_Termine": 40,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1043,
+    "Voce": "Sheet",
+    "ID_Termine": 41,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1044,
+    "Voce": "Safe",
+    "ID_Termine": 42,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1045,
+    "Voce": "Circular shape",
+    "ID_Termine": 44,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1046,
+    "Voce": "Medallion",
+    "ID_Termine": 45,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1047,
+    "Voce": "Button",
+    "ID_Termine": 46,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1048,
+    "Voce": "Bulkhead",
+    "ID_Termine": 47,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1049,
+    "Voce": "Painting",
+    "ID_Termine": 48,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1050,
+    "Voce": "Dossier",
+    "ID_Termine": 49,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1051,
+    "Voce": "Documents",
+    "ID_Termine": 50,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1052,
+    "Voce": "Matches",
+    "ID_Termine": 51,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1053,
+    "Voce": "Flashlight",
+    "ID_Termine": 52,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1054,
+    "Voce": "LEAVE",
+    "ID_Termine": 53,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1055,
+    "Voce": "INSERT",
+    "ID_Termine": 54,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1056,
+    "Voce": "PUT",
+    "ID_Termine": 55,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1057,
+    "Voce": "LOOK",
+    "ID_Termine": 56,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1058,
+    "Voce": "MOVE",
+    "ID_Termine": 57,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1059,
+    "Voce": "READ",
+    "ID_Termine": 59,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1060,
+    "Voce": "A",
+    "ID_Termine": 60,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1061,
+    "Voce": "AN",
+    "ID_Termine": 60,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1062,
+    "Voce": "LIGHT",
+    "ID_Termine": 61,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1063,
+    "Voce": "PRESS",
+    "ID_Termine": 62,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1064,
+    "Voce": "TURN",
+    "ID_Termine": 63,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1065,
+    "Voce": "DIG",
+    "ID_Termine": 64,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1066,
+    "Voce": "Secret compartment",
+    "ID_Termine": 66,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1067,
+    "Voce": "RIGHT",
+    "ID_Termine": 67,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1068,
+    "Voce": "LEFT",
+    "ID_Termine": 68,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1069,
+    "Voce": "Rubble",
+    "ID_Termine": 69,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1070,
+    "Voce": "Table",
+    "ID_Termine": 70,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1071,
+    "Voce": "GIVE",
+    "ID_Termine": 71,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1072,
+    "Voce": "SCORE",
+    "ID_Termine": 72,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1073,
+    "Voce": "TAVOLO_LEGACY",
+    "ID_Termine": 35,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1074,
+    "Voce": "TABLE_LEGACY",
+    "ID_Termine": 35,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1075,
+    "Voce": "BOTTON_LEGACY",
+    "ID_Termine": 36,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1076,
+    "Voce": "BOTTON_LEGACY",
+    "ID_Termine": 36,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1077,
+    "Voce": "INVENTORY",
+    "ID_Termine": 2,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1078,
+    "Voce": "SHELVES",
+    "ID_Termine": 30,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1079,
+    "Voce": "SHELF",
+    "ID_Termine": 30,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1080,
+    "Voce": "EMPTY",
+    "ID_Termine": 3,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1081,
+    "Voce": "TAPESTRY",
+    "ID_Termine": 24,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1082,
+    "Voce": "BATON",
+    "ID_Termine": 20,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1085,
+    "Voce": "SPADE",
+    "ID_Termine": 23,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1086,
+    "Voce": "ROSTER",
+    "ID_Termine": 25,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1087,
+    "Voce": "TROPHIES",
+    "ID_Termine": 28,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1088,
+    "Voce": "NICHE",
+    "ID_Termine": 31,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1089,
+    "Voce": "SHAPE",
+    "ID_Termine": 44,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1090,
+    "Voce": "COMPARTMENT",
+    "ID_Termine": 66,
+    "ID_Lingua": 2
   }
 ]

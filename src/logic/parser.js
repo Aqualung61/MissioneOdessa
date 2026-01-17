@@ -65,6 +65,43 @@ export async function ensureVocabulary(gameState = null) {
   const tokenMap = new Map();
   const canonicalByTerm = new Map();
 
+  // Precalcola lookup Oggetti (IT) -> ID, per localizzare i concetti NOUN quando possibile.
+  // Obiettivo: in EN il parser deve produrre NounConcept compatibile con Oggetti.json (nome localizzato),
+  // ma per concetti non-oggetto (es. DESTRA/SINISTRA) si mantiene il concetto originale.
+  const normalizeForComparison = (s) => String(s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ')
+    .toUpperCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  const oggettoIdByItName = new Map();
+  for (const o of (global.odessaData.Oggetti || [])) {
+    if (o.IDLingua !== 1) continue;
+    const k = normalizeForComparison(o.Oggetto);
+    if (!k) continue;
+    oggettoIdByItName.set(k, o.ID);
+  }
+
+  const localizedNounConceptByTerm = new Map();
+  if (currentLingua !== 1) {
+    for (const r of rows) {
+      const type = mapTipoToCommandType(r.Tipo);
+      if (type !== CommandType.NOUN) continue;
+      if (localizedNounConceptByTerm.has(r.TermineID)) continue;
+
+      const itKey = normalizeForComparison(r.Concetto);
+      const objId = oggettoIdByItName.get(itKey);
+      if (!objId) {
+        localizedNounConceptByTerm.set(r.TermineID, r.Concetto);
+        continue;
+      }
+      const obj = (global.odessaData.Oggetti || []).find(o => o.ID === objId && o.IDLingua === currentLingua);
+      localizedNounConceptByTerm.set(r.TermineID, obj?.Oggetto || r.Concetto);
+    }
+  }
+
   function mapTipoToCommandType(tipo) {
     switch (tipo) {
       case 'VERBO_AZIONE':
@@ -99,7 +136,10 @@ export async function ensureVocabulary(gameState = null) {
     } else if (!prev || token < prev) {
       canonicalByTerm.set(r.TermineID, token);
     }
-    const info = { type, canonical: null, termId: r.TermineID, concept: r.Concetto };
+    const concept = (type === CommandType.NOUN && currentLingua !== 1)
+      ? (localizedNounConceptByTerm.get(r.TermineID) || r.Concetto)
+      : r.Concetto;
+    const info = { type, canonical: null, termId: r.TermineID, concept };
     tokenMap.set(token, info);
     // Aggiungi alias senza diacritici per tollerare input senza accenti (es. GIU -> GIÙ)
     const noAcc = removeDiacritics(token);
@@ -251,7 +291,33 @@ export async function parseCommand(dbPath, input, gameState = null) {
     const [t1, t2, t3] = filteredTokens;
     const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
     const extra = filteredTokens.length === 3 && idx === null;
-    if (extra) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+
+    // Supporto NOUN multi-parola (2 token) per mantenere compatibilità con VociLessico che contengono spazi.
+    // Esempio: "EXAMINE LARGE TABLE" -> NOUN="LARGE TABLE" se esiste una voce lessicale omonima.
+    if (extra) {
+      if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+
+      if (t1.info.type === CommandType.ACTION) {
+        const combinedToken = `${t2.token} ${t3.token}`;
+        const combinedInfo = tokenMap.get(combinedToken) || null;
+        if (combinedInfo && combinedInfo.type === CommandType.NOUN) {
+          return {
+            ...baseWithNormalized,
+            IsValid: true,
+            CommandType: CommandType.ACTION,
+            CanonicalVerb: t1.info.canonical,
+            CanonicalNoun: combinedInfo.canonical,
+            VerbTermId: t1.info.termId,
+            VerbConcept: t1.info.concept,
+            NounTermId: combinedInfo.termId,
+            NounConcept: combinedInfo.concept,
+            NounIndex: null,
+          };
+        }
+      }
+
+      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    }
 
     if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 

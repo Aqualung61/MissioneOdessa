@@ -37,11 +37,48 @@ function getMaxTurnsConsumed() {
  * @param {Object} result - Risultato del comando da modificare
  * @param {Object} _parseResult - Comando parsato (non usato)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function gameOverEffect(gameState, result, _parseResult) {
+export function gameOverEffect(gameState, result, parseResult) {
   // Guard: Se già in game over, non verificare altre condizioni
   if (gameState.awaitingRestart || gameState.ended) {
     return;
+  }
+
+  // === CHECK 0: LAMPADA ABBANDONATA (design) ===
+  // Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo,
+  // e non ha altre fonti di luce (torcia in inventario e funzionante), game over immediato.
+  if (parseResult?.CommandType === 'NAVIGATION' && gameState.timers.lampadaAccesa === true) {
+    const lampada = (gameState.Oggetti || []).find((o) => o.ID === 27);
+
+    // La regola si applica solo se la lampada è accesa ma NON è in inventario.
+    if (lampada && lampada.IDLuogo !== 0) {
+      const previousLocationId = gameState.turn?.previous?.location;
+      const currentLocationId = gameState.currentLocationId;
+      const movedAwayFromLampRoom =
+        typeof previousLocationId === 'number' &&
+        previousLocationId === lampada.IDLuogo &&
+        currentLocationId !== lampada.IDLuogo;
+
+      if (movedAwayFromLampRoom) {
+        const torcia = (gameState.Oggetti || []).find((o) => o.ID === 37);
+        const hasWorkingTorchInInventory =
+          !!torcia &&
+          torcia.IDLuogo === 0 &&
+          gameState.timers.torciaDifettosa !== true;
+
+        // Opzione di design (scelta): morte immediata solo se la lampada era l'unica luce.
+        if (!hasWorkingTorchInInventory) {
+          const lampAbandonedMsg = getSystemMessage('timer.lamp.abandoned.death', gameState.currentLingua);
+
+          result.accepted = false;
+          result.resultType = 'GAME_OVER';
+          result.message = lampAbandonedMsg;
+          result.gameOver = true;
+          result.gameOverReason = 'LAMP_ABANDONED';
+          gameState.awaitingRestart = true;
+          return;
+        }
+      }
+    }
   }
 
   // === CHECK 1: DARKNESS DEATH ===

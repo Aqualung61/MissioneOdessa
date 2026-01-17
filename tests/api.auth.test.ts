@@ -34,6 +34,7 @@ describe('M1 auth: X-API-Key su /api', () => {
   beforeEach(async () => {
     process.env.NODE_ENV = 'test';
     process.env.API_KEY = 'test-secret';
+    process.env.API_AUTH_DISABLED = '0';
 
     const app = express();
     app.use('/api', apiKeyAuth());

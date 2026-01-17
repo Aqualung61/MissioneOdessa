@@ -4,6 +4,7 @@ import {
   initializeOriginalData,
   resetGameState,
   setCurrentLocation,
+  getGameState,
   getGameStateSnapshot,
   getDirezioniLuogo,
   executeCommand,
@@ -122,6 +123,30 @@ function findAnyTerminalMove(): { fromId: number; key: DirectionKey; terminalId:
   throw new Error('Nessuna direzione verso luogo terminale trovata nel dataset');
 }
 
+function findAnyValidMoveAvoidingSpecials(): { fromId: number; key: DirectionKey; toId: number } {
+  const luoghi = getLuoghiLingua1();
+  const keys: DirectionKey[] = ['Nord', 'Est', 'Sud', 'Ovest', 'Su', 'Giu'];
+
+  const terminalIds = new Set(
+    luoghi.filter((l) => l.Terminale === -1).map((l) => l.ID)
+  );
+
+  for (const luogo of luoghi) {
+    const fromId = luogo.ID;
+    if (fromId === 1) continue;
+    if (fromId === 59) continue;
+    const dirs = getDirs(fromId);
+    for (const key of keys) {
+      const toId = dirs?.[key];
+      if (typeof toId === 'number' && toId >= 1 && !terminalIds.has(toId)) {
+        return { fromId, key, toId };
+      }
+    }
+  }
+
+  throw new Error('Nessuna direzione valida trovata nel dataset (avoid specials)');
+}
+
 describe('Sprint 4.1.2 - NAVIGATION server-side (engine)', () => {
   beforeAll(async () => {
     initializeOriginalData();
@@ -188,5 +213,43 @@ describe('Sprint 4.1.2 - NAVIGATION server-side (engine)', () => {
 
     // Il middleware gameOverEffect dovrebbe aver marcato il risultato
     expect(res.gameOver).toBe(true);
+  });
+
+  it('lampada abbandonata: se lasci lampada accesa a terra e non hai torcia funzionante, NAVIGATION causa game over immediato', async () => {
+    const pick = findAnyValidMoveAvoidingSpecials();
+    setCurrentLocation(pick.fromId);
+
+    // Prima esegui un comando non-movimento per sincronizzare turn.current.location
+    // (evita edge case dove previous.location non riflette setCurrentLocation al primo comando)
+    const noop = await parseCommand(null, 'INVENTARIO');
+    expect(noop.IsValid).toBe(true);
+    expect(noop.CommandType).toBe('SYSTEM');
+    executeCommand(noop);
+
+    const state = getGameState();
+    const lampada = (state.Oggetti ?? []).find((o) => o.ID === 27);
+    if (!lampada) {
+      throw new Error('Lampada (ID=27) non presente nei dati');
+    }
+
+    // Lampada accesa ma lasciata a terra nel luogo corrente
+    lampada.IDLuogo = pick.fromId;
+    state.timers.lampadaAccesa = true;
+
+    // Nessuna torcia funzionante in inventario
+    state.timers.torciaDifettosa = true;
+
+    const verb = keyToVerb(pick.key);
+    const parsed = await parseCommand(null, verb);
+    expect(parsed.IsValid).toBe(true);
+    expect(parsed.CommandType).toBe('NAVIGATION');
+
+    const res = executeCommand(parsed) as unknown as EngineResult;
+    expect(res.accepted).toBe(false);
+    expect(res.resultType).toBe('GAME_OVER');
+    expect(res.gameOver).toBe(true);
+
+    const snap = getGameStateSnapshot();
+    expect(snap.awaitingRestart).toBe(true);
   });
 });

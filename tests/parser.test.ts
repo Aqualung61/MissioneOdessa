@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 // Rimosso @ts-expect-error inutilizzato
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import VociLessico from '../src/data-internal/VociLessico.json';
+import Oggetti from '../src/data-internal/Oggetti.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
@@ -10,6 +11,7 @@ describe('Parser REQ01 - casi base', () => {
     // Carica dati JSON in global.odessaData per simulare initOdessa
     global.odessaData = {
       VociLessico,
+      Oggetti,
       TerminiLessico,
       TipiLessico,
     };
@@ -92,6 +94,57 @@ describe('Parser REQ01 - casi base', () => {
     expect(res.VerbConcept).toBe('ACCENDERE');
     expect(res.CanonicalNoun).toBe('LAMPADA');
   });
+
+  it('EN: EXAMINE EMPTY SHELVES => valido (EMPTY stopword, SHELVES noun)', async () => {
+    const res = await parseCommand(null, 'EXAMINE EMPTY SHELVES', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('ESAMINARE');
+    // NounConcept localizzato su Oggetti.json
+    expect(res.NounConcept).toBe('Empty shelves');
+  });
+
+  it('EN: EXAMINE LARGE TABLE => valido (NOUN multi-parola)', async () => {
+    const res = await parseCommand(null, 'EXAMINE LARGE TABLE', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('ESAMINARE');
+    expect(res.NounConcept).toBe('Large table');
+  });
+
+  it('EN: MOVE TAPESTRY => valido (alias noun)', async () => {
+    const res = await parseCommand(null, 'MOVE TAPESTRY', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('SPOSTARE');
+    // NounConcept localizzato su Oggetti.json tramite il termine di ARAZZO_IN_PESSIME_CONDIZIONI
+    expect(res.NounConcept).toBe('Tapestry in terrible condition');
+  });
+
+  it('EN: MOVE BATON => valido (alias noun)', async () => {
+    const res = await parseCommand(null, 'MOVE BATON', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('SPOSTARE');
+    expect(res.NounConcept).toBe('Command baton');
+  });
+
+  it('EN: EXAMINE TROPHIES => valido (alias noun)', async () => {
+    const res = await parseCommand(null, 'EXAMINE TROPHIES', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('ESAMINARE');
+    expect(res.NounConcept).toBe('Trophies on the walls');
+  });
+
+  it('EN: OPEN COMPARTMENT => valido (alias noun)', async () => {
+    const res = await parseCommand(null, 'OPEN COMPARTMENT', { currentLingua: 2 });
+    expect(res.IsValid).toBe(true);
+    expect(res.CommandType).toBe('ACTION');
+    expect(res.VerbConcept).toBe('APRIRE');
+    expect(res.NounConcept).toBe('Secret compartment');
+  });
+
 
   it('Invalid input: non-stringa => INVALID_INPUT (NOT_A_STRING)', async () => {
     const parse = parseCommand as unknown as (dbPath: unknown, input: unknown) => Promise<{ IsValid: boolean; Error: string; Details?: string | null }>;

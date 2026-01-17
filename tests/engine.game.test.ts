@@ -152,3 +152,44 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toBe('Questo oggetto non può essere preso.');
   });
 });
+
+describe('Engine gameplay base EN: TAKE/DROP e INVENTORY', () => {
+  beforeAll(async () => {
+    // Carica dati JSON in global.odessaData per simulare initOdessa
+    global.odessaData = {
+      Introduzione,
+      LessicoSoftware,
+      Lingue,
+      Luoghi,
+      LuoghiLogici,
+      Oggetti,
+      Piattaforme,
+      Software,
+      TerminiLessico,
+      TipiLessico,
+      VociLessico,
+    };
+    initializeOriginalData();
+    await ensureVocabulary({ currentLingua: 2 } as any);
+  });
+
+  beforeEach(() => {
+    resetGameState(2);
+  });
+
+  it('TAKE LAMP -> inventario lo contiene (EN)', async () => {
+    const { setCurrentLocation } = await import('../src/logic/engine.js');
+    setCurrentLocation(6);
+
+    const parsed = await parseCommand(null, 'TAKE LAMP', { currentLingua: 2 } as any);
+    expect(parsed.IsValid).toBe(true);
+    const res = executeCommand(parsed);
+    expect(res.accepted).toBe(true);
+    expect(res.message).toMatch(/You took/i);
+
+    const snap = getGameStateSnapshot();
+    const lamp = snap.Oggetti.find(o => o.Oggetto === 'Lamp');
+    expect(lamp).toBeDefined();
+    expect(lamp!.IDLuogo).toBe(0);
+  });
+});
