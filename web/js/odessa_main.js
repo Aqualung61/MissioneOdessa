@@ -45,16 +45,25 @@ function setVersioneRunning(ver) {
   el.textContent = window.i18n ? window.i18n.msg('ui.version.running', ver) : `Versione: ${ver}`;
 }
 
+let versioneRunningFromApi = null;
+
 // Recupera la versione dall'API (mostrata sotto la lingua)
 try {
   const bp = getBasePath();
   fetch(bp + 'api/version')
     .then(res => res.json())
     .then(data => {
-      if (data && data.version) setVersioneRunning(data.version);
+      if (data && data.version) {
+        versioneRunningFromApi = data.version;
+        setVersioneRunning(versioneRunningFromApi);
+      }
     })
-    .catch(() => setVersioneRunning('unavailable'));
+    .catch(() => {
+      versioneRunningFromApi = 'unavailable';
+      setVersioneRunning('unavailable');
+    });
 } catch {
+  versioneRunningFromApi = 'unavailable';
   setVersioneRunning('unavailable');
 }
 
@@ -64,6 +73,12 @@ if (window.i18n) {
     .then(() => {
       window.i18n.initHTML();
       console.log('Testi HTML localizzati');
+
+      // Se la versione è già stata risolta prima del caricamento i18n,
+      // ricalcola ora la stringa localizzata (evita placeholder tipo [ui.version.running]).
+      if (versioneRunningFromApi) {
+        setVersioneRunning(versioneRunningFromApi);
+      }
       
       // Mostra lingua selezionata (sempre derivata da idLingua)
       setLinguaScelta(resolveLinguaDescrizioneFromId(idLingua));
