@@ -1,10 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const introduzioneDiv = document.getElementById('introduzione');
   const mainImg = document.getElementById('mainImage');
   let currentIntro = 1;
 
-  // Lingua persistita in localStorage (bootstrap.js scrive subito il default=1)
-  const idLingua = localStorage.getItem('linguaSelezionata') || '1';
+  // Lingua per-tab in sessionStorage con validazione data-driven (Lingue via /api/config).
+  let idLingua = '1';
+  try {
+    if (window.odessa && typeof window.odessa.resolveLinguaId === 'function') {
+      idLingua = String(await window.odessa.resolveLinguaId());
+    } else {
+      idLingua = sessionStorage.getItem('linguaSelezionata') || '1';
+    }
+  } catch {
+    idLingua = sessionStorage.getItem('linguaSelezionata') || '1';
+  }
 
   // Applica i18n HTML (non bloccante) per data-i18n/data-i18n-*.
   try {

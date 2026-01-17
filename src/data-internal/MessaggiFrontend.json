@@ -360,6 +360,16 @@
     "Messaggio": "Command"
   },
   {
+    "Chiave": "ui.label.selectGameLanguage",
+    "IDLingua": 1,
+    "Messaggio": "Seleziona lingua del gioco"
+  },
+  {
+    "Chiave": "ui.label.selectGameLanguage",
+    "IDLingua": 2,
+    "Messaggio": "Select game language"
+  },
+  {
     "Chiave": "ui.aria.placesSection",
     "IDLingua": 1,
     "Messaggio": "Luoghi Missione Odessa"
