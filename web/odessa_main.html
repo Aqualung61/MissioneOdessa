@@ -40,9 +40,9 @@
     </p>
   </noscript>
   <main class="layout">
-    <section class="left" aria-label="" data-i18n-aria-label="ui.aria.placesSection">
+    <section class="left" aria-label="Luoghi Missione Odessa" data-i18n-aria-label="ui.aria.placesSection">
         <div class="temp-img-wrapper">
-          <img id="dynamicPlaceImage" src="" alt="" data-i18n-alt="ui.image.place.alt" width="1024" height="1024" decoding="async" />
+        <img id="dynamicPlaceImage" src="" alt="Immagine del luogo" data-i18n-alt="ui.image.place.alt" width="1024" height="1024" decoding="async" />
           <div id="placeNameOverlay"></div>
       </div>
       <!-- Numero luoghi visitati -->
@@ -56,12 +56,12 @@
       <!-- Livello/Rango -->
         <div id="rankCount" class="hud-stat hud-stat--rank"></div>
     </section>
-    <section class="right" aria-label="" data-i18n-aria-label="ui.aria.consoleSection">
-      <div id="outputWrapper" aria-label="" data-i18n-aria-label="ui.aria.outputWrapper">
+    <section class="right" aria-label="Console di gioco" data-i18n-aria-label="ui.aria.consoleSection">
+      <div id="outputWrapper" aria-label="Output di gioco" data-i18n-aria-label="ui.aria.outputWrapper">
         <!-- Riquadro descrizioni e feed del gioco -->
           <div id="placeFeed" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></div>
         <!-- Output principale del gioco (descrizione luogo attuale) -->
-        <div id="output" role="region" aria-label="" data-i18n-aria-label="ui.aria.outputDescription"></div>
+        <div id="output" role="region" aria-label="Descrizione del luogo" data-i18n-aria-label="ui.aria.outputDescription"></div>
         <!-- Messaggi di sistema, azioni, feedback -->
         <div id="placeMsgs" aria-live="polite" aria-atomic="false"></div>
       </div>
@@ -69,11 +69,11 @@
         <!-- Area di input per i comandi dell'utente -->
         <form id="inputArea" autocomplete="off">
           <label for="userInput" class="visually-hidden" data-i18n="ui.label.command">Comando</label>
-          <input id="userInput" type="text" placeholder="" data-i18n-placeholder="ui.input.placeholder" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" />
+          <input id="userInput" type="text" placeholder="Inserisci un comando" data-i18n-placeholder="ui.input.placeholder" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="send" />
           <button id="sendBtn" type="submit" data-i18n="ui.button.submit">Invia</button>
         </form>
       </div>
-      <div id="linguaScelta"></div>
+      <div id="linguaScelta">Lingua selezionata:</div>
       <!-- Versione attuale dell'app -->
       <div id="versioneRunning"></div>
     </section>
