@@ -19,10 +19,12 @@ Suggerimento: quando apri una PR, usa `Fixes #<id>` nella descrizione per chiude
 
 Milestones già create su GitHub (nomi allineati alla UI):
 
-- **1.3.2 (Stability e UX)**
+- **v1.3.2 (Stability e UX)**
 - **v1.3.3 (i18n + polish)**
 - **v1.3.4 (Cross-browser QA)**
 - **v1.4.0 (Release readiness)**
+
+Nota: **v1.3.3** è stata rilasciata il **17 gennaio 2026**.
 
 ## Now (prossima iterazione)
 
