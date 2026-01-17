@@ -340,6 +340,16 @@
     "Messaggio": "Selected language: {0}"
   },
   {
+    "Chiave": "ui.language.selected",
+    "IDLingua": 1,
+    "Messaggio": "Lingua selezionata:"
+  },
+  {
+    "Chiave": "ui.language.selected",
+    "IDLingua": 2,
+    "Messaggio": "Selected language:"
+  },
+  {
     "Chiave": "ui.label.command",
     "IDLingua": 1,
     "Messaggio": "Comando"
