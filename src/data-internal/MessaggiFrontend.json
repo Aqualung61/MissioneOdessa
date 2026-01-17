@@ -510,6 +510,46 @@
     "Messaggio": "Additional text"
   },
   {
+    "Chiave": "story.meta.author",
+    "IDLingua": 1,
+    "Messaggio": "Autore: Paolo Giorgi (con il contributo di Mauro Giorgi e Enrico Colombini)"
+  },
+  {
+    "Chiave": "story.meta.author",
+    "IDLingua": 2,
+    "Messaggio": "Author: Paolo Giorgi (with contributions by Mauro Giorgi and Enrico Colombini)"
+  },
+  {
+    "Chiave": "story.meta.genre",
+    "IDLingua": 1,
+    "Messaggio": "Genere: Avventura testuale, spionaggio, Guerra Fredda."
+  },
+  {
+    "Chiave": "story.meta.genre",
+    "IDLingua": 2,
+    "Messaggio": "Genre: Text adventure, espionage, Cold War."
+  },
+  {
+    "Chiave": "story.meta.platform",
+    "IDLingua": 1,
+    "Messaggio": "Piattaforma: Commodore 64/128, ZX Spectrum."
+  },
+  {
+    "Chiave": "story.meta.platform",
+    "IDLingua": 2,
+    "Messaggio": "Platform: Commodore 64/128, ZX Spectrum."
+  },
+  {
+    "Chiave": "story.meta.links",
+    "IDLingua": 1,
+    "Messaggio": "Link:"
+  },
+  {
+    "Chiave": "story.meta.links",
+    "IDLingua": 2,
+    "Messaggio": "Links:"
+  },
+  {
     "Chiave": "story.link.ready64",
     "IDLingua": 1,
     "Messaggio": "Scheda Ready64.org"
