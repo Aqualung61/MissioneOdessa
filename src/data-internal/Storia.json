@@ -6,7 +6,7 @@
     "Testo2": "**A 40 anni dalla prima pubblicazione, è possibile ora giocare online con la versione disponibile nelle pagine seguenti.**\n\nE' un porting del gioco su piattaforma Node.js, su hosting pubblico. E' fedele nella storia, ambientazione, enigmi e misteri all'originale. I testi e i comandi, come le interazioni sono praticamente le stesse della prima versione. Sono state aggiunte immagini ma l'impianto è fedele a quello di un gioco con comandi testuali.\n\nIl porting è stato realizzato usando Visual Studio Code, con agenti AI per coding, testing e documentazione: **la programmazione diretta è stata inferiore al 5% del codice sviluppato.**",
     "LabelLinks": "**Links:**",
     "LabelDocumenti": "**Documenti (PDF):**",
-    "AutoreLine": "**Autore:** Paolo Giorgi (con il contributo di Mauro Giorgi e Enrico Colombini)",
+    "AutoreLine": "**Autore originale:** Paolo Giorgi — **Porting Node.js:** Mauro Giorgi (con il supporto di Enrico Colombini)",
     "GenereLine": "**Genere:** Avventura testuale, spionaggio, Guerra Fredda.",
     "PiattaformaLine": "**Piattaforma:** Commodore 64/128, ZX Spectrum."
   },
@@ -17,7 +17,7 @@
     "Testo2": "**40 years after the first publication, it is now possible to play online with the version available on the following pages.**\n\nIt is a port of the game to the Node.js platform, hosted publicly. It stays faithful to the original story, setting, puzzles, and mysteries. The texts and commands, as well as the interactions, are practically the same as the first version. Images have been added, but the overall structure remains true to a text-command game.\n\nThe port was built using Visual Studio Code, with AI agents for coding, testing, and documentation: **direct programming accounted for less than 5% of the developed code.**",
     "LabelLinks": "**Links:**",
     "LabelDocumenti": "**Documents (PDF):**",
-    "AutoreLine": "**Author:** Paolo Giorgi (with contributions by Mauro Giorgi and Enrico Colombini)",
+    "AutoreLine": "**Original author:** Paolo Giorgi — **Node.js port:** Mauro Giorgi (with support from Enrico Colombini)",
     "GenereLine": "**Genre:** Text adventure, espionage, Cold War.",
     "PiattaformaLine": "**Platform:** Commodore 64/128, ZX Spectrum."
   }
