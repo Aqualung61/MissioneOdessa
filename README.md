@@ -25,6 +25,15 @@ Il porting sulla piattaforma Node.js è stato realizzato da **Mauro Giorgi** com
 ### 📖 Licenza
 Il codice del porting è distribuito con licenza **MIT**, come indicato nel file [LICENSE](LICENSE). Questa licenza si applica esclusivamente al porting e non modifica in alcun modo i diritti sull’opera originale.
 
+### 📦 Dipendenze e terze parti
+
+- Per note su componenti di terze parti (npm e asset vendorizzati), vedi: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+### 🖼️ Immagini e asset
+
+- `images/dummy.png`: immagine tratta da “Missione Odessa”, Jackson Editore (1986). Utilizzata con autorizzazione dell’autore Paolo Giorgi.
+- Le altre immagini in `images/` sono state realizzate da M. Giorgi (autore dell’opera derivata) usando Agent AI con prompt.
+
 ### 📌 Nota
 Il contenuto narrativo, i testi, la struttura del gioco e gli elementi creativi derivano dall’opera originale e sono utilizzati con il consenso dell’autore.
 
