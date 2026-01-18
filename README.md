@@ -6,6 +6,7 @@
 
 - Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Piano operativo (TODO dettagliato): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
+- Release readiness (pre-public): [docs/20260118_issue_62_release_readiness_prepublic_checklist.md](docs/20260118_issue_62_release_readiness_prepublic_checklist.md)
 - Tracking (fonte di verità):
    - Issues: https://github.com/Aqualung61/MissioneOdessa/issues
    - Milestones: https://github.com/Aqualung61/MissioneOdessa/milestones
@@ -74,6 +75,14 @@ location.reload();
   - [http://localhost:3001/api/luoghi](http://localhost:3001/api/luoghi)
   - [http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1](http://localhost:3001/api/luogo-oggetti?idLuogo=8&idLingua=1)
   - [http://localhost:3001/api/version](http://localhost:3001/api/version) — restituisce la versione dell'applicazione
+
+## Test
+
+Esegui la suite Vitest:
+
+```sh
+npm test
+```
 
 ## Multi-session per-tab (Sprint #59.1)
 

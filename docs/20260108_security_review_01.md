@@ -481,7 +481,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 **Step 3:** Configurare environment (15 min)
 ```bash
 # .env.example
-API_KEY=your-secret-key-here-min-32-chars
+API_KEY=
 NODE_ENV=production
 
 # Generare chiave sicura
@@ -494,7 +494,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Tutte le chiamate API richiedono header:
 ```
-X-API-Key: your-api-key
+X-API-Key: <your-api-key>
 ```
 
 Esempio:
