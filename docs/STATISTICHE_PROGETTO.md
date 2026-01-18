@@ -1,11 +1,14 @@
 # Statistiche Progetto Missione Odessa
-*Generato: 11 gennaio 2026*
+*Generato: 18 gennaio 2026*
 
-## Aggiornamento (11 gennaio 2026) — Parser integrato / thin client
+## Aggiornamento (18 gennaio 2026) — Release 1.3.3 (multi-session) + fix 1.3.2
 
 - **Input pipeline target:** `POST /api/engine/execute` come source-of-truth (parser + engine + snapshot `state/ui/stats`).
 - **Legacy:** `POST /api/parser/parse` e `POST /api/engine/set-location` restano disponibili ma **deprecati** e disabilitabili con `DISABLE_LEGACY_ENDPOINTS=1`.
-- **Test suite (ultimo run):** 240 test totali (223 passati, 17 skippati); 30 test files (29 passati, 1 skipped).
+- **v1.3.3 (17/01):** multi-session **per-tab** (no cookie) via header `X-Session-Id` / `X-Game-Id`, persistenza client in `sessionStorage`, self-healing id, `/reset` genera un nuovo `X-Game-Id`.
+  - Guardrail produzione (in-memory): TTL idle/assoluto + limite sessioni (LRU) via `.env`.
+- **v1.3.2 (14/01):** fix save/load (HUD riallineato subito dopo `CARICA`), tuning intercettazione (morte dopo 4 turni consuming), lingua UI persistita solo in `localStorage` (whitelist `{1,2}`) + cleanup URL/querystring e entrypoint.
+- **Test suite (ultimo run):** 302 test totali (285 passati, 17 skippati); 43 test files (42 passati, 1 skipped); durata ~8.25s.
 
 Nota: le metriche sottostanti restano valide come fotografia “volumetrica”; per un refresh completo (LOC, conteggi file, ecc.) rieseguire i comandi in “Nota Metodologica”.
 
@@ -15,21 +18,21 @@ Nota: le metriche sottostanti restano valide come fotografia “volumetrica”; 
 
 ### Timeline
 - **Data inizio:** 30 ottobre 2025 (19:00:42)
-- **Data snapshot:** 11 gennaio 2026 (19:43:37)
-- **Durata:** 71 giorni
-- **Ore totali:** ~1,753 ore calendario (tempo reale, non effort)
+- **Data snapshot:** 17 gennaio 2026 (23:49:43)
+- **Durata:** 79 giorni
+- **Ore totali:** ~1,901 ore calendario (tempo reale, non effort)
 
 ### Commit e Attività
-- **Commit totali:** 327
-- **Media commit/giorno:** 4.48
-- **Modifiche file totali:** 1,420 operazioni (git numstat: file×commit)
-- **Commit oggi (11/01):** 8
+- **Commit totali:** 401
+- **Media commit/giorno:** 5.08
+- **Modifiche file totali:** 1,818 operazioni (git numstat: file×commit)
+- **Commit nel giorno release (17/01):** 14
 
 ### Crescita Codebase
-- **File modificati:** 408 (unique path in history)
-- **Linee aggiunte:** +58,863
-- **Linee rimosse:** -14,417
-- **Delta netto:** +44,446 linee
+- **File modificati:** 485 (unique path in history)
+- **Linee aggiunte:** +73,772
+- **Linee rimosse:** -23,948
+- **Delta netto:** +49,824 linee
 
 ---
 
@@ -38,7 +41,7 @@ Nota: le metriche sottostanti restano valide come fotografia “volumetrica”; 
 ### Totali per Estensione
 | Estensione | Linee Codice |
 |------------|--------------|
-| **JS/TS**  | 8,970        |
+| **JS/TS**  | 12,097       |
 
 *Note: conteggio su “repo pulito” (tutto il repo), esclusi: node_modules, backup, dbbuild, deploy, dist, test-results + file binari.*
 
@@ -71,31 +74,31 @@ git rev-list --count HEAD
 
 | Tipologia | Count | Descrizione |
 |-----------|-------|-------------|
-| `.md`     | 39    | Documentazione |
-| `.ts`     | 38    | TypeScript (tests, types, tooling) |
-| `.js`     | 29    | Backend + frontend logic |
-| `.json`   | 20    | Dati + configurazioni |
+| `.md`     | 48    | Documentazione |
+| `.ts`     | 56    | TypeScript (tests, types, tooling) |
+| `.js`     | 35    | Backend + frontend logic |
+| `.json`   | 22    | Dati + configurazioni |
 | `.css`    | 3     | Fogli di stile |
 | `.csv`    | 3     | Dati/estrazioni |
-| `.html`   | 3     | Pagine frontend |
+| `.html`   | 4     | Pagine frontend |
 | `.mmd`    | 2     | Diagrammi Mermaid |
-| `.txt`    | 3     | Note/utility |
+| `.txt`    | 2     | Note/utility |
 | `.yml`    | 2     | CI/config |
-| **Altri** | 12    | File singoli di config/metadata |
-| **Totale** | **154** | **File (repo pulito)** |
+| **Altri** | 16    | File singoli di config/metadata |
+| **Totale** | **193** | **File (repo pulito)** |
 
 ### File Applicativi (Escluso node_modules)
 | Categoria | Files | Descrizione |
 |-----------|-------|-------------|
-| **Source** | 46 | Backend logic + middleware (src/) |
-| **Tests** | 27 | Test suite (tests/) |
-| **Web** | 8 | Frontend (web/) |
-| **Types** | 2 | Type definitions (*.d.ts) |
-| **Docs** | 41 | Documentazione (docs/, esclusi binari) |
-| **Root/Config** | 30 | File root e configurazioni (package.json, tsconfig, ecc.) |
-| **Totale** | **154** | File nel perimetro “repo pulito” |
+| **Source** | 47 | Backend logic + middleware (src/) |
+| **Tests** | 46 | Test suite (tests/) |
+| **Web** | 14 | Frontend (web/) |
+| **Types** | 3 | Type definitions (*.d.ts) |
+| **Docs** | 50 | Documentazione (docs/, esclusi binari) |
+| **Root/Config** | 33 | File root e configurazioni (package.json, tsconfig, ecc.) |
+| **Totale** | **193** | File nel perimetro “repo pulito” |
 
-**Dimensione totale progetto (repo pulito):** 1,545 KB (~1.5 MB)  
+**Dimensione totale progetto (repo pulito):** 1,715 KB (~1.7 MB)  
 *Esclusi: node_modules (~382 MB), backup, deploy, dbbuild, dist, test-results, file binari*
 
 ---
@@ -105,12 +108,12 @@ git rev-list --count HEAD
 ### Metriche Strutturali
 | Metrica | Valore | Note |
 |---------|--------|------|
-| **Funzioni esportate** | 40 | API pubbliche JS (export function + export async function in src/) |
-| **Dichiarazioni TypeScript** | 2 | Type definitions in *.d.ts (non codice eseguibile) |
+| **Funzioni esportate** | 48 | Stima: `export function` + `export async function` in `src/` |
+| **Dichiarazioni TypeScript** | 3 | Type definitions in *.d.ts (non codice eseguibile) |
 | **Classi** | 0 | Pattern funzionale puro, no OOP |
-| **Moduli core** | 46 | File in src/ (ricorsivo, esclusi binari/artefatti) |
-| **Test suite** | 26 | Vitest test files (25 passed | 1 skipped) |
-| **Componenti web** | 16 | Asset frontend principali (4 HTML entry + 3 CSS in `web/css` + 9 JS in `web/js`) |
+| **Moduli core** | 47 | File in src/ (ricorsivo, esclusi binari/artefatti) |
+| **Test suite** | 43 | Vitest test files (42 passed | 1 skipped) |
+| **Componenti web** | 15 | Asset frontend principali (4 HTML entry + 3 CSS in `web/css` + 8 JS in `web/js`) |
 | **API Routes** | 7 | Endpoint REST Express (sviluppati, non framework) |
 
 **Dettaglio funzioni esportate:**
@@ -126,7 +129,17 @@ git rev-list --count HEAD
 
 ### Complessità Funzionale Stimata
 - **Moduli principali:** 14 JS + 3 TS in src/ (logic, api, data-internal, tests)
-- **API Endpoints:** 7 route REST (POST /execute, GET /state, POST /reset, POST /set-location [legacy], POST /save-client-state, POST /load-client-state, GET /direzioni/:idLuogo)
+- **API Endpoints:** 7 route REST
+  - Engine (stateful, multi-session):
+    - `POST /api/engine/execute`
+    - `GET /api/engine/state`
+    - `POST /api/engine/reset` (nuovo `X-Game-Id`)
+    - `POST /api/engine/set-location` *(legacy, disabilitabile)*
+    - `POST /api/engine/save-client-state`
+    - `POST /api/engine/load-client-state`
+  - Utility:
+    - `GET /api/direzioni/:idLuogo`
+  - **Session headers (v1.3.3):** gli endpoint `/api/engine/*` accettano `X-Session-Id` / `X-Game-Id` (opzionali) e li ritornano sempre in response; se mancanti/invalidi, il server fa self-healing generando id validi.
 - **Frontend pages:** 4 HTML (index.html, odessa_storia.html, odessa_intro.html, odessa_main.html)
 - **Depth medio:** 3 livelli (src → logic/api → implementazione)
 
@@ -134,7 +147,7 @@ git rev-list --count HEAD
 | Aspetto | Valutazione | Dettaglio |
 |---------|-------------|-----------|
 | **Modularità** | ✅ Alta | Separazione API/Logic/Data layer |
-| **Testabilità** | ✅ Alta | 208 test passing (Vitest) |
+| **Testabilità** | ✅ Alta | 285 test passing (Vitest) |
 | **Manutenibilità** | ✅ Alta | Codice documentato, pattern chiari |
 | **Accoppiamento** | ✅ Basso | Dependency injection implicita |
 | **Coesione** | ✅ Alta | Single responsibility per modulo |
@@ -153,10 +166,10 @@ git rev-list --count HEAD
 
 **Valutazione:** ✅ Pattern appropriato per single-player game, no persistenza complessa
 
-#### 2. **Singleton Pattern**
-- **Implementazione:** `gameState` in `engine.js`
-- **Scope:** Stato di gioco globale in memoria
-- **Trade-off:** Anti-pattern enterprise ❌ | Perfetto per single-player ✅
+#### 2. **Multi-session / Multiton**
+- **Implementazione:** middleware `src/middleware/sessionContext.js` (session store in memoria) + istanza `engine.js` separata per `sessionId`.
+- **Scope:** `gameState` non è più un singleton globale: ogni tab/sessione ha la propria partita isolata.
+- **Trade-off:** Più complessità e memoria per sessione ✅ | Necessario per concorrenza e i18n runtime ✅
 
 #### 3. **Module Pattern**
 - **Scope:** Tutti i file sorgente usano ES6 modules
@@ -206,7 +219,7 @@ git rev-list --count HEAD
 - ⚠️ **God Function:** 1 occorrenza (`executeCommand()` 173 linee, complessità 64) - candidata per refactoring
 - ❌ **Magic Numbers:** Uso di costanti (`CommandType`, `ParseErrorType`)
 - ❌ **Hard-coded Strings:** Messaggi localizzati in `MessaggiSistema.json`
-- ❌ **Global State Abuse:** `gameState` limitato a `engine.js`, non sparso ovunque
+- ✅ **Isolamento stato:** `gameState` isolato per sessione; dataset statici (`global.odessaData`) condivisi e read-only
 
 ### Pattern Non Applicati (Giustificazione)
 | Pattern | Motivo Esclusione |
@@ -222,14 +235,14 @@ git rev-list --count HEAD
 ## 🔍 Metriche Aggiuntive
 
 ### Copertura Funzionale
-- **Test files:** 30 (29 passed | 1 skipped)
-- **Test passing:** 223
+- **Test files:** 43 (42 passed | 1 skipped)
+- **Test passing:** 285
 - **Test skipped:** 17
-- **Test duration:** ~2.27s
+- **Test duration:** ~8.25s
 - **Code coverage:** Non misurato (stimato >70% per logic core)
 
 ### Documentazione
-- **File `.md` totali:** 39 (escluse cartelle artefatto)
+- **File `.md` totali:** 48 (escluse cartelle artefatto)
 - **Documenti principali:**
   - `README.md` (117 linee)
   - `docs/data-modeling.md`
@@ -241,7 +254,11 @@ git rev-list --count HEAD
 ### Configurazione e Setup
 - **Package.json scripts:** 6+ (dev, test, test:watch, build, etc.)
 - **Config files:** eslint, vitest, tsconfig
-- **Environment:** `.env` per `ODESSA_DB_PATH` (legacy), ora JSON-based
+- **Environment:** `.env` per flag di deploy/security (vedi `.env.example`)
+  - **Multi-session (v1.3.3):**
+    - `SESSION_MAX_SESSIONS` (default: 200)
+    - `SESSION_IDLE_TTL_MS` (default: 21600000 = 6h)
+    - `SESSION_ABSOLUTE_TTL_MS` (default: 86400000 = 24h)
 
 ---
 
@@ -267,10 +284,14 @@ git rev-list --count HEAD
 - **Sprint 2:** Frontend UI messages (IT/EN)
 - Pattern: Chiave → Lookup in `Messaggi{Sistema|Frontend}.json`
 
-### Fase 5: Stabilizzazione (In corso)
-- Bug fixes
-- Testing completo
-- Documentazione
+### Fase 5: Stabilizzazione (Gen, v1.3.2)
+- Fix e hardening di save/load, lingua e navigazione URL
+- Cleanup entrypoint e riduzione legacy querystring
+
+### Fase 6: Multi-session per-tab (Gen, v1.3.3)
+- Isolamento partite per tab (header `X-Session-Id` / `X-Game-Id`, `sessionStorage`)
+- Guardrail produzione: TTL idle/assoluto + limite sessioni (LRU) via `.env`
+- Aggiornamenti CI: pin Node `18.20.x` e `20.x` + output test verbose
 
 ---
 
@@ -278,8 +299,8 @@ git rev-list --count HEAD
 
 ### Punti di Forza
 ✅ **Modularità:** Separazione netta tra layer  
-✅ **Testabilità:** 208 test passing, no regression  
-✅ **Documentazione:** 39 file .md, commenti inline  
+✅ **Testabilità:** 285 test passing, no regression  
+✅ **Documentazione:** 48 file .md, commenti inline  
 ✅ **Pattern Design:** 10+ pattern applicati correttamente  
 ✅ **Manutenibilità:** Codice leggibile, naming conventions chiare  
 ✅ **Pragmatismo:** Scelte architetturali proporzionate allo scope  
