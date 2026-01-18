@@ -4,6 +4,15 @@
 
 ---
 
+## v1.3.4 (18 gennaio 2026)
+
+### Release readiness (pre-public)
+
+- Documentazione “pre-public”: checklist completata e pubblicata.
+- Aggiunti third-party notices e attribution immagini (dummy + immagini generate dall’autore del porting con supporto AI).
+
+---
+
 ## v1.3.3 (17 gennaio 2026)
 
 ### Sprint #59.1: Multi-session per-tab
