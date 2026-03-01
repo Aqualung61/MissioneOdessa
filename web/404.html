@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Pagina non trovata – Missione Odessa." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#000000" />
+  <title>404 – Pagina non trovata | Missione Odessa</title>
+  <link rel="icon" href="/images/MissioneOdessa.ico" type="image/x-icon" />
+  <style>
+    /* Variabili e reset da base.css */
+    :root {
+      --page-bg: #000000;
+      --white: #ffffff;
+      --text-color: var(--white);
+      --text-muted: #666;
+      --accent-gold: #ffd700;
+      --font-sm: clamp(13px, 1.0vw, 15px);
+      --font-base: clamp(14px, 1.1vw, 16px);
+      --font-lg: clamp(15px, 1.25vw, 17px);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--page-bg);
+      color: var(--text-color);
+      font-family: Aptos, "Segoe UI", Arial, sans-serif;
+      font-size: var(--font-base);
+      line-height: 1.35;
+    }
+    .visually-hidden { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0 0 0 0) !important; white-space:nowrap !important; border:0 !important; }
+  </style>
+  <style>
+    body.page-404 {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: clamp(16px, 4vw, 48px);
+    }
+
+    .page-404__code {
+      font-size: clamp(5rem, 18vw, 11rem);
+      font-weight: bold;
+      font-style: italic;
+      line-height: 1;
+      color: var(--white);
+      margin: 0 0 clamp(12px, 2vw, 24px);
+      user-select: none;
+      transition: color 0.3s;
+    }
+    .page-404__code:hover {
+      color: var(--accent-gold);
+    }
+
+    .page-404__image {
+      max-width: clamp(120px, 20vw, 200px);
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: clamp(12px, 2vw, 24px);
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .page-404__msg {
+      font-size: var(--font-lg);
+      font-style: italic;
+      max-width: 42ch;
+      margin: 0 auto clamp(20px, 3vw, 36px);
+      color: var(--white);
+      transition: color 0.3s;
+    }
+    .page-404__msg:hover {
+      color: var(--text-muted);
+    }
+
+    .page-404__link {
+      font-size: var(--font-sm);
+      font-style: italic;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s;
+      margin-top: clamp(8px, 1vw, 12px);
+    }
+    .page-404__link:hover,
+    .page-404__link:focus-visible {
+      color: var(--accent-gold);
+      outline: none;
+    }
+    .page-404__link:focus-visible {
+      outline: 2px solid var(--accent-gold);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="page-404">
+  <main>
+    <p class="page-404__code" aria-label="Errore 404">404</p>
+
+    <img
+      class="page-404__image"
+      src="/images/Karl_Marx.png"
+      alt="Karl Marx"
+      width="200"
+      height="200"
+      decoding="async"
+      loading="eager"
+    />
+
+    <p class="page-404__msg">
+      Il link che hai cercato non funziona, come il socialismo.
+    </p>
+
+    <a class="page-404__link" href="/">Torna alla homepage</a>
+  </main>
+</body>
+</html>

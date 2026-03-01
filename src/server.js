@@ -171,9 +171,9 @@ if (process.env.NODE_ENV === 'test') {
 // Statico dopo le API
 app.use(BASE_PATH, express.static(ROOT));
 
-// Catch-all per SPA (ultimo middleware "non-error").
+// Catch-all: risorsa o route non trovata → restituisce la pagina 404.
 app.use(BASE_PATH, (req, res) => {
-  res.sendFile(path.join(ROOT, 'index.html'));
+  res.status(404).sendFile(path.join(ROOT, 'web', '404.html'));
 });
 
 // M4: Error handler globale (sanitizza errori in produzione)
