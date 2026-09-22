@@ -48,6 +48,9 @@ db/.project
 # Local security audit reports
 audit-*.json
 
+# Local reverse-engineering workspace (not part of the application)
+disassembly/
+
 # OS/editor
 .DS_Store
 Thumbs.db

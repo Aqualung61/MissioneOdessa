@@ -11,6 +11,7 @@ export default [
       'dist/',
       'build/',
       'deploy/',
+      'disassembly/',
       'src/git-sync.*',
       'ddl/',
       'docs/ddl*/',
