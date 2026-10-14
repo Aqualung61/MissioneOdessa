@@ -49,7 +49,7 @@ Il contenuto narrativo, i testi, la struttura del gioco e gli elementi creativi 
    ```
 3. Accedi all'applicazione web:
    - [http://localhost:3001/](http://localhost:3001/) oppure [http://localhost:3001/index.html](http://localhost:3001/index.html)
-       - entrypoint: redirect verso **storia** (lingua default = 1, persistita in `localStorage`)
+       - entrypoint: redirect verso **storia** (lingua default = 1, persistita in `sessionStorage`)
     - [http://localhost:3001/web/odessa_storia.html](http://localhost:3001/web/odessa_storia.html) (storia)
     - [http://localhost:3001/web/odessa_intro.html](http://localhost:3001/web/odessa_intro.html) (intro)
    - [http://localhost:3001/web/odessa_main.html](http://localhost:3001/web/odessa_main.html) (gioco diretto)
@@ -63,14 +63,14 @@ Il flusso “standard” è:
 3. `odessa_intro.html` → progressione a step (click) → `web/odessa_main.html`
 
 Note:
-- La lingua UI è gestita tramite `localStorage` (chiave `linguaSelezionata`): default `1`, valori ammessi `{1,2}`.
+- La lingua UI è gestita tramite `sessionStorage` (chiave `linguaSelezionata`): default `1`, valori ammessi `{1,2}`.
 - Vecchi bookmark/link con `?idLingua=...` o `?Lingua=...` vengono ripuliti automaticamente dalla URL (History API).
 - In deploy con `BASE_PATH`, tutti gli URL diventano `${BASE_PATH}/...` (es. `/missione-odessa/web/odessa_storia.html`).
 
 Per forzare la lingua EN in locale (best-effort): apri DevTools Console e fai:
 
 ```js
-localStorage.setItem('linguaSelezionata', '2');
+sessionStorage.setItem('linguaSelezionata', '2');
 location.reload();
 ```
 

@@ -17,7 +17,7 @@ import { initOdessa } from './initOdessa.js';
 import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
 import { apiKeyAuth } from './middleware/auth.js';
-import { apiLimiter, parsingLimiter } from './middleware/rateLimiter.js';
+import { apiLimiter, parsingLimiter, heavyLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { appVersion } from './version.js';
 // import { azioni_setup } from './azioni_setup';
@@ -81,21 +81,6 @@ app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
 // API: config (espone BASE_PATH al client)
 registerApiConfigRoutes(app, { basePath: BASE_PATH, limiter: apiLimiter });
 
-// API: init_odessa per test
-app.get(BASE_PATH + '/init_odessa', async (req, res, next) => {
-  try {
-    await initOdessa();
-    const tables = Object.keys(global.odessaData);
-    const counts = {};
-    tables.forEach(table => {
-      counts[table] = global.odessaData[table].length;
-    });
-    res.json({ tables, counts });
-  } catch (err) {
-    return next(err);
-  }
-});
-
 // Redirect root to BASE_PATH if BASE_PATH is set
 if (BASE_PATH) {
   app.get('/', (req, res) => {
@@ -143,6 +128,7 @@ app.use(BASE_PATH + '/api', apiKeyAuth());
 app.use(BASE_PATH + '/api', apiLimiter);
 app.use(BASE_PATH + '/api/parser/parse', parsingLimiter);
 app.use(BASE_PATH + '/api/engine/execute', parsingLimiter);
+app.use(BASE_PATH + '/api/parser/reload', heavyLimiter);
 
 // API (devono venire PRIMA dello statico!)
 app.use(BASE_PATH + '/api', apiRoutes);

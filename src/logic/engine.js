@@ -934,7 +934,8 @@ export function createEngine() {
 
   // === SISTEMA PUNTEGGIO MISTERI ===
   // Assegna +3 punti quando un mistero viene risolto automaticamente tramite effetti
-  function assegnaPunteggioMistero(effetto) {
+  // statoPreToggle: stato del toggle PRIMA dell'effetto (solo per TOGGLE_DIREZIONE), calcolato in applicaEffetti
+  function assegnaPunteggioMistero(effetto, { statoPreToggle } = {}) {
     let misteroId = null;
     
     // Task 4a: VISIBILITA - oggetto diventa visibile
@@ -956,9 +957,7 @@ export function createEngine() {
     
     // Task 4c: TOGGLE_DIREZIONE - solo prima apertura (0 → valore)
     else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
-      // Usa stato PRE-toggle salvato in applicaEffetti()
-      const statoPreToggle = effetto._statoPreToggle;
-      
+      // Usa lo stato PRE-toggle passato da applicaEffetti()
       // Assegna punti solo se sta APRENDO (false → true)
       // Chiusure (true → false) e riaperture successive: NO +3
       if (statoPreToggle === false) {
@@ -981,6 +980,8 @@ export function createEngine() {
   // Funzione per applicare gli effetti di un'interazione
   function applicaEffetti(effetti, luogoCorrente) {
     for (const effetto of effetti) {
+      // Stato precedente al toggle: variabile locale (non si scrive sui dati globali condivisi)
+      let statoPreToggle;
       if (effetto.tipo === 'VISIBILITA') {
         // Se l'effetto specifica un luogo, cerca solo lì. Altrimenti cerca nel luogo corrente
         const targetLuogo = effetto.luogo !== undefined ? effetto.luogo : luogoCorrente;
@@ -1010,7 +1011,7 @@ export function createEngine() {
           gameState.direzioniToggle[key] = false;
         }
         // Salva stato PRIMA del toggle per assegnaPunteggioMistero
-        effetto._statoPreToggle = gameState.direzioniToggle[key];
+        statoPreToggle = gameState.direzioniToggle[key];
         gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
       } else if (effetto.tipo === 'VITTORIA') {
         gameState.ended = true;
@@ -1031,7 +1032,7 @@ export function createEngine() {
       
       // === SISTEMA PUNTEGGIO MISTERI ===
       // Assegna +3 punti se questo effetto risolve un mistero
-      assegnaPunteggioMistero(effetto);
+      assegnaPunteggioMistero(effetto, { statoPreToggle });
     }
   }
 

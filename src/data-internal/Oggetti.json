@@ -160,22 +160,6 @@
     "descrizione": "It depicts a boy throwing. It doesn't seem to have any artistic value nor be made of a precious metal, but it appears to be fixed to some sort of guide on the table."
   },
   {
-    "ID": 11,
-    "IDLingua": 1,
-    "Oggetto": "Scrivania",
-    "Attivo": 1,
-    "IDLuogo": null,
-    "descrizione": "E' una vecchia scrivania, ricoperta interamente da polvere."
-  },
-  {
-    "ID": 11,
-    "IDLingua": 2,
-    "Oggetto": "Desk",
-    "Attivo": 1,
-    "IDLuogo": null,
-    "descrizione": "It's an old desk, completely covered in dust."
-  },
-  {
     "ID": 12,
     "IDLingua": 1,
     "Oggetto": "Scaffali vuoti",
