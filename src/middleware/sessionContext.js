@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { createEngine } from '../logic/engine.js';
 
 const SESSION_ID_HEADER = 'X-Session-Id';
 const GAME_ID_HEADER = 'X-Game-Id';
@@ -9,9 +10,8 @@ function parsePositiveInt(value) {
 }
 
 // Sprint #59.1: guardrails per evitare crescita illimitata in produzione.
-// Nota: con l'approccio per-session module instance (import con query string), il
-// modulo rimane in cache ESM. Questi limiti impediscono un numero illimitato di
-// sessioni (e quindi di moduli/engine) nel tempo.
+// Ogni sessione ha un proprio motore (createEngine) che viene rilasciato con l'evizione.
+// Questi limiti impediscono un numero illimitato di sessioni (e quindi di engine) nel tempo.
 const MAX_SESSIONS = parsePositiveInt(process.env.SESSION_MAX_SESSIONS) ?? 200;
 const SESSION_IDLE_TTL_MS = parsePositiveInt(process.env.SESSION_IDLE_TTL_MS) ?? (6 * 60 * 60 * 1000); // 6h
 const SESSION_ABSOLUTE_TTL_MS = parsePositiveInt(process.env.SESSION_ABSOLUTE_TTL_MS) ?? (24 * 60 * 60 * 1000); // 24h
@@ -64,16 +64,11 @@ function normalizeHeader(value) {
   return v;
 }
 
-async function importEngineModuleForSession(sessionId) {
-  // IMPORTANT: adding a query parameter forces a distinct module instance per session.
-  const engineUrl = new URL('../logic/engine.js', import.meta.url);
-  engineUrl.searchParams.set('session', sessionId);
-  const engine = await import(engineUrl.href);
+function createEngineForSession() {
+  const engine = createEngine();
 
   // Ensure shared immutable original data is initialized (idempotent).
-  if (typeof engine.initializeOriginalData === 'function') {
-    engine.initializeOriginalData();
-  }
+  engine.initializeOriginalData();
 
   return engine;
 }
@@ -93,7 +88,7 @@ async function getOrCreateSession(req) {
       evictLeastRecentlyUsedSession();
     }
 
-    const engine = await importEngineModuleForSession(sessionId);
+    const engine = createEngineForSession();
     const gameId = isValidUuid(incomingGameId) ? incomingGameId : randomUUID();
 
     // New session => start a fresh game state (default lingua=1).
