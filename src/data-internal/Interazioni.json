@@ -549,21 +549,22 @@
       "prerequisiti": [
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Lampada"
+          "target": "Lampada",
+          "risposta": "Non hai la lampada."
         },
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Fiammiferi"
+          "target": "Fiammiferi",
+          "risposta": "Non hai i fiammiferi per accendere la lampada."
         },
         {
           "tipo": "FLAG_FALSE",
-          "flag": "timers.lampadaAccesa"
+          "flag": "timers.lampadaAccesa",
+          "risposta": "La lampada è già accesa."
         }
       ]
     },
     "risposta": "Accendi la lampada con i fiammiferi. Una luce calda e stabile illumina l'ambiente.",
-    "risposta_no_lampada": "Non hai la lampada.",
-    "risposta_no_fiammiferi": "Non hai i fiammiferi per accendere la lampada.",
     "risposta_gia_eseguita": "La lampada è già accesa.",
     "effetti": [
       {
@@ -1129,21 +1130,22 @@
       "prerequisiti": [
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Lamp"
+          "target": "Lamp",
+          "risposta": "You don't have the lamp."
         },
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Matches"
+          "target": "Matches",
+          "risposta": "You don't have any matches to light the lamp."
         },
         {
           "tipo": "FLAG_FALSE",
-          "flag": "timers.lampadaAccesa"
+          "flag": "timers.lampadaAccesa",
+          "risposta": "The lamp is already lit."
         }
       ]
     },
     "risposta": "You light the lamp with the matches. A warm, steady light illuminates the area.",
-    "risposta_no_lampada": "You don't have the lamp.",
-    "risposta_no_fiammiferi": "You don't have any matches to light the lamp.",
     "risposta_gia_eseguita": "The lamp is already lit.",
     "effetti": [
       {
