@@ -50,6 +50,7 @@ audit-*.json
 
 # Local reverse-engineering workspace (not part of the application)
 disassembly/
+/Claude decompiler/
 
 # OS/editor
 .DS_Store
