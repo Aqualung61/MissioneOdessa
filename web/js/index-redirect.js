@@ -23,7 +23,7 @@
       ? ensureBasePath(window.basePath)
       : ensureBasePath(computeBasePathFallback());
 
-  // La lingua è gestita via localStorage (bootstrap.js). URL pulita.
+  // La lingua è gestita via sessionStorage (bootstrap.js). URL pulita.
   var targetPath = basePath + 'web/odessa_storia.html';
   var target =
     window.location.protocol === 'file:'

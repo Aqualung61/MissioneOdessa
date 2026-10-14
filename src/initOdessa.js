@@ -14,21 +14,22 @@ const tableNames = ['Interazioni', 'Introduzione', 'Storia', 'LessicoSoftware', 
 
 export async function initOdessa() {
   const odessaData = {};
+  const failures = [];
 
   for (const tableName of tableNames) {
     const filePath = path.join(__dirname, 'data-internal', `${tableName}.json`);
     try {
       const data = fs.readFileSync(filePath, 'utf8');
       odessaData[tableName] = JSON.parse(data);
-      if (tableName === 'Luoghi') {
-        const luogo59 = odessaData[tableName].find(l => l.ID === 59);
-        console.log(`[initOdessa] Luoghi.json caricato da: ${filePath}`);
-        console.log(`[initOdessa] Luogo 59 Est dal file:`, luogo59?.Est);
-      }
     } catch (err) {
       console.error(`Errore nel caricamento ${tableName}:`, err.message);
-      // Continua con le altre tabelle
+      failures.push(`${tableName}.json (${err.message})`);
     }
+  }
+
+  // Tutto o niente: con tabelle mancanti il gioco non deve partire con dati incompleti.
+  if (failures.length > 0) {
+    throw new Error(`Impossibile caricare le tabelle obbligatorie: ${failures.join('; ')}`);
   }
 
   global.odessaData = odessaData;
