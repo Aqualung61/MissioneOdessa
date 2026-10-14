@@ -52,6 +52,9 @@ audit-*.json
 disassembly/
 /Claude decompiler/
 
+# Documentazione generata localmente (CodeWiki): non versionare
+/output/
+
 # OS/editor
 .DS_Store
 Thumbs.db
