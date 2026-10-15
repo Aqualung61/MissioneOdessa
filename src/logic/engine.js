@@ -110,6 +110,7 @@ export function createEngine() {
     direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
     direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
     sequenze: {}, // Stato delle sequenze (es. cassaforte)
+    flags: {}, // Flag di scenario (es. "bastoneLiberato", "cassaforteScoperta") (R7)
     currentLingua: 1, // Lingua corrente (default: italiano)
     
     // === SISTEMA PUNTEGGIO ===
@@ -232,6 +233,7 @@ export function createEngine() {
       direzioniSbloccate: {},
       direzioniToggle: {},
       sequenze: {},
+      flags: {},
       currentLingua: idLingua,
       
       // === SISTEMA PUNTEGGIO ===
@@ -726,6 +728,21 @@ export function createEngine() {
       awaitingEndConfirm: newState.awaitingEndConfirm === true,
       visitedPlaces: new Set(newState.visitedPlaces || []),
       Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : [],
+      // Flag di scenario (R7): default per i salvataggi che non li contengono (es. v1.4.1 pre-#96).
+      // cassaforteScoperta: dedotto da interazioniEseguite (sposta_quadro_24 già eseguita).
+      // bastoneLiberato: dedotto da Oggetti (nei salvataggi v1.4.0 il bastone era prendibile,
+      // Attivo >= 3; se è già in inventario o altrove con Attivo >= 3 le macerie erano assenti).
+      flags: (() => {
+        const flags = { ...(newState.flags || {}) };
+        if (typeof flags.cassaforteScoperta !== 'boolean') {
+          flags.cassaforteScoperta = (newState.interazioniEseguite || []).includes('sposta_quadro_24');
+        }
+        if (typeof flags.bastoneLiberato !== 'boolean') {
+          const bastone = (newState.Oggetti || []).find((o) => o.ID === 1);
+          flags.bastoneLiberato = !!bastone && bastone.Attivo >= 3;
+        }
+        return flags;
+      })(),
       // Deserializzazione Set del punteggio
       punteggio: newState.punteggio ? {
         totale: newState.punteggio.totale || 0,
@@ -875,6 +892,7 @@ export function createEngine() {
       direzioniSbloccate: { ...gameState.direzioniSbloccate },
       direzioniToggle: { ...gameState.direzioniToggle },
       sequenze: { ...gameState.sequenze },
+      flags: { ...gameState.flags },
       currentLingua: gameState.currentLingua,
       // Serializzazione nuove strutture
       punteggio: {
@@ -984,6 +1002,10 @@ export function createEngine() {
         if (!gameState.interazioniEseguite.includes(req.target)) return { ok: false, prerequisito: req };
       } else if (req.tipo === 'FLAG_FALSE') {
         if (getNestedProperty(gameState, req.flag)) return { ok: false, prerequisito: req };
+      } else if (req.tipo === 'INVENTARIO_NON_PIENO') {
+        // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
+        const oggettiInInventario = (gameState.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
+        if (oggettiInInventario.length >= 5) return { ok: false, prerequisito: req };
       } else if (!PREREQUISITE_TYPES.has(req.tipo)) {
         // Tipo sconosciuto: fail-closed (prerequisito non soddisfatto), segnalato una sola volta.
         warnUnknownTypeOnce('prerequisito', req.tipo);
@@ -1085,8 +1107,10 @@ export function createEngine() {
   }
 
   // Funzione per applicare gli effetti di un'interazione
+  // @param {boolean} skipMisteri - true se l'interazione ha `punteggio: false` (R7, §4.1):
+  //   nessun punto mistero per i suoi effetti
   // @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. fiammiferi finiti)
-  function applicaEffetti(effetti, luogoCorrente) {
+  function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } = {}) {
     const extraMessages = [];
     for (const effetto of effetti) {
       // Stato precedente al toggle: variabile locale (non si scrive sui dati globali condivisi)
@@ -1145,8 +1169,10 @@ export function createEngine() {
       }
       
       // === SISTEMA PUNTEGGIO MISTERI ===
-      // Assegna +3 punti se questo effetto risolve un mistero
-      assegnaPunteggioMistero(effetto, { statoPreToggle });
+      // Assegna +3 punti se questo effetto risolve un mistero (non per punteggio: false, §4.1)
+      if (!skipMisteri) {
+        assegnaPunteggioMistero(effetto, { statoPreToggle });
+      }
     }
     return extraMessages;
   }
@@ -1257,18 +1283,22 @@ export function createEngine() {
         
         // === SISTEMA PUNTEGGIO: Assegna +2 punti PRIMA di applicare effetti ===
         // Importante: deve avvenire PRIMA di applicaEffetti() perché VITTORIA imposta ended=true
-        if (!gameState.punteggio.interazioniPunteggio.has(interazione.id)) {
+        // Campo `punteggio` (R7, §4.1): assente -> chiave = id; stringa -> chiave condivisa
+        // con l'interazione indicata; false -> nessun +2 (e nessun mistero, vedi applicaEffetti)
+        const punteggioSkip = interazione.punteggio === false;
+        const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
+        if (!punteggioSkip && !gameState.punteggio.interazioniPunteggio.has(chiavePunteggio)) {
           gameState.punteggio.totale += 2;
-          gameState.punteggio.interazioniPunteggio.add(interazione.id);
+          gameState.punteggio.interazioniPunteggio.add(chiavePunteggio);
         }
-        
+
         // Segna come eseguita
         if (!interazione.ripetibile) {
           gameState.interazioniEseguite.push(interazione.id);
         }
-        
+
         // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-        const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
+        const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo, { skipMisteri: punteggioSkip });
         if (extraMessages.length > 0) {
           risposta = risposta + '\n\n' + extraMessages.join('\n\n');
         }

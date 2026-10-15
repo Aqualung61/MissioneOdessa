@@ -21,6 +21,12 @@ interface Effetto {
   destinazione?: number;
 }
 
+interface Interazione {
+  id: string;
+  effetti: Effetto[];
+  punteggio?: string | false;
+}
+
 function mysteryId(e: Effetto): string | null {
   if (e.tipo === 'VISIBILITA') return `visibilita_${e.target}`;
   if (e.tipo === 'SBLOCCA_DIREZIONE' || e.tipo === 'TOGGLE_DIREZIONE') {
@@ -31,19 +37,31 @@ function mysteryId(e: Effetto): string | null {
   return null;
 }
 
+// Aggiornato per #96: campo punteggio
+// `punteggio: false` esclude l'interazione dal conteggio (nessun +2 né mistero dei suoi
+// effetti); `punteggio` stringa condivide la chiave con l'interazione indicata, quindi non
+// aggiunge un nuovo +2 se quella chiave è già stata contata (§4.1 della specifica).
 function computeMax(): number {
   const luoghi = data('Luoghi.json').filter((l: { IDLingua: number }) => l.IDLingua === 1);
-  const interazioni = data('Interazioni.json').filter((i: { IDLingua: number }) => i.IDLingua === 1);
+  const interazioni = data('Interazioni.json').filter((i: { IDLingua: number }) => i.IDLingua === 1) as Interazione[];
   const places = luoghi.filter((l: { Terminale: number }) => l.Terminale !== -1).length;
-  const scored = interazioni.filter((i: { effetti: Effetto[] }) => !i.effetti.some(e => e.tipo === 'SEQUENZA'));
+  const scored = interazioni.filter((i) => !i.effetti.some((e) => e.tipo === 'SEQUENZA') && i.punteggio !== false);
+
+  const chiavi = new Set<string>();
   const mysteries = new Set<string>();
+  let bonusInterazioni = 0;
   for (const i of scored) {
-    for (const e of i.effetti as Effetto[]) {
+    const chiave = typeof i.punteggio === 'string' ? i.punteggio : i.id;
+    if (!chiavi.has(chiave)) {
+      chiavi.add(chiave);
+      bonusInterazioni += 2;
+    }
+    for (const e of i.effetti) {
       const id = mysteryId(e);
       if (id) mysteries.add(id);
     }
   }
-  return places + 2 * scored.length + 3 * mysteries.size + 2 + 4;
+  return places + bonusInterazioni + 3 * mysteries.size + 2 + 4;
 }
 
 describe('punteggio massimo', () => {

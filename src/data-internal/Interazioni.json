@@ -15,9 +15,136 @@
         "tipo": "VISIBILITA",
         "target": "Cassaforte",
         "valore": 1
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.cassaforteScoperta",
+        "valore": true
       }
     ],
     "ripetibile": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "prendi_bastone_bloccato_11",
+    "trigger": {
+      "verbo": "PRENDERE",
+      "oggetto": "BASTONE_DI_COMANDO"
+    },
+    "condizioni": {
+      "luogo": 11,
+      "prerequisiti": [
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.bastoneLiberato"
+        }
+      ]
+    },
+    "risposta": "Le macerie te lo impediscono.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "scava_macerie_11",
+    "trigger": {
+      "verbo": "SCAVARE",
+      "oggetto": "MACERIE"
+    },
+    "condizioni": {
+      "luogo": 11,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Badile arruginito",
+          "risposta": "Ti manca l'attrezzo!"
+        },
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.bastoneLiberato",
+          "risposta": "Scava, scava, scava..."
+        }
+      ]
+    },
+    "risposta": "Rimuovi le macerie che impediscono di prendere il bastone.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Bastone di comando",
+        "valore": 3
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.bastoneLiberato",
+        "valore": true
+      }
+    ],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "esamina_bastone",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "BASTONE_DI_COMANDO"
+    },
+    "condizioni": {
+      "luogo": null,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Bastone di comando",
+          "risposta": "Senza prenderlo è difficile."
+        }
+      ]
+    },
+    "risposta": "Il bastone si rivela essere un bastone di comando, come quelli che i FeldMarescialli erano soliti portare. Su di esso si avvolge a spirale una strana frase: UXRWD LO VHGLOH.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "prendi_quadro_24",
+    "trigger": {
+      "verbo": "PRENDERE",
+      "oggetto": "QUADRO"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.cassaforteScoperta"
+        },
+        {
+          "tipo": "INVENTARIO_NON_PIENO",
+          "risposta": "Non puoi trasportare più di 5 oggetti."
+        }
+      ]
+    },
+    "risposta": "Prendi il quadro. Scopri che il quadro copre una cassaforte a muro.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Cassaforte",
+        "valore": 1
+      },
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Quadro",
+        "a_luogo": 0
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.cassaforteScoperta",
+        "valore": true
+      }
+    ],
+    "ripetibile": true,
+    "punteggio": "sposta_quadro_24",
     "IDLingua": 1
   },
   {
@@ -599,9 +726,136 @@
         "tipo": "VISIBILITA",
         "target": "Safe",
         "valore": 1
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.cassaforteScoperta",
+        "valore": true
       }
     ],
     "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "prendi_bastone_bloccato_11",
+    "trigger": {
+      "verbo": "PRENDERE",
+      "oggetto": "Command baton"
+    },
+    "condizioni": {
+      "luogo": 11,
+      "prerequisiti": [
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.bastoneLiberato"
+        }
+      ]
+    },
+    "risposta": "The rubble is in the way.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "scava_macerie_11",
+    "trigger": {
+      "verbo": "SCAVARE",
+      "oggetto": "Rubble"
+    },
+    "condizioni": {
+      "luogo": 11,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Rusty spade",
+          "risposta": "You don't have the right tool!"
+        },
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.bastoneLiberato",
+          "risposta": "Dig, dig, dig..."
+        }
+      ]
+    },
+    "risposta": "You clear away the rubble that was keeping you from taking the baton.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Command baton",
+        "valore": 3
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.bastoneLiberato",
+        "valore": true
+      }
+    ],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "esamina_bastone",
+    "trigger": {
+      "verbo": "ESAMINARE",
+      "oggetto": "Command baton"
+    },
+    "condizioni": {
+      "luogo": null,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_IN_INVENTARIO",
+          "target": "Command baton",
+          "risposta": "It's hard without picking it up."
+        }
+      ]
+    },
+    "risposta": "The stick turns out to be a command baton, like the ones field marshals used to carry. A strange phrase spirals around it: UXRWD LO VHGLOH.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "prendi_quadro_24",
+    "trigger": {
+      "verbo": "PRENDERE",
+      "oggetto": "Painting"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "FLAG_FALSE",
+          "flag": "flags.cassaforteScoperta"
+        },
+        {
+          "tipo": "INVENTARIO_NON_PIENO",
+          "risposta": "You can't carry more than 5 objects."
+        }
+      ]
+    },
+    "risposta": "You take the painting. You discover that it was hiding a wall safe.",
+    "effetti": [
+      {
+        "tipo": "VISIBILITA",
+        "target": "Safe",
+        "valore": 1
+      },
+      {
+        "tipo": "SPOSTA_OGGETTO",
+        "target": "Painting",
+        "a_luogo": 0
+      },
+      {
+        "tipo": "SET_FLAG",
+        "flag": "flags.cassaforteScoperta",
+        "valore": true
+      }
+    ],
+    "ripetibile": true,
+    "punteggio": "sposta_quadro_24",
     "IDLingua": 2
   },
   {
