@@ -4,6 +4,19 @@
 
 ---
 
+## v1.4.0 (15 ottobre 2026)
+
+### Stabilità: sessioni e difetti
+
+- Sessioni: motore isolato per sessione tramite factory `createEngine()`; memoria per sessione rilasciata all'evizione (~12 KB invece di ~210 KB non rilasciati) (#91).
+- Interazioni: `FLAG_FALSE`, risposte dedicate per prerequisito (`accendi lampada`), prerequisiti sconosciuti non soddisfatti, test di schema su `Interazioni.json` (#93).
+- Robustezza: caricamento dati tutto-o-niente all'avvio, rimosso `GET /init_odessa`, limiter pesante su `POST /api/parser/reload`, rimosso l'oggetto ID 11, stato del toggle non più scritto sui dati condivisi (#94).
+- Documentazione: report tecnico as-built v1.3.4 versionato con correzioni (#92).
+
+Dettagli: [docs/release-notes/2026-10-15_v1.4.0.md](docs/release-notes/2026-10-15_v1.4.0.md)
+
+---
+
 ## v1.3.4 (18 gennaio 2026)
 
 ### Release readiness (pre-public)
