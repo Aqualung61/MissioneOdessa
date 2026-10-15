@@ -573,6 +573,9 @@
         "valore": true
       },
       {
+        "tipo": "CONSUMA_FIAMMIFERO"
+      },
+      {
         "tipo": "RESET_COUNTER",
         "counter": "turn.turnsInDarkness"
       }
@@ -1152,6 +1155,9 @@
         "tipo": "SET_FLAG",
         "flag": "timers.lampadaAccesa",
         "valore": true
+      },
+      {
+        "tipo": "CONSUMA_FIAMMIFERO"
       },
       {
         "tipo": "RESET_COUNTER",

@@ -20,9 +20,9 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       expect(Array.isArray(TURN_EFFECTS)).toBe(true);
     });
 
-    // Aggiornato per decisione R3, R4 (#107)
-    it('dovrebbe contenere esattamente 7 effects (torcia, buio, zona aperta, alba, guardia, fine partita, vittoria)', () => {
-      expect(TURN_EFFECTS).toHaveLength(7);
+    // Aggiornato per decisione R8 (#108)
+    it('dovrebbe contenere esattamente 8 effects (fiammifero, torcia, buio, zona aperta, alba, guardia, fine partita, vittoria)', () => {
+      expect(TURN_EFFECTS).toHaveLength(8);
     });
 
     it('ogni effect dovrebbe essere una funzione', () => {
@@ -31,11 +31,12 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       });
     });
 
-    // Aggiornato per decisione R1, R2, R3, R4 (#107)
+    // Aggiornato per decisione R8 (#108)
     it('effects dovrebbero avere nomi descrittivi', () => {
       const names = TURN_EFFECTS.map(fn => fn.name);
 
       expect(names).toEqual([
+        'matchEffect',     // Fiammifero acceso (R8), primo: ricalcola hasLight prima degli altri
         'torchEffect',
         'darknessEffect',
         'interceptEffect', // Zona aperta (R2)
@@ -264,10 +265,13 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       expect(state.awaitingRestart).toBe(true);
     });
 
-    // Aggiornato per decisione R1 (#107)
+    // Aggiornato per decisione R8 (#108): la vera fonte di luce (non più un hasLight forzato a
+    // mano) è necessaria perché matchEffect, primo nel registro, ricalcola sempre hasLight
+    // dalla verità dello stato (§4.3 punto 2).
     it('scenario: salvezza con ACCENDI LAMPADA al turno critico', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
+      const lampada = state.Oggetti.find(o => o.ID === 27);
 
       if (!torcia) {
         expect(true).toBe(true);
@@ -277,23 +281,22 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       // Setup: timer del buio a 1, il prossimo movimento sarebbe mortale
       torcia.Inventario = true;
       state.timers.torciaDifettosa = true;
-      state.timers.lampadaAccesa = false;
       state.turn.darknessTimer = 1;
       state.turn.previous.hasLight = false;
       state.turn.current.hasLight = false;
       state.turn.current.consumesTurn = true;
-      
-      // User esegue ACCENDI LAMPADA → hasLight recalcolato in applyTurnEffects
-      // (simuliamo hasLight=true dopo comando)
-      state.turn.current.hasLight = true;
-      
+
+      // User esegue ACCENDI LAMPADA: vera fonte di luce, in inventario
+      state.timers.lampadaAccesa = true;
+      if (lampada) lampada.IDLuogo = 0;
+
       const result = { message: '', gameOver: false };
       const parseResult = { IsValid: true, CommandType: 'ACTION' };
       applyAllTurnEffects(state, result, parseResult);
-      
+
       // darknessEffect azzera il timer (luce ritrovata, comando non di movimento)
       expect(state.turn.darknessTimer).toBe(0);
-      
+
       // gameOverEffect non triggera
       expect(result.gameOver).toBe(false);
       expect(state.awaitingRestart).toBe(false);

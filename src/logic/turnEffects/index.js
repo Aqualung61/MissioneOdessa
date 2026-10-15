@@ -6,17 +6,19 @@
  * alle conseguenze temporali del turno (timer, contatori, game over).
  *
  * L'ordine nell'array TURN_EFFECTS definisce la priorità di esecuzione:
- * 1. Torch effect (luce)
- * 2. Darkness effect (timer del buio)
- * 3. Intercept effect (timer della zona aperta)
- * 4. Dawn effect (timer dell'alba)
- * 5. Guard effect (timer della guardia alla barriera)
- * 6. Game over effect (controllo condizioni di fine partita)
- * 7. Victory effect (sequenza finale Ferenc + teleport)
+ * 1. Match effect (timer del fiammifero acceso)
+ * 2. Torch effect (luce)
+ * 3. Darkness effect (timer del buio)
+ * 4. Intercept effect (timer della zona aperta)
+ * 5. Dawn effect (timer dell'alba)
+ * 6. Guard effect (timer della guardia alla barriera)
+ * 7. Game over effect (controllo condizioni di fine partita)
+ * 8. Victory effect (sequenza finale Ferenc + teleport)
  *
  * Nota: i “misteri” sono gestiti dal sistema punteggio in engine (non come turnEffect).
  */
 
+import { matchEffect } from './matchEffect.js';
 import { torchEffect } from './torchEffect.js';
 import { darknessEffect } from './darknessEffect.js';
 import { interceptEffect } from './interceptEffect.js';
@@ -30,19 +32,22 @@ import { victoryEffect } from './victoryEffect.js';
  * L'ordine definisce la priorità di esecuzione.
  *
  * IMPORTANTE:
+ * - match DEVE essere prima di torch: ricalcola hasLight (fiammifero) prima che torch la
+ *   sovrascriva nei suoi due casi (torcia posata, torcia esaurita) e la salvi per gli altri effetti
  * - darkness DEVE essere dopo torch perché dipende da hasLight aggiornato
  * - i timer (buio, zona aperta, alba, guardia) si aggiornano PRIMA di gameOverEffect,
  *   che valuta le condizioni di fine partita sui timer aggiornati
  * - victoryEffect controlla vittoria DOPO tutti i check game over
  */
 export const TURN_EFFECTS = [
-  torchEffect,       // Priorità 1: Sistema illuminazione torcia (aggiorna hasLight)
-  darknessEffect,    // Priorità 2: Timer del buio (R1)
-  interceptEffect,   // Priorità 3: Timer della zona aperta (R2)
-  dawnEffect,        // Priorità 4: Timer dell'alba (R3)
-  guardEffect,       // Priorità 5: Timer della guardia alla barriera (R4)
-  gameOverEffect,    // Priorità 6: Verifica condizioni di fine partita
-  victoryEffect,     // Priorità 7: Sequenza finale Ferenc + teleport (trigger vittoria)
+  matchEffect,       // Priorità 1: Timer del fiammifero acceso (R8)
+  torchEffect,       // Priorità 2: Sistema illuminazione torcia (aggiorna hasLight)
+  darknessEffect,    // Priorità 3: Timer del buio (R1)
+  interceptEffect,   // Priorità 4: Timer della zona aperta (R2)
+  dawnEffect,        // Priorità 5: Timer dell'alba (R3)
+  guardEffect,       // Priorità 6: Timer della guardia alla barriera (R4)
+  gameOverEffect,    // Priorità 7: Verifica condizioni di fine partita
+  victoryEffect,     // Priorità 8: Sequenza finale Ferenc + teleport (trigger vittoria)
 ];
 
 /**

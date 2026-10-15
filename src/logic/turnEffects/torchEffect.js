@@ -14,22 +14,29 @@ import { getSystemMessage } from '../systemMessages.js';
 /**
  * Verifica se c'è una fonte di luce attiva
  * @param {Object} gameState - Stato del gioco
- * @returns {boolean} true se ha luce (torcia funzionante, lampada accesa o luogo 59)
+ * @returns {boolean} true se ha luce (torcia funzionante, lampada accesa dove si trova,
+ *   fiammifero acceso o luogo 59)
  */
-function hasFonteLuceAttiva(gameState) {
+export function hasFonteLuceAttiva(gameState) {
   // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
   if (gameState.currentLocationId === 59) return true;
 
   // Torcia: ID=37 in inventario E funzionante
   const torcia = gameState.Oggetti.find(o => o.ID === 37);
-  const hasTorcia = torcia && 
-                    torcia.IDLuogo === 0 && 
+  const hasTorcia = torcia &&
+                    torcia.IDLuogo === 0 &&
                     !gameState.timers.torciaDifettosa;
 
-  // Lampada accesa
-  const hasLampada = gameState.timers.lampadaAccesa;
+  // Lampada accesa: fa luce solo dove si trova, in inventario o nel luogo corrente (R8, §4.3)
+  const lampada = gameState.Oggetti.find(o => o.ID === 27);
+  const hasLampada = gameState.timers.lampadaAccesa &&
+                      !!lampada &&
+                      (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId);
 
-  return hasTorcia || hasLampada;
+  // Fiammifero acceso (R8): luce per il comando successivo a quello che lo accende
+  const hasMatch = gameState.timers.matchTimer > 0;
+
+  return hasTorcia || hasLampada || hasMatch;
 }
 
 /**

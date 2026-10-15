@@ -64,8 +64,12 @@ export function gameOverEffect(gameState, result, parseResult) {
           torcia.IDLuogo === 0 &&
           gameState.timers.torciaDifettosa !== true;
 
+        // Un fiammifero acceso all'inizio del turno copre lo spostamento (R8, §4.5):
+        // il giocatore resta illuminato per il comando in corso, non muore subito.
+        const hadMatchLitAtStart = gameState.turn.current?.matchLitAtStart === true;
+
         // Opzione di design (scelta): morte immediata solo se la lampada era l'unica luce.
-        if (!hasWorkingTorchInInventory) {
+        if (!hasWorkingTorchInInventory && !hadMatchLitAtStart) {
           const lampAbandonedMsg = getSystemMessage('timer.lamp.abandoned.death', gameState.currentLingua);
 
           result.accepted = false;

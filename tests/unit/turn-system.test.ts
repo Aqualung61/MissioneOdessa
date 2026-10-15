@@ -254,10 +254,12 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       expect(state.turn.totalTurnsConsumed).toBe(2); // Non incrementato
     });
 
+    // Aggiornato per decisione R8 (#108): la lampada accesa fa luce solo dove si trova (§4.3)
     it('current.hasLight dovrebbe riflettere hasFonteLuceAttiva()', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
-      
+      const lampada = state.Oggetti.find(o => o.ID === 27);
+
       // Senza luce
       if (torcia) {
         torcia.IDLuogo = 999; // non in inventario
@@ -266,9 +268,10 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       state.timers.lampadaAccesa = false;
       prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(false);
-      
-      // Con lampada accesa
+
+      // Con lampada accesa in inventario
       state.timers.lampadaAccesa = true;
+      if (lampada) lampada.IDLuogo = 0;
       prepareTurnContext({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       expect(state.turn.current.hasLight).toBe(true);
     });
