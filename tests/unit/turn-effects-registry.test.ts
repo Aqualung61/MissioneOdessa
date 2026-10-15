@@ -20,8 +20,9 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       expect(Array.isArray(TURN_EFFECTS)).toBe(true);
     });
 
-    it('dovrebbe contenere esattamente 5 effects (Sprint 3.3.5.A-D)', () => {
-      expect(TURN_EFFECTS).toHaveLength(5);
+    // Aggiornato per decisione R3, R4 (#107)
+    it('dovrebbe contenere esattamente 7 effects (torcia, buio, zona aperta, alba, guardia, fine partita, vittoria)', () => {
+      expect(TURN_EFFECTS).toHaveLength(7);
     });
 
     it('ogni effect dovrebbe essere una funzione', () => {
@@ -30,13 +31,19 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       });
     });
 
+    // Aggiornato per decisione R1, R2, R3, R4 (#107)
     it('effects dovrebbero avere nomi descrittivi', () => {
       const names = TURN_EFFECTS.map(fn => fn.name);
-      
-      expect(names[0]).toBe('torchEffect');
-      expect(names[1]).toBe('darknessEffect');
-      expect(names[2]).toBe('gameOverEffect');
-      expect(names[3]).toBe('interceptEffect'); // Sprint 3.3.5.C
+
+      expect(names).toEqual([
+        'torchEffect',
+        'darknessEffect',
+        'interceptEffect', // Zona aperta (R2)
+        'dawnEffect',      // Alba (R3)
+        'guardEffect',     // Guardia (R4)
+        'gameOverEffect',
+        'victoryEffect',
+      ]);
     });
   });
 
@@ -94,23 +101,25 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       }
     });
 
-    it('gameOverEffect deve essere ultimo (vede turnsInDarkness aggiornato)', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('gameOverEffect deve seguire i timer (vede darknessTimer aggiornato)', () => {
       const state = getGameState();
-      
-      // Setup: 2 turni al buio, prossimo è mortale
+
+      // Setup: timer del buio a 1, il prossimo movimento è mortale
       state.turn.previous.hasLight = false;
       state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 2;
+      state.turn.darknessTimer = 1;
       state.turn.current.consumesTurn = true;
-      
+
       const result = { message: '', gameOver: false };
       const parseResult = { IsValid: true, CommandType: 'NAVIGATION' };
-      
+
       applyAllTurnEffects(state, result, parseResult);
-      
-      // darknessEffect incrementa a 3, gameOverEffect triggera game over
-      expect(state.turn.turnsInDarkness).toBe(3);
+
+      // darknessEffect porta il timer a 0, gameOverEffect triggera game over
+      expect(state.turn.darknessTimer).toBe(0);
       expect(result.gameOver).toBe(true);
+      expect(result.gameOverReason).toBe('DARKNESS');
       expect(state.awaitingRestart).toBe(true);
     });
   });
@@ -196,6 +205,7 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
   });
 
   describe('Integration - Scenario completo', () => {
+    // Aggiornato per decisione R1 (#107)
     it('scenario: torcia si spegne, inizia countdown buio, morte al 3° turno', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
@@ -222,52 +232,53 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       
       expect(state.timers.torciaDifettosa).toBe(true);
       expect(state.turn.current.hasLight).toBe(false); // torchEffect ricalcola
-      expect(state.turn.turnsInDarkness).toBe(0); // Primo turno buio
+      expect(state.turn.darknessTimer).toBe(3); // Primo turno buio: il timer parte
       expect(result.gameOver).toBe(false);
-      
+
       // TURNO 7: Secondo turno buio
       state.turn.previous.hasLight = false;
       state.turn.current.hasLight = false;
       state.turn.totalTurnsConsumed = 7;
       result = { message: '', gameOver: false };
       applyAllTurnEffects(state, result, parseResult);
-      
-      expect(state.turn.turnsInDarkness).toBe(1);
+
+      expect(state.turn.darknessTimer).toBe(2);
       expect(result.gameOver).toBe(false);
-      
+
       // TURNO 8: Terzo turno buio
       state.turn.totalTurnsConsumed = 8;
       result = { message: '', gameOver: false };
       applyAllTurnEffects(state, result, parseResult);
-      
-      expect(state.turn.turnsInDarkness).toBe(2);
+
+      expect(state.turn.darknessTimer).toBe(1);
       expect(result.gameOver).toBe(false);
-      
-      // TURNO 9: Quarto turno buio = MORTE
+
+      // TURNO 9: Quarto turno buio, movimento con timer a 0 = MORTE
       state.turn.totalTurnsConsumed = 9;
       result = { message: '', gameOver: false };
       applyAllTurnEffects(state, result, parseResult);
-      
-      expect(state.turn.turnsInDarkness).toBe(3);
+
+      expect(state.turn.darknessTimer).toBe(0);
       expect(result.gameOver).toBe(true);
       expect(result.gameOverReason).toBe('DARKNESS');
       expect(state.awaitingRestart).toBe(true);
     });
 
+    // Aggiornato per decisione R1 (#107)
     it('scenario: salvezza con ACCENDI LAMPADA al turno critico', () => {
       const state = getGameState();
       const torcia = state.Oggetti.find(o => o.ID === 37);
-      
+
       if (!torcia) {
         expect(true).toBe(true);
         return;
       }
-      
-      // Setup: 2 turni al buio, prossimo sarebbe mortale
+
+      // Setup: timer del buio a 1, il prossimo movimento sarebbe mortale
       torcia.Inventario = true;
       state.timers.torciaDifettosa = true;
       state.timers.lampadaAccesa = false;
-      state.turn.turnsInDarkness = 2;
+      state.turn.darknessTimer = 1;
       state.turn.previous.hasLight = false;
       state.turn.current.hasLight = false;
       state.turn.current.consumesTurn = true;
@@ -280,8 +291,8 @@ describe('Turn Effects Registry - Sprint 3.3.5.B', () => {
       const parseResult = { IsValid: true, CommandType: 'ACTION' };
       applyAllTurnEffects(state, result, parseResult);
       
-      // darknessEffect resetta countdown
-      expect(state.turn.turnsInDarkness).toBe(0);
+      // darknessEffect azzera il timer (luce ritrovata, comando non di movimento)
+      expect(state.turn.darknessTimer).toBe(0);
       
       // gameOverEffect non triggera
       expect(result.gameOver).toBe(false);

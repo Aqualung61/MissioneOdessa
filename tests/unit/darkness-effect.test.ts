@@ -30,97 +30,94 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
       expect(state.turn.turnsInDarkness).toBe(0);
     });
 
-    it('dovrebbe incrementare dal secondo turno senza luce (hadLightBefore=false)', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('dovrebbe far scendere il timer del buio dal secondo turno senza luce', () => {
       const state = getGameState();
-      
-      // Setup: già al buio turno precedente
-      state.turn.previous.hasLight = false;
+
+      // Setup: già al buio turno precedente (timer avviato a 3)
       state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 0;
-      
+      state.turn.darknessTimer = 3;
+
       const result = { message: '' };
       darknessEffect(state, result, null);
-      
-      // Incrementa dal secondo turno
-      expect(state.turn.turnsInDarkness).toBe(1);
+
+      expect(state.turn.darknessTimer).toBe(2);
+      expect(state.turn.current.darknessExpired).toBeUndefined();
     });
 
-    it('dovrebbe dare esattamente 3 turni pieni prima della morte', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('dovrebbe dare esattamente 3 turni pieni prima della morte (al movimento successivo)', () => {
       const state = getGameState();
-      
-      // Turno 1 (primo buio): previous=luce, current=buio
-      state.turn.previous.hasLight = true;
+      const navigation = { IsValid: true, CommandType: 'NAVIGATION' };
       state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 0;
-      darknessEffect(state, { message: '' }, null);
-      expect(state.turn.turnsInDarkness).toBe(0); // Non incrementa
-      
-      // Turno 2: previous=buio, current=buio
-      state.turn.previous.hasLight = false;
-      state.turn.current.hasLight = false;
-      darknessEffect(state, { message: '' }, null);
-      expect(state.turn.turnsInDarkness).toBe(1);
-      
-      // Turno 3: previous=buio, current=buio
-      darknessEffect(state, { message: '' }, null);
-      expect(state.turn.turnsInDarkness).toBe(2);
-      
-      // Turno 4: previous=buio, current=buio → morte a 3
-      darknessEffect(state, { message: '' }, null);
-      expect(state.turn.turnsInDarkness).toBe(3); // Morte (gestita da gameOverEffect)
+      state.turn.darknessTimer = 0;
+
+      // Turno 1 (primo buio): il timer parte a 3
+      darknessEffect(state, { message: '' }, navigation);
+      expect(state.turn.darknessTimer).toBe(3);
+
+      // Turni 2 e 3: il timer scende
+      darknessEffect(state, { message: '' }, navigation);
+      expect(state.turn.darknessTimer).toBe(2);
+      darknessEffect(state, { message: '' }, navigation);
+      expect(state.turn.darknessTimer).toBe(1);
+      expect(state.turn.current.darknessExpired).toBeUndefined();
+
+      // Turno 4: il timer arriva a 0 con un movimento → morte (gestita da gameOverEffect)
+      darknessEffect(state, { message: '' }, navigation);
+      expect(state.turn.darknessTimer).toBe(0);
+      expect(state.turn.current.darknessExpired).toBe(true);
     });
   });
 
   describe('Reset countdown quando recupera luce', () => {
-    it('dovrebbe resettare turnsInDarkness quando hasLight diventa true', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('dovrebbe azzerare darknessTimer quando hasLight diventa true', () => {
       const state = getGameState();
-      
+
       // Setup: al buio da 2 turni
-      state.turn.previous.hasLight = false;
-      state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 2;
-      
+      state.turn.darknessTimer = 2;
+
       // Recupera luce
       state.turn.current.hasLight = true;
-      
+
       const result = { message: '' };
       darknessEffect(state, result, null);
-      
+
       // Reset countdown
-      expect(state.turn.turnsInDarkness).toBe(0);
+      expect(state.turn.darknessTimer).toBe(0);
     });
 
-    it('dovrebbe salvare con ACCENDI LAMPADA al turno 3 (prima della morte)', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('dovrebbe salvare con ACCENDI LAMPADA al turno critico (prima della morte)', () => {
       const state = getGameState();
-      
-      // Setup: 2 turni al buio, prossimo sarebbe mortale
-      state.turn.previous.hasLight = false;
-      state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 2;
-      
+
+      // Setup: timer a 1, il prossimo movimento sarebbe mortale
+      state.turn.darknessTimer = 1;
+
       // ACCENDI LAMPADA eseguito → hasLight recalcolato in applyTurnEffects
       state.turn.current.hasLight = true;
-      
+
       const result = { message: '' };
-      darknessEffect(state, result, null);
-      
-      // Salvato! Counter resettato
-      expect(state.turn.turnsInDarkness).toBe(0);
+      darknessEffect(state, result, { IsValid: true, CommandType: 'ACTION' });
+
+      // Salvato: il comando non è un movimento e il timer si azzera con la luce
+      expect(state.turn.current.darknessExpired).toBeUndefined();
+      expect(state.turn.darknessTimer).toBe(0);
     });
   });
 
   describe('Pass-through behavior', () => {
-    it('NON dovrebbe modificare result.message', () => {
+    // Aggiornato per decisione R1 (#107)
+    it('dovrebbe accodare l\'avviso di pericolo a result.message senza luce', () => {
       const state = getGameState();
-      state.turn.previous.hasLight = false;
       state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 1;
-      
+      state.turn.darknessTimer = 2;
+
       const result = { message: 'Original message' };
       darknessEffect(state, result, null);
-      
-      // Non modifica il result (solo tracking)
-      expect(result.message).toBe('Original message');
+
+      expect(result.message).toBe('Original message\n\nÈ pericoloso muoversi senza luce.');
     });
 
     it('dovrebbe essere chiamabile con parseResult null', () => {
@@ -151,19 +148,7 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
       expect(state.turn.turnsInDarkness).toBe(0);
     });
 
-    it('dovrebbe permettere counter > 3 se gameOverEffect non eseguito', () => {
-      const state = getGameState();
-      
-      // Setup: già a 3 (morte dovrebbe triggerare ma gameOverEffect non chiamato)
-      state.turn.previous.hasLight = false;
-      state.turn.current.hasLight = false;
-      state.turn.turnsInDarkness = 3;
-      
-      const result = { message: '' };
-      darknessEffect(state, result, null);
-      
-      // Incrementa oltre 3 (game over è responsabilità di gameOverEffect)
-      expect(state.turn.turnsInDarkness).toBe(4);
-    });
+    // Test "dovrebbe permettere counter > 3 se gameOverEffect non eseguito" cancellato
+    // per decisione R1 (#107): il timer del buio non supera mai 3.
   });
 });

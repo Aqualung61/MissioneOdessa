@@ -21,6 +21,13 @@ function warnUnknownTypeOnce(kind, tipo) {
   console.warn(`[engine] ${kind} di tipo sconosciuto in Interazioni.json: ${tipo}`);
 }
 
+// Verbi (concetti) che al buio non si eseguono: "È troppo buio per farlo." (R1, BAS 240–250).
+// Restano eseguibili: movimento, POSARE, LASCIARE, ACCENDERE, DORMIRE e i comandi di sistema.
+const DARK_BLOCKED_VERBS = new Set([
+  'PRENDERE', 'ESAMINARE', 'GUARDARE', 'LEGGERE', 'SPOSTARE', 'RUOTARE', 'INFILARE',
+  'METTERE', 'SCAVARE', 'PREMERE', 'PORGERE', 'APRIRE', 'CHIUDERE',
+]);
+
 // Factory: ogni sessione ottiene un motore con stato proprio (closure), senza istanze di modulo.
 export function createEngine() {
 
@@ -126,8 +133,11 @@ export function createEngine() {
     turn: {
       globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
       totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
-      turnsInDarkness: 0,          // Turni al buio senza luce
-      turnsInDangerZone: 0,        // Turni in zona pericolosa
+      turnsInDarkness: 0,          // Solo compatibilità salvataggi (non decide più la morte)
+      turnsInDangerZone: 0,        // Solo compatibilità salvataggi (non decide più la morte)
+      darknessTimer: 0,            // Timer del buio (R1), 0 = non attivo
+      openAreaTimer: 0,            // Timer della zona aperta (R2), 0 = non attivo
+      movedThisTurn: false,        // Se l'ultimo comando ha cambiato luogo
       current: {
         parseResult: null,         // Comando corrente
         consumesTurn: false,       // Se questo comando consuma turno
@@ -142,13 +152,13 @@ export function createEngine() {
         inDangerZone: false        // Se era in zona pericolosa
       }
     },
-    
+
     // === SISTEMA VITTORIA ===
     narrativeState: null,              // Enum: ENDING_PHASE_1A, etc.
     narrativePhase: 0,                 // Progressivo numerico (opzionale)
     victory: false,                    // Flag vittoria finale
     movementBlocked: false,            // Blocca NAVIGATION (per luogo 59)
-    unusefulCommandsCounter: 0,        // Counter comandi errati al luogo 59
+    guardTimer: 0,                     // Timer della guardia al luogo 59 (R4)
     awaitingContinue: false,           // Se true, engine aspetta solo BARRA SPAZIO
     continueCallback: null             // Funzione da eseguire alla pressione di BARRA
   };
@@ -242,8 +252,11 @@ export function createEngine() {
       turn: {
         globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
         totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
-        turnsInDarkness: 0,          // Turni al buio senza luce
-        turnsInDangerZone: 0,        // Turni in zona pericolosa
+        turnsInDarkness: 0,          // Solo compatibilità salvataggi
+        turnsInDangerZone: 0,        // Solo compatibilità salvataggi
+        darknessTimer: 0,            // Timer del buio (R1)
+        openAreaTimer: 0,            // Timer della zona aperta (R2)
+        movedThisTurn: false,        // Se l'ultimo comando ha cambiato luogo
         current: {
           parseResult: null,         // Comando corrente
           consumesTurn: false,       // Se questo comando consuma turno
@@ -264,7 +277,7 @@ export function createEngine() {
       narrativePhase: 0,
       victory: false,
       movementBlocked: false,
-      unusefulCommandsCounter: 0,
+      guardTimer: 0,
       awaitingContinue: false,
       continueCallback: null
     };
@@ -356,6 +369,11 @@ export function createEngine() {
    * @returns {boolean} - true se ha luce attiva
    */
   function hasFonteLuceAttiva() {
+    // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
+    if (gameState.currentLocationId === 59) {
+      return true;
+    }
+
     // Verifica torcia elettrica (ID=37) nell'inventario e non spenta.
     // Source of truth inventario: `IDLuogo === 0` (come in v1.3.2).
     const torcia = gameState.Oggetti.find((o) => o.ID === 37);
@@ -462,7 +480,10 @@ export function createEngine() {
     const dangerZones = [51, 52, 53, 55, 56, 58];
     const updatedInDangerZone = dangerZones.includes(gameState.currentLocationId);
     gameState.turn.current.inDangerZone = updatedInDangerZone;
-    
+
+    // Movimento riuscito: luogo cambiato rispetto all'inizio del turno (R1, R2)
+    gameState.turn.movedThisTurn = gameState.currentLocationId !== gameState.turn.current.location;
+
     // === APPLICA EFFETTI TEMPORALI REGISTRATI (Sprint 3.3.5) ===
     // Delega al sistema middleware: ogni effetto modifica gameState e result
     applyAllTurnEffects(gameState, result, parseResult);
@@ -703,11 +724,18 @@ export function createEngine() {
         misteriRisolti: new Set()
       },
       // BUGFIX: Assicura struttura turn completa dopo caricamento
+      // Timer della guardia (R4): default 5 se il salvataggio è già alla barriera
+      guardTimer: typeof newState.guardTimer === 'number'
+        ? newState.guardTimer
+        : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? 5 : 0),
       turn: newState.turn ? {
         globalTurnNumber: newState.turn.globalTurnNumber || 0,
         totalTurnsConsumed: newState.turn.totalTurnsConsumed || 0,
         turnsInDarkness: newState.turn.turnsInDarkness || 0,
         turnsInDangerZone: newState.turn.turnsInDangerZone || 0,
+        darknessTimer: newState.turn.darknessTimer || 0,
+        openAreaTimer: newState.turn.openAreaTimer || 0,
+        movedThisTurn: newState.turn.movedThisTurn === true,
         current: newState.turn.current ? {
           parseResult: newState.turn.current.parseResult || null,
           consumesTurn: newState.turn.current.consumesTurn || false,
@@ -737,6 +765,9 @@ export function createEngine() {
         totalTurnsConsumed: 0,
         turnsInDarkness: 0,
         turnsInDangerZone: 0,
+        darknessTimer: 0,
+        openAreaTimer: 0,
+        movedThisTurn: false,
         current: {
           parseResult: null,
           consumesTurn: false,
@@ -751,6 +782,8 @@ export function createEngine() {
         }
       }
     };
+    // Campo della v1.4.0 non più usato (R4): ignorato se presente nel salvataggio
+    delete gameState.unusefulCommandsCounter;
   }
   // Funzione per impostare il luogo corrente
   function setCurrentLocation(locationId) {
@@ -829,7 +862,7 @@ export function createEngine() {
       narrativePhase: gameState.narrativePhase,
       victory: gameState.victory,
       movementBlocked: gameState.movementBlocked,
-      unusefulCommandsCounter: gameState.unusefulCommandsCounter,
+      guardTimer: gameState.guardTimer,
       awaitingContinue: gameState.awaitingContinue,
       // Turn System v3.0 (Sprint 3.3.5)
       turn: {
@@ -837,6 +870,9 @@ export function createEngine() {
         totalTurnsConsumed: gameState.turn.totalTurnsConsumed,
         turnsInDarkness: gameState.turn.turnsInDarkness,
         turnsInDangerZone: gameState.turn.turnsInDangerZone,
+        darknessTimer: gameState.turn.darknessTimer,
+        openAreaTimer: gameState.turn.openAreaTimer,
+        movedThisTurn: gameState.turn.movedThisTurn,
         current: {
           parseResult: null, // Non serializzabile/non necessario
           consumesTurn: gameState.turn.current.consumesTurn,
@@ -1340,7 +1376,12 @@ export function createEngine() {
           const concept = (parseResult.VerbConcept || '').toUpperCase();
           // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
           const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
-          
+
+          // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato
+          if (DARK_BLOCKED_VERBS.has(concept) && !hasFonteLuceAttiva()) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dark.tooDark', gameState.currentLingua), effects: [] };
+          }
+
           // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json
           // Usa il VerbConcept (significato semantico) invece del CanonicalVerb (forma)
           if (noun && concept) {
@@ -1435,20 +1476,6 @@ export function createEngine() {
           if (!oggetto) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
           }
-          // === SISTEMA GUARDIA (Sprint 3.3.5.D) ===
-          // Al luogo 59 in attesa comando corretto, incrementa counter comandi inappropriati
-          if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' && 
-              gameState.currentLocationId === 59) {
-            gameState.unusefulCommandsCounter++;
-            return {
-              accepted: true,
-              resultType: 'OK',
-              message: getSystemMessage('narrative.command.useless', gameState.currentLingua),
-              effects: [],
-              showLocation: false
-            };
-          }
-          
           // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
           return {
             accepted: true,
@@ -1489,6 +1516,10 @@ export function createEngine() {
     // Phase 2: Run pre-execution checks (ACTIVE - Sprint 3.3.5.B: awaitingRestart)
     const preCheck = runPreExecutionChecks(parseResult);
     if (preCheck) {
+      // Il movimento bloccato alla barriera consuma comunque un turno (R4, #107)
+      if (shouldConsumeTurn(parseResult)) {
+        applyTurnEffects(preCheck, parseResult);
+      }
       if (debugEnabled) {
         pushEngineDebugEvent({
           kind: 'EXECUTE_COMMAND_BLOCKED',
@@ -1508,7 +1539,8 @@ export function createEngine() {
     const result = executeCommandLegacy(parseResult);
 
     // Phase 4: Apply turn effects (ACTIVE - Sprint 3.3.5.A: torch, 3.3.5.B: darkness)
-    if (result.accepted && shouldConsumeTurn(parseResult)) {
+    // Gli effetti si applicano a ogni comando che consuma un turno, accettato o no (#107)
+    if (shouldConsumeTurn(parseResult)) {
       const finalResult = applyTurnEffects(result, parseResult);
       if (debugEnabled) {
         const debugAfter = getDebugStateSnapshot();

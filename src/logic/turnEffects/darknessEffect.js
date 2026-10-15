@@ -1,49 +1,52 @@
 /**
- * Darkness Effect - Sistema contatore buio
- * 
+ * Darkness Effect - Timer del buio (R1, regola originale BAS 360, 780, 1230–1280)
+ *
  * Gestisce:
- * - Countdown turni senza luce (hasLight === false)
- * - Reset automatico quando si recupera fonte di luce
- * - Incremento contatore turnsInDarkness
- * 
- * NOTA: Il game over (morte dopo 3 turni) è gestito da gameOverEffect.js
- * che DEVE essere eseguito DOPO questo effect per valutare il contatore aggiornato.
- * 
- * Dipendenza: DEVE essere eseguito DOPO torchEffect perché usa hasLight
- * aggiornato dalla gestione illuminazione.
- * 
- * Sprint 3.3.5.B
+ * - `turn.darknessTimer`: senza luce parte a 3 e scende di 1 a ogni turno consumato;
+ * - allo scadere si muore solo se il comando del turno era un movimento (riuscito o no);
+ *   altrimenti, se si è ancora al buio, il timer riparte da 3;
+ * - ritrovata la luce il timer si azzera (deviazione minima e dichiarata dall'originale);
+ * - avviso "È pericoloso muoversi senza luce." a ogni turno che termina senza luce.
+ *
+ * La morte è decisa da gameOverEffect tramite `turn.current.darknessExpired`.
+ * `turn.turnsInDarkness` resta nello stato solo per compatibilità dei salvataggi.
+ *
+ * Dipendenza: DEVE essere eseguito DOPO torchEffect perché usa hasLight aggiornato.
  */
+
+import { getSystemMessage } from '../systemMessages.js';
+import { appendTurnMessage } from './appendMessage.js';
 
 /**
  * Applica effetto darkness al turno corrente
  * @param {Object} gameState - Stato del gioco
- * @param {Object} _result - Risultato del comando (non usato)
- * @param {Object} _parseResult - Comando parsato (non usato)
+ * @param {Object} result - Risultato del comando (riceve l'avviso)
+ * @param {Object} parseResult - Comando parsato (tipo di comando)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function darknessEffect(gameState, _result, _parseResult) {
-  // Usa hasLight già calcolato da torchEffect/prepareTurnContext
-  const hasLight = gameState.turn.current.hasLight;
-  const hadLightBefore = gameState.turn.previous.hasLight;
+export function darknessEffect(gameState, result, parseResult) {
+  const turn = gameState.turn;
+  const hasLight = turn.current.hasLight;
+  if (typeof turn.darknessTimer !== 'number') {
+    turn.darknessTimer = 0;
+  }
+
+  if (turn.darknessTimer > 0) {
+    turn.darknessTimer -= 1;
+    if (turn.darknessTimer === 0 && parseResult?.CommandType === 'NAVIGATION') {
+      turn.current.darknessExpired = true;
+      return;
+    }
+  }
 
   if (!hasLight) {
-    // NON incrementare al PRIMO turno di buio (quando previous aveva luce)
-    // Questo dà all'utente 3 turni pieni invece di 2:
-    // Turno 6 (primo buio): counter=0
-    // Turno 7: counter=1
-    // Turno 8: counter=2
-    // Turno 9: counter=3 → MORTE
-    if (!hadLightBefore) {
-      gameState.turn.turnsInDarkness++;
+    if (turn.darknessTimer === 0) {
+      turn.darknessTimer = 3;
     }
-    
-    // Nessun warning durante i primi 2 turni (specifica: morte improvvisa)
-    // Il game over al 3° turno sarà gestito da gameOverEffect
+    // L'avviso di torcia guasta contiene già l'avviso di pericolo
+    if (gameState.currentLocationId !== 59 && !turn.current.torchDefectiveWarning) {
+      appendTurnMessage(result, getSystemMessage('timer.darkness.warning', gameState.currentLingua));
+    }
   } else {
-    // Reset counter quando si recupera luce
-    if (gameState.turn.turnsInDarkness > 0) {
-      gameState.turn.turnsInDarkness = 0;
-    }
+    turn.darknessTimer = 0;
   }
 }

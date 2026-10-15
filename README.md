@@ -188,9 +188,9 @@ Vedi anche: [.env.example](.env.example).
 
 ### Limite turni (alba)
 
-- `GAME_MAX_TURNS_CONSUMED`: limite massimo di turni che consumano tempo (esclude comandi `SYSTEM`).
-   - Se la variabile non è impostata, il limite è disabilitato.
-   - Valore consigliato: vedi `.env.example` (impostato a 250).
+- `GAME_MAX_TURNS_CONSUMED`: override del limite dell'alba (regola di gioco: 200 turni che consumano tempo, esclusi i comandi `SYSTEM`).
+   - Solo per test; non impostare in produzione.
+   - Se la variabile non è impostata, vale la regola di gioco (200).
 
 Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
 

@@ -1,32 +1,31 @@
 /**
  * Game Over Effect - Sistema unificato condizioni morte/game over
  * 
- * Centralizza TUTTE le verifiche di game over post-turno:
- * - Darkness death (3 turni senza luce)
+ * Centralizza TUTTE le verifiche di game over post-turno, in quest'ordine:
+ * - Lampada abbandonata
+ * - Buio (timer scaduto con un movimento, R1)
  * - Luogo terminale (Terminale === -1)
- * - Intercettazione (3 turni in zona pericolosa)
- * - Guardia insospettita (futuro Sprint 3.4)
- * 
- * Questo effect DEVE essere l'ultimo nel registry TURN_EFFECTS perché
- * valuta i contatori già aggiornati dagli altri effects.
- * 
+ * - Zona aperta (secondo comando consecutivo senza spostamento, R2)
+ * - Guardia alla barriera (arresto al 5° comando, R4)
+ * - Alba (limite di turni consumati, R3)
+ *
+ * Questo effect DEVE seguire gli effetti dei timer nel registry TURN_EFFECTS perché
+ * valuta i timer già aggiornati.
+ *
  * Sprint 3.3.5.B (refactoring unificazione game over)
  */
 
 import { getSystemMessage } from '../systemMessages.js';
+import { OPEN_AREA_LOCATIONS } from './interceptEffect.js';
+import { getDawnTurnLimit } from './dawnEffect.js';
 
-function getMaxTurnsConsumed() {
-  const raw = process.env.GAME_MAX_TURNS_CONSUMED;
-  if (raw === undefined || raw === null || String(raw).trim() === '') {
-    return null; // Disabilitato se non impostato
-  }
-
-  const parsed = Number.parseInt(String(raw), 10);
-  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed <= 0) {
-    return null; // Valore non valido => disabilitato
-  }
-
-  return parsed;
+function setGameOver(gameState, result, messageKey, reason) {
+  result.accepted = false;
+  result.resultType = 'GAME_OVER';
+  result.message = getSystemMessage(messageKey, gameState.currentLingua);
+  result.gameOver = true;
+  result.gameOverReason = reason;
+  gameState.awaitingRestart = true;
 }
 
 /**
@@ -81,18 +80,10 @@ export function gameOverEffect(gameState, result, parseResult) {
     }
   }
 
-  // === CHECK 1: DARKNESS DEATH ===
-  // 3 turni consecutivi senza luce
-  if (gameState.turn.turnsInDarkness >= 3) {
-    const deathMsg = getSystemMessage('timer.darkness.death', gameState.currentLingua);
-    
-    result.accepted = false;
-    result.resultType = 'GAME_OVER';
-    result.message = deathMsg;
-    result.gameOver = true;
-    result.gameOverReason = 'DARKNESS';
-    
-    gameState.awaitingRestart = true;
+  // === CHECK 1: DARKNESS DEATH (R1) ===
+  // Timer del buio scaduto con un comando di movimento (riuscito o no)
+  if (gameState.turn.current?.darknessExpired === true) {
+    setGameOver(gameState, result, 'timer.darkness.death', 'DARKNESS');
     return; // Game over triggato, non verificare altre condizioni
   }
 
@@ -116,45 +107,29 @@ export function gameOverEffect(gameState, result, parseResult) {
     return;
   }
 
-  // === CHECK 3: INTERCETTAZIONE ===
-  // N turni consuming in danger zone (luoghi 51,52,53,55,56,58)
-  // Sprint 3.3.5.C: Sistema intercettazione pattuglie
-  const INTERCEPT_TURNS_TO_DIE = 4;
-  if (gameState.turn.turnsInDangerZone >= INTERCEPT_TURNS_TO_DIE) {
-    const interceptMsg = getSystemMessage('game.intercept.death', gameState.currentLingua);
-    result.accepted = false;
-    result.resultType = 'GAME_OVER';
-    result.message = interceptMsg;
-    result.gameOver = true;
-    result.gameOverReason = 'INTERCEPT';
-    gameState.awaitingRestart = true;
-    return;
-  }
-  
-  // === CHECK 4: GUARDIA INSOSPETTITA ===
-  // Troppi comandi inutili al luogo 59 (Sprint 3.3.5.D)
-  if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' && 
-      gameState.unusefulCommandsCounter >= 3) {
-    const guardMsg = getSystemMessage('game.over.guardia_sospetta', gameState.currentLingua);
-    result.accepted = false;
-    result.resultType = 'GAME_OVER';
-    result.message = guardMsg;
-    result.gameOver = true;
-    result.gameOverReason = 'GUARD_SUSPICIOUS';
-    gameState.awaitingRestart = true;
+  // === CHECK 3: ZONA APERTA (R2) ===
+  // Secondo comando consecutivo senza spostamento nella zona aperta
+  if (gameState.turn.current?.openAreaExpired === true) {
+    setGameOver(gameState, result, 'game.intercept.death', 'INTERCEPT');
     return;
   }
 
-  // === CHECK 5: LIMITE TURNI CONSUMATI (ALBA) ===
-  // Se si supera un limite previsto di turni che consumano tempo (escludendo i comandi SYSTEM), game over.
-  const maxTurnsConsumed = getMaxTurnsConsumed();
-  if (maxTurnsConsumed !== null && gameState.turn.totalTurnsConsumed >= maxTurnsConsumed) {
-    const tooLateMsg = getSystemMessage('game.over.tooLate', gameState.currentLingua);
-    result.accepted = false;
-    result.resultType = 'GAME_OVER';
-    result.message = tooLateMsg;
-    result.gameOver = true;
-    result.gameOverReason = 'TOO_LATE';
-    gameState.awaitingRestart = true;
+  // === CHECK 4: GUARDIA ALLA BARRIERA (R4) ===
+  // Timer della guardia scaduto senza aver porto i documenti
+  if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' &&
+      gameState.currentLocationId === 59 &&
+      typeof gameState.guardTimer === 'number' &&
+      gameState.guardTimer <= 0) {
+    setGameOver(gameState, result, 'timer.guard.arrest', 'GUARD_ARREST');
+    return;
+  }
+
+  // === CHECK 5: ALBA (R3) ===
+  // Limite di turni consumati (comandi SYSTEM esclusi); fermo dopo l'incontro con Ferenc.
+  if (!gameState.narrativeState && gameState.turn.totalTurnsConsumed >= getDawnTurnLimit()) {
+    const messageKey = OPEN_AREA_LOCATIONS.includes(gameState.currentLocationId)
+      ? 'timer.dawn.death.outdoor'
+      : 'timer.dawn.death.house';
+    setGameOver(gameState, result, messageKey, 'TOO_LATE');
   }
 }
