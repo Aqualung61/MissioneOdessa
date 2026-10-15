@@ -1283,5 +1283,17 @@
     "Voce": "COMPARTMENT",
     "ID_Termine": 66,
     "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1091,
+    "Voce": "Fiammifero",
+    "ID_Termine": 51,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1092,
+    "Voce": "Match",
+    "ID_Termine": 51,
+    "ID_Lingua": 2
   }
 ]

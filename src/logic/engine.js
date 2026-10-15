@@ -126,9 +126,11 @@ export function createEngine() {
       torciaDifettosa: false,          // False all'inizio (funzionante), True dopo 6 turni
       lampadaAccesa: false,            // Stato della lampada
       azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
-      ultimoLuogoPericoloso: null      // ID per reset al cambio stanza
+      ultimoLuogoPericoloso: null,     // ID per reset al cambio stanza
+      matchesLeft: 6,                  // Fiammiferi rimasti (R8)
+      matchTimer: 0                    // Turni di luce residui del fiammifero acceso (R8)
     },
-    
+
     // === SISTEMA TURN (v3.0) ===
     turn: {
       globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
@@ -245,9 +247,11 @@ export function createEngine() {
         torciaDifettosa: false,
         lampadaAccesa: false,
         azioniInLuogoPericoloso: 0,
-        ultimoLuogoPericoloso: null
+        ultimoLuogoPericoloso: null,
+        matchesLeft: 6,
+        matchTimer: 0
       },
-      
+
       // === SISTEMA TURN (v3.0) ===
       turn: {
         globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
@@ -381,8 +385,17 @@ export function createEngine() {
       return true;
     }
 
-    // Verifica lampada (ID=27) accesa
+    // Verifica lampada (ID=27) accesa: fa luce solo dove si trova, in inventario o nel luogo
+    // corrente (R8, §4.3). Altrove il comportamento non cambia (R9: allontanarsene è morte immediata).
     if (gameState.timers.lampadaAccesa) {
+      const lampada = gameState.Oggetti.find((o) => o.ID === 27);
+      if (lampada && (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId)) {
+        return true;
+      }
+    }
+
+    // Fiammifero acceso (R8): dà luce per il comando successivo a quello che lo accende
+    if (gameState.timers.matchTimer > 0) {
       return true;
     }
 
@@ -728,6 +741,18 @@ export function createEngine() {
       guardTimer: typeof newState.guardTimer === 'number'
         ? newState.guardTimer
         : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? 5 : 0),
+      // Fiammiferi (R8): default per i salvataggi che non li contengono (§4.1)
+      timers: (() => {
+        const timers = { ...(newState.timers || {}) };
+        if (typeof timers.matchesLeft !== 'number') {
+          const fiammiferi = (newState.Oggetti || []).find((o) => o.ID === 36);
+          timers.matchesLeft = fiammiferi && fiammiferi.IDLuogo !== -1 ? 6 : 0;
+        }
+        if (typeof timers.matchTimer !== 'number') {
+          timers.matchTimer = 0;
+        }
+        return timers;
+      })(),
       turn: newState.turn ? {
         globalTurnNumber: newState.turn.globalTurnNumber || 0,
         totalTurnsConsumed: newState.turn.totalTurnsConsumed || 0,
@@ -1013,8 +1038,56 @@ export function createEngine() {
     }
   }
 
+  /**
+   * Consuma un fiammifero (R8, §4.2): usata da `accendi fiammifero` e dall'effetto
+   * CONSUMA_FIAMMIFERO (interazione `accendi_lampada`). Se la scorta si esaurisce,
+   * i Fiammiferi (ID 36) spariscono dal gioco.
+   * @returns {boolean} true se i fiammiferi sono appena finiti
+   */
+  function consumaFiammifero() {
+    if (typeof gameState.timers.matchesLeft !== 'number') {
+      gameState.timers.matchesLeft = 6;
+    }
+    gameState.timers.matchesLeft = Math.max(0, gameState.timers.matchesLeft - 1);
+    if (gameState.timers.matchesLeft === 0) {
+      const fiammiferi = gameState.Oggetti.find((o) => o.ID === 36);
+      if (fiammiferi) {
+        fiammiferi.IDLuogo = -1;
+        fiammiferi.Attivo = 0;
+        fiammiferi.Inventario = false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Gestisce `accendi fiammifero` (R8, §4.3): non è un'interazione di Interazioni.json
+   * (nessun punteggio). Ammesso se i Fiammiferi sono in inventario o nel luogo corrente.
+   */
+  function accendiFiammifero() {
+    const fiammiferi = gameState.Oggetti.find((o) =>
+      o.ID === 36 &&
+      (o.IDLuogo === 0 || o.IDLuogo === gameState.currentLocationId) &&
+      o.Attivo >= 1
+    );
+    if (!fiammiferi || !(gameState.timers.matchesLeft > 0)) {
+      return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.matches.none', gameState.currentLingua), effects: [] };
+    }
+
+    const finished = consumaFiammifero();
+    gameState.timers.matchTimer = 2;
+    let message = getSystemMessage('engine.matches.lit', gameState.currentLingua);
+    if (finished) {
+      message += '\n\n' + getSystemMessage('engine.matches.finished', gameState.currentLingua);
+    }
+    return { accepted: true, resultType: 'OK', message, effects: [] };
+  }
+
   // Funzione per applicare gli effetti di un'interazione
+  // @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. fiammiferi finiti)
   function applicaEffetti(effetti, luogoCorrente) {
+    const extraMessages = [];
     for (const effetto of effetti) {
       // Stato precedente al toggle: variabile locale (non si scrive sui dati globali condivisi)
       let statoPreToggle;
@@ -1062,6 +1135,11 @@ export function createEngine() {
       } else if (effetto.tipo === 'RESET_COUNTER') {
         // Resetta un counter in gameState a 0 (es. "turn.turnsInDarkness")
         setNestedProperty(gameState, effetto.counter, 0);
+      } else if (effetto.tipo === 'CONSUMA_FIAMMIFERO') {
+        // R8: consumo di un fiammifero (interazione accendi_lampada)
+        if (consumaFiammifero()) {
+          extraMessages.push(getSystemMessage('engine.matches.finished', gameState.currentLingua));
+        }
       } else if (!EFFECT_TYPES.has(effetto.tipo)) {
         warnUnknownTypeOnce('effetto', effetto.tipo);
       }
@@ -1070,6 +1148,7 @@ export function createEngine() {
       // Assegna +3 punti se questo effetto risolve un mistero
       assegnaPunteggioMistero(effetto, { statoPreToggle });
     }
+    return extraMessages;
   }
 
   // Funzione per cercare e eseguire un'interazione
@@ -1189,8 +1268,11 @@ export function createEngine() {
         }
         
         // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-        applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
-        
+        const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
+        if (extraMessages.length > 0) {
+          risposta = risposta + '\n\n' + extraMessages.join('\n\n');
+        }
+
         // Verifica se è VITTORIA per aggiungere flag ended nella risposta
         const hasVittoriaEffect = interazione.effetti.some(e => e.tipo === 'VITTORIA');
         const resultBase = { 
@@ -1380,6 +1462,13 @@ export function createEngine() {
           // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato
           if (DARK_BLOCKED_VERBS.has(concept) && !hasFonteLuceAttiva()) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dark.tooDark', gameState.currentLingua), effects: [] };
+          }
+
+          // ACCENDI FIAMMIFERO (R8): gestito dal motore, non come interazione (nessun punteggio)
+          const fiammiferiRecord = gameState.Oggetti.find((o) => o.ID === 36);
+          if (concept === 'ACCENDERE' && fiammiferiRecord &&
+              normalizeForComparison(fiammiferiRecord.Oggetto) === normalizeForComparison(noun)) {
+            return accendiFiammifero();
           }
 
           // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json

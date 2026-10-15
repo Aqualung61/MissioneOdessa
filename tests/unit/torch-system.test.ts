@@ -143,15 +143,18 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
       }
     });
 
+    // Aggiornato per decisione R8 (#108): la lampada accesa fa luce solo dove si trova (§4.3)
     it('NON dovrebbe mostrare warning buio se ha lampada accesa', () => {
       const state = getGameState();
-      
+
       const torcia = state.Oggetti.find(o => o.ID === 37);
+      const lampada = state.Oggetti.find(o => o.ID === 27);
       if (torcia) {
         torcia.Inventario = true;
         state.timers.torciaDifettosa = false;
         state.timers.lampadaAccesa = true; // Lampada accesa
-        
+        if (lampada) lampada.IDLuogo = 0; // In inventario: fa luce con il giocatore
+
         // Esegui 6 turni
         let lastResult;
         for (let i = 0; i < 6; i++) {
@@ -186,16 +189,19 @@ describe('Sprint 3.3.5.A - Sistema Torcia', () => {
       }
     });
 
+    // Aggiornato per decisione R8 (#108): la lampada accesa fa luce solo dove si trova (§4.3)
     it('dovrebbe gestire lampada come fonte alternativa', () => {
       const state = getGameState();
-      
+
       // Nessuna torcia, ma lampada accesa
       const torcia = state.Oggetti.find(o => o.ID === 37);
       if (torcia) {
         torcia.IDLuogo = 1; // Torcia non in inventario
       }
       state.timers.lampadaAccesa = true;
-      
+      const lampada = state.Oggetti.find(o => o.ID === 27);
+      if (lampada) lampada.IDLuogo = 0; // In inventario: fa luce con il giocatore
+
       executeCommand({ IsValid: true, NormVerb: 'NORD', CommandType: 'NAVIGATION' });
       
       // Lampada fornisce luce alternativa

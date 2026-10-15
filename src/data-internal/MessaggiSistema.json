@@ -689,5 +689,45 @@
     "Chiave": "narrative.awaiting.continue",
     "IDLingua": 2,
     "Messaggio": "Press SPACEBAR to continue..."
+  },
+  {
+    "Chiave": "engine.matches.lit",
+    "IDLingua": 1,
+    "Messaggio": "Swcrapp!!! Fatto."
+  },
+  {
+    "Chiave": "engine.matches.lit",
+    "IDLingua": 2,
+    "Messaggio": "Scratch!!! Done."
+  },
+  {
+    "Chiave": "engine.matches.finished",
+    "IDLingua": 1,
+    "Messaggio": "Li hai finiti!"
+  },
+  {
+    "Chiave": "engine.matches.finished",
+    "IDLingua": 2,
+    "Messaggio": "You've run out of them!"
+  },
+  {
+    "Chiave": "engine.matches.out",
+    "IDLingua": 1,
+    "Messaggio": "Il fiammifero si spegne."
+  },
+  {
+    "Chiave": "engine.matches.out",
+    "IDLingua": 2,
+    "Messaggio": "The match goes out."
+  },
+  {
+    "Chiave": "engine.matches.none",
+    "IDLingua": 1,
+    "Messaggio": "Non hai fiammiferi."
+  },
+  {
+    "Chiave": "engine.matches.none",
+    "IDLingua": 2,
+    "Messaggio": "You have no matches."
   }
 ]

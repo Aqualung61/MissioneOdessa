@@ -48,6 +48,7 @@ export const EFFECT_TYPES = new Set([
   'SET_FLAG',
   'RESET_COUNTER',
   'VITTORIA',
+  'CONSUMA_FIAMMIFERO',
 ]);
 
 function prerequisitesOf(record) {
