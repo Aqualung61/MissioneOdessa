@@ -3,7 +3,7 @@
     "ID": 1,
     "IDLingua": 1,
     "Oggetto": "Bastone di comando",
-    "Attivo": 3,
+    "Attivo": 1,
     "IDLuogo": 11,
     "descrizione": "Il bastone si rivela essere un bastone di comando, come quelli che i FeldMarescialli erano soliti portare. Su di esso si avvolge a spirale una strana frase: UXRWD LO VHGLOH."
   },
@@ -11,7 +11,7 @@
     "ID": 1,
     "IDLingua": 2,
     "Oggetto": "Command baton",
-    "Attivo": 3,
+    "Attivo": 1,
     "IDLuogo": 11,
     "descrizione": "The stick turns out to be a command baton, like the ones field marshals used to carry. A strange phrase spirals around it: UXRWD LO VHGLOH."
   },
@@ -435,7 +435,7 @@
     "ID": 33,
     "IDLingua": 1,
     "Oggetto": "Quadro",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 24,
     "descrizione": "Il quadro è logoro e impolverato. Si riconosce comunque, un dipinto dallo stile pomposo, retorico, di moda nel nazismo: raffigura una scena di battaglia del XIX secolo. Non ha valore artistico."
   },
@@ -443,7 +443,7 @@
     "ID": 33,
     "IDLingua": 2,
     "Oggetto": "Painting",
-    "Attivo": 1,
+    "Attivo": 3,
     "IDLuogo": 24,
     "descrizione": "The painting is worn and dusty. You can still make out a bombastic, rhetorical style painting, fashionable in Nazi art: it depicts a 19th-century battle scene. It has no artistic value."
   },

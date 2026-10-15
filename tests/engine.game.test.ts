@@ -38,38 +38,41 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     resetGameState();
   });
 
+  // Aggiornato per decisione R7 (#96): "Statuetta" (luogo 22, Attivo=3) al posto del
+  // Bastone di comando, non più prendibile direttamente dal `prendi` generico (R7).
   it('PRENDI oggetto -> inventario lo contiene', async () => {
-    // Imposta luogo corrente a 11 dove c'è "Bastone di comando"
+    // Imposta luogo corrente a 22 dove c'è "Statuetta"
     const { setCurrentLocation } = await import('../src/logic/engine.js');
-    setCurrentLocation(11);
-    
-    const parsed = await parseCommand(null, 'PRENDI BASTONE');
+    setCurrentLocation(22);
+
+    const parsed = await parseCommand(null, 'PRENDI STATUETTA');
     expect(parsed.IsValid).toBe(true);
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.message).toMatch(/Hai preso/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia ora in inventario (IDLuogo = 0)
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
-    expect(bastone).toBeDefined();
-    expect(bastone.IDLuogo).toBe(0);
+    const statuetta = snap.Oggetti.find(o => o.Oggetto === 'Statuetta');
+    expect(statuetta).toBeDefined();
+    expect(statuetta.IDLuogo).toBe(0);
   });
 
+  // Aggiornato per decisione R7 (#96): stessa sostituzione del test precedente
   it('POSA oggetto dopo PRENDI -> torna nel luogo', async () => {
     const { setCurrentLocation } = await import('../src/logic/engine.js');
-    setCurrentLocation(11);
-    
-    let parsed = await parseCommand(null, 'PRENDI BASTONE');
+    setCurrentLocation(22);
+
+    let parsed = await parseCommand(null, 'PRENDI STATUETTA');
     executeCommand(parsed);
-    parsed = await parseCommand(null, 'POSA BASTONE');
+    parsed = await parseCommand(null, 'POSA STATUETTA');
     const res2 = executeCommand(parsed);
     expect(res2.accepted).toBe(true);
     expect(res2.message).toMatch(/Hai posato/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia tornato nel luogo corrente
-    const bastone = snap.Oggetti.find(o => o.Oggetto === 'Bastone di comando');
-    expect(bastone).toBeDefined();
-    expect(bastone.IDLuogo).toBe(11);
+    const statuetta = snap.Oggetti.find(o => o.Oggetto === 'Statuetta');
+    expect(statuetta).toBeDefined();
+    expect(statuetta.IDLuogo).toBe(22);
   });
 
   it('INVENTARIO mostra contenuto o assenza', async () => {
@@ -124,12 +127,14 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toBe('Questo oggetto non può essere preso.');
   });
 
-  it('PRENDI oggetto spostabile (Attivo=2) -> messaggio di rifiuto', async () => {
-    // Imposta luogo corrente a 24 dove c'è "Quadro" (Attivo=2, spostabile)
+  // Aggiornato per decisione R7 (#96): "Trofei alle pareti" (luogo 22, Attivo=1) al posto
+  // del Quadro, ora prendibile (Attivo=3, R7).
+  it('PRENDI oggetto spostabile (Attivo=1) -> messaggio di rifiuto', async () => {
+    // Imposta luogo corrente a 22 dove ci sono "Trofei alle pareti" (Attivo=1, scenico)
     const { setCurrentLocation } = await import('../src/logic/engine.js');
-    setCurrentLocation(24);
-    
-    const parsed = await parseCommand(null, 'PRENDI QUADRO');
+    setCurrentLocation(22);
+
+    const parsed = await parseCommand(null, 'PRENDI TROFEI');
     expect(parsed.IsValid).toBe(true);
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
