@@ -1,0 +1,761 @@
+{
+  "gameState": {
+    "openStates": {
+      "BOTOLA": false
+    },
+    "awaitingEndConfirm": false,
+    "awaitingRestart": false,
+    "currentLocationId": 43,
+    "ended": false,
+    "visitedPlaces": [
+      1,
+      2,
+      6,
+      3,
+      7,
+      9,
+      10,
+      11,
+      12,
+      4,
+      5,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      23,
+      24,
+      25,
+      21,
+      22,
+      13,
+      26,
+      27,
+      38,
+      28,
+      29,
+      30,
+      31,
+      33,
+      34,
+      35,
+      32,
+      36,
+      39,
+      37,
+      41,
+      42,
+      43
+    ],
+    "Oggetti": [
+      {
+        "ID": 1,
+        "IDLingua": 1,
+        "Oggetto": "Bastone di comando",
+        "Attivo": 3,
+        "IDLuogo": 11,
+        "descrizione": "Il bastone si rivela essere un bastone di comando, come quelli che i FeldMarescialli erano soliti portare. Su di esso si avvolge a spirale una strana frase: UXRWD LO VHGLOH."
+      },
+      {
+        "ID": 2,
+        "IDLingua": 1,
+        "Oggetto": "Grande tavolo",
+        "Attivo": 1,
+        "IDLuogo": 14,
+        "descrizione": "E' un vecchio tavolo rettangolare."
+      },
+      {
+        "ID": 3,
+        "IDLingua": 1,
+        "Oggetto": "Sedie",
+        "Attivo": 1,
+        "IDLuogo": 14,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 4,
+        "IDLingua": 1,
+        "Oggetto": "Badile arruginito",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' solo un vecchio badile arrugginito."
+      },
+      {
+        "ID": 5,
+        "IDLingua": 1,
+        "Oggetto": "Arazzo in pessime condizioni",
+        "Attivo": 1,
+        "IDLuogo": 20,
+        "descrizione": "L'arazzo è del 700 raffigurante una scena di caccia: le sue condizioni però pessime."
+      },
+      {
+        "ID": 6,
+        "IDLingua": 1,
+        "Oggetto": "Lista di servizio",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' un piccolo dossier di tre fogli. Sembra essere una lista di servizio con 1.500 nominativi di SS, redatta in tempo di guerra in un numero limitato di copie, da distribuire ai 40 Gauleiter delle regioni in cui era divisa la Germania. Il documento reca la firma dei più alti ufficiali delle SS, Himmler in testa. Sottolineature con penna rossa sono riportate sui nominativi di Berlino."
+      },
+      {
+        "ID": 7,
+        "IDLingua": 1,
+        "Oggetto": "Scrivania",
+        "Attivo": 1,
+        "IDLuogo": 25,
+        "descrizione": "E' una vecchia scrivania, ricoperta interamente da polvere."
+      },
+      {
+        "ID": 8,
+        "IDLingua": 1,
+        "Oggetto": "Statuetta",
+        "Attivo": 3,
+        "IDLuogo": 27,
+        "descrizione": "Raffigura il Fuhrer, sull'attenti, col braccio destro alzato. E' piuttosto pesante."
+      },
+      {
+        "ID": 9,
+        "IDLingua": 1,
+        "Oggetto": "Trofei alle pareti",
+        "Attivo": 1,
+        "IDLuogo": 22,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 10,
+        "IDLingua": 1,
+        "Oggetto": "Fermacarte",
+        "Attivo": 2,
+        "IDLuogo": 25,
+        "descrizione": "Raffigura un ragazzo che lancia. Non sembra avere qualche valore artistico né essere fatto di un metallo prezioso, ma sembra fissato ad una specie di guida sul tavolo."
+      },
+      {
+        "ID": 12,
+        "IDLingua": 1,
+        "Oggetto": "Scaffali vuoti",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 13,
+        "IDLingua": 1,
+        "Oggetto": "Nicchia vuota",
+        "Attivo": 1,
+        "IDLuogo": 27,
+        "descrizione": "E' ricavata sulla parete a mezza altezza e ha dimensioni abbastanza contenute. In genere nicchie di questo tipo contengono vasi preziosi o statuette."
+      },
+      {
+        "ID": 14,
+        "IDLingua": 1,
+        "Oggetto": "Letto",
+        "Attivo": 1,
+        "IDLuogo": 33,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 15,
+        "IDLingua": 1,
+        "Oggetto": "Sedile",
+        "Attivo": 1,
+        "IDLuogo": 42,
+        "descrizione": "E' in un angolo della stanza, è imbottito e dalla forma circolare, probabilmente si accompagnava ad un tavolo che ora è scomparso. Sembra fisso al pavimento pur se libero di girare."
+      },
+      {
+        "ID": 16,
+        "IDLingua": 1,
+        "Oggetto": "Fascicolo",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' un fascicolo contenente carte stradali, brevi rapporti dattiloscritti, documenti falsi da compilare. Il fascicolo porta la data del 2 Gennaio 1945, non dovrebbe quindi essere stato realizzato da ODESSA. Piuttosto sembra essere il piano di fuga predisposto dal Gauleiter visto l'andamento della guerra. Le cartine illustrano un percorso da Brema a Bari, passando da Innsbruck e poi dal Brennero. I rapporti indicano questo percorso con un nome in codice, B-B."
+      },
+      {
+        "ID": 17,
+        "IDLingua": 1,
+        "Oggetto": "Tavolo",
+        "Attivo": 1,
+        "IDLuogo": 49,
+        "descrizione": "E' un vecchio tavolo rettangolare."
+      },
+      {
+        "ID": 19,
+        "IDLingua": 1,
+        "Oggetto": "Porta aperta",
+        "Attivo": 1,
+        "IDLuogo": 27,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 20,
+        "IDLingua": 1,
+        "Oggetto": "Macerie",
+        "Attivo": 1,
+        "IDLuogo": 49,
+        "descrizione": "Macerie che impediscono di andare ad ovest"
+      },
+      {
+        "ID": 21,
+        "IDLingua": 1,
+        "Oggetto": "Peso",
+        "Attivo": 3,
+        "IDLuogo": 50,
+        "descrizione": "E' un tipico peso da bilancia. La segnatura anche se un po' sbiadita indica cinque chili."
+      },
+      {
+        "ID": 22,
+        "IDLingua": 1,
+        "Oggetto": "Banco degli attrezzi",
+        "Attivo": 1,
+        "IDLuogo": 57,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 23,
+        "IDLingua": 1,
+        "Oggetto": "Pesa",
+        "Attivo": 1,
+        "IDLuogo": 57,
+        "descrizione": "E' una vecchia pesa ad un piatto con un peso scorrevole ad una estremità: è fissa su un vecchio tavolo tarlato e ingombro di detriti. Il piatto, non caricato da pesi, è alto rispetto al peso scorrevole."
+      },
+      {
+        "ID": 25,
+        "IDLingua": 1,
+        "Oggetto": "Cassaforte",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Ha un aspetto solido, nel suo centro una manopola può ruotare nei due sensi: i cardini sono ben oliati. Chiaramente solo un esperto potrebbe aprirla senza combinazione."
+      },
+      {
+        "ID": 27,
+        "IDLingua": 1,
+        "Oggetto": "Lampada",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 29,
+        "IDLingua": 1,
+        "Oggetto": "Forma circolare",
+        "Attivo": 1,
+        "IDLuogo": 36,
+        "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
+      },
+      {
+        "ID": 30,
+        "IDLingua": 1,
+        "Oggetto": "Medaglione",
+        "Attivo": 3,
+        "IDLuogo": 36,
+        "descrizione": "E' alquanto massiccio, bronzeo, di forma circolare: all'interno della corona esterna intarsiata a mo' di alloro spicca una svastica di rilievo."
+      },
+      {
+        "ID": 31,
+        "IDLingua": 1,
+        "Oggetto": "Pulsante",
+        "Attivo": 1,
+        "IDLuogo": 44,
+        "descrizione": "E' di colore rosso. Un cartello sotto di esso dice: USCITA."
+      },
+      {
+        "ID": 32,
+        "IDLingua": 1,
+        "Oggetto": "Paratia",
+        "Attivo": 2,
+        "IDLuogo": 42,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 33,
+        "IDLingua": 1,
+        "Oggetto": "Quadro",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Il quadro è logoro e impolverato. Si riconosce comunque, un dipinto dallo stile pomposo, retorico, di moda nel nazismo: raffigura una scena di battaglia del XIX secolo. Non ha valore artistico."
+      },
+      {
+        "ID": 34,
+        "IDLingua": 1,
+        "Oggetto": "Dossier",
+        "Attivo": 0,
+        "IDLuogo": 57,
+        "descrizione": "E' un voluminoso dossier. Aprendolo trovi una serie di documenti ancora da compilare, una lista di nomi presumibilmente di gerarchi nazisti, delle carte geografiche del Sud America con sottolineate le località dell'Argentina. Un breve rapporto indica la costituzione di centri di controllo ogni 60-70km dal tragitto da compiere e fornisce nomi e indirizzi sul percorso Brema-Genova. Su tutti i fogli c'è un timbro: ODESSA."
+      },
+      {
+        "ID": 35,
+        "IDLingua": 1,
+        "Oggetto": "Documenti",
+        "Attivo": 3,
+        "IDLuogo": 2,
+        "descrizione": "I documenti sono intestati a David Liebermann, operaio di Stoccarda, rilasciati per un soggiorno di pochi giorni nel settore russo di Berlino."
+      },
+      {
+        "ID": 36,
+        "IDLingua": 1,
+        "Oggetto": "Fiammiferi",
+        "Attivo": 3,
+        "IDLuogo": 6,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 37,
+        "IDLingua": 1,
+        "Oggetto": "Torcia elettrica",
+        "Attivo": 3,
+        "IDLuogo": 18,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 38,
+        "IDLingua": 1,
+        "Oggetto": "Scomparto segreto",
+        "Attivo": 1,
+        "IDLuogo": 25,
+        "descrizione": "All'interno dello scomparto c'è un foglio dattiloscritto."
+      },
+      {
+        "ID": 39,
+        "IDLingua": 1,
+        "Oggetto": "Foglio",
+        "Attivo": 3,
+        "IDLuogo": 25,
+        "descrizione": "Il foglio contiene solo delle lettere scritte a macchina: D S S D S. Sembra essere una combinazione di una cassaforte."
+      },
+      {
+        "ID": 40,
+        "IDLingua": 1,
+        "Oggetto": "Scrivania",
+        "Attivo": 1,
+        "IDLuogo": 21,
+        "descrizione": "E' una vecchia scrivania, ricoperta interamente da polvere."
+      },
+      {
+        "ID": 41,
+        "IDLingua": 1,
+        "Oggetto": "Botola",
+        "Attivo": 0,
+        "IDLuogo": 57,
+        "descrizione": "La botola rivela un piccolo nascondiglio sul pavimento. All'interno c'è un dossier."
+      },
+      {
+        "ID": 42,
+        "IDLingua": 1,
+        "Oggetto": "Forma circolare",
+        "Attivo": 1,
+        "IDLuogo": 20,
+        "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
+      }
+    ],
+    "interazioniEseguite": [
+      "accendi_lampada",
+      "sposta_quadro_24",
+      "muovi_fermacarte_25",
+      "esamina_scomparto_25",
+      "sposta_arazzo_20",
+      "infila_medaglione_forma_20",
+      "infila_statuetta_nicchia_27",
+      "infila_medaglione_forma_36"
+    ],
+    "direzioniSbloccate": {
+      "20_Sud": 21,
+      "21_Nord": 20,
+      "27_Nord": 28,
+      "28_Sud": 27,
+      "36_Ovest": 37,
+      "37_Est": 36
+    },
+    "direzioniToggle": {
+      "42_Est": true,
+      "43_Ovest": true
+    },
+    "sequenze": {
+      "cassaforte_24": {
+        "pattern": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
+        "progressione": [
+          "DESTRA",
+          "SINISTRA",
+          "SINISTRA",
+          "DESTRA",
+          "SINISTRA"
+        ],
+        "completata": true
+      }
+    },
+    "currentLingua": 1,
+    "punteggio": {
+      "totale": 95,
+      "interazioniPunteggio": [
+        "accendi_lampada",
+        "sposta_quadro_24",
+        "esamina_cassaforte_con_medaglione_24",
+        "esamina_cassaforte_vuota_24",
+        "muovi_fermacarte_25",
+        "esamina_scomparto_25",
+        "sposta_arazzo_20",
+        "infila_medaglione_forma_20",
+        "infila_statuetta_nicchia_27",
+        "infila_medaglione_forma_36",
+        "ruota_sedile_42"
+      ],
+      "misteriRisolti": [
+        "visibilita_Cassaforte",
+        "sequenza_cassaforte",
+        "visibilita_Medaglione",
+        "visibilita_Scomparto segreto",
+        "visibilita_Foglio",
+        "visibilita_Forma circolare",
+        "direzione_20_21",
+        "visibilita_Porta aperta",
+        "direzione_27_28",
+        "direzione_36_37",
+        "direzione_42_43"
+      ]
+    },
+    "timers": {
+      "movementCounter": 0,
+      "torciaDifettosa": true,
+      "lampadaAccesa": true,
+      "azioniInLuogoPericoloso": 0,
+      "ultimoLuogoPericoloso": null
+    },
+    "narrativeState": null,
+    "narrativePhase": 0,
+    "victory": false,
+    "movementBlocked": false,
+    "unusefulCommandsCounter": 0,
+    "awaitingContinue": false,
+    "turn": {
+      "globalTurnNumber": 91,
+      "totalTurnsConsumed": 91,
+      "turnsInDarkness": 0,
+      "turnsInDangerZone": 0,
+      "current": {
+        "parseResult": null,
+        "consumesTurn": true,
+        "location": 43,
+        "hasLight": true,
+        "inDangerZone": false
+      },
+      "previous": {
+        "location": 42,
+        "hasLight": true,
+        "consumedTurn": true,
+        "inDangerZone": false
+      }
+    },
+    "currentLocationName": "Stanza segreta",
+    "timestamp": "2026-10-15T10:34:28.068Z",
+    "version": "1.4.0"
+  },
+  "odessaData": {
+    "Luoghi": [],
+    "Oggetti": [
+      {
+        "ID": 1,
+        "IDLingua": 1,
+        "Oggetto": "Bastone di comando",
+        "Attivo": 3,
+        "IDLuogo": 11,
+        "descrizione": "Il bastone si rivela essere un bastone di comando, come quelli che i FeldMarescialli erano soliti portare. Su di esso si avvolge a spirale una strana frase: UXRWD LO VHGLOH."
+      },
+      {
+        "ID": 2,
+        "IDLingua": 1,
+        "Oggetto": "Grande tavolo",
+        "Attivo": 1,
+        "IDLuogo": 14,
+        "descrizione": "E' un vecchio tavolo rettangolare."
+      },
+      {
+        "ID": 3,
+        "IDLingua": 1,
+        "Oggetto": "Sedie",
+        "Attivo": 1,
+        "IDLuogo": 14,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 4,
+        "IDLingua": 1,
+        "Oggetto": "Badile arruginito",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' solo un vecchio badile arrugginito."
+      },
+      {
+        "ID": 5,
+        "IDLingua": 1,
+        "Oggetto": "Arazzo in pessime condizioni",
+        "Attivo": 1,
+        "IDLuogo": 20,
+        "descrizione": "L'arazzo è del 700 raffigurante una scena di caccia: le sue condizioni però pessime."
+      },
+      {
+        "ID": 6,
+        "IDLingua": 1,
+        "Oggetto": "Lista di servizio",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' un piccolo dossier di tre fogli. Sembra essere una lista di servizio con 1.500 nominativi di SS, redatta in tempo di guerra in un numero limitato di copie, da distribuire ai 40 Gauleiter delle regioni in cui era divisa la Germania. Il documento reca la firma dei più alti ufficiali delle SS, Himmler in testa. Sottolineature con penna rossa sono riportate sui nominativi di Berlino."
+      },
+      {
+        "ID": 7,
+        "IDLingua": 1,
+        "Oggetto": "Scrivania",
+        "Attivo": 1,
+        "IDLuogo": 25,
+        "descrizione": "E' una vecchia scrivania, ricoperta interamente da polvere."
+      },
+      {
+        "ID": 8,
+        "IDLingua": 1,
+        "Oggetto": "Statuetta",
+        "Attivo": 3,
+        "IDLuogo": 27,
+        "descrizione": "Raffigura il Fuhrer, sull'attenti, col braccio destro alzato. E' piuttosto pesante."
+      },
+      {
+        "ID": 9,
+        "IDLingua": 1,
+        "Oggetto": "Trofei alle pareti",
+        "Attivo": 1,
+        "IDLuogo": 22,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 10,
+        "IDLingua": 1,
+        "Oggetto": "Fermacarte",
+        "Attivo": 2,
+        "IDLuogo": 25,
+        "descrizione": "Raffigura un ragazzo che lancia. Non sembra avere qualche valore artistico né essere fatto di un metallo prezioso, ma sembra fissato ad una specie di guida sul tavolo."
+      },
+      {
+        "ID": 12,
+        "IDLingua": 1,
+        "Oggetto": "Scaffali vuoti",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 13,
+        "IDLingua": 1,
+        "Oggetto": "Nicchia vuota",
+        "Attivo": 1,
+        "IDLuogo": 27,
+        "descrizione": "E' ricavata sulla parete a mezza altezza e ha dimensioni abbastanza contenute. In genere nicchie di questo tipo contengono vasi preziosi o statuette."
+      },
+      {
+        "ID": 14,
+        "IDLingua": 1,
+        "Oggetto": "Letto",
+        "Attivo": 1,
+        "IDLuogo": 33,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 15,
+        "IDLingua": 1,
+        "Oggetto": "Sedile",
+        "Attivo": 1,
+        "IDLuogo": 42,
+        "descrizione": "E' in un angolo della stanza, è imbottito e dalla forma circolare, probabilmente si accompagnava ad un tavolo che ora è scomparso. Sembra fisso al pavimento pur se libero di girare."
+      },
+      {
+        "ID": 16,
+        "IDLingua": 1,
+        "Oggetto": "Fascicolo",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "E' un fascicolo contenente carte stradali, brevi rapporti dattiloscritti, documenti falsi da compilare. Il fascicolo porta la data del 2 Gennaio 1945, non dovrebbe quindi essere stato realizzato da ODESSA. Piuttosto sembra essere il piano di fuga predisposto dal Gauleiter visto l'andamento della guerra. Le cartine illustrano un percorso da Brema a Bari, passando da Innsbruck e poi dal Brennero. I rapporti indicano questo percorso con un nome in codice, B-B."
+      },
+      {
+        "ID": 17,
+        "IDLingua": 1,
+        "Oggetto": "Tavolo",
+        "Attivo": 1,
+        "IDLuogo": 49,
+        "descrizione": "E' un vecchio tavolo rettangolare."
+      },
+      {
+        "ID": 19,
+        "IDLingua": 1,
+        "Oggetto": "Porta aperta",
+        "Attivo": 1,
+        "IDLuogo": 27,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 20,
+        "IDLingua": 1,
+        "Oggetto": "Macerie",
+        "Attivo": 1,
+        "IDLuogo": 49,
+        "descrizione": "Macerie che impediscono di andare ad ovest"
+      },
+      {
+        "ID": 21,
+        "IDLingua": 1,
+        "Oggetto": "Peso",
+        "Attivo": 3,
+        "IDLuogo": 50,
+        "descrizione": "E' un tipico peso da bilancia. La segnatura anche se un po' sbiadita indica cinque chili."
+      },
+      {
+        "ID": 22,
+        "IDLingua": 1,
+        "Oggetto": "Banco degli attrezzi",
+        "Attivo": 1,
+        "IDLuogo": 57,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 23,
+        "IDLingua": 1,
+        "Oggetto": "Pesa",
+        "Attivo": 1,
+        "IDLuogo": 57,
+        "descrizione": "E' una vecchia pesa ad un piatto con un peso scorrevole ad una estremità: è fissa su un vecchio tavolo tarlato e ingombro di detriti. Il piatto, non caricato da pesi, è alto rispetto al peso scorrevole."
+      },
+      {
+        "ID": 25,
+        "IDLingua": 1,
+        "Oggetto": "Cassaforte",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Ha un aspetto solido, nel suo centro una manopola può ruotare nei due sensi: i cardini sono ben oliati. Chiaramente solo un esperto potrebbe aprirla senza combinazione."
+      },
+      {
+        "ID": 27,
+        "IDLingua": 1,
+        "Oggetto": "Lampada",
+        "Attivo": 3,
+        "IDLuogo": 0,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 29,
+        "IDLingua": 1,
+        "Oggetto": "Forma circolare",
+        "Attivo": 1,
+        "IDLuogo": 36,
+        "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
+      },
+      {
+        "ID": 30,
+        "IDLingua": 1,
+        "Oggetto": "Medaglione",
+        "Attivo": 3,
+        "IDLuogo": 36,
+        "descrizione": "E' alquanto massiccio, bronzeo, di forma circolare: all'interno della corona esterna intarsiata a mo' di alloro spicca una svastica di rilievo."
+      },
+      {
+        "ID": 31,
+        "IDLingua": 1,
+        "Oggetto": "Pulsante",
+        "Attivo": 1,
+        "IDLuogo": 44,
+        "descrizione": "E' di colore rosso. Un cartello sotto di esso dice: USCITA."
+      },
+      {
+        "ID": 32,
+        "IDLingua": 1,
+        "Oggetto": "Paratia",
+        "Attivo": 2,
+        "IDLuogo": 42,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 33,
+        "IDLingua": 1,
+        "Oggetto": "Quadro",
+        "Attivo": 1,
+        "IDLuogo": 24,
+        "descrizione": "Il quadro è logoro e impolverato. Si riconosce comunque, un dipinto dallo stile pomposo, retorico, di moda nel nazismo: raffigura una scena di battaglia del XIX secolo. Non ha valore artistico."
+      },
+      {
+        "ID": 34,
+        "IDLingua": 1,
+        "Oggetto": "Dossier",
+        "Attivo": 0,
+        "IDLuogo": 57,
+        "descrizione": "E' un voluminoso dossier. Aprendolo trovi una serie di documenti ancora da compilare, una lista di nomi presumibilmente di gerarchi nazisti, delle carte geografiche del Sud America con sottolineate le località dell'Argentina. Un breve rapporto indica la costituzione di centri di controllo ogni 60-70km dal tragitto da compiere e fornisce nomi e indirizzi sul percorso Brema-Genova. Su tutti i fogli c'è un timbro: ODESSA."
+      },
+      {
+        "ID": 35,
+        "IDLingua": 1,
+        "Oggetto": "Documenti",
+        "Attivo": 3,
+        "IDLuogo": 2,
+        "descrizione": "I documenti sono intestati a David Liebermann, operaio di Stoccarda, rilasciati per un soggiorno di pochi giorni nel settore russo di Berlino."
+      },
+      {
+        "ID": 36,
+        "IDLingua": 1,
+        "Oggetto": "Fiammiferi",
+        "Attivo": 3,
+        "IDLuogo": 6,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 37,
+        "IDLingua": 1,
+        "Oggetto": "Torcia elettrica",
+        "Attivo": 3,
+        "IDLuogo": 18,
+        "descrizione": "Non noto nulla di particolare"
+      },
+      {
+        "ID": 38,
+        "IDLingua": 1,
+        "Oggetto": "Scomparto segreto",
+        "Attivo": 1,
+        "IDLuogo": 25,
+        "descrizione": "All'interno dello scomparto c'è un foglio dattiloscritto."
+      },
+      {
+        "ID": 39,
+        "IDLingua": 1,
+        "Oggetto": "Foglio",
+        "Attivo": 3,
+        "IDLuogo": 25,
+        "descrizione": "Il foglio contiene solo delle lettere scritte a macchina: D S S D S. Sembra essere una combinazione di una cassaforte."
+      },
+      {
+        "ID": 40,
+        "IDLingua": 1,
+        "Oggetto": "Scrivania",
+        "Attivo": 1,
+        "IDLuogo": 21,
+        "descrizione": "E' una vecchia scrivania, ricoperta interamente da polvere."
+      },
+      {
+        "ID": 41,
+        "IDLingua": 1,
+        "Oggetto": "Botola",
+        "Attivo": 0,
+        "IDLuogo": 57,
+        "descrizione": "La botola rivela un piccolo nascondiglio sul pavimento. All'interno c'è un dossier."
+      },
+      {
+        "ID": 42,
+        "IDLingua": 1,
+        "Oggetto": "Forma circolare",
+        "Attivo": 1,
+        "IDLuogo": 20,
+        "descrizione": "Ha al suo interno una svastica rovesciata ed infossata, come un calco di una svastica regolare."
+      }
+    ]
+  },
+  "timestamp": "2026-10-15T00:00:00.000Z",
+  "version": "1.4.0"
+}
