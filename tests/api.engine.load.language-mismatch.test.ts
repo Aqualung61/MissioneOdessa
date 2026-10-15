@@ -124,10 +124,11 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
       const stateBody = await stateRes.json();
       expect(stateBody.ok).toBe(true);
 
+      // Aggiornato per decisione R4 (#107): guardTimer al posto del contatore dei comandi inutili
       const loadedGameState = {
         ...stateBody.state,
         currentLingua: 1,
-        unusefulCommandsCounter: 123,
+        guardTimer: 3,
       };
 
       const res = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
@@ -147,7 +148,7 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
       const afterBody = await afterRes.json();
       expect(afterBody.ok).toBe(true);
       expect(afterBody.state.currentLingua).toBe(1);
-      expect(afterBody.state.unusefulCommandsCounter).toBe(123);
+      expect(afterBody.state.guardTimer).toBe(3);
     } finally {
       // Ripristina Luoghi per evitare side-effect su altri test/worker
       const data = getOdessaDataGlobal();

@@ -70,34 +70,29 @@ function startEndingSequence(gameState, result) {
 }
 
 /**
- * Teleporta il giocatore al luogo 59 e rimuove gli oggetti presi da Ferenc
+ * Teleporta il giocatore al luogo 59 e rimuove gli oggetti (R11, BAS 1030–1050):
+ * spariscono tutti, tranne i Documenti (ID 35) se sono in inventario.
  * @param {Object} gameState - Stato del gioco
  * @param {Object} result - Risultato del comando da modificare
  * @param {string} customMessage - Messaggio da mostrare (opzionale, default: suggerimento)
  */
 function teleportToBarrier(gameState, result, customMessage) {
-  // Ferenc prende i 3 oggetti prerequisito
-  const fascicolo = gameState.Oggetti.find(o => o.ID === 16);
-  const lista = gameState.Oggetti.find(o => o.ID === 6);
-  const dossier = gameState.Oggetti.find(o => o.ID === 34);
-
-  if (fascicolo) {
-    fascicolo.Attivo = 0;        // Invisibile e non interagibile
-    fascicolo.IDLuogo = -1;      // Rimosso dal gioco
-    fascicolo.Inventario = false; // Non in inventario
+  for (const oggetto of gameState.Oggetti) {
+    if (oggetto.ID === 35 && oggetto.IDLuogo === 0) continue;
+    oggetto.Attivo = 0;        // Invisibile e non interagibile
+    oggetto.IDLuogo = -1;      // Rimosso dal gioco
+    oggetto.Inventario = false; // Non in inventario
   }
 
-  if (lista) {
-    lista.Attivo = 0;
-    lista.IDLuogo = -1;
-    lista.Inventario = false;
-  }
+  // La lampada non esiste più: la regola della lampada abbandonata non deve scattare
+  gameState.timers.lampadaAccesa = false;
 
-  if (dossier) {
-    dossier.Attivo = 0;
-    dossier.IDLuogo = -1;
-    dossier.Inventario = false;
-  }
+  // Ferenc ferma i timer (BAS 840); l'alba si ferma con narrativeState (dawnEffect)
+  gameState.turn.darknessTimer = 0;
+  gameState.turn.openAreaTimer = 0;
+
+  // Timer della guardia: 4 comandi liberi, arresto al 5° (R4)
+  gameState.guardTimer = 5;
 
   // Teleport al luogo 59
   gameState.currentLocationId = 59;
@@ -109,9 +104,6 @@ function teleportToBarrier(gameState, result, customMessage) {
 
   // Blocca TUTTI i movimenti (per la fase 2)
   gameState.movementBlocked = true;
-
-  // Reset counter comandi inappropriati (per fase 2)
-  gameState.unusefulCommandsCounter = 0;
 
   // Imposta stato narrativo
   gameState.narrativeState = 'ENDING_PHASE_2_WAIT';

@@ -14,9 +14,12 @@ import { getSystemMessage } from '../systemMessages.js';
 /**
  * Verifica se c'è una fonte di luce attiva
  * @param {Object} gameState - Stato del gioco
- * @returns {boolean} true se ha luce (torcia funzionante o lampada accesa)
+ * @returns {boolean} true se ha luce (torcia funzionante, lampada accesa o luogo 59)
  */
 function hasFonteLuceAttiva(gameState) {
+  // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
+  if (gameState.currentLocationId === 59) return true;
+
   // Torcia: ID=37 in inventario E funzionante
   const torcia = gameState.Oggetti.find(o => o.ID === 37);
   const hasTorcia = torcia && 
@@ -50,6 +53,7 @@ export function torchEffect(gameState, result, _parseResult) {
         // Nessuna lampada: messaggio con warning
         const fullMsg = getSystemMessage('timer.torch.defective.warning', gameState.currentLingua);
         result.message += '\n\n' + fullMsg;
+        gameState.turn.current.torchDefectiveWarning = true;
       } else {
         // Ha la lampada: solo messaggio base
         const baseMsg = getSystemMessage('timer.torch.defective', gameState.currentLingua);
@@ -68,6 +72,7 @@ export function torchEffect(gameState, result, _parseResult) {
         // Nessuna lampada: messaggio con warning
         const fullMsg = getSystemMessage('timer.torch.defective.warning', gameState.currentLingua);
         result.message += '\n\n' + fullMsg;
+        gameState.turn.current.torchDefectiveWarning = true;
       } else {
         // Ha la lampada: solo messaggio base
         const baseMsg = getSystemMessage('timer.torch.defective', gameState.currentLingua);

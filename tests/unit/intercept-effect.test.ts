@@ -15,46 +15,55 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
   });
 
   describe('Incremento contatore', () => {
-    it('dovrebbe incrementare turnsInDangerZone in danger zone con consuming command', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('dovrebbe far scendere openAreaTimer in danger zone con un comando senza spostamento', () => {
       const state = getGameState();
-      state.turn.current.consumesTurn = true;
-      state.turn.current.inDangerZone = true;
-      state.turn.turnsInDangerZone = 0;
+      state.currentLocationId = 51;
+      state.turn.movedThisTurn = false;
+      state.turn.openAreaTimer = 2;
+      const result: { message?: string } = {};
 
-      interceptEffect(state, {}, {});
+      interceptEffect(state, result, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(1);
+      expect(state.turn.openAreaTimer).toBe(1);
+      expect(state.turn.current.openAreaExpired).toBeUndefined();
+      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
     });
 
-    it('dovrebbe incrementare dal primo arrivo (senza skip)', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('dovrebbe attivare il timer dal primo arrivo (senza skip), con avviso', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = false; // Arrivo da luogo sicuro
-      state.turn.current.inDangerZone = true;
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 0;
+      state.currentLocationId = 51; // Arrivo da luogo sicuro
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 0;
+      const result: { message?: string } = {};
 
-      interceptEffect(state, {}, {});
+      interceptEffect(state, result, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(1);
+      expect(state.turn.openAreaTimer).toBe(2);
+      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
     });
 
-    it('dovrebbe incrementare progressivamente in danger zone', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('dovrebbe scendere progressivamente in danger zone fino alla scadenza', () => {
       const state = getGameState();
-      state.turn.current.consumesTurn = true;
-      state.turn.current.inDangerZone = true;
+      state.currentLocationId = 51;
 
-      // Turno 1
-      state.turn.turnsInDangerZone = 0;
+      // Turno 1: arrivo
+      state.turn.movedThisTurn = true;
       interceptEffect(state, {}, {});
-      expect(state.turn.turnsInDangerZone).toBe(1);
+      expect(state.turn.openAreaTimer).toBe(2);
 
-      // Turno 2
+      // Turno 2: primo comando fermo
+      state.turn.movedThisTurn = false;
       interceptEffect(state, {}, {});
-      expect(state.turn.turnsInDangerZone).toBe(2);
+      expect(state.turn.openAreaTimer).toBe(1);
+      expect(state.turn.current.openAreaExpired).toBeUndefined();
 
-      // Turno 3
+      // Turno 3: secondo comando fermo → scaduto (morte gestita da gameOverEffect)
       interceptEffect(state, {}, {});
-      expect(state.turn.turnsInDangerZone).toBe(3);
+      expect(state.turn.openAreaTimer).toBe(0);
+      expect(state.turn.current.openAreaExpired).toBe(true);
     });
 
     it('NON dovrebbe incrementare con comandi SYSTEM (non consuming)', () => {
@@ -81,40 +90,40 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
   });
 
   describe('Reset contatore', () => {
-    it('dovrebbe resettare uscendo da danger zone', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('dovrebbe azzerare openAreaTimer uscendo da danger zone', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true; // Ero in danger zone
-      state.turn.current.inDangerZone = false; // Ora sono fuori
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 2;
+      state.currentLocationId = 47; // Ora sono fuori
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 2;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(0); // Resettato
+      expect(state.turn.openAreaTimer).toBe(0); // Azzerato
     });
 
-    it('dovrebbe resettare anche con counter alto', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('dovrebbe azzerare anche con valore alto (stato caricato)', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true;
-      state.turn.current.inDangerZone = false;
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 5; // Counter alto
+      state.currentLocationId = 47;
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 5; // Valore alto
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(0);
+      expect(state.turn.openAreaTimer).toBe(0);
     });
 
-    it('NON dovrebbe resettare se si rimane in danger zone', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('NON dovrebbe azzerare se si rimane in danger zone', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true;
-      state.turn.current.inDangerZone = true; // Ancora in danger
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 2;
+      state.currentLocationId = 51; // Ancora in danger
+      state.turn.movedThisTurn = false;
+      state.turn.openAreaTimer = 2;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(3); // Incrementato, non resettato
+      expect(state.turn.openAreaTimer).toBe(1); // Sceso, non azzerato
     });
 
     it('NON dovrebbe resettare se non eri in danger zone prima', () => {
@@ -131,28 +140,31 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
   });
 
   describe('Edge cases', () => {
-    it('Movimento tra danger zones: NO reset, solo incremento', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('Movimento tra danger zones: NO reset, timer di nuovo a 2 con avviso', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true; // Da danger zone
-      state.turn.current.inDangerZone = true;  // A danger zone
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 1;
+      state.currentLocationId = 52; // Da 51 a 52, sempre in zona
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 1;
+      const result: { message?: string } = {};
 
-      interceptEffect(state, {}, {});
+      interceptEffect(state, result, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(2); // Solo incremento
+      expect(state.turn.openAreaTimer).toBe(2);
+      expect(state.turn.current.openAreaExpired).toBeUndefined();
+      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
     });
 
+    // Aggiornato per decisione R2 (#107)
     it('Arrivo in rifugio sicuro (luogo 57): reset', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true;
-      state.turn.current.inDangerZone = false; // Luogo 57 non è danger
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 2;
+      state.currentLocationId = 57; // Luogo 57 non è danger
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 2;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(0); // Salvezza!
+      expect(state.turn.openAreaTimer).toBe(0); // Salvezza!
     });
 
     it('Comando SYSTEM in danger zone: NO incremento', () => {
@@ -166,22 +178,25 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
       expect(state.turn.turnsInDangerZone).toBe(1);
     });
 
-    it('Contatore a 3 non viene incrementato se esce', () => {
+    // Aggiornato per decisione R2 (#107)
+    it('Timer a 1 (un comando dalla scadenza) non scade se esce', () => {
       const state = getGameState();
-      state.turn.previous.inDangerZone = true;
-      state.turn.current.inDangerZone = false; // Esce prima del 4°
-      state.turn.current.consumesTurn = true;
-      state.turn.turnsInDangerZone = 3;
+      state.currentLocationId = 47; // Esce prima della scadenza
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 1;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(0); // Reset, salvato!
+      expect(state.turn.openAreaTimer).toBe(0); // Reset, salvato!
+      expect(state.turn.current.openAreaExpired).toBeUndefined();
     });
   });
 
   describe('Integrazione con gameState.turn', () => {
+    // Aggiornato per decisione R2 (#107)
     it('dovrebbe rispettare la struttura turn.current', () => {
       const state = getGameState();
+      state.currentLocationId = 51;
       state.turn.current = {
         parseResult: null,
         consumesTurn: true,
@@ -189,15 +204,19 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
         hasLight: true,
         inDangerZone: true
       };
-      state.turn.turnsInDangerZone = 0;
+      state.turn.movedThisTurn = false;
+      state.turn.openAreaTimer = 2;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(1);
+      expect(state.turn.openAreaTimer).toBe(1);
+      expect(state.turn.current.openAreaExpired).toBeUndefined();
     });
 
+    // Aggiornato per decisione R2 (#107)
     it('dovrebbe rispettare la struttura turn.previous', () => {
       const state = getGameState();
+      state.currentLocationId = 5;
       state.turn.previous = {
         location: 51,
         hasLight: true,
@@ -207,15 +226,16 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
       state.turn.current = {
         parseResult: null,
         consumesTurn: true,
-        location: 5,
+        location: 51,
         hasLight: true,
         inDangerZone: false
       };
-      state.turn.turnsInDangerZone = 2;
+      state.turn.movedThisTurn = true;
+      state.turn.openAreaTimer = 2;
 
       interceptEffect(state, {}, {});
 
-      expect(state.turn.turnsInDangerZone).toBe(0); // Reset corretto
+      expect(state.turn.openAreaTimer).toBe(0); // Reset corretto
     });
   });
 });
