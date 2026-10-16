@@ -183,10 +183,10 @@ function hasControlChars(s) {
   return false;
 }
 
-// Alcuni verbi d'azione non richiedono oggetto
-// DORMI: azione senza oggetto
-// ESAMINA/GUARDA: possono essere usati senza oggetto per descrivere il luogo
-const ACTION_NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
+// Alcuni verbi d'azione non richiedono oggetto, in base al concetto (valido in ogni lingua):
+// DORMIRE: azione senza oggetto
+// ESAMINARE/GUARDARE: possono essere usati senza oggetto per descrivere il luogo
+const ACTION_NO_OBJECT = new Set(['DORMIRE', 'ESAMINARE', 'GUARDARE']);
 
 export async function parseCommand(dbPath, input, gameState = null) {
   const vocab = await ensureVocabulary(gameState);
@@ -270,7 +270,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
     }
     if (info.type === CommandType.ACTION) {
       // Verbi che non richiedono oggetto
-      if (ACTION_NO_OBJECT.has(info.canonical)) {
+      if (ACTION_NO_OBJECT.has(info.concept)) {
         return {
           ...baseWithNormalized,
           IsValid: true,

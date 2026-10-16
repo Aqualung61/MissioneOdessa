@@ -4,8 +4,10 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
-// Verbi che non richiedono oggetto
-const NO_OBJECT = new Set(['DORMI', 'ESAMINA', 'GUARDA']);
+// Aggiornato per #109 (lotto L1): l'insieme dei verbi ammessi senza oggetto è basato
+// sul concetto (valido per ogni sinonimo e in ogni lingua), come il parser
+// (TD Lessico L1 sinonimi, §4), non su un elenco di forme italiane.
+const NO_OBJECT_CONCEPTS = new Set(['DORMIRE', 'ESAMINARE', 'GUARDARE']);
 
 describe('Copertura verbi azione REQ01', () => {
   beforeAll(async () => {
@@ -22,17 +24,16 @@ describe('Copertura verbi azione REQ01', () => {
     // Ottieni i verbi ACTION dal vocabolario
     const vocab = await ensureVocabulary();
     const { tokenMap } = vocab;
-    const actionVerbs = new Set();
+    const actionVerbs = new Map();
     for (const [token, info] of tokenMap) {
       if (info.type === 'ACTION') {
-        actionVerbs.add(token);
+        actionVerbs.set(token, info.concept);
       }
     }
-    const presentVerbs = Array.from(actionVerbs);
-    
-    for (const v of presentVerbs) {
+
+    for (const [v, concept] of actionVerbs) {
       const res = await parseCommand(null, v);
-      if (NO_OBJECT.has(v)) {
+      if (NO_OBJECT_CONCEPTS.has(concept)) {
         expect(res.IsValid).toBe(true);
         expect(res.CommandType).toBe('ACTION');
         expect(res.CanonicalVerb).toBeDefined();
