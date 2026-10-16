@@ -729,5 +729,15 @@
     "Chiave": "engine.matches.none",
     "IDLingua": 2,
     "Messaggio": "You have no matches."
+  },
+  {
+    "Chiave": "engine.interaction.alreadyDone",
+    "IDLingua": 1,
+    "Messaggio": "Non c'è bisogno di farlo di nuovo."
+  },
+  {
+    "Chiave": "engine.interaction.alreadyDone",
+    "IDLingua": 2,
+    "Messaggio": "There's no need to do that again."
   }
 ]

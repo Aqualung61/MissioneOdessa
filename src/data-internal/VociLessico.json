@@ -1409,5 +1409,35 @@
     "Voce": "AT",
     "ID_Termine": 73,
     "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1112,
+    "Voce": "APRIRE",
+    "ID_Termine": 13,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1113,
+    "Voce": "CHIUDERE",
+    "ID_Termine": 18,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1114,
+    "Voce": "DORMIRE",
+    "ID_Termine": 11,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1115,
+    "Voce": "INFILARE",
+    "ID_Termine": 54,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1116,
+    "Voce": "LEGGERE",
+    "ID_Termine": 59,
+    "ID_Lingua": 1
   }
 ]

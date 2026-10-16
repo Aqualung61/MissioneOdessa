@@ -102,6 +102,19 @@ export async function ensureVocabulary(gameState = null) {
     }
   }
 
+  // Forma canonica dei verbi d'azione (TD Lessico L2 risposte e testi, §4.2 c): se
+  // l'infinito (il concetto) è esso stesso una voce della lingua corrente, è la forma
+  // canonica; altrimenti resta la voce alfabeticamente minore, come oggi (invariato
+  // per l'inglese, dove il concetto è sempre il nome italiano).
+  const actionCanonicalConceptByTerm = new Map();
+  for (const r of rows) {
+    if (mapTipoToCommandType(r.Tipo) !== CommandType.ACTION) continue;
+    if (actionCanonicalConceptByTerm.has(r.TermineID)) continue;
+    const concetto = String(r.Concetto || '').toUpperCase();
+    const esisteComeVoce = rows.some(x => x.TermineID === r.TermineID && x.Voce.toUpperCase() === concetto);
+    actionCanonicalConceptByTerm.set(r.TermineID, esisteComeVoce ? concetto : null);
+  }
+
   function mapTipoToCommandType(tipo) {
     switch (tipo) {
       case 'VERBO_AZIONE':
@@ -129,10 +142,15 @@ export async function ensureVocabulary(gameState = null) {
     // Canonico per termine:
     // - NAVIGAZIONE: forziamo il concetto come canonico stabile (es. NORD, BASSO)
     // - SISTEMA: forziamo il concetto come canonico stabile (es. AIUTO, INVENTARIO)
+    // - VERBO_AZIONE: l'infinito se è una voce della lingua corrente, altrimenti il
+    //   minimo lessicografico (vedi actionCanonicalConceptByTerm)
     // - altri tipi: prendi il minimo lessicografico tra le voci della lingua corrente
     const prev = canonicalByTerm.get(r.TermineID);
+    const infinitoCanonico = type === CommandType.ACTION ? actionCanonicalConceptByTerm.get(r.TermineID) : null;
     if (type === CommandType.NAVIGATION || type === CommandType.SYSTEM) {
       canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
+    } else if (infinitoCanonico) {
+      canonicalByTerm.set(r.TermineID, infinitoCanonico);
     } else if (!prev || token < prev) {
       canonicalByTerm.set(r.TermineID, token);
     }
