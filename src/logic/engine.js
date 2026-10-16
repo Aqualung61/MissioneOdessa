@@ -25,7 +25,7 @@ function warnUnknownTypeOnce(kind, tipo) {
 // Restano eseguibili: movimento, POSARE, LASCIARE, ACCENDERE, DORMIRE e i comandi di sistema.
 const DARK_BLOCKED_VERBS = new Set([
   'PRENDERE', 'ESAMINARE', 'GUARDARE', 'LEGGERE', 'SPOSTARE', 'RUOTARE', 'INFILARE',
-  'METTERE', 'SCAVARE', 'PREMERE', 'PORGERE', 'APRIRE', 'CHIUDERE',
+  'METTERE', 'SCAVARE', 'PREMERE', 'PORGERE', 'APRIRE', 'CHIUDERE', 'SCARICARE',
 ]);
 
 // Factory: ogni sessione ottiene un motore con stato proprio (closure), senza istanze di modulo.
@@ -1006,6 +1006,11 @@ export function createEngine() {
         // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
         const oggettiInInventario = (gameState.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
         if (oggettiInInventario.length >= 5) return { ok: false, prerequisito: req };
+      } else if (req.tipo === 'DIREZIONE_APERTA') {
+        // Vero se la direzione è attualmente aperta tramite toggle (es. porta del 44, pulsante)
+        const key = `${req.luogo}_${req.direzione}`;
+        const isOpen = !!gameState.direzioniToggle[key];
+        if (!isOpen) return { ok: false, prerequisito: req };
       } else if (!PREREQUISITE_TYPES.has(req.tipo)) {
         // Tipo sconosciuto: fail-closed (prerequisito non soddisfatto), segnalato una sola volta.
         warnUnknownTypeOnce('prerequisito', req.tipo);
@@ -1500,8 +1505,11 @@ export function createEngine() {
             ? (parseResult.CanonicalNoun || noun).toLowerCase().replace(/_/g, ' ')
             : noun.toLowerCase().replace(/_/g, ' ');
 
-          // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato
-          if (DARK_BLOCKED_VERBS.has(concept) && !hasFonteLuceAttiva()) {
+          // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato.
+          // CARICARE con un nome (#98, L2b): equivale a METTERE (es. "carica peso"), quindi
+          // bloccato al buio come METTERE; la forma "carica" da sola è un comando di SISTEMA
+          // e non passa da questo case, quindi il caricamento della partita non è mai bloccato.
+          if ((DARK_BLOCKED_VERBS.has(concept) || concept === 'CARICARE') && !hasFonteLuceAttiva()) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dark.tooDark', gameState.currentLingua), effects: [] };
           }
 
@@ -1510,6 +1518,124 @@ export function createEngine() {
           if (concept === 'ACCENDERE' && fiammiferiRecord &&
               normalizeForComparison(fiammiferiRecord.Oggetto) === normalizeForComparison(noun)) {
             return accendiFiammifero();
+          }
+
+          // === Verbi e risposte dell'originale (L2b, #109) senza interazione dedicata ===
+          // CARICA/LOAD con PESO/PESA (#98, precisazione 1): stesso esito di METTERE PESO,
+          // usando l'interazione esistente carica_pesa_57 (stesso id, stesso punteggio una
+          // sola volta); senza il peso in inventario, risposta dedicata. Con altri nomi,
+          // "carica" resta un'azione senza effetto (nessun intervento qui).
+          if (concept === 'CARICARE' && (noun === 'PESO' || noun === 'PESA' || noun === 'WEIGHT' || noun === 'SCALE')) {
+            if (gameState.currentLocationId === 57) {
+              const pesoLocalizzato = gameState.currentLingua === 1 ? 'PESO' : 'WEIGHT';
+              // L'interazione già eseguita (es. prima con "metti peso") ha spostato il
+              // peso dall'inventario (IDLuogo 0) al luogo 57: va riconosciuta come già
+              // fatta a prescindere da dove sia ora il peso, non solo quando è ancora in
+              // inventario (altrimenti "carica peso" dopo "metti peso" risponderebbe
+              // erroneamente "serve un peso" invece di "non c'è bisogno di farlo di nuovo").
+              if (gameState.interazioniEseguite.includes('carica_pesa_57')) {
+                const risultatoCarica = cercaEseguiInterazione('METTERE', pesoLocalizzato);
+                if (risultatoCarica) return risultatoCarica;
+              }
+              const pesoInInventario = gameState.Oggetti.some((o) =>
+                normalizeForComparison(o.Oggetto) === pesoLocalizzato && o.IDLuogo === 0 && o.Attivo >= 3
+              );
+              if (!pesoInInventario) {
+                return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.load.scaleNeedsWeight', gameState.currentLingua), effects: [] };
+              }
+              const risultatoCarica = cercaEseguiInterazione('METTERE', pesoLocalizzato);
+              if (risultatoCarica) return risultatoCarica;
+            }
+            // Altrove: prosegue con l'elaborazione standard (nessun effetto, D2 generico).
+          }
+          // SPEGNI (con o senza nome): risposta fissa decisa (R9, inventario §1.2).
+          if (concept === 'SPEGNERE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.spegni.notTime', gameState.currentLingua), effects: [] };
+          }
+          // SCAPPA (D7): stessa risposta sempre.
+          if (concept === 'SCAPPARE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.scappa.cantEscape', gameState.currentLingua), effects: [] };
+          }
+          // SORRIDI: stessa risposta sempre (con o senza nome, come già l'originale).
+          if (concept === 'SORRIDERE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.sorridi.cheese', gameState.currentLingua), effects: [] };
+          }
+          // DORMI, SIEDITI (D7): stessa risposta con o senza nome; sostituisce la risposta
+          // generica "Cosa vuoi dormire?" ereditata dal lotto L2a.
+          if (concept === 'DORMIRE' || concept === 'SEDERSI') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dormi.noTimeToWaste', gameState.currentLingua), effects: [] };
+          }
+          // PARLA, RISPONDI: stessa risposta ovunque tranne alla barriera (59).
+          if (concept === 'PARLARE') {
+            const chiave = gameState.currentLocationId === 59 ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
+            return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+          }
+          // ACCENDI senza nome, o ACCENDI LUCE: prima fonte applicabile (torcia, poi
+          // fiammifero, poi lampada); nessuna fonte -> risposta dedicata.
+          if (concept === 'ACCENDERE' && (!noun || noun === 'LUCE')) {
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const torciaConTe = !!torciaRecord && torciaRecord.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
+            if (torciaConTe) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.torch.alreadyLit', gameState.currentLingua), effects: [] };
+            }
+            const fiammiferiDisponibili = fiammiferiRecord &&
+              (fiammiferiRecord.IDLuogo === 0 || fiammiferiRecord.IDLuogo === gameState.currentLocationId) &&
+              fiammiferiRecord.Attivo >= 1 && gameState.timers.matchesLeft > 0;
+            if (fiammiferiDisponibili) {
+              return accendiFiammifero();
+            }
+            const lampadaConTe = gameState.Oggetti.some((o) => o.ID === 27 && o.IDLuogo === 0 && o.Attivo >= 3);
+            if (lampadaConTe) {
+              const lampadaLocalizzata = gameState.currentLingua === 1 ? 'LAMPADA' : 'LAMP';
+              const risultatoLampada = cercaEseguiInterazione('ACCENDERE', lampadaLocalizzata);
+              if (risultatoLampada) return risultatoLampada;
+            }
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.light.noSourceHere', gameState.currentLingua), effects: [] };
+          }
+          // ACCENDI TORCIA: stato dedicato (nel luogo ma non con te, con te funzionante, con te guasta).
+          // NounConcept per i nomi (tipo NOUN) in EN non è il concetto italiano ma il nome
+          // localizzato dell'oggetto (parser.js, localizedNounConceptByTerm): "FLASHLIGHT",
+          // non "TORCIA_ELETTRICA".
+          const torciaElettricaLocalizzata = gameState.currentLingua === 1 ? 'TORCIA_ELETTRICA' : 'FLASHLIGHT';
+          if (concept === 'ACCENDERE' && noun === torciaElettricaLocalizzata) {
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const conTe = !!torciaRecord && torciaRecord.IDLuogo === 0;
+            const nelLuogo = !!torciaRecord && torciaRecord.IDLuogo === gameState.currentLocationId;
+            if (conTe) {
+              const chiave = gameState.timers.torciaDifettosa ? 'engine.torch.broken' : 'engine.torch.alreadyLit';
+              return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+            }
+            if (nelLuogo) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.torch.takeFirst', gameState.currentLingua), effects: [] };
+            }
+            // Altrimenti (torcia non qui): prosegue con l'elaborazione standard sotto.
+          }
+          // SCAVA: senza nome (o con "macerie" dove non esiste un'interazione dedicata),
+          // risposte dell'originale per luogo.
+          if (concept === 'SCAVARE') {
+            const macerieLocalizzata = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
+            const senzaNomeOMacerie = !noun || noun === macerieLocalizzata;
+            if (senzaNomeOMacerie) {
+              const LUOGHI_SCAVA_MACERIE_DELEGATA = new Set([11, 49]);
+              if (!noun && LUOGHI_SCAVA_MACERIE_DELEGATA.has(gameState.currentLocationId)) {
+                const risultatoScava = cercaEseguiInterazione('SCAVARE', macerieLocalizzata);
+                if (risultatoScava) return risultatoScava;
+              }
+              if (gameState.currentLocationId === 32 || gameState.currentLocationId === 36) {
+                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+                if (!haBadile) {
+                  return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dig.bareHandsNoTool', gameState.currentLingua), effects: [] };
+                }
+                const chiave = gameState.currentLocationId === 36 ? 'engine.dig.noPassageNorth' : 'engine.dig.digging';
+                return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+              }
+              if (!noun) {
+                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+                const chiave = haBadile ? 'engine.dig.digging' : 'engine.dig.noToolHere';
+                return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+              }
+              // Nome "macerie" altrove, senza interazione dedicata: prosegue con l'elaborazione standard.
+            }
           }
 
           // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json
@@ -1523,11 +1649,23 @@ export function createEngine() {
           
           // PRIORITÀ 2: Gestione standard degli oggetti
           // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
-          const oggetto = (gameState.Oggetti || []).find(obj => 
-            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
+          const oggetto = (gameState.Oggetti || []).find(obj =>
+            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) &&
             (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
             obj.Attivo >= 1
           );
+          // GIRA/RUOTA DESTRA/SINISTRA (D4): fuori dalla biblioteca, o in biblioteca con la
+          // cassaforte non visibile, le interazioni dedicate (PRIORITÀ 1) non hanno risposto.
+          if (concept === 'RUOTARE' && (noun === 'DESTRA' || noun === 'SINISTRA')) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.nothingToTurn', gameState.currentLingua), effects: [] };
+          }
+          // MUOVI/SPOSTA senza interazione dedicata (D3): solo se l'oggetto è presente,
+          // altrimenti il comportamento di oggi (oggetto non qui) resta invariato.
+          if ((concept === 'SPOSTARE' || verb === 'MUOVI' || verb === 'SPOSTA') && noun && oggetto) {
+            const trasportabile = oggetto.Attivo >= 3 || oggetto.ID === 3 || oggetto.ID === 33;
+            const chiave = trasportabile ? 'engine.move.nothingHappens' : 'engine.move.notPossible';
+            return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+          }
           // ESAMINA / GUARDA
           if (concept === 'ESAMINARE' || concept === 'GUARDARE' || verb === 'ESAMINA' || verb === 'GUARDA') {
             // Senza oggetto: mostra descrizione del luogo corrente con oggetti presenti

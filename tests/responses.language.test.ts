@@ -1,12 +1,14 @@
 /**
- * Controllo della lingua delle risposte (#109, lotto L2a).
- * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.0.md, §4.4.
+ * Controllo della lingua delle risposte (#109, lotti L2a e L2b).
+ * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.4;
+ * aggiornato per #109 (lotto L2b), precisazione 2: le parole solo italiane includono
+ * anche i nomi dei concetti (`TerminiLessico`) che non sono voci inglesi.
  *
  * Sulle stesse risposte generate per l'istantanea (§4.1): nessuna risposta inglese
  * contiene parole solo italiane, nessuna risposta italiana contiene parole solo
  * inglesi, nessuna risposta contiene segnaposto rotti. Prima della correzione del
- * lotto, il controllo trova esattamente i difetti (a) e (b) della specifica; dopo,
- * deve risultare pulito.
+ * lotto L2a, il controllo trovava esattamente i difetti (a) e (b) della specifica;
+ * dopo L2a e L2b deve risultare pulito, salvo i falsi positivi elencati sotto.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -17,6 +19,10 @@ import { generateResponses } from './testUtils/responseSnapshot.js';
 interface VoceLessico {
   Voce: string;
   ID_Lingua: number;
+}
+
+interface TermineLessico {
+  Concetto: string;
 }
 
 // Parole aggiuntive di §4.4, oltre alle voci del lessico esclusive di una lingua.
@@ -37,6 +43,13 @@ const IT_WORDS_FALSE_POSITIVE_IN_EN = new Set(['i', 'b']);
 // - "d" (voce EN: abbreviazione di "down") compare in IT nel testo di un enigma
 //   ("D S S D S"), lettere di un codice, non una parola inglese.
 const EN_WORDS_FALSE_POSITIVE_IN_IT = new Set(['a', 'd']);
+// Aggiornato per #109 (lotto L2b), precisazione 2: anche i nomi dei concetti
+// (TerminiLessico) che non sono voci inglesi contano come "parole solo italiane" (un
+// concetto italiano mostrato in inglese, es. "caricare", è un difetto).
+// - "botton" (concetto della voce residua BOTTON_LEGACY, L2a) compare anche in EN
+//   perché non ha mai una traduzione inglese propria: nome fuori perimetro, da
+//   rimuovere nel lotto L3 insieme agli altri oggetti scenici residui.
+const IT_CONCEPTS_FALSE_POSITIVE_IN_EN = new Set(['botton']);
 
 const wordRegexCache = new Map<string, RegExp>();
 function containsWord(message: string, word: string): boolean {
@@ -60,6 +73,18 @@ function buildExclusiveWordSets(): { itOnly: string[]; enOnly: string[] } {
   };
 }
 
+/**
+ * Aggiornato per #109 (lotto L2b), precisazione 2: nomi dei concetti (sempre
+ * italiani, `TerminiLessico.Concetto`) che non sono anche una voce inglese. Un
+ * concetto italiano mostrato in un messaggio inglese (es. "caricare" al posto di
+ * "load") è un difetto di traduzione, non diverso da una voce solo italiana.
+ */
+function buildConceptWordsWithoutEnglishVoce(): string[] {
+  const termini = global.odessaData.TerminiLessico as TermineLessico[];
+  const enVoci = new Set((global.odessaData.VociLessico as VoceLessico[]).filter((v) => v.ID_Lingua === 2).map((v) => v.Voce.toLowerCase()));
+  return termini.map((t) => t.Concetto.toLowerCase()).filter((c) => !enVoci.has(c));
+}
+
 describe('Controllo della lingua delle risposte (#109, lotto L2a)', () => {
   beforeAll(async () => {
     await initOdessa();
@@ -71,7 +96,10 @@ describe('Controllo della lingua delle risposte (#109, lotto L2a)', () => {
     async () => {
       const entries = await generateResponses();
       const { itOnly, enOnly } = buildExclusiveWordSets();
-      const itForbidden = [...itOnly, ...IT_EXTRA_WORDS].filter((w) => !IT_WORDS_FALSE_POSITIVE_IN_EN.has(w));
+      const conceptWords = buildConceptWordsWithoutEnglishVoce();
+      const itForbidden = [...itOnly, ...conceptWords, ...IT_EXTRA_WORDS].filter(
+        (w) => !IT_WORDS_FALSE_POSITIVE_IN_EN.has(w) && !IT_CONCEPTS_FALSE_POSITIVE_IN_EN.has(w)
+      );
       const enForbidden = [...enOnly, ...EN_EXTRA_WORDS].filter((w) => !EN_WORDS_FALSE_POSITIVE_IN_IT.has(w));
 
       const violations: string[] = [];

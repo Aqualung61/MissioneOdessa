@@ -475,11 +475,13 @@
       "prerequisiti": [
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Badile arruginito"
+          "target": "Badile arruginito",
+          "risposta": "Vuoi scavare a mani nude? Non hai un attrezzo."
         }
       ]
     },
     "risposta": "Scavando allarghi il passaggio ad ovest.",
+    "risposta_gia_eseguita": "Scava, scava, scava...",
     "effetti": [
       {
         "tipo": "SBLOCCA_DIREZIONE",
@@ -1186,11 +1188,13 @@
       "prerequisiti": [
         {
           "tipo": "OGGETTO_IN_INVENTARIO",
-          "target": "Rusty spade"
+          "target": "Rusty spade",
+          "risposta": "Do you want to dig with your bare hands? You don't have a tool."
         }
       ]
     },
     "risposta": "By digging you widen the passage to the west.",
+    "risposta_gia_eseguita": "Dig, dig, dig...",
     "effetti": [
       {
         "tipo": "SBLOCCA_DIREZIONE",
@@ -1419,6 +1423,574 @@
       }
     ],
     "ripetibile": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "cassaforte_aperta_apri_24",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        },
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "È già aperta.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "cassaforte_aperta_apri_24",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        },
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "It's already open.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "cassaforte_chiusa_apri_24",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta": "La cassaforte è chiusa con una serratura a combinazione.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "cassaforte_chiusa_apri_24",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta": "The safe is locked with a combination lock.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "cassaforte_aperta_chiudi_24",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        },
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "La cassaforte rimane aperta: la serratura non scatta più.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "cassaforte_aperta_chiudi_24",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        },
+        {
+          "tipo": "SEQUENZA_COMPLETATA",
+          "target": "cassaforte_24"
+        }
+      ]
+    },
+    "risposta": "The safe stays open: the lock no longer catches.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "cassaforte_chiusa_chiudi_24",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "CASSAFORTE"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Cassaforte",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta": "La cassaforte è già chiusa.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "cassaforte_chiusa_chiudi_24",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "Safe"
+    },
+    "condizioni": {
+      "luogo": 24,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Safe",
+          "luogo": 24
+        }
+      ]
+    },
+    "risposta": "The safe is already closed.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "chiudi_scomparto_25",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "SCOMPARTO_SEGRETO"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Scomparto segreto",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "Lo scomparto rimane aperto: si deve essere rotto il meccanismo.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "chiudi_scomparto_25",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "Secret compartment"
+    },
+    "condizioni": {
+      "luogo": 25,
+      "prerequisiti": [
+        {
+          "tipo": "OGGETTO_VISIBILE",
+          "target": "Secret compartment",
+          "luogo": 25
+        }
+      ]
+    },
+    "risposta": "The compartment stays open: the mechanism must be broken.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "porta44_aperta_apri",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": [
+        {
+          "tipo": "DIREZIONE_APERTA",
+          "luogo": 44,
+          "direzione": "Est"
+        }
+      ]
+    },
+    "risposta": "La porta è già aperta.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "porta44_aperta_apri",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": [
+        {
+          "tipo": "DIREZIONE_APERTA",
+          "luogo": 44,
+          "direzione": "Est"
+        }
+      ]
+    },
+    "risposta": "The door is already open.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "porta44_chiusa_apri",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta": "La porta è chiusa con un meccanismo a scatto.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "porta44_chiusa_apri",
+    "trigger": {
+      "verbo": "APRIRE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta": "The door is held shut by a spring mechanism.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "porta44_aperta_chiudi",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": [
+        {
+          "tipo": "DIREZIONE_APERTA",
+          "luogo": 44,
+          "direzione": "Est"
+        }
+      ]
+    },
+    "risposta": "La porta si chiude solo azionando il meccanismo automatico.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "porta44_aperta_chiudi",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": [
+        {
+          "tipo": "DIREZIONE_APERTA",
+          "luogo": 44,
+          "direzione": "Est"
+        }
+      ]
+    },
+    "risposta": "The door only closes by operating the automatic mechanism.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "porta44_chiusa_chiudi",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta": "La porta è già chiusa.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "porta44_chiusa_chiudi",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 44,
+      "prerequisiti": []
+    },
+    "risposta": "The door is already closed.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "chiudi_porta_27",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 27,
+      "prerequisiti": []
+    },
+    "risposta": "Non riesci a chiudere la porta: un meccanismo la blocca.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "chiudi_porta_27",
+    "trigger": {
+      "verbo": "CHIUDERE",
+      "oggetto": "PORTA"
+    },
+    "condizioni": {
+      "luogo": 27,
+      "prerequisiti": []
+    },
+    "risposta": "You can't close the door: a mechanism is blocking it.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "scarica_pesa57_bloccato",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "PESA"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "carica_pesa_57"
+        }
+      ]
+    },
+    "risposta": "Il meccanismo si è bloccato.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "scarica_pesa57_bloccato",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "Scale"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "carica_pesa_57"
+        }
+      ]
+    },
+    "risposta": "The mechanism has jammed.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "scarica_pesa57_nonCarica",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "PESA"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": []
+    },
+    "risposta": "La pesa non è carica.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "scarica_pesa57_nonCarica",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "Scale"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": []
+    },
+    "risposta": "The scale isn't loaded.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "scarica_peso57_bloccato",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "PESO"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "carica_pesa_57"
+        }
+      ]
+    },
+    "risposta": "Il meccanismo si è bloccato.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "scarica_peso57_bloccato",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "Weight"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": [
+        {
+          "tipo": "INTERAZIONE_ESEGUITA",
+          "target": "carica_pesa_57"
+        }
+      ]
+    },
+    "risposta": "The mechanism has jammed.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 2
+  },
+  {
+    "id": "scarica_peso57_nonCarica",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "PESO"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": []
+    },
+    "risposta": "La pesa non è carica.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
+    "IDLingua": 1
+  },
+  {
+    "id": "scarica_peso57_nonCarica",
+    "trigger": {
+      "verbo": "SCARICARE",
+      "oggetto": "Weight"
+    },
+    "condizioni": {
+      "luogo": 57,
+      "prerequisiti": []
+    },
+    "risposta": "The scale isn't loaded.",
+    "effetti": [],
+    "ripetibile": true,
+    "punteggio": false,
     "IDLingua": 2
   }
 ]

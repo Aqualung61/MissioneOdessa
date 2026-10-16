@@ -353,5 +353,40 @@
     "ID_Termine": 73,
     "Concetto": "PREPOSIZIONE",
     "ID_TipoLessico": 5
+  },
+  {
+    "ID_Termine": 74,
+    "Concetto": "SPEGNERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 75,
+    "Concetto": "SCARICARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 76,
+    "Concetto": "SCAPPARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 77,
+    "Concetto": "SORRIDERE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 78,
+    "Concetto": "SEDERSI",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 79,
+    "Concetto": "PARLARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 80,
+    "Concetto": "LUCE",
+    "ID_TipoLessico": 4
   }
 ]

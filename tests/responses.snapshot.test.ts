@@ -1,6 +1,6 @@
 /**
  * Istantanea delle risposte (#109, lotto L2a).
- * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.0.md, §4.1.
+ * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.1.
  *
  * Rigenera, con le stesse regole, lo stesso ordine e lo stesso formato del
  * generatore di riferimento (`Claude decompiler/20261016 - L2 gen_responses.mjs`),
@@ -22,9 +22,9 @@ describe('Istantanea delle risposte (#109, lotto L2a)', () => {
     await ensureVocabulary();
   });
 
-  it('riporta la baseline registrata con 41.545 righe (aggiornata in Fase 1B, #109 lotto L2a)', () => {
+  it('riporta la baseline registrata con 51.072 righe (aggiornata in Fase 1B, #109 lotto L2b)', () => {
     const baseline = loadResponsesBaseline();
-    expect(baseline.length).toBe(41545);
+    expect(baseline.length).toBe(51072);
   });
 
   it(

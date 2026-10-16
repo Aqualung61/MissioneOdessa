@@ -204,11 +204,17 @@ function hasControlChars(s) {
 // Alcuni verbi d'azione non richiedono oggetto, in base al concetto (valido in ogni lingua):
 // DORMIRE: azione senza oggetto
 // ESAMINARE/GUARDARE: possono essere usati senza oggetto per descrivere il luogo
-const ACTION_NO_OBJECT = new Set(['DORMIRE', 'ESAMINARE', 'GUARDARE']);
+// SCAVARE/ACCENDERE: possono essere usati senza oggetto (TD Lessico L2 risposte e testi, §5.2)
+// SPEGNERE/SCAPPARE/SORRIDERE/SEDERSI/PARLARE: verbi nuovi del lotto L2b, senza oggetto (§5.2)
+const ACTION_NO_OBJECT = new Set([
+  'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
+  'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
+]);
 
 export async function parseCommand(dbPath, input, gameState = null) {
   const vocab = await ensureVocabulary(gameState);
   const { tokenMap } = vocab;
+  const currentLingua = gameState?.currentLingua || 1;
   const OriginalInput = typeof input === 'string' ? input : '';
 
   // Contract: non deve mai throware per input invalido; deve ritornare un parseResult deterministico.
@@ -334,12 +340,50 @@ export async function parseCommand(dbPath, input, gameState = null) {
         }
       }
 
+      // CARICA/LOAD seguito da un nome composto (vedi anche il caso a 2 token, sopra).
+      if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE') {
+        const combinedToken = `${t2.token} ${t3.token}`;
+        const combinedInfo = tokenMap.get(combinedToken) || null;
+        if (combinedInfo && combinedInfo.type === CommandType.NOUN) {
+          return {
+            ...baseWithNormalized,
+            IsValid: true,
+            CommandType: CommandType.ACTION,
+            CanonicalVerb: currentLingua === 1 ? 'CARICARE' : 'LOAD',
+            VerbTermId: t1.info.termId,
+            VerbConcept: 'CARICARE',
+            CanonicalNoun: combinedInfo.canonical,
+            NounTermId: combinedInfo.termId,
+            NounConcept: combinedInfo.concept,
+            NounIndex: null,
+          };
+        }
+      }
+
       return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
     }
 
     if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 
     if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
+      // CARICA/LOAD seguito da un nome diventa un'azione (#98, TD Lessico L2 risposte e
+      // testi, §5.2): da sola (un token) resta il caricamento della partita, gestito sopra.
+      // Il verbo mostrato nei messaggi generici è sempre "caricare" (IT) / "load" (EN),
+      // mai il concetto italiano forzato come canonico per i verbi di sistema (§5, precisazione 1).
+      if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE' && t2.info && t2.info.type === CommandType.NOUN) {
+        return {
+          ...baseWithNormalized,
+          IsValid: true,
+          CommandType: CommandType.ACTION,
+          CanonicalVerb: currentLingua === 1 ? 'CARICARE' : 'LOAD',
+          VerbTermId: t1.info.termId,
+          VerbConcept: 'CARICARE',
+          CanonicalNoun: t2.info.canonical,
+          NounTermId: t2.info.termId,
+          NounConcept: t2.info.concept,
+          NounIndex: idx,
+        };
+      }
       // Non devono avere oggetto
       return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
     }
