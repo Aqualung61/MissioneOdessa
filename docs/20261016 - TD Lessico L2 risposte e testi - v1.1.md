@@ -3,7 +3,7 @@
 | Campo | Valore |
 |---|---|
 | Documento | Specifica tecnica (TD) |
-| Versione | v1.0 — approvata (2026-10-16, decisioni D1–D9 come proposte) |
+| Versione | v1.1 — approvata (2026-10-16, decisioni D1–D9 come proposte). v1.1: conteggio dei cambi del corpus in §5.5 corretto (150, non 162) |
 | Data | 2026-10-16 |
 | Issue | #109 (lotto L2 di 3), #98 (CARICA) — milestone `v1.4.1 (Fedeltà all'originale e refactor del motore)` |
 | Riferimenti | `docs/20261015 - Inventario lessico originale - v1.0.md` (§1.2, §1.4, §1.6); `docs/20261015 - Decisioni fedeltà originale - v1.0.md` (R6, R9, R10, §3.1); sorgente originale `missione_odessa.bas` |
@@ -173,7 +173,9 @@ Note di implementazione:
 
 Si aggiungono a `EXPECTED_CHANGES` di `tests/parser.regression.test.ts`, per regola:
 - da soli diventano validi (`ACTION`, nessun nome): IT `scava`, `scavare`, `accendi`, `accendere`, `illumina`, `illuminare`; EN `dig`, `light`;
-- `carica <nome>` e `load <nome>` (IT, 104 casi) e `load <nome>` (EN, 50 casi): da `SYNTAX_INVALID_STRUCTURE` a `ACTION`, concetto `CARICARE`, con il nome.
+- `carica <nome>` e `load <nome>` (IT, 94 casi) e `load <nome>` (EN, 48 casi): da `SYNTAX_INVALID_STRUCTURE` a `ACTION`, concetto `CARICARE`, con il nome. Restano invariati i 12 casi (10 IT, 2 EN) con nomi di tre o più parole significative ("banco degli attrezzi", "tapestry in terrible condition"…): il parser non li riconosce con nessun verbo, limite preesistente fuori da questo lotto.
+
+Totale: 150 casi (8 + 94 + 48).
 
 Nessun altro caso del corpus può cambiare.
 

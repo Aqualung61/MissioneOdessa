@@ -1,6 +1,6 @@
 /**
  * Lessico L2a: rete dei testi e correzioni IT/EN (#109)
- * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.0.md, §6.1 (TA-01…TA-07).
+ * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §6.1 (TA-01…TA-07).
  *
  * Motore e parser reali (parseCommand + executeCommand). Per i luoghi precisi si
  * giocano i passi dei percorsi di riferimento (full_it.json / full_en.json); nessuna
@@ -78,8 +78,12 @@ describe('Lessico L2a: rete dei testi e correzioni IT/EN (#109)', () => {
   });
 
   it('TA-01: EN, nomi senza traduzione nei messaggi generici (destra/sinistra/porta)', async () => {
+    // Aggiornato per #109 (lotto L2b): "turn right" ricade ora nella regola più
+    // specifica di D4 ("Non vedo niente da ruotare.", TD §5.3), che prevale
+    // correttamente su quella generica di L2a; "take right" verifica lo stesso
+    // difetto (a) con un verbo non toccato da L2b.
     const engine = newEngine(2);
-    const [right, door, left] = await runAll(engine, ['turn right', 'drop door', 'close left']);
+    const [right, door, left] = await runAll(engine, ['take right', 'drop door', 'close left']);
     expect(right.message).toBe("You don't see right here.");
     expect(door.message).toBe("You don't have door.");
     expect(left.message).toBe("You don't see left here.");

@@ -27,9 +27,10 @@ export const PREREQUISITE_TYPES = new Set([
   'INTERAZIONE_ESEGUITA',
   'FLAG_FALSE',
   'INVENTARIO_NON_PIENO',
+  'DIREZIONE_APERTA',
 ]);
 
-export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'flag', 'risposta']);
+export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'direzione', 'flag', 'risposta']);
 
 // Campi obbligatori per tipo di prerequisito.
 export const PREREQUISITE_REQUIRED_FIELDS = {
@@ -40,6 +41,7 @@ export const PREREQUISITE_REQUIRED_FIELDS = {
   INTERAZIONE_ESEGUITA: ['target'],
   FLAG_FALSE: ['flag'],
   INVENTARIO_NON_PIENO: [],
+  DIREZIONE_APERTA: ['luogo', 'direzione'],
 };
 
 export const EFFECT_TYPES = new Set([

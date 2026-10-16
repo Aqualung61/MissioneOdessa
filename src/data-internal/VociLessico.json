@@ -1439,5 +1439,155 @@
     "Voce": "LEGGERE",
     "ID_Termine": 59,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1117,
+    "Voce": "SPEGNI",
+    "ID_Termine": 74,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1118,
+    "Voce": "SPEGNERE",
+    "ID_Termine": 74,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1119,
+    "Voce": "EXTINGUISH",
+    "ID_Termine": 74,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1120,
+    "Voce": "SCARICA",
+    "ID_Termine": 75,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1121,
+    "Voce": "SCARICARE",
+    "ID_Termine": 75,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1122,
+    "Voce": "UNLOAD",
+    "ID_Termine": 75,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1123,
+    "Voce": "SCAPPA",
+    "ID_Termine": 76,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1124,
+    "Voce": "SCAPPARE",
+    "ID_Termine": 76,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1125,
+    "Voce": "FLEE",
+    "ID_Termine": 76,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1126,
+    "Voce": "ESCAPE",
+    "ID_Termine": 76,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1127,
+    "Voce": "RUN",
+    "ID_Termine": 76,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1128,
+    "Voce": "SORRIDI",
+    "ID_Termine": 77,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1129,
+    "Voce": "SORRIDERE",
+    "ID_Termine": 77,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1130,
+    "Voce": "SMILE",
+    "ID_Termine": 77,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1131,
+    "Voce": "SIEDITI",
+    "ID_Termine": 78,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1132,
+    "Voce": "SEDERSI",
+    "ID_Termine": 78,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1133,
+    "Voce": "SIT",
+    "ID_Termine": 78,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1134,
+    "Voce": "PARLA",
+    "ID_Termine": 79,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1135,
+    "Voce": "PARLARE",
+    "ID_Termine": 79,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1136,
+    "Voce": "RISPONDI",
+    "ID_Termine": 79,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1137,
+    "Voce": "RISPONDERE",
+    "ID_Termine": 79,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1138,
+    "Voce": "TALK",
+    "ID_Termine": 79,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1139,
+    "Voce": "SPEAK",
+    "ID_Termine": 79,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1140,
+    "Voce": "ANSWER",
+    "ID_Termine": 79,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1141,
+    "Voce": "Luce",
+    "ID_Termine": 80,
+    "ID_Lingua": 1
   }
 ]

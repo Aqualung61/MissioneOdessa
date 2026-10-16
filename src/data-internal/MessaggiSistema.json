@@ -739,5 +739,185 @@
     "Chiave": "engine.interaction.alreadyDone",
     "IDLingua": 2,
     "Messaggio": "There's no need to do that again."
+  },
+  {
+    "Chiave": "engine.spegni.notTime",
+    "IDLingua": 1,
+    "Messaggio": "Non è il momento di restare al buio."
+  },
+  {
+    "Chiave": "engine.spegni.notTime",
+    "IDLingua": 2,
+    "Messaggio": "This is no time to be left in the dark."
+  },
+  {
+    "Chiave": "engine.scappa.cantEscape",
+    "IDLingua": 1,
+    "Messaggio": "Svicola tutto a mancina... ma non puoi."
+  },
+  {
+    "Chiave": "engine.scappa.cantEscape",
+    "IDLingua": 2,
+    "Messaggio": "You dodge hard to the left... but you can't."
+  },
+  {
+    "Chiave": "engine.sorridi.cheese",
+    "IDLingua": 1,
+    "Messaggio": "Cheese..."
+  },
+  {
+    "Chiave": "engine.sorridi.cheese",
+    "IDLingua": 2,
+    "Messaggio": "Cheese..."
+  },
+  {
+    "Chiave": "engine.dormi.noTimeToWaste",
+    "IDLingua": 1,
+    "Messaggio": "Non perdere tempo. Hai una missione da compiere."
+  },
+  {
+    "Chiave": "engine.dormi.noTimeToWaste",
+    "IDLingua": 2,
+    "Messaggio": "Don't waste time. You have a mission to complete."
+  },
+  {
+    "Chiave": "engine.parla.toSelf",
+    "IDLingua": 1,
+    "Messaggio": "Parlare da solo non ti aiuterà a finire la missione."
+  },
+  {
+    "Chiave": "engine.parla.toSelf",
+    "IDLingua": 2,
+    "Messaggio": "Talking to yourself won't help you finish the mission."
+  },
+  {
+    "Chiave": "engine.parla.guardGerman",
+    "IDLingua": 1,
+    "Messaggio": "La guardia non sembra capire il tedesco."
+  },
+  {
+    "Chiave": "engine.parla.guardGerman",
+    "IDLingua": 2,
+    "Messaggio": "The guard doesn't seem to understand German."
+  },
+  {
+    "Chiave": "engine.light.noSourceHere",
+    "IDLingua": 1,
+    "Messaggio": "Non vedo alcuna luce qui."
+  },
+  {
+    "Chiave": "engine.light.noSourceHere",
+    "IDLingua": 2,
+    "Messaggio": "I don't see any light here."
+  },
+  {
+    "Chiave": "engine.torch.takeFirst",
+    "IDLingua": 1,
+    "Messaggio": "Prendi la torcia prima."
+  },
+  {
+    "Chiave": "engine.torch.takeFirst",
+    "IDLingua": 2,
+    "Messaggio": "Take the flashlight first."
+  },
+  {
+    "Chiave": "engine.torch.alreadyLit",
+    "IDLingua": 1,
+    "Messaggio": "La torcia è già accesa."
+  },
+  {
+    "Chiave": "engine.torch.alreadyLit",
+    "IDLingua": 2,
+    "Messaggio": "The flashlight is already on."
+  },
+  {
+    "Chiave": "engine.torch.broken",
+    "IDLingua": 1,
+    "Messaggio": "La torcia non funziona."
+  },
+  {
+    "Chiave": "engine.torch.broken",
+    "IDLingua": 2,
+    "Messaggio": "The flashlight doesn't work."
+  },
+  {
+    "Chiave": "engine.dig.bareHandsNoTool",
+    "IDLingua": 1,
+    "Messaggio": "Vuoi scavare a mani nude? Non hai un attrezzo."
+  },
+  {
+    "Chiave": "engine.dig.bareHandsNoTool",
+    "IDLingua": 2,
+    "Messaggio": "Do you want to dig with your bare hands? You don't have a tool."
+  },
+  {
+    "Chiave": "engine.dig.digging",
+    "IDLingua": 1,
+    "Messaggio": "Scava, scava, scava..."
+  },
+  {
+    "Chiave": "engine.dig.digging",
+    "IDLingua": 2,
+    "Messaggio": "Dig, dig, dig..."
+  },
+  {
+    "Chiave": "engine.dig.noToolHere",
+    "IDLingua": 1,
+    "Messaggio": "Ti manca l'attrezzo!"
+  },
+  {
+    "Chiave": "engine.dig.noToolHere",
+    "IDLingua": 2,
+    "Messaggio": "You don't have the right tool!"
+  },
+  {
+    "Chiave": "engine.dig.noPassageNorth",
+    "IDLingua": 1,
+    "Messaggio": "Pur scavando non crei un passaggio a nord."
+  },
+  {
+    "Chiave": "engine.dig.noPassageNorth",
+    "IDLingua": 2,
+    "Messaggio": "Even by digging you can't make a passage to the north."
+  },
+  {
+    "Chiave": "engine.rotate.nothingToTurn",
+    "IDLingua": 1,
+    "Messaggio": "Non vedo niente da ruotare."
+  },
+  {
+    "Chiave": "engine.rotate.nothingToTurn",
+    "IDLingua": 2,
+    "Messaggio": "I don't see anything to turn."
+  },
+  {
+    "Chiave": "engine.move.nothingHappens",
+    "IDLingua": 1,
+    "Messaggio": "Fatto: non accade niente."
+  },
+  {
+    "Chiave": "engine.move.nothingHappens",
+    "IDLingua": 2,
+    "Messaggio": "Done: nothing happens."
+  },
+  {
+    "Chiave": "engine.move.notPossible",
+    "IDLingua": 1,
+    "Messaggio": "Non è possibile."
+  },
+  {
+    "Chiave": "engine.move.notPossible",
+    "IDLingua": 2,
+    "Messaggio": "That's not possible."
+  },
+  {
+    "Chiave": "engine.load.scaleNeedsWeight",
+    "IDLingua": 1,
+    "Messaggio": "Per caricare una pesa occorre un peso."
+  },
+  {
+    "Chiave": "engine.load.scaleNeedsWeight",
+    "IDLingua": 2,
+    "Messaggio": "To load a scale you need a weight."
   }
 ]

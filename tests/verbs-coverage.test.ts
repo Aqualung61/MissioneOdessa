@@ -7,7 +7,12 @@ import TipiLessico from '../src/data-internal/TipiLessico.json';
 // Aggiornato per #109 (lotto L1): l'insieme dei verbi ammessi senza oggetto è basato
 // sul concetto (valido per ogni sinonimo e in ogni lingua), come il parser
 // (TD Lessico L1 sinonimi, §4), non su un elenco di forme italiane.
-const NO_OBJECT_CONCEPTS = new Set(['DORMIRE', 'ESAMINARE', 'GUARDARE']);
+// Aggiornato per #109 (lotto L2b): aggiunti i verbi di §5.2 ammessi senza oggetto
+// (TD Lessico L2 risposte e testi, §5.2).
+const NO_OBJECT_CONCEPTS = new Set([
+  'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
+  'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
+]);
 
 describe('Copertura verbi azione REQ01', () => {
   beforeAll(async () => {
