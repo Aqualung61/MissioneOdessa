@@ -388,5 +388,45 @@
     "ID_Termine": 80,
     "Concetto": "LUCE",
     "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 81,
+    "Concetto": "ATTACCARE",
+    "ID_TipoLessico": 1
+  },
+  {
+    "ID_Termine": 82,
+    "Concetto": "GUARDIA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 83,
+    "Concetto": "MANOPOLA",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 84,
+    "Concetto": "FILO_SPINATO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 85,
+    "Concetto": "ARREDAMENTO",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 86,
+    "Concetto": "ELEVATORE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 87,
+    "Concetto": "PARETE",
+    "ID_TipoLessico": 4
+  },
+  {
+    "ID_Termine": 88,
+    "Concetto": "LUOGO",
+    "ID_TipoLessico": 4
   }
 ]

@@ -206,9 +206,11 @@ function hasControlChars(s) {
 // ESAMINARE/GUARDARE: possono essere usati senza oggetto per descrivere il luogo
 // SCAVARE/ACCENDERE: possono essere usati senza oggetto (TD Lessico L2 risposte e testi, §5.2)
 // SPEGNERE/SCAPPARE/SORRIDERE/SEDERSI/PARLARE: verbi nuovi del lotto L2b, senza oggetto (§5.2)
+// ATTACCARE: verbo nuovo del lotto L3, senza oggetto (TD Lessico L3, §5)
 const ACTION_NO_OBJECT = new Set([
   'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
   'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
+  'ATTACCARE',
 ]);
 
 export async function parseCommand(dbPath, input, gameState = null) {
@@ -231,6 +233,10 @@ export async function parseCommand(dbPath, input, gameState = null) {
     VerbConcept: null,
     NounTermId: null,
     NounConcept: null,
+    // Nome digitato dal giocatore (minuscolo, senza parole vuote; per i nomi composti
+    // le parole digitate unite da uno spazio), usato nei messaggi generici quando il
+    // nome non corrisponde a un oggetto (TD Lessico L3, §4.10).
+    NounLiteral: null,
     Error: ParseErrorType.NONE,
     Details: null,
     // campi diagnostici per errori specifici
@@ -335,6 +341,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
             VerbConcept: t1.info.concept,
             NounTermId: combinedInfo.termId,
             NounConcept: combinedInfo.concept,
+            NounLiteral: `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase(),
             NounIndex: null,
           };
         }
@@ -355,6 +362,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
             CanonicalNoun: combinedInfo.canonical,
             NounTermId: combinedInfo.termId,
             NounConcept: combinedInfo.concept,
+            NounLiteral: `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase(),
             NounIndex: null,
           };
         }
@@ -381,6 +389,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
           CanonicalNoun: t2.info.canonical,
           NounTermId: t2.info.termId,
           NounConcept: t2.info.concept,
+          NounLiteral: (filteredOriginalTokens[1] || t2.token).toLowerCase(),
           NounIndex: idx,
         };
       }
@@ -401,6 +410,7 @@ export async function parseCommand(dbPath, input, gameState = null) {
         VerbConcept: t1.info.concept,
         NounTermId: t2.info.termId,
         NounConcept: t2.info.concept,
+        NounLiteral: (filteredOriginalTokens[1] || t2.token).toLowerCase(),
         NounIndex: idx,
       };
     }

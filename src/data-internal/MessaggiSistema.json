@@ -919,5 +919,75 @@
     "Chiave": "engine.load.scaleNeedsWeight",
     "IDLingua": 2,
     "Messaggio": "To load a scale you need a weight."
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecialOriginal",
+    "IDLingua": 1,
+    "Messaggio": "Non noto nulla di particolare."
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecialOriginal",
+    "IDLingua": 2,
+    "Messaggio": "I notice nothing special."
+  },
+  {
+    "Chiave": "engine.examine.guard",
+    "IDLingua": 1,
+    "Messaggio": "È un sottufficiale russo, armato: ti guarda con curiosità."
+  },
+  {
+    "Chiave": "engine.examine.guard",
+    "IDLingua": 2,
+    "Messaggio": "He's an armed Russian NCO: he looks at you with curiosity."
+  },
+  {
+    "Chiave": "engine.attack.guardStrikes",
+    "IDLingua": 1,
+    "Messaggio": "Non sei molto veloce nella tua azione: la guardia scansa il tuo attacco e reagisce. Ti colpisce con il calcio del fucile e tu cadi tramortito: pessima fine di un'avventura quasi conclusa."
+  },
+  {
+    "Chiave": "engine.attack.guardStrikes",
+    "IDLingua": 2,
+    "Messaggio": "You're not very quick: the guard dodges your attack and strikes back. He hits you with the butt of his rifle and you fall unconscious: a sorry end to an adventure that was almost over."
+  },
+  {
+    "Chiave": "engine.rotate.knobPoints",
+    "IDLingua": 1,
+    "Messaggio": "Indica un verso."
+  },
+  {
+    "Chiave": "engine.rotate.knobPoints",
+    "IDLingua": 2,
+    "Messaggio": "It points one way."
+  },
+  {
+    "Chiave": "engine.move.leaveHouseWest",
+    "IDLingua": 1,
+    "Messaggio": "Se vai ad ovest lasci la casa: ma tu hai un lavoro da fare..."
+  },
+  {
+    "Chiave": "engine.move.leaveHouseWest",
+    "IDLingua": 2,
+    "Messaggio": "If you go west you'll leave the house: but you have a job to do..."
+  },
+  {
+    "Chiave": "engine.move.doorClosedPassage",
+    "IDLingua": 1,
+    "Messaggio": "Di lì non puoi andare: c'è una porta ma è chiusa."
+  },
+  {
+    "Chiave": "engine.move.doorClosedPassage",
+    "IDLingua": 2,
+    "Messaggio": "You can't go that way: there's a door, but it's closed."
+  },
+  {
+    "Chiave": "engine.move.rubbleBlocksWest",
+    "IDLingua": 1,
+    "Messaggio": "Delle macerie ti impediscono di andare ad ovest. Non si passa se non scavando."
+  },
+  {
+    "Chiave": "engine.move.rubbleBlocksWest",
+    "IDLingua": 2,
+    "Messaggio": "Rubble blocks your way west. You can't get through without digging."
   }
 ]

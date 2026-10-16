@@ -1189,30 +1189,6 @@
     "ID_Lingua": 2
   },
   {
-    "ID_Voce": 1073,
-    "Voce": "TAVOLO_LEGACY",
-    "ID_Termine": 35,
-    "ID_Lingua": 1
-  },
-  {
-    "ID_Voce": 1074,
-    "Voce": "TABLE_LEGACY",
-    "ID_Termine": 35,
-    "ID_Lingua": 2
-  },
-  {
-    "ID_Voce": 1075,
-    "Voce": "BOTTON_LEGACY",
-    "ID_Termine": 36,
-    "ID_Lingua": 1
-  },
-  {
-    "ID_Voce": 1076,
-    "Voce": "BOTTON_LEGACY",
-    "ID_Termine": 36,
-    "ID_Lingua": 2
-  },
-  {
     "ID_Voce": 1077,
     "Voce": "INVENTORY",
     "ID_Termine": 2,
@@ -1589,5 +1565,665 @@
     "Voce": "Luce",
     "ID_Termine": 80,
     "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1142,
+    "Voce": "ATTACCA",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1143,
+    "Voce": "ATTACCARE",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1144,
+    "Voce": "COLPISCI",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1145,
+    "Voce": "COLPIRE",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1146,
+    "Voce": "PICCHIA",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1147,
+    "Voce": "PICCHIARE",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1148,
+    "Voce": "UCCIDI",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1149,
+    "Voce": "UCCIDERE",
+    "ID_Termine": 81,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1150,
+    "Voce": "ATTACK",
+    "ID_Termine": 81,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1151,
+    "Voce": "HIT",
+    "ID_Termine": 81,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1152,
+    "Voce": "STRIKE",
+    "ID_Termine": 81,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1153,
+    "Voce": "KILL",
+    "ID_Termine": 81,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1154,
+    "Voce": "PUNCH",
+    "ID_Termine": 81,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1155,
+    "Voce": "Guardia",
+    "ID_Termine": 82,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1156,
+    "Voce": "Uomo",
+    "ID_Termine": 82,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1157,
+    "Voce": "Guard",
+    "ID_Termine": 82,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1158,
+    "Voce": "Man",
+    "ID_Termine": 82,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1159,
+    "Voce": "Soldier",
+    "ID_Termine": 82,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1160,
+    "Voce": "Manopola",
+    "ID_Termine": 83,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1161,
+    "Voce": "Knob",
+    "ID_Termine": 83,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1162,
+    "Voce": "Dial",
+    "ID_Termine": 83,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1163,
+    "Voce": "Filo spinato",
+    "ID_Termine": 84,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1164,
+    "Voce": "Barbed wire",
+    "ID_Termine": 84,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1165,
+    "Voce": "Arredamento",
+    "ID_Termine": 85,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1166,
+    "Voce": "Furniture",
+    "ID_Termine": 85,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1167,
+    "Voce": "Elevatore",
+    "ID_Termine": 86,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1168,
+    "Voce": "Elevator",
+    "ID_Termine": 86,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1169,
+    "Voce": "Lift",
+    "ID_Termine": 86,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1170,
+    "Voce": "Parete",
+    "ID_Termine": 87,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1171,
+    "Voce": "Wall",
+    "ID_Termine": 87,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1172,
+    "Voce": "Archivio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1173,
+    "Voce": "Armeria",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1174,
+    "Voce": "Atrio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1175,
+    "Voce": "Barriera",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1176,
+    "Voce": "Biblioteca",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1177,
+    "Voce": "Camera",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1178,
+    "Voce": "Capanno",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1179,
+    "Voce": "Corridoio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1180,
+    "Voce": "Cortile",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1181,
+    "Voce": "Cucina",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1182,
+    "Voce": "Garage",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1183,
+    "Voce": "Passaggio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1184,
+    "Voce": "Pianerottolo",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1185,
+    "Voce": "Piazza",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1186,
+    "Voce": "Pozzo",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1187,
+    "Voce": "Reception",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1188,
+    "Voce": "Ripostiglio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1189,
+    "Voce": "Sala",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1190,
+    "Voce": "Salone",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1191,
+    "Voce": "Scala",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1192,
+    "Voce": "Scalone",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1193,
+    "Voce": "Stanza",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1194,
+    "Voce": "Strada",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1195,
+    "Voce": "Studio",
+    "ID_Termine": 88,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1196,
+    "Voce": "Archive",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1197,
+    "Voce": "Armoury",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1198,
+    "Voce": "Armory",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1199,
+    "Voce": "Hall",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1200,
+    "Voce": "Atrium",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1201,
+    "Voce": "Barrier",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1202,
+    "Voce": "Library",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1203,
+    "Voce": "Room",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1204,
+    "Voce": "Bedroom",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1205,
+    "Voce": "Shed",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1206,
+    "Voce": "Corridor",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1207,
+    "Voce": "Courtyard",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1208,
+    "Voce": "Yard",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1209,
+    "Voce": "Kitchen",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1210,
+    "Voce": "Garage",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1211,
+    "Voce": "Passage",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1212,
+    "Voce": "Landing",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1213,
+    "Voce": "Square",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1214,
+    "Voce": "Well",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1215,
+    "Voce": "Reception",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1216,
+    "Voce": "Storeroom",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1217,
+    "Voce": "Lounge",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1218,
+    "Voce": "Stairs",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1219,
+    "Voce": "Staircase",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1220,
+    "Voce": "Street",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1221,
+    "Voce": "Study",
+    "ID_Termine": 88,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1222,
+    "Voce": "A",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1223,
+    "Voce": "AD",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1224,
+    "Voce": "AL",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1225,
+    "Voce": "ALLO",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1226,
+    "Voce": "AI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1227,
+    "Voce": "AGLI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1228,
+    "Voce": "ALLE",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1229,
+    "Voce": "IN",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1230,
+    "Voce": "NEL",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1231,
+    "Voce": "NELLO",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1232,
+    "Voce": "NELLA",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1233,
+    "Voce": "NEI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1234,
+    "Voce": "NEGLI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1235,
+    "Voce": "NELLE",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1236,
+    "Voce": "SUL",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1237,
+    "Voce": "SULLO",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1238,
+    "Voce": "SULLA",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1239,
+    "Voce": "SUI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1240,
+    "Voce": "SUGLI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1241,
+    "Voce": "SULLE",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1242,
+    "Voce": "DA",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1243,
+    "Voce": "DAL",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1244,
+    "Voce": "DALLO",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1245,
+    "Voce": "DALLA",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1246,
+    "Voce": "DAGLI",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1247,
+    "Voce": "DALLE",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1248,
+    "Voce": "IN",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1249,
+    "Voce": "ON",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1250,
+    "Voce": "INTO",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1251,
+    "Voce": "ONTO",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
   }
 ]

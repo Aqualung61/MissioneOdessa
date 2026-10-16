@@ -3,7 +3,9 @@
  * Verifica che l'analisi di ogni comando registrato sulla baseline `release/v1.4.1`
  * (f65a102) resti identica, salvo i cambi attesi dei lotti successivi (L1: `look`,
  * `examine`, `sleep` EN da soli; L2b: verbi da soli e `carica`/`load` con un nome,
- * TD Lessico L2 risposte e testi, §5.5 v1.1). Il corpus è protetto: si aggiorna solo
+ * TD Lessico L2 risposte e testi, §5.5 v1.1; L3: i 194 casi con una voce rimossa
+ * (E5), stesso esito di una parola sconosciuta nella stessa posizione, TD Lessico L3
+ * nomi luoghi e guardia, §6.2 v1.1). Il corpus è protetto: si aggiorna solo
  * aggiungendo cambi attesi motivati nella specifica del lotto che lo richiede.
  */
 
@@ -125,7 +127,22 @@ function expectedForCaricaLoad(testCase: BaselineCase, byLangInput: Map<string, 
   return { IsValid: true, CommandType: 'ACTION', VerbConcept: 'CARICARE', NounConcept: nounConcept, Error: 'NONE' };
 }
 
-function computeExpected(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): ParsedFields {
+// Aggiornato per #109 (lotto L3): le 4 voci rimosse (E5) — BOTTON_LEGACY (IT, EN),
+// TAVOLO_LEGACY (IT), TABLE_LEGACY (EN) — come regola, non come elenco: ogni caso del
+// corpus che contiene una di queste parole, in qualunque posizione, deve dare lo
+// stesso esito di una parola chiaramente inesistente nella stessa posizione (TD
+// Lessico L3 nomi luoghi e guardia, §6.2 v1.1).
+const LEGACY_REMOVED_WORDS = /\b(botton_legacy|tavolo_legacy|table_legacy)\b/i;
+const NONEXISTENT_WORD = 'zzznonexistentword';
+
+async function expectedForLegacyRemoval(testCase: BaselineCase): Promise<ParsedFields | null> {
+  if (!LEGACY_REMOVED_WORDS.test(testCase.input)) return null;
+  const substituted = testCase.input.replace(LEGACY_REMOVED_WORDS, NONEXISTENT_WORD);
+  const res = await parseCommand(null, substituted, { currentLingua: testCase.lang });
+  return toFields(res);
+}
+
+async function computeExpected(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): Promise<ParsedFields> {
   const normalizedInput = testCase.input.trim().toUpperCase();
   const baselineExpected = toFields(testCase);
 
@@ -135,6 +152,10 @@ function computeExpected(testCase: BaselineCase, byLangInput: Map<string, Baseli
   const bareKey = `${testCase.lang}|${normalizedInput}`;
   if (BARE_VERB_CHANGES[bareKey]) {
     return BARE_VERB_CHANGES[bareKey];
+  }
+  const legacyExpected = await expectedForLegacyRemoval(testCase);
+  if (legacyExpected) {
+    return legacyExpected;
   }
   const caricaExpected = expectedForCaricaLoad(testCase, byLangInput);
   if (caricaExpected) {
@@ -166,7 +187,7 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
     for (const testCase of baseline.cases) {
       const res = await parseCommand(null, testCase.input, { currentLingua: testCase.lang });
       const actual = toFields(res);
-      const expected = computeExpected(testCase, byLangInput);
+      const expected = await computeExpected(testCase, byLangInput);
       const matches = sameFields(expected, actual);
 
       if (!matches) {
@@ -180,13 +201,20 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
   });
 
   it('i cambi attesi del lotto L2b sono esattamente 150 (8 verbi da soli + 94 IT + 48 EN con CARICA/LOAD), e i 12 nomi di 3+ parole restano invariati', () => {
+    // Conteggio della sola regola L2b (EXPECTED_CHANGES L1 + BARE_VERB_CHANGES + CARICA/LOAD),
+    // senza il livello di L3 (rimozione E5): quest'ultimo è un livello indipendente,
+    // aggiunto sopra in `computeExpected`, non una modifica alla regola L2b in sé. Per i
+    // 6 casi "carica/load + voce rimossa" (su 194), questo resta quindi il conteggio
+    // originale di L2b (dove la voce esisteva ancora), verificato separatamente nel
+    // test successivo per il comportamento odierno dopo la rimozione.
     let changedCount = 0;
     for (const testCase of baseline.cases) {
       const normalizedInput = testCase.input.trim().toUpperCase();
       if (testCase.lang === 2 && EXPECTED_CHANGES[normalizedInput]) continue; // cambio del lotto L1, non di L2b
 
       const baselineExpected = toFields(testCase);
-      const expected = computeExpected(testCase, byLangInput);
+      const bareKey = `${testCase.lang}|${normalizedInput}`;
+      const expected = BARE_VERB_CHANGES[bareKey] || expectedForCaricaLoad(testCase, byLangInput) || baselineExpected;
       if (!sameFields(baselineExpected, expected)) changedCount++;
     }
     // 8 (verbi da soli) + 94 (IT carica/load + nome) + 48 (EN load + nome) = 150
@@ -196,9 +224,32 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
       const testCase = byLangInput.get(`${lang}|${input.toLowerCase()}`);
       expect(testCase, `caso non trovato nel corpus: "${input}" (lingua ${lang})`).toBeDefined();
       if (!testCase) continue;
-      const expected = computeExpected(testCase, byLangInput);
+      const expected = expectedForCaricaLoad(testCase, byLangInput) || toFields(testCase);
       expect(expected, `"${input}" deve restare invariato`).toEqual(toFields(testCase));
       expect(expected.Error, `"${input}" deve restare SYNTAX_INVALID_STRUCTURE`).toBe('SYNTAX_INVALID_STRUCTURE');
+    }
+  });
+
+  // Aggiornato per #109 (lotto L3)
+  it('i cambi attesi del lotto L3 sono esattamente 194 casi (una voce rimossa, E5): ciascuno dà oggi lo stesso esito di una parola sconosciuta nella stessa posizione, nessun altro caso è toccato da questa regola', async () => {
+    const legacyCases = baseline.cases.filter((c) => LEGACY_REMOVED_WORDS.test(c.input));
+    expect(legacyCases.length).toBe(194);
+
+    for (const testCase of legacyCases) {
+      // Criterio esatto di §6.2: l'esito odierno (via `computeExpected`, già verificato
+      // identico all'esito reale del parser dal test di coerenza sopra) è lo stesso di
+      // una parola chiaramente inesistente nella stessa posizione.
+      const expected = await computeExpected(testCase, byLangInput);
+      const asUnknown = await expectedForLegacyRemoval(testCase);
+      expect(asUnknown, `"${testCase.input}" (lingua ${testCase.lang})`).not.toBeNull();
+      expect(expected, `"${testCase.input}" (lingua ${testCase.lang})`).toEqual(asUnknown);
+    }
+
+    // Nessun altro caso del corpus è toccato dalla regola di rimozione: la funzione si
+    // applica solo quando l'input contiene una delle 3 parole rimosse.
+    const nonLegacyCases = baseline.cases.filter((c) => !LEGACY_REMOVED_WORDS.test(c.input));
+    for (const testCase of nonLegacyCases) {
+      expect(await expectedForLegacyRemoval(testCase)).toBeNull();
     }
   });
 });

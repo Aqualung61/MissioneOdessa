@@ -16,6 +16,13 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
     // accendi luce/spegni luce" — nessun nome EN separato è necessario).
     const EXPECTED_MISSING_EN: ReadonlySet<number> = new Set([80]);
 
+    // Aggiornato per #109 (lotto L3): ID_Termine 35 (TAVOLO) e 36 (BOTTON) non hanno
+    // più nessuna voce, in nessuna lingua, per la rimozione delle voci residue
+    // BOTTON_LEGACY/TAVOLO_LEGACY/TABLE_LEGACY (E5, TD Lessico L3 nomi luoghi e
+    // guardia, §3): "I concetti restano" nei dati, ma senza più alcuna voce che un
+    // giocatore possa digitare.
+    const EXPECTED_MISSING_BOTH: ReadonlySet<number> = new Set([35, 36]);
+
     const byTerm = new Map<number, Set<number>>();
 
     for (const v of VociLessico) {
@@ -27,6 +34,7 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
 
     const missing: Array<{ termId: number; missing: number[] }> = [];
     for (const t of TerminiLessico) {
+      if (EXPECTED_MISSING_BOTH.has(t.ID_Termine)) continue;
       const langs = byTerm.get(t.ID_Termine) ?? new Set<number>();
       const needed = [1, 2].filter(l => !langs.has(l));
       const unexpected = EXPECTED_MISSING_EN.has(t.ID_Termine) ? needed.filter((l) => l !== 2) : needed;
@@ -41,6 +49,14 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
       const langs = byTerm.get(termId) ?? new Set<number>();
       expect(langs.has(1), `ID_Termine ${termId}: manca la voce IT`).toBe(true);
       expect(langs.has(2), `ID_Termine ${termId}: ha guadagnato una voce EN, l'eccezione non è più necessaria`).toBe(false);
+    }
+
+    // L'eccezione di E5 deve restare esattamente TAVOLO (35) e BOTTON (36), entrambi
+    // senza nessuna voce in nessuna lingua: se uno dei due ne guadagnasse una, o se un
+    // altro ID_Termine perdesse entrambe, questo fallisce.
+    for (const termId of EXPECTED_MISSING_BOTH) {
+      const langs = byTerm.get(termId) ?? new Set<number>();
+      expect(langs.size, `ID_Termine ${termId}: ha guadagnato una voce, l'eccezione non è più necessaria`).toBe(0);
     }
   });
 });

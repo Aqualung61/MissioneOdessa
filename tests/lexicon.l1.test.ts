@@ -161,11 +161,16 @@ describe('Lessico L1: sinonimi e parser (#109)', () => {
     expect(sleep.resultType).not.toBe('GAME_OVER');
   });
 
-  it('TB-07: "a" (IT) invariato rispetto alla baseline (D1)', async () => {
+  it('TB-07: "a" (IT) da solo resta un comando senza verbo (D1)', async () => {
+    // Aggiornato per #109 (lotto L3): "a" è ora una preposizione registrata (E4, TD
+    // Lessico L3 nomi luoghi e guardia, §3) e non più un token sconosciuto; da sola,
+    // senza verbo, resta comunque un comando non riconosciuto (nessun token utile
+    // dopo il filtro delle parole vuote), ma senza più l'informazione del token
+    // sconosciuto (che non esiste più come tale: "a" non è ignota, è solo vuota).
     const r = await parseCommand(null, 'a', { currentLingua: 1 });
     expect(r.IsValid).toBe(false);
     expect(r.Error).toBe('COMMAND_UNKNOWN');
-    expect(r.UnknownToken).toBe('A');
+    expect(r.UnknownToken).toBeNull();
   });
 
   it('TB-08: copertura completa delle 19 voci nuove (§3: 11 sinonimi IT/EN e 8 preposizioni)', async () => {

@@ -9,9 +9,12 @@ import TipiLessico from '../src/data-internal/TipiLessico.json';
 // (TD Lessico L1 sinonimi, §4), non su un elenco di forme italiane.
 // Aggiornato per #109 (lotto L2b): aggiunti i verbi di §5.2 ammessi senza oggetto
 // (TD Lessico L2 risposte e testi, §5.2).
+// Aggiornato per #109 (lotto L3): aggiunto ATTACCARE, ammesso senza oggetto
+// (TD Lessico L3 nomi luoghi e guardia, §5).
 const NO_OBJECT_CONCEPTS = new Set([
   'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
   'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
+  'ATTACCARE',
 ]);
 
 describe('Copertura verbi azione REQ01', () => {

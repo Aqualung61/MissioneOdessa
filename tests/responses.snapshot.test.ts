@@ -1,6 +1,7 @@
 /**
- * Istantanea delle risposte (#109, lotto L2a).
- * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.1.
+ * Istantanea delle risposte (#109, lotti L2a, L2b e L3).
+ * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.1;
+ * aggiornato per #109 (lotto L3): TD Lessico L3 nomi luoghi e guardia, §6.1 v1.1.
  *
  * Rigenera, con le stesse regole, lo stesso ordine e lo stesso formato del
  * generatore di riferimento (`Claude decompiler/20261016 - L2 gen_responses.mjs`),
@@ -22,9 +23,9 @@ describe('Istantanea delle risposte (#109, lotto L2a)', () => {
     await ensureVocabulary();
   });
 
-  it('riporta la baseline registrata con 51.072 righe (aggiornata in Fase 1B, #109 lotto L2b)', () => {
+  it('riporta la baseline registrata con 88.151 righe (aggiornata in Fase 1B, #109 lotto L3)', () => {
     const baseline = loadResponsesBaseline();
-    expect(baseline.length).toBe(51072);
+    expect(baseline.length).toBe(88151);
   });
 
   it(
@@ -54,8 +55,9 @@ describe('Istantanea delle risposte (#109, lotto L2a)', () => {
 
       expect(diffs.length, diffs.join('\n')).toBe(0);
     },
-    // Timeout esteso: genera ~40.000 risposte con motore e parser reali (vedi
-    // generateResponses), più lento del default di Vitest sotto carico nella suite completa.
-    30000
+    // Timeout esteso (#109, lotto L3): genera ~88.000 risposte con motore e parser
+    // reali (vedi generateResponses, cresciuto con il lessico di L3), più lento del
+    // default di Vitest sotto carico nella suite completa.
+    60000
   );
 });
