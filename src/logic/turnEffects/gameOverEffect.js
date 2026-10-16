@@ -99,7 +99,7 @@ export function gameOverEffect(gameState, result, parseResult) {
   
   if (currentLuogo && currentLuogo.Terminale === -1) {
     // Messaggio i18n (senza domanda riavvio, la aggiunge il client)
-    const terminalMsg = getSystemMessage('game.terminal.location', gameState.currentLingua) || 'Hai raggiunto un luogo terminale.';
+    const terminalMsg = getSystemMessage('game.terminal.location', gameState.currentLingua);
     
     result.accepted = false;
     result.resultType = 'GAME_OVER';

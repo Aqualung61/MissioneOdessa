@@ -1194,7 +1194,7 @@ export function createEngine() {
         
         // Verifica se già eseguita (se non ripetibile)
         if (!interazione.ripetibile && gameState.interazioniEseguite.includes(interazione.id)) {
-          const messaggio = interazione.risposta_gia_eseguita || "Non c'è bisogno di farlo di nuovo.";
+          const messaggio = interazione.risposta_gia_eseguita || getSystemMessage('engine.interaction.alreadyDone', gameState.currentLingua);
           return { accepted: true, resultType: 'OK', message: messaggio, effects: [] };
         }
         
@@ -1488,6 +1488,17 @@ export function createEngine() {
           const concept = (parseResult.VerbConcept || '').toUpperCase();
           // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
           const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
+          // Fix L2a (#109, TD §4.2 a): destra/sinistra/porta sono nomi di direzione o
+          // di stato (rotazione, porta), non corrispondono a un oggetto in nessun luogo
+          // e il loro concetto (nome italiano) non ha mai una traduzione inglese. Nei
+          // messaggi generici si mostra quindi la parola digitata dal giocatore
+          // (CanonicalNoun, voce della lingua corrente) solo per questi tre nomi. Ogni
+          // altro nome resta come oggi (nome dell'oggetto se esiste, altrimenti il
+          // concetto), per non introdurre differenze fuori dal perimetro di questo lotto.
+          const NOUNS_WITHOUT_OBJECT_TRANSLATION = new Set(['DESTRA', 'SINISTRA', 'PORTA']);
+          const nounForMissingObject = NOUNS_WITHOUT_OBJECT_TRANSLATION.has((parseResult.NounConcept || '').toUpperCase())
+            ? (parseResult.CanonicalNoun || noun).toLowerCase().replace(/_/g, ' ')
+            : noun.toLowerCase().replace(/_/g, ' ');
 
           // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato
           if (DARK_BLOCKED_VERBS.has(concept) && !hasFonteLuceAttiva()) {
@@ -1528,13 +1539,13 @@ export function createEngine() {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
             }
             // Con oggetto: mostra descrizione dell'oggetto
-            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
-            const text = oggetto.descrizione || 'Non noti nulla di particolare.';
+            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
+            const text = oggetto.descrizione || getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua);
             return { accepted: true, resultType: 'OK', message: text, effects: [] };
           }
           // APRI / CHIUDI (elementi apribili)
           if (concept === 'APRIRE' || concept === 'CHIUDERE' || verb === 'APRI' || verb === 'CHIUDI') {
-            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
             const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
             if (!canOpen) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.openClose.cannotDo', gameState.currentLingua, [verb.toLowerCase(), noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
             const openNow = !!gameState.openStates[noun];
@@ -1571,7 +1582,7 @@ export function createEngine() {
               oggetto.IDLuogo = 0; // Sposta nell'inventario
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
           if (concept === 'POSARE' || concept === 'LASCIARE' || verb === 'POSA' || verb === 'LASCIA') {
             // Trova l'oggetto nell'inventario
@@ -1585,7 +1596,7 @@ export function createEngine() {
               oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.notInInventory', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.notInInventory', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
           // Altri verbi: verifica se richiedono oggetto
           if (!noun) {
@@ -1593,7 +1604,7 @@ export function createEngine() {
           }
           // PRIORITÀ: Verifica esistenza oggetto prima di dire che l'azione non è possibile
           if (!oggetto) {
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
           // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
           return {

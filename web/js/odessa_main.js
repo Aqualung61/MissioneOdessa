@@ -860,8 +860,8 @@ inputForm.addEventListener('submit', async function(e) {
   // Se in attesa di conferma riavvio
   if (awaitingRestart) {
     const risposta = userInput.value.trim().toUpperCase();
-    // Accetta S, SI, SÌ, Sì, s, sì, etc.
-    if (/^S(I|Ì)?$/.test(risposta)) {
+    // Accetta S, SI, SÌ, Sì, s, sì, Y, YES, etc. (fix L2a #109, TD §4.2 e)
+    if (/^(S(I|Ì)?|Y(ES)?)$/.test(risposta)) {
       const feed = document.getElementById('placeFeed');
       if (feed) feed.innerHTML = '';
       userInput.value = '';
