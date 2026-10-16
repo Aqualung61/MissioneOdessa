@@ -1295,5 +1295,119 @@
     "Voce": "Match",
     "ID_Termine": 51,
     "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1093,
+    "Voce": "OSSERVA",
+    "ID_Termine": 12,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1094,
+    "Voce": "OBSERVE",
+    "ID_Termine": 12,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1095,
+    "Voce": "GIRA",
+    "ID_Termine": 63,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1096,
+    "Voce": "ROTATE",
+    "ID_Termine": 63,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1097,
+    "Voce": "INTRODUCI",
+    "ID_Termine": 54,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1098,
+    "Voce": "PIGIA",
+    "ID_Termine": 62,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1099,
+    "Voce": "SCHIACCIA",
+    "ID_Termine": 62,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1100,
+    "Voce": "PUSH",
+    "ID_Termine": 62,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1101,
+    "Voce": "Sedia",
+    "ID_Termine": 22,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1102,
+    "Voce": "Chair",
+    "ID_Termine": 22,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1103,
+    "Voce": "B",
+    "ID_Termine": 10,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1104,
+    "Voce": "ALLA",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1105,
+    "Voce": "COL",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1106,
+    "Voce": "CON",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1107,
+    "Voce": "VERSO",
+    "ID_Termine": 73,
+    "ID_Lingua": 1
+  },
+  {
+    "ID_Voce": 1108,
+    "Voce": "WITH",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1109,
+    "Voce": "TO",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1110,
+    "Voce": "TOWARDS",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
+  },
+  {
+    "ID_Voce": 1111,
+    "Voce": "AT",
+    "ID_Termine": 73,
+    "ID_Lingua": 2
   }
 ]

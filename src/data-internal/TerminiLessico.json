@@ -348,5 +348,10 @@
     "ID_Termine": 72,
     "Concetto": "PUNTI",
     "ID_TipoLessico": 3
+  },
+  {
+    "ID_Termine": 73,
+    "Concetto": "PREPOSIZIONE",
+    "ID_TipoLessico": 5
   }
 ]
