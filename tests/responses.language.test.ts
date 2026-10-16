@@ -1,5 +1,5 @@
 /**
- * Controllo della lingua delle risposte (#109, lotti L2a e L2b).
+ * Controllo della lingua delle risposte (#109, lotti L2a, L2b e L3).
  * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.4;
  * aggiornato per #109 (lotto L2b), precisazione 2: le parole solo italiane includono
  * anche i nomi dei concetti (`TerminiLessico`) che non sono voci inglesi.
@@ -8,7 +8,9 @@
  * contiene parole solo italiane, nessuna risposta italiana contiene parole solo
  * inglesi, nessuna risposta contiene segnaposto rotti. Prima della correzione del
  * lotto L2a, il controllo trovava esattamente i difetti (a) e (b) della specifica;
- * dopo L2a e L2b deve risultare pulito, salvo i falsi positivi elencati sotto.
+ * dopo L2a, L2b e L3 deve risultare pulito, senza eccezioni (aggiornato per #109,
+ * lotto L3: TD Lessico L3 nomi luoghi e guardia, §4.10 v1.1 — la rimozione di E5
+ * toglie l'ultimo falso positivo, `botton`).
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -46,10 +48,10 @@ const EN_WORDS_FALSE_POSITIVE_IN_IT = new Set(['a', 'd']);
 // Aggiornato per #109 (lotto L2b), precisazione 2: anche i nomi dei concetti
 // (TerminiLessico) che non sono voci inglesi contano come "parole solo italiane" (un
 // concetto italiano mostrato in inglese, es. "caricare", è un difetto).
-// - "botton" (concetto della voce residua BOTTON_LEGACY, L2a) compare anche in EN
-//   perché non ha mai una traduzione inglese propria: nome fuori perimetro, da
-//   rimuovere nel lotto L3 insieme agli altri oggetti scenici residui.
-const IT_CONCEPTS_FALSE_POSITIVE_IN_EN = new Set(['botton']);
+// Aggiornato per #109 (lotto L3): rimosso "botton" (concetto della voce residua
+// BOTTON_LEGACY, L2a), tolta dal lessico con la rimozione E5 (TD Lessico L3, §3).
+// Nessun falso positivo residuo in questa categoria.
+const IT_CONCEPTS_FALSE_POSITIVE_IN_EN = new Set<string>();
 
 const wordRegexCache = new Map<string, RegExp>();
 function containsWord(message: string, word: string): boolean {
@@ -126,8 +128,9 @@ describe('Controllo della lingua delle risposte (#109, lotto L2a)', () => {
 
       expect(violations.length, violations.slice(0, 50).join('\n')).toBe(0);
     },
-    // Timeout esteso: genera ~40.000 risposte con motore e parser reali (vedi
-    // generateResponses), più lento del default di Vitest sotto carico nella suite completa.
-    30000
+    // Timeout esteso (#109, lotto L3): genera ~88.000 risposte con motore e parser
+    // reali (vedi generateResponses, cresciuto con il lessico di L3), più lento del
+    // default di Vitest sotto carico nella suite completa.
+    60000
   );
 });

@@ -1405,6 +1405,18 @@ export function createEngine() {
           const nextId = direzioni?.[directionField];
 
           if (typeof nextId !== 'number' || nextId < 1) {
+            // Movimenti bloccati con un testo dedicato dell'originale (#109, L3, §4.7–4.9):
+            // sostituiscono il messaggio generico solo in quei luoghi e condizioni; il
+            // turno si consuma comunque, come per ogni movimento bloccato.
+            if (currentId === 1 && directionField === 'Ovest') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.leaveHouseWest', gameState.currentLingua), effects: [] };
+            }
+            if (currentId === 44 && directionField === 'Est') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.doorClosedPassage', gameState.currentLingua), effects: [] };
+            }
+            if (currentId === 49 && directionField === 'Ovest') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.rubbleBlocksWest', gameState.currentLingua), effects: [] };
+            }
             return {
               accepted: true,
               resultType: 'ERROR',
@@ -1493,17 +1505,23 @@ export function createEngine() {
           const concept = (parseResult.VerbConcept || '').toUpperCase();
           // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
           const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
-          // Fix L2a (#109, TD §4.2 a): destra/sinistra/porta sono nomi di direzione o
-          // di stato (rotazione, porta), non corrispondono a un oggetto in nessun luogo
-          // e il loro concetto (nome italiano) non ha mai una traduzione inglese. Nei
-          // messaggi generici si mostra quindi la parola digitata dal giocatore
-          // (CanonicalNoun, voce della lingua corrente) solo per questi tre nomi. Ogni
-          // altro nome resta come oggi (nome dell'oggetto se esiste, altrimenti il
-          // concetto), per non introdurre differenze fuori dal perimetro di questo lotto.
-          const NOUNS_WITHOUT_OBJECT_TRANSLATION = new Set(['DESTRA', 'SINISTRA', 'PORTA']);
-          const nounForMissingObject = NOUNS_WITHOUT_OBJECT_TRANSLATION.has((parseResult.NounConcept || '').toUpperCase())
-            ? (parseResult.CanonicalNoun || noun).toLowerCase().replace(/_/g, ' ')
-            : noun.toLowerCase().replace(/_/g, ' ');
+          // Regola generale dei nomi senza oggetto (#109, L3, TD v1.1 §4.10): sostituisce
+          // l'elenco fisso DESTRA/SINISTRA/PORTA di L2a. Se il nome non corrisponde a
+          // un oggetto nei dati (in nessun luogo: direzioni, stati come "porta", o i
+          // nomi nuovi di questo lotto come GUARDIA, MANOPOLA, LUOGO), si mostra la
+          // parola effettivamente digitata dal giocatore (NounLiteral: minuscolo, senza
+          // parole vuote; per i nomi composti le parole digitate), non CanonicalNoun
+          // (che per i concetti con più sinonimi nella lingua corrente è la voce
+          // alfabeticamente minore, non necessariamente quella digitata — R1 Fase 1A).
+          // Se invece l'oggetto esiste altrove (es. "arazzo in pessime condizioni",
+          // "flashlight"), resta il nome dell'oggetto come oggi (NounConcept, già
+          // localizzato per i nomi con oggetto, L2b).
+          const esisteComeOggettoOvunque = (gameState.Oggetti || []).some(
+            (o) => normalizeForComparison(o.Oggetto) === normalizeForComparison(noun)
+          );
+          const nounForMissingObject = esisteComeOggettoOvunque
+            ? noun.toLowerCase().replace(/_/g, ' ')
+            : (parseResult.NounLiteral || noun.toLowerCase().replace(/_/g, ' '));
 
           // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato.
           // CARICARE con un nome (#98, L2b): equivale a METTERE (es. "carica peso"), quindi
@@ -1569,6 +1587,22 @@ export function createEngine() {
           if (concept === 'PARLARE') {
             const chiave = gameState.currentLocationId === 59 ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
             return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+          }
+          // === Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109) ===
+          // ATTACCA (4.2): con o senza nome, solo alla barriera (59) -> morte (GUARD_ATTACK,
+          // come l'arresto della guardia, nessun effetto sul punteggio). Fuori dalla
+          // barriera (E1): nessun testo nuovo, prosegue con l'elaborazione standard
+          // (risposta generica del porting, come ogni altro verbo senza effetto).
+          if (concept === 'ATTACCARE' && gameState.currentLocationId === 59) {
+            gameState.awaitingRestart = true;
+            return {
+              accepted: false,
+              resultType: 'GAME_OVER',
+              message: getSystemMessage('engine.attack.guardStrikes', gameState.currentLingua),
+              gameOver: true,
+              gameOverReason: 'GUARD_ATTACK',
+              effects: [],
+            };
           }
           // ACCENDI senza nome, o ACCENDI LUCE: prima fonte applicabile (torcia, poi
           // fiammifero, poi lampada); nessuna fonte -> risposta dedicata.
@@ -1659,6 +1693,13 @@ export function createEngine() {
           if (concept === 'RUOTARE' && (noun === 'DESTRA' || noun === 'SINISTRA')) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.nothingToTurn', gameState.currentLingua), effects: [] };
           }
+          // GIRA/RUOTA MANOPOLA (E3, L3, #109): solo con la cassaforte visibile (dopo
+          // "sposta quadro"/"prendi quadro"), in biblioteca (24). Senza cassaforte visibile:
+          // prosegue con l'elaborazione standard, che dà "Non vedi manopola qui." (nessun
+          // oggetto MANOPOLA nei dati, §4.10 generale).
+          if (concept === 'RUOTARE' && noun === 'MANOPOLA' && gameState.currentLocationId === 24 && gameState.flags.cassaforteScoperta) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.knobPoints', gameState.currentLingua), effects: [] };
+          }
           // MUOVI/SPOSTA senza interazione dedicata (D3): solo se l'oggetto è presente,
           // altrimenti il comportamento di oggi (oggetto non qui) resta invariato.
           if ((concept === 'SPOSTARE' || verb === 'MUOVI' || verb === 'SPOSTA') && noun && oggetto) {
@@ -1675,6 +1716,33 @@ export function createEngine() {
                 return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: [] };
               }
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
+            }
+            // 4.6 (#109, L3): esamina/guarda + nome di luogo, ovunque, come guarda da
+            // solo (BAS 5520: nessun testo dedicato, ripresenta il luogo).
+            if (noun === 'LUOGO') {
+              const messaggioCompleto = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
+              if (messaggioCompleto) {
+                return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: [] };
+              }
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
+            }
+            // 4.1 (#109, L3): esamina/guarda guardia/uomo, solo alla barriera (59).
+            // Altrove: nessun oggetto GUARDIA nei dati, prosegue con l'elaborazione
+            // standard (§4.10 generale: "Non vedi guardia qui.").
+            if (noun === 'GUARDIA' && gameState.currentLocationId === 59) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.guard', gameState.currentLingua), effects: [] };
+            }
+            // 4.4 (#109, L3, E2): oggetti scenici del gioco originale, senza controllo
+            // di presenza (azione sempre valida, come nel BAS).
+            const OGGETTI_SCENICI_SENZA_PRESENZA = new Set(['FILO_SPINATO', 'ARREDAMENTO', 'ELEVATORE', 'PARETE']);
+            if (OGGETTI_SCENICI_SENZA_PRESENZA.has(noun)) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
+            }
+            // 4.5 (#109, L3): macerie ai luoghi 11, 32, 36 (al 49 resta la descrizione
+            // dell'oggetto, invariata: non toccata da questo blocco).
+            const macerieLocalizzataPerEsamina = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
+            if (noun === macerieLocalizzataPerEsamina && [11, 32, 36].includes(gameState.currentLocationId)) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
             }
             // Con oggetto: mostra descrizione dell'oggetto
             if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
