@@ -4,6 +4,21 @@
 
 ---
 
+## v1.4.1 (17 ottobre 2026)
+
+### Fedeltà all'originale
+
+- Timer e sequenza finale dell'originale: buio, zona aperta, alba a 200 turni, guardia alla barriera, incontro con Ferenc (#107, #97).
+- Fiammiferi contati e luce della lampada solo dove si trova (#108).
+- Enigmi del bastone e del quadro; punteggio delle interazioni senza doppi conteggi, massimo 138 (#96).
+- Lessico e risposte dell'originale in italiano e inglese: sinonimi, preposizioni, verbi, guardia, luoghi, `carica peso` (#109, #98).
+- Passaggio crollato nel sotterraneo: crollo una sola volta, poi passaggio bloccato (#117).
+- Testi IT/EN corretti e reti di test: partite di riferimento, corpus del parser, istantanea delle risposte (#99, #95).
+
+Dettagli: [docs/release-notes/2026-10-17_v1.4.1.md](docs/release-notes/2026-10-17_v1.4.1.md)
+
+---
+
 ## v1.4.0 (15 ottobre 2026)
 
 ### Stabilità: sessioni e difetti
