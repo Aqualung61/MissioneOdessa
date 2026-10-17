@@ -21,6 +21,13 @@ function warnUnknownTypeOnce(kind, tipo) {
   console.warn(`[engine] ${kind} di tipo sconosciuto in Interazioni.json: ${tipo}`);
 }
 
+// Verbi (concetti) che al buio non si eseguono: "È troppo buio per farlo." (R1, BAS 240–250).
+// Restano eseguibili: movimento, POSARE, LASCIARE, ACCENDERE, DORMIRE e i comandi di sistema.
+const DARK_BLOCKED_VERBS = new Set([
+  'PRENDERE', 'ESAMINARE', 'GUARDARE', 'LEGGERE', 'SPOSTARE', 'RUOTARE', 'INFILARE',
+  'METTERE', 'SCAVARE', 'PREMERE', 'PORGERE', 'APRIRE', 'CHIUDERE', 'SCARICARE',
+]);
+
 // Factory: ogni sessione ottiene un motore con stato proprio (closure), senza istanze di modulo.
 export function createEngine() {
 
@@ -103,6 +110,7 @@ export function createEngine() {
     direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
     direzioniToggle: {}, // Stato dei toggle (es. "44_Est": true/false)
     sequenze: {}, // Stato delle sequenze (es. cassaforte)
+    flags: {}, // Flag di scenario (es. "bastoneLiberato", "cassaforteScoperta") (R7)
     currentLingua: 1, // Lingua corrente (default: italiano)
     
     // === SISTEMA PUNTEGGIO ===
@@ -119,15 +127,20 @@ export function createEngine() {
       torciaDifettosa: false,          // False all'inizio (funzionante), True dopo 6 turni
       lampadaAccesa: false,            // Stato della lampada
       azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
-      ultimoLuogoPericoloso: null      // ID per reset al cambio stanza
+      ultimoLuogoPericoloso: null,     // ID per reset al cambio stanza
+      matchesLeft: 6,                  // Fiammiferi rimasti (R8)
+      matchTimer: 0                    // Turni di luce residui del fiammifero acceso (R8)
     },
-    
+
     // === SISTEMA TURN (v3.0) ===
     turn: {
       globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
       totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
-      turnsInDarkness: 0,          // Turni al buio senza luce
-      turnsInDangerZone: 0,        // Turni in zona pericolosa
+      turnsInDarkness: 0,          // Solo compatibilità salvataggi (non decide più la morte)
+      turnsInDangerZone: 0,        // Solo compatibilità salvataggi (non decide più la morte)
+      darknessTimer: 0,            // Timer del buio (R1), 0 = non attivo
+      openAreaTimer: 0,            // Timer della zona aperta (R2), 0 = non attivo
+      movedThisTurn: false,        // Se l'ultimo comando ha cambiato luogo
       current: {
         parseResult: null,         // Comando corrente
         consumesTurn: false,       // Se questo comando consuma turno
@@ -142,13 +155,13 @@ export function createEngine() {
         inDangerZone: false        // Se era in zona pericolosa
       }
     },
-    
+
     // === SISTEMA VITTORIA ===
     narrativeState: null,              // Enum: ENDING_PHASE_1A, etc.
     narrativePhase: 0,                 // Progressivo numerico (opzionale)
     victory: false,                    // Flag vittoria finale
     movementBlocked: false,            // Blocca NAVIGATION (per luogo 59)
-    unusefulCommandsCounter: 0,        // Counter comandi errati al luogo 59
+    guardTimer: 0,                     // Timer della guardia al luogo 59 (R4)
     awaitingContinue: false,           // Se true, engine aspetta solo BARRA SPAZIO
     continueCallback: null             // Funzione da eseguire alla pressione di BARRA
   };
@@ -220,6 +233,7 @@ export function createEngine() {
       direzioniSbloccate: {},
       direzioniToggle: {},
       sequenze: {},
+      flags: {},
       currentLingua: idLingua,
       
       // === SISTEMA PUNTEGGIO ===
@@ -235,15 +249,20 @@ export function createEngine() {
         torciaDifettosa: false,
         lampadaAccesa: false,
         azioniInLuogoPericoloso: 0,
-        ultimoLuogoPericoloso: null
+        ultimoLuogoPericoloso: null,
+        matchesLeft: 6,
+        matchTimer: 0
       },
-      
+
       // === SISTEMA TURN (v3.0) ===
       turn: {
         globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
         totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
-        turnsInDarkness: 0,          // Turni al buio senza luce
-        turnsInDangerZone: 0,        // Turni in zona pericolosa
+        turnsInDarkness: 0,          // Solo compatibilità salvataggi
+        turnsInDangerZone: 0,        // Solo compatibilità salvataggi
+        darknessTimer: 0,            // Timer del buio (R1)
+        openAreaTimer: 0,            // Timer della zona aperta (R2)
+        movedThisTurn: false,        // Se l'ultimo comando ha cambiato luogo
         current: {
           parseResult: null,         // Comando corrente
           consumesTurn: false,       // Se questo comando consuma turno
@@ -264,7 +283,7 @@ export function createEngine() {
       narrativePhase: 0,
       victory: false,
       movementBlocked: false,
-      unusefulCommandsCounter: 0,
+      guardTimer: 0,
       awaitingContinue: false,
       continueCallback: null
     };
@@ -356,6 +375,11 @@ export function createEngine() {
    * @returns {boolean} - true se ha luce attiva
    */
   function hasFonteLuceAttiva() {
+    // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
+    if (gameState.currentLocationId === 59) {
+      return true;
+    }
+
     // Verifica torcia elettrica (ID=37) nell'inventario e non spenta.
     // Source of truth inventario: `IDLuogo === 0` (come in v1.3.2).
     const torcia = gameState.Oggetti.find((o) => o.ID === 37);
@@ -363,8 +387,17 @@ export function createEngine() {
       return true;
     }
 
-    // Verifica lampada (ID=27) accesa
+    // Verifica lampada (ID=27) accesa: fa luce solo dove si trova, in inventario o nel luogo
+    // corrente (R8, §4.3). Altrove il comportamento non cambia (R9: allontanarsene è morte immediata).
     if (gameState.timers.lampadaAccesa) {
+      const lampada = gameState.Oggetti.find((o) => o.ID === 27);
+      if (lampada && (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId)) {
+        return true;
+      }
+    }
+
+    // Fiammifero acceso (R8): dà luce per il comando successivo a quello che lo accende
+    if (gameState.timers.matchTimer > 0) {
       return true;
     }
 
@@ -462,7 +495,10 @@ export function createEngine() {
     const dangerZones = [51, 52, 53, 55, 56, 58];
     const updatedInDangerZone = dangerZones.includes(gameState.currentLocationId);
     gameState.turn.current.inDangerZone = updatedInDangerZone;
-    
+
+    // Movimento riuscito: luogo cambiato rispetto all'inizio del turno (R1, R2)
+    gameState.turn.movedThisTurn = gameState.currentLocationId !== gameState.turn.current.location;
+
     // === APPLICA EFFETTI TEMPORALI REGISTRATI (Sprint 3.3.5) ===
     // Delega al sistema middleware: ogni effetto modifica gameState e result
     applyAllTurnEffects(gameState, result, parseResult);
@@ -692,6 +728,25 @@ export function createEngine() {
       awaitingEndConfirm: newState.awaitingEndConfirm === true,
       visitedPlaces: new Set(newState.visitedPlaces || []),
       Oggetti: newState.Oggetti ? JSON.parse(JSON.stringify(newState.Oggetti)) : [],
+      // Flag di scenario (R7): default per i salvataggi che non li contengono (es. v1.4.1 pre-#96).
+      // cassaforteScoperta: dedotto da interazioniEseguite (sposta_quadro_24 già eseguita).
+      // bastoneLiberato: dedotto da Oggetti (nei salvataggi v1.4.0 il bastone era prendibile,
+      // Attivo >= 3; se è già in inventario o altrove con Attivo >= 3 le macerie erano assenti).
+      flags: (() => {
+        const flags = { ...(newState.flags || {}) };
+        if (typeof flags.cassaforteScoperta !== 'boolean') {
+          flags.cassaforteScoperta = (newState.interazioniEseguite || []).includes('sposta_quadro_24');
+        }
+        if (typeof flags.bastoneLiberato !== 'boolean') {
+          const bastone = (newState.Oggetti || []).find((o) => o.ID === 1);
+          flags.bastoneLiberato = !!bastone && bastone.Attivo >= 3;
+        }
+        // passaggioCrollato: dedotto da visitedPlaces (salvataggi senza il flag, #117).
+        if (typeof flags.passaggioCrollato !== 'boolean') {
+          flags.passaggioCrollato = (newState.visitedPlaces || []).includes(36);
+        }
+        return flags;
+      })(),
       // Deserializzazione Set del punteggio
       punteggio: newState.punteggio ? {
         totale: newState.punteggio.totale || 0,
@@ -703,11 +758,30 @@ export function createEngine() {
         misteriRisolti: new Set()
       },
       // BUGFIX: Assicura struttura turn completa dopo caricamento
+      // Timer della guardia (R4): default 5 se il salvataggio è già alla barriera
+      guardTimer: typeof newState.guardTimer === 'number'
+        ? newState.guardTimer
+        : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? 5 : 0),
+      // Fiammiferi (R8): default per i salvataggi che non li contengono (§4.1)
+      timers: (() => {
+        const timers = { ...(newState.timers || {}) };
+        if (typeof timers.matchesLeft !== 'number') {
+          const fiammiferi = (newState.Oggetti || []).find((o) => o.ID === 36);
+          timers.matchesLeft = fiammiferi && fiammiferi.IDLuogo !== -1 ? 6 : 0;
+        }
+        if (typeof timers.matchTimer !== 'number') {
+          timers.matchTimer = 0;
+        }
+        return timers;
+      })(),
       turn: newState.turn ? {
         globalTurnNumber: newState.turn.globalTurnNumber || 0,
         totalTurnsConsumed: newState.turn.totalTurnsConsumed || 0,
         turnsInDarkness: newState.turn.turnsInDarkness || 0,
         turnsInDangerZone: newState.turn.turnsInDangerZone || 0,
+        darknessTimer: newState.turn.darknessTimer || 0,
+        openAreaTimer: newState.turn.openAreaTimer || 0,
+        movedThisTurn: newState.turn.movedThisTurn === true,
         current: newState.turn.current ? {
           parseResult: newState.turn.current.parseResult || null,
           consumesTurn: newState.turn.current.consumesTurn || false,
@@ -737,6 +811,9 @@ export function createEngine() {
         totalTurnsConsumed: 0,
         turnsInDarkness: 0,
         turnsInDangerZone: 0,
+        darknessTimer: 0,
+        openAreaTimer: 0,
+        movedThisTurn: false,
         current: {
           parseResult: null,
           consumesTurn: false,
@@ -751,6 +828,8 @@ export function createEngine() {
         }
       }
     };
+    // Campo della v1.4.0 non più usato (R4): ignorato se presente nel salvataggio
+    delete gameState.unusefulCommandsCounter;
   }
   // Funzione per impostare il luogo corrente
   function setCurrentLocation(locationId) {
@@ -817,6 +896,7 @@ export function createEngine() {
       direzioniSbloccate: { ...gameState.direzioniSbloccate },
       direzioniToggle: { ...gameState.direzioniToggle },
       sequenze: { ...gameState.sequenze },
+      flags: { ...gameState.flags },
       currentLingua: gameState.currentLingua,
       // Serializzazione nuove strutture
       punteggio: {
@@ -829,7 +909,7 @@ export function createEngine() {
       narrativePhase: gameState.narrativePhase,
       victory: gameState.victory,
       movementBlocked: gameState.movementBlocked,
-      unusefulCommandsCounter: gameState.unusefulCommandsCounter,
+      guardTimer: gameState.guardTimer,
       awaitingContinue: gameState.awaitingContinue,
       // Turn System v3.0 (Sprint 3.3.5)
       turn: {
@@ -837,6 +917,9 @@ export function createEngine() {
         totalTurnsConsumed: gameState.turn.totalTurnsConsumed,
         turnsInDarkness: gameState.turn.turnsInDarkness,
         turnsInDangerZone: gameState.turn.turnsInDangerZone,
+        darknessTimer: gameState.turn.darknessTimer,
+        openAreaTimer: gameState.turn.openAreaTimer,
+        movedThisTurn: gameState.turn.movedThisTurn,
         current: {
           parseResult: null, // Non serializzabile/non necessario
           consumesTurn: gameState.turn.current.consumesTurn,
@@ -923,6 +1006,15 @@ export function createEngine() {
         if (!gameState.interazioniEseguite.includes(req.target)) return { ok: false, prerequisito: req };
       } else if (req.tipo === 'FLAG_FALSE') {
         if (getNestedProperty(gameState, req.flag)) return { ok: false, prerequisito: req };
+      } else if (req.tipo === 'INVENTARIO_NON_PIENO') {
+        // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
+        const oggettiInInventario = (gameState.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
+        if (oggettiInInventario.length >= 5) return { ok: false, prerequisito: req };
+      } else if (req.tipo === 'DIREZIONE_APERTA') {
+        // Vero se la direzione è attualmente aperta tramite toggle (es. porta del 44, pulsante)
+        const key = `${req.luogo}_${req.direzione}`;
+        const isOpen = !!gameState.direzioniToggle[key];
+        if (!isOpen) return { ok: false, prerequisito: req };
       } else if (!PREREQUISITE_TYPES.has(req.tipo)) {
         // Tipo sconosciuto: fail-closed (prerequisito non soddisfatto), segnalato una sola volta.
         warnUnknownTypeOnce('prerequisito', req.tipo);
@@ -977,8 +1069,58 @@ export function createEngine() {
     }
   }
 
+  /**
+   * Consuma un fiammifero (R8, §4.2): usata da `accendi fiammifero` e dall'effetto
+   * CONSUMA_FIAMMIFERO (interazione `accendi_lampada`). Se la scorta si esaurisce,
+   * i Fiammiferi (ID 36) spariscono dal gioco.
+   * @returns {boolean} true se i fiammiferi sono appena finiti
+   */
+  function consumaFiammifero() {
+    if (typeof gameState.timers.matchesLeft !== 'number') {
+      gameState.timers.matchesLeft = 6;
+    }
+    gameState.timers.matchesLeft = Math.max(0, gameState.timers.matchesLeft - 1);
+    if (gameState.timers.matchesLeft === 0) {
+      const fiammiferi = gameState.Oggetti.find((o) => o.ID === 36);
+      if (fiammiferi) {
+        fiammiferi.IDLuogo = -1;
+        fiammiferi.Attivo = 0;
+        fiammiferi.Inventario = false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Gestisce `accendi fiammifero` (R8, §4.3): non è un'interazione di Interazioni.json
+   * (nessun punteggio). Ammesso se i Fiammiferi sono in inventario o nel luogo corrente.
+   */
+  function accendiFiammifero() {
+    const fiammiferi = gameState.Oggetti.find((o) =>
+      o.ID === 36 &&
+      (o.IDLuogo === 0 || o.IDLuogo === gameState.currentLocationId) &&
+      o.Attivo >= 1
+    );
+    if (!fiammiferi || !(gameState.timers.matchesLeft > 0)) {
+      return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.matches.none', gameState.currentLingua), effects: [] };
+    }
+
+    const finished = consumaFiammifero();
+    gameState.timers.matchTimer = 2;
+    let message = getSystemMessage('engine.matches.lit', gameState.currentLingua);
+    if (finished) {
+      message += '\n\n' + getSystemMessage('engine.matches.finished', gameState.currentLingua);
+    }
+    return { accepted: true, resultType: 'OK', message, effects: [] };
+  }
+
   // Funzione per applicare gli effetti di un'interazione
-  function applicaEffetti(effetti, luogoCorrente) {
+  // @param {boolean} skipMisteri - true se l'interazione ha `punteggio: false` (R7, §4.1):
+  //   nessun punto mistero per i suoi effetti
+  // @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. fiammiferi finiti)
+  function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } = {}) {
+    const extraMessages = [];
     for (const effetto of effetti) {
       // Stato precedente al toggle: variabile locale (non si scrive sui dati globali condivisi)
       let statoPreToggle;
@@ -1026,14 +1168,22 @@ export function createEngine() {
       } else if (effetto.tipo === 'RESET_COUNTER') {
         // Resetta un counter in gameState a 0 (es. "turn.turnsInDarkness")
         setNestedProperty(gameState, effetto.counter, 0);
+      } else if (effetto.tipo === 'CONSUMA_FIAMMIFERO') {
+        // R8: consumo di un fiammifero (interazione accendi_lampada)
+        if (consumaFiammifero()) {
+          extraMessages.push(getSystemMessage('engine.matches.finished', gameState.currentLingua));
+        }
       } else if (!EFFECT_TYPES.has(effetto.tipo)) {
         warnUnknownTypeOnce('effetto', effetto.tipo);
       }
       
       // === SISTEMA PUNTEGGIO MISTERI ===
-      // Assegna +3 punti se questo effetto risolve un mistero
-      assegnaPunteggioMistero(effetto, { statoPreToggle });
+      // Assegna +3 punti se questo effetto risolve un mistero (non per punteggio: false, §4.1)
+      if (!skipMisteri) {
+        assegnaPunteggioMistero(effetto, { statoPreToggle });
+      }
     }
+    return extraMessages;
   }
 
   // Funzione per cercare e eseguire un'interazione
@@ -1053,7 +1203,7 @@ export function createEngine() {
         
         // Verifica se già eseguita (se non ripetibile)
         if (!interazione.ripetibile && gameState.interazioniEseguite.includes(interazione.id)) {
-          const messaggio = interazione.risposta_gia_eseguita || "Non c'è bisogno di farlo di nuovo.";
+          const messaggio = interazione.risposta_gia_eseguita || getSystemMessage('engine.interaction.alreadyDone', gameState.currentLingua);
           return { accepted: true, resultType: 'OK', message: messaggio, effects: [] };
         }
         
@@ -1142,19 +1292,26 @@ export function createEngine() {
         
         // === SISTEMA PUNTEGGIO: Assegna +2 punti PRIMA di applicare effetti ===
         // Importante: deve avvenire PRIMA di applicaEffetti() perché VITTORIA imposta ended=true
-        if (!gameState.punteggio.interazioniPunteggio.has(interazione.id)) {
+        // Campo `punteggio` (R7, §4.1): assente -> chiave = id; stringa -> chiave condivisa
+        // con l'interazione indicata; false -> nessun +2 (e nessun mistero, vedi applicaEffetti)
+        const punteggioSkip = interazione.punteggio === false;
+        const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
+        if (!punteggioSkip && !gameState.punteggio.interazioniPunteggio.has(chiavePunteggio)) {
           gameState.punteggio.totale += 2;
-          gameState.punteggio.interazioniPunteggio.add(interazione.id);
+          gameState.punteggio.interazioniPunteggio.add(chiavePunteggio);
         }
-        
+
         // Segna come eseguita
         if (!interazione.ripetibile) {
           gameState.interazioniEseguite.push(interazione.id);
         }
-        
+
         // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-        applicaEffetti(interazione.effetti, interazione.condizioni.luogo);
-        
+        const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo, { skipMisteri: punteggioSkip });
+        if (extraMessages.length > 0) {
+          risposta = risposta + '\n\n' + extraMessages.join('\n\n');
+        }
+
         // Verifica se è VITTORIA per aggiungere flag ended nella risposta
         const hasVittoriaEffect = interazione.effetti.some(e => e.tipo === 'VITTORIA');
         const resultBase = { 
@@ -1251,7 +1408,42 @@ export function createEngine() {
           const direzioni = getDirezioniLuogo(currentId);
           const nextId = direzioni?.[directionField];
 
+          // Passaggio crollato (32 → 36): nell'originale il crollo avviene una sola
+          // volta (BAS 330–340, 5160–5210); dopo, il passaggio resta bloccato (#117).
+          if (currentId === 32 && directionField === 'Sud') {
+            if (gameState.flags.passaggioCrollato) {
+              return {
+                accepted: true,
+                resultType: 'ERROR',
+                message: getSystemMessage('engine.move.passageCollapsedBlocked', gameState.currentLingua),
+                effects: [],
+              };
+            }
+            gameState.flags.passaggioCrollato = true;
+            setCurrentLocation(36);
+            return {
+              accepted: true,
+              resultType: 'OK',
+              message: getSystemMessage('engine.move.passageCollapses', gameState.currentLingua),
+              effects: [],
+              locationId: 36,
+              showLocation: true,
+            };
+          }
+
           if (typeof nextId !== 'number' || nextId < 1) {
+            // Movimenti bloccati con un testo dedicato dell'originale (#109, L3, §4.7–4.9):
+            // sostituiscono il messaggio generico solo in quei luoghi e condizioni; il
+            // turno si consuma comunque, come per ogni movimento bloccato.
+            if (currentId === 1 && directionField === 'Ovest') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.leaveHouseWest', gameState.currentLingua), effects: [] };
+            }
+            if (currentId === 44 && directionField === 'Est') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.doorClosedPassage', gameState.currentLingua), effects: [] };
+            }
+            if (currentId === 49 && directionField === 'Ovest') {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.rubbleBlocksWest', gameState.currentLingua), effects: [] };
+            }
             return {
               accepted: true,
               resultType: 'ERROR',
@@ -1340,7 +1532,173 @@ export function createEngine() {
           const concept = (parseResult.VerbConcept || '').toUpperCase();
           // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
           const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
-          
+          // Regola generale dei nomi senza oggetto (#109, L3, TD v1.1 §4.10): sostituisce
+          // l'elenco fisso DESTRA/SINISTRA/PORTA di L2a. Se il nome non corrisponde a
+          // un oggetto nei dati (in nessun luogo: direzioni, stati come "porta", o i
+          // nomi nuovi di questo lotto come GUARDIA, MANOPOLA, LUOGO), si mostra la
+          // parola effettivamente digitata dal giocatore (NounLiteral: minuscolo, senza
+          // parole vuote; per i nomi composti le parole digitate), non CanonicalNoun
+          // (che per i concetti con più sinonimi nella lingua corrente è la voce
+          // alfabeticamente minore, non necessariamente quella digitata — R1 Fase 1A).
+          // Se invece l'oggetto esiste altrove (es. "arazzo in pessime condizioni",
+          // "flashlight"), resta il nome dell'oggetto come oggi (NounConcept, già
+          // localizzato per i nomi con oggetto, L2b).
+          const esisteComeOggettoOvunque = (gameState.Oggetti || []).some(
+            (o) => normalizeForComparison(o.Oggetto) === normalizeForComparison(noun)
+          );
+          const nounForMissingObject = esisteComeOggettoOvunque
+            ? noun.toLowerCase().replace(/_/g, ' ')
+            : (parseResult.NounLiteral || noun.toLowerCase().replace(/_/g, ' '));
+
+          // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato.
+          // CARICARE con un nome (#98, L2b): equivale a METTERE (es. "carica peso"), quindi
+          // bloccato al buio come METTERE; la forma "carica" da sola è un comando di SISTEMA
+          // e non passa da questo case, quindi il caricamento della partita non è mai bloccato.
+          if ((DARK_BLOCKED_VERBS.has(concept) || concept === 'CARICARE') && !hasFonteLuceAttiva()) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dark.tooDark', gameState.currentLingua), effects: [] };
+          }
+
+          // ACCENDI FIAMMIFERO (R8): gestito dal motore, non come interazione (nessun punteggio)
+          const fiammiferiRecord = gameState.Oggetti.find((o) => o.ID === 36);
+          if (concept === 'ACCENDERE' && fiammiferiRecord &&
+              normalizeForComparison(fiammiferiRecord.Oggetto) === normalizeForComparison(noun)) {
+            return accendiFiammifero();
+          }
+
+          // === Verbi e risposte dell'originale (L2b, #109) senza interazione dedicata ===
+          // CARICA/LOAD con PESO/PESA (#98, precisazione 1): stesso esito di METTERE PESO,
+          // usando l'interazione esistente carica_pesa_57 (stesso id, stesso punteggio una
+          // sola volta); senza il peso in inventario, risposta dedicata. Con altri nomi,
+          // "carica" resta un'azione senza effetto (nessun intervento qui).
+          if (concept === 'CARICARE' && (noun === 'PESO' || noun === 'PESA' || noun === 'WEIGHT' || noun === 'SCALE')) {
+            if (gameState.currentLocationId === 57) {
+              const pesoLocalizzato = gameState.currentLingua === 1 ? 'PESO' : 'WEIGHT';
+              // L'interazione già eseguita (es. prima con "metti peso") ha spostato il
+              // peso dall'inventario (IDLuogo 0) al luogo 57: va riconosciuta come già
+              // fatta a prescindere da dove sia ora il peso, non solo quando è ancora in
+              // inventario (altrimenti "carica peso" dopo "metti peso" risponderebbe
+              // erroneamente "serve un peso" invece di "non c'è bisogno di farlo di nuovo").
+              if (gameState.interazioniEseguite.includes('carica_pesa_57')) {
+                const risultatoCarica = cercaEseguiInterazione('METTERE', pesoLocalizzato);
+                if (risultatoCarica) return risultatoCarica;
+              }
+              const pesoInInventario = gameState.Oggetti.some((o) =>
+                normalizeForComparison(o.Oggetto) === pesoLocalizzato && o.IDLuogo === 0 && o.Attivo >= 3
+              );
+              if (!pesoInInventario) {
+                return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.load.scaleNeedsWeight', gameState.currentLingua), effects: [] };
+              }
+              const risultatoCarica = cercaEseguiInterazione('METTERE', pesoLocalizzato);
+              if (risultatoCarica) return risultatoCarica;
+            }
+            // Altrove: prosegue con l'elaborazione standard (nessun effetto, D2 generico).
+          }
+          // SPEGNI (con o senza nome): risposta fissa decisa (R9, inventario §1.2).
+          if (concept === 'SPEGNERE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.spegni.notTime', gameState.currentLingua), effects: [] };
+          }
+          // SCAPPA (D7): stessa risposta sempre.
+          if (concept === 'SCAPPARE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.scappa.cantEscape', gameState.currentLingua), effects: [] };
+          }
+          // SORRIDI: stessa risposta sempre (con o senza nome, come già l'originale).
+          if (concept === 'SORRIDERE') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.sorridi.cheese', gameState.currentLingua), effects: [] };
+          }
+          // DORMI, SIEDITI (D7): stessa risposta con o senza nome; sostituisce la risposta
+          // generica "Cosa vuoi dormire?" ereditata dal lotto L2a.
+          if (concept === 'DORMIRE' || concept === 'SEDERSI') {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dormi.noTimeToWaste', gameState.currentLingua), effects: [] };
+          }
+          // PARLA, RISPONDI: stessa risposta ovunque tranne alla barriera (59).
+          if (concept === 'PARLARE') {
+            const chiave = gameState.currentLocationId === 59 ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
+            return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+          }
+          // === Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109) ===
+          // ATTACCA (4.2): con o senza nome, solo alla barriera (59) -> morte (GUARD_ATTACK,
+          // come l'arresto della guardia, nessun effetto sul punteggio). Fuori dalla
+          // barriera (E1): nessun testo nuovo, prosegue con l'elaborazione standard
+          // (risposta generica del porting, come ogni altro verbo senza effetto).
+          if (concept === 'ATTACCARE' && gameState.currentLocationId === 59) {
+            gameState.awaitingRestart = true;
+            return {
+              accepted: false,
+              resultType: 'GAME_OVER',
+              message: getSystemMessage('engine.attack.guardStrikes', gameState.currentLingua),
+              gameOver: true,
+              gameOverReason: 'GUARD_ATTACK',
+              effects: [],
+            };
+          }
+          // ACCENDI senza nome, o ACCENDI LUCE: prima fonte applicabile (torcia, poi
+          // fiammifero, poi lampada); nessuna fonte -> risposta dedicata.
+          if (concept === 'ACCENDERE' && (!noun || noun === 'LUCE')) {
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const torciaConTe = !!torciaRecord && torciaRecord.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
+            if (torciaConTe) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.torch.alreadyLit', gameState.currentLingua), effects: [] };
+            }
+            const fiammiferiDisponibili = fiammiferiRecord &&
+              (fiammiferiRecord.IDLuogo === 0 || fiammiferiRecord.IDLuogo === gameState.currentLocationId) &&
+              fiammiferiRecord.Attivo >= 1 && gameState.timers.matchesLeft > 0;
+            if (fiammiferiDisponibili) {
+              return accendiFiammifero();
+            }
+            const lampadaConTe = gameState.Oggetti.some((o) => o.ID === 27 && o.IDLuogo === 0 && o.Attivo >= 3);
+            if (lampadaConTe) {
+              const lampadaLocalizzata = gameState.currentLingua === 1 ? 'LAMPADA' : 'LAMP';
+              const risultatoLampada = cercaEseguiInterazione('ACCENDERE', lampadaLocalizzata);
+              if (risultatoLampada) return risultatoLampada;
+            }
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.light.noSourceHere', gameState.currentLingua), effects: [] };
+          }
+          // ACCENDI TORCIA: stato dedicato (nel luogo ma non con te, con te funzionante, con te guasta).
+          // NounConcept per i nomi (tipo NOUN) in EN non è il concetto italiano ma il nome
+          // localizzato dell'oggetto (parser.js, localizedNounConceptByTerm): "FLASHLIGHT",
+          // non "TORCIA_ELETTRICA".
+          const torciaElettricaLocalizzata = gameState.currentLingua === 1 ? 'TORCIA_ELETTRICA' : 'FLASHLIGHT';
+          if (concept === 'ACCENDERE' && noun === torciaElettricaLocalizzata) {
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const conTe = !!torciaRecord && torciaRecord.IDLuogo === 0;
+            const nelLuogo = !!torciaRecord && torciaRecord.IDLuogo === gameState.currentLocationId;
+            if (conTe) {
+              const chiave = gameState.timers.torciaDifettosa ? 'engine.torch.broken' : 'engine.torch.alreadyLit';
+              return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+            }
+            if (nelLuogo) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.torch.takeFirst', gameState.currentLingua), effects: [] };
+            }
+            // Altrimenti (torcia non qui): prosegue con l'elaborazione standard sotto.
+          }
+          // SCAVA: senza nome (o con "macerie" dove non esiste un'interazione dedicata),
+          // risposte dell'originale per luogo.
+          if (concept === 'SCAVARE') {
+            const macerieLocalizzata = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
+            const senzaNomeOMacerie = !noun || noun === macerieLocalizzata;
+            if (senzaNomeOMacerie) {
+              const LUOGHI_SCAVA_MACERIE_DELEGATA = new Set([11, 49]);
+              if (!noun && LUOGHI_SCAVA_MACERIE_DELEGATA.has(gameState.currentLocationId)) {
+                const risultatoScava = cercaEseguiInterazione('SCAVARE', macerieLocalizzata);
+                if (risultatoScava) return risultatoScava;
+              }
+              if (gameState.currentLocationId === 32 || gameState.currentLocationId === 36) {
+                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+                if (!haBadile) {
+                  return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dig.bareHandsNoTool', gameState.currentLingua), effects: [] };
+                }
+                const chiave = gameState.currentLocationId === 36 ? 'engine.dig.noPassageNorth' : 'engine.dig.digging';
+                return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+              }
+              if (!noun) {
+                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+                const chiave = haBadile ? 'engine.dig.digging' : 'engine.dig.noToolHere';
+                return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+              }
+              // Nome "macerie" altrove, senza interazione dedicata: prosegue con l'elaborazione standard.
+            }
+          }
+
           // PRIORITÀ 1: Cerca interazioni custom nel file Interazioni.json
           // Usa il VerbConcept (significato semantico) invece del CanonicalVerb (forma)
           if (noun && concept) {
@@ -1352,11 +1710,30 @@ export function createEngine() {
           
           // PRIORITÀ 2: Gestione standard degli oggetti
           // Verifica se l'oggetto è presente nel luogo corrente o nell'inventario
-          const oggetto = (gameState.Oggetti || []).find(obj => 
-            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) && 
+          const oggetto = (gameState.Oggetti || []).find(obj =>
+            normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) &&
             (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
             obj.Attivo >= 1
           );
+          // GIRA/RUOTA DESTRA/SINISTRA (D4): fuori dalla biblioteca, o in biblioteca con la
+          // cassaforte non visibile, le interazioni dedicate (PRIORITÀ 1) non hanno risposto.
+          if (concept === 'RUOTARE' && (noun === 'DESTRA' || noun === 'SINISTRA')) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.nothingToTurn', gameState.currentLingua), effects: [] };
+          }
+          // GIRA/RUOTA MANOPOLA (E3, L3, #109): solo con la cassaforte visibile (dopo
+          // "sposta quadro"/"prendi quadro"), in biblioteca (24). Senza cassaforte visibile:
+          // prosegue con l'elaborazione standard, che dà "Non vedi manopola qui." (nessun
+          // oggetto MANOPOLA nei dati, §4.10 generale).
+          if (concept === 'RUOTARE' && noun === 'MANOPOLA' && gameState.currentLocationId === 24 && gameState.flags.cassaforteScoperta) {
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.knobPoints', gameState.currentLingua), effects: [] };
+          }
+          // MUOVI/SPOSTA senza interazione dedicata (D3): solo se l'oggetto è presente,
+          // altrimenti il comportamento di oggi (oggetto non qui) resta invariato.
+          if ((concept === 'SPOSTARE' || verb === 'MUOVI' || verb === 'SPOSTA') && noun && oggetto) {
+            const trasportabile = oggetto.Attivo >= 3 || oggetto.ID === 3 || oggetto.ID === 33;
+            const chiave = trasportabile ? 'engine.move.nothingHappens' : 'engine.move.notPossible';
+            return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
+          }
           // ESAMINA / GUARDA
           if (concept === 'ESAMINARE' || concept === 'GUARDARE' || verb === 'ESAMINA' || verb === 'GUARDA') {
             // Senza oggetto: mostra descrizione del luogo corrente con oggetti presenti
@@ -1367,14 +1744,41 @@ export function createEngine() {
               }
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
             }
+            // 4.6 (#109, L3): esamina/guarda + nome di luogo, ovunque, come guarda da
+            // solo (BAS 5520: nessun testo dedicato, ripresenta il luogo).
+            if (noun === 'LUOGO') {
+              const messaggioCompleto = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
+              if (messaggioCompleto) {
+                return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: [] };
+              }
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua), effects: [] };
+            }
+            // 4.1 (#109, L3): esamina/guarda guardia/uomo, solo alla barriera (59).
+            // Altrove: nessun oggetto GUARDIA nei dati, prosegue con l'elaborazione
+            // standard (§4.10 generale: "Non vedi guardia qui.").
+            if (noun === 'GUARDIA' && gameState.currentLocationId === 59) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.guard', gameState.currentLingua), effects: [] };
+            }
+            // 4.4 (#109, L3, E2): oggetti scenici del gioco originale, senza controllo
+            // di presenza (azione sempre valida, come nel BAS).
+            const OGGETTI_SCENICI_SENZA_PRESENZA = new Set(['FILO_SPINATO', 'ARREDAMENTO', 'ELEVATORE', 'PARETE']);
+            if (OGGETTI_SCENICI_SENZA_PRESENZA.has(noun)) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
+            }
+            // 4.5 (#109, L3): macerie ai luoghi 11, 32, 36 (al 49 resta la descrizione
+            // dell'oggetto, invariata: non toccata da questo blocco).
+            const macerieLocalizzataPerEsamina = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
+            if (noun === macerieLocalizzataPerEsamina && [11, 32, 36].includes(gameState.currentLocationId)) {
+              return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
+            }
             // Con oggetto: mostra descrizione dell'oggetto
-            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
-            const text = oggetto.descrizione || 'Non noti nulla di particolare.';
+            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
+            const text = oggetto.descrizione || getSystemMessage('engine.examine.nothingSpecial', gameState.currentLingua);
             return { accepted: true, resultType: 'OK', message: text, effects: [] };
           }
           // APRI / CHIUDI (elementi apribili)
           if (concept === 'APRIRE' || concept === 'CHIUDERE' || verb === 'APRI' || verb === 'CHIUDI') {
-            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            if (!oggetto) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
             const canOpen = Object.prototype.hasOwnProperty.call(gameState.openStates, noun);
             if (!canOpen) return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.openClose.cannotDo', gameState.currentLingua, [verb.toLowerCase(), noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
             const openNow = !!gameState.openStates[noun];
@@ -1411,7 +1815,7 @@ export function createEngine() {
               oggetto.IDLuogo = 0; // Sposta nell'inventario
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
           if (concept === 'POSARE' || concept === 'LASCIARE' || verb === 'POSA' || verb === 'LASCIA') {
             // Trova l'oggetto nell'inventario
@@ -1425,7 +1829,7 @@ export function createEngine() {
               oggetto.IDLuogo = gameState.currentLocationId; // Sposta nel luogo corrente
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.success', gameState.currentLingua, [oggetto.Oggetto]), effects: [] };
             }
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.notInInventory', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.drop.notInInventory', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
           // Altri verbi: verifica se richiedono oggetto
           if (!noun) {
@@ -1433,22 +1837,8 @@ export function createEngine() {
           }
           // PRIORITÀ: Verifica esistenza oggetto prima di dire che l'azione non è possibile
           if (!oggetto) {
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [noun.toLowerCase().replace(/_/g, ' ')]), effects: [] };
+            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.objectNotHere', gameState.currentLingua, [nounForMissingObject]), effects: [] };
           }
-          // === SISTEMA GUARDIA (Sprint 3.3.5.D) ===
-          // Al luogo 59 in attesa comando corretto, incrementa counter comandi inappropriati
-          if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' && 
-              gameState.currentLocationId === 59) {
-            gameState.unusefulCommandsCounter++;
-            return {
-              accepted: true,
-              resultType: 'OK',
-              message: getSystemMessage('narrative.command.useless', gameState.currentLingua),
-              effects: [],
-              showLocation: false
-            };
-          }
-          
           // Altri verbi: risposta generica user-friendly (oggetto presente, azione non supportata)
           return {
             accepted: true,
@@ -1489,6 +1879,10 @@ export function createEngine() {
     // Phase 2: Run pre-execution checks (ACTIVE - Sprint 3.3.5.B: awaitingRestart)
     const preCheck = runPreExecutionChecks(parseResult);
     if (preCheck) {
+      // Il movimento bloccato alla barriera consuma comunque un turno (R4, #107)
+      if (shouldConsumeTurn(parseResult)) {
+        applyTurnEffects(preCheck, parseResult);
+      }
       if (debugEnabled) {
         pushEngineDebugEvent({
           kind: 'EXECUTE_COMMAND_BLOCKED',
@@ -1508,7 +1902,8 @@ export function createEngine() {
     const result = executeCommandLegacy(parseResult);
 
     // Phase 4: Apply turn effects (ACTIVE - Sprint 3.3.5.A: torch, 3.3.5.B: darkness)
-    if (result.accepted && shouldConsumeTurn(parseResult)) {
+    // Gli effetti si applicano a ogni comando che consuma un turno, accettato o no (#107)
+    if (shouldConsumeTurn(parseResult)) {
       const finalResult = applyTurnEffects(result, parseResult);
       if (debugEnabled) {
         const debugAfter = getDebugStateSnapshot();

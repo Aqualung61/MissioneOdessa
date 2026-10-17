@@ -16,6 +16,7 @@ export const INTERACTION_TOP_LEVEL_KEYS = new Set([
   'risposta_completa',
   'risposta_errore',
   'risposta_gia_eseguita',
+  'punteggio',
 ]);
 
 export const PREREQUISITE_TYPES = new Set([
@@ -25,9 +26,11 @@ export const PREREQUISITE_TYPES = new Set([
   'SEQUENZA_COMPLETATA',
   'INTERAZIONE_ESEGUITA',
   'FLAG_FALSE',
+  'INVENTARIO_NON_PIENO',
+  'DIREZIONE_APERTA',
 ]);
 
-export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'flag', 'risposta']);
+export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'direzione', 'flag', 'risposta']);
 
 // Campi obbligatori per tipo di prerequisito.
 export const PREREQUISITE_REQUIRED_FIELDS = {
@@ -37,6 +40,8 @@ export const PREREQUISITE_REQUIRED_FIELDS = {
   SEQUENZA_COMPLETATA: ['target'],
   INTERAZIONE_ESEGUITA: ['target'],
   FLAG_FALSE: ['flag'],
+  INVENTARIO_NON_PIENO: [],
+  DIREZIONE_APERTA: ['luogo', 'direzione'],
 };
 
 export const EFFECT_TYPES = new Set([
@@ -48,6 +53,7 @@ export const EFFECT_TYPES = new Set([
   'SET_FLAG',
   'RESET_COUNTER',
   'VITTORIA',
+  'CONSUMA_FIAMMIFERO',
 ]);
 
 function prerequisitesOf(record) {
@@ -106,6 +112,22 @@ export function validateInterazioni(records) {
     byLang.get(record?.IDLingua).set(record?.id, record);
   }
 
+  // Validazione di `punteggio`: `false` oppure stringa che riferisce un id esistente nella stessa lingua.
+  for (const record of records) {
+    const where = `[${record?.id ?? '?'} / lingua ${record?.IDLingua ?? '?'}]`;
+    if (record?.punteggio === undefined) continue;
+    if (record.punteggio !== false && typeof record.punteggio !== 'string') {
+      errors.push(`${where} punteggio deve essere false o una stringa`);
+      continue;
+    }
+    if (typeof record.punteggio === 'string') {
+      const idsStessaLingua = byLang.get(record.IDLingua);
+      if (!idsStessaLingua || !idsStessaLingua.has(record.punteggio)) {
+        errors.push(`${where} punteggio riferisce un id inesistente nella stessa lingua: ${record.punteggio}`);
+      }
+    }
+  }
+
   // Coerenza IT/EN: stessi id; per ogni id, stessi tipi nello stesso ordine; risposta presente in entrambe.
   const langs = [...byLang.keys()];
   if (langs.length > 1) {
@@ -139,6 +161,9 @@ export function validateInterazioni(records) {
         const effB = effectsOf(b).map((e) => e?.tipo).join(',');
         if (effA !== effB) {
           errors.push(`[${id}] tipi di effetto diversi tra lingue ${baseLang} e ${lang}: ${effA} / ${effB}`);
+        }
+        if (a?.punteggio !== b?.punteggio) {
+          errors.push(`[${id}] punteggio diverso tra lingue ${baseLang} e ${lang}: ${JSON.stringify(a?.punteggio)} / ${JSON.stringify(b?.punteggio)}`);
         }
       }
     }

@@ -30,7 +30,9 @@ describe('Parser REQ01 - casi base', () => {
     const res = await parseCommand(null, 'DORMI');
     expect(res.IsValid).toBe(true);
     expect(res.CommandType).toBe('ACTION');
-    expect(res.CanonicalVerb).toBe('DORMI');
+    // Aggiornato per #109 (lotto L2a): la forma canonica è l'infinito (DORMIRE),
+    // ora voce registrata della lingua corrente (TD Lessico L2 risposte e testi, §4.2 c).
+    expect(res.CanonicalVerb).toBe('DORMIRE');
   });
 
   it('NAVIGATION: N => valido', async () => {

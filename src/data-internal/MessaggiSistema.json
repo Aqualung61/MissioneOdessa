@@ -470,6 +470,126 @@
     "Messaggio": "💀 DEATH IN THE DARK\n\nMoving in the dark is dangerous: you stumble on debris and fall, breaking your neck. You are dead!"
   },
   {
+    "Chiave": "engine.dark.tooDark",
+    "IDLingua": 1,
+    "Messaggio": "È troppo buio per farlo."
+  },
+  {
+    "Chiave": "engine.dark.tooDark",
+    "IDLingua": 2,
+    "Messaggio": "It's too dark to do that."
+  },
+  {
+    "Chiave": "timer.darkness.warning",
+    "IDLingua": 1,
+    "Messaggio": "È pericoloso muoversi senza luce."
+  },
+  {
+    "Chiave": "timer.darkness.warning",
+    "IDLingua": 2,
+    "Messaggio": "It's dangerous to move without light."
+  },
+  {
+    "Chiave": "timer.openArea.warning",
+    "IDLingua": 1,
+    "Messaggio": "Restare a lungo fermi in un posto all'aperto può essere pericoloso."
+  },
+  {
+    "Chiave": "timer.openArea.warning",
+    "IDLingua": 2,
+    "Messaggio": "Standing still for too long in an open area can be dangerous."
+  },
+  {
+    "Chiave": "timer.dawn.warning30",
+    "IDLingua": 1,
+    "Messaggio": "Hai ancora poco tempo prima che sorga l'alba! Sbrigati."
+  },
+  {
+    "Chiave": "timer.dawn.warning30",
+    "IDLingua": 2,
+    "Messaggio": "You have little time left before dawn! Hurry."
+  },
+  {
+    "Chiave": "timer.dawn.warning15",
+    "IDLingua": 1,
+    "Messaggio": "Sono quasi le sei: tra poco sorge l'alba!"
+  },
+  {
+    "Chiave": "timer.dawn.warning15",
+    "IDLingua": 2,
+    "Messaggio": "It's almost six: dawn will soon break!"
+  },
+  {
+    "Chiave": "timer.dawn.warning5",
+    "IDLingua": 1,
+    "Messaggio": "Sono le sei passate e sei in pericolo!"
+  },
+  {
+    "Chiave": "timer.dawn.warning5",
+    "IDLingua": 2,
+    "Messaggio": "It's past six and you are in danger!"
+  },
+  {
+    "Chiave": "timer.dawn.death.house",
+    "IDLingua": 1,
+    "Messaggio": "💀 SORPRESO ALL'ALBA\n\nSenti dei passi: qualcuno ti colpisce improvvisamente alle spalle. Quando rinvieni ti trovi circondato da tre persone: sono membri dell'ODESSA che ti hanno sorpreso dopo il sorgere dell'alba ancora all'interno della casa, e tu sai che significa..."
+  },
+  {
+    "Chiave": "timer.dawn.death.house",
+    "IDLingua": 2,
+    "Messaggio": "💀 CAUGHT AT DAWN\n\nYou hear footsteps: someone suddenly strikes you from behind. When you come to, you find yourself surrounded by three people: they are members of ODESSA who caught you still inside the house after dawn, and you know what that means..."
+  },
+  {
+    "Chiave": "timer.dawn.death.outdoor",
+    "IDLingua": 1,
+    "Messaggio": "💀 SCORTO ALL'ALBA\n\nAll'improvviso senti delle voci: una pattuglia russa ti ha scorto con le prime luci dell'alba. Non ci pensano troppo: senti la raffica dei mitra come un rumore sgradevole nel silenzio del mattino. Prima di morire riesci a vedere due soldati che si congratulano per il tiro..."
+  },
+  {
+    "Chiave": "timer.dawn.death.outdoor",
+    "IDLingua": 2,
+    "Messaggio": "💀 SPOTTED AT DAWN\n\nSuddenly you hear voices: a Russian patrol has spotted you in the first light of dawn. They don't think twice: you hear the burst of submachine-gun fire, an unpleasant noise in the silence of the morning. Before you die, you see two soldiers congratulating each other on the shot..."
+  },
+  {
+    "Chiave": "timer.guard.warning1",
+    "IDLingua": 1,
+    "Messaggio": "La guardia ti osserva con sospetto: a quest'ora del mattino è strano vedere una persona sul confine dei settori."
+  },
+  {
+    "Chiave": "timer.guard.warning1",
+    "IDLingua": 2,
+    "Messaggio": "The guard eyes you suspiciously: at this hour of the morning it is strange to see someone at the sector border."
+  },
+  {
+    "Chiave": "timer.guard.warning2",
+    "IDLingua": 1,
+    "Messaggio": "La guardia ti rivolge una domanda in russo; probabilmente vuole che ti qualifichi."
+  },
+  {
+    "Chiave": "timer.guard.warning2",
+    "IDLingua": 2,
+    "Messaggio": "The guard asks you something in Russian; he probably wants you to identify yourself."
+  },
+  {
+    "Chiave": "timer.guard.warning3",
+    "IDLingua": 1,
+    "Messaggio": "La guardia, spazientita, si muove verso di te imbracciando il fucile."
+  },
+  {
+    "Chiave": "timer.guard.warning3",
+    "IDLingua": 2,
+    "Messaggio": "The guard, losing patience, moves towards you, raising his rifle."
+  },
+  {
+    "Chiave": "timer.guard.arrest",
+    "IDLingua": 1,
+    "Messaggio": "💀 ARRESTATO\n\nLa guardia ti spinge contro un muro e ti perquisisce accuratamente. Poi ti conduce verso una garitta nei pressi: sei in arresto. Non hai via di scampo. Scopriranno chi sei e questo potrebbe anche permettere loro di risalire a Ferenc. Hai fallito nella missione."
+  },
+  {
+    "Chiave": "timer.guard.arrest",
+    "IDLingua": 2,
+    "Messaggio": "💀 ARRESTED\n\nThe guard pushes you against a wall and searches you thoroughly. Then he leads you to a sentry box nearby: you are under arrest. There is no way out. They will find out who you are, and this might even lead them to Ferenc. You have failed the mission."
+  },
+  {
     "Chiave": "game.terminal.location",
     "IDLingua": 1,
     "Messaggio": "Hai raggiunto un luogo terminale."
@@ -482,32 +602,22 @@
   {
     "Chiave": "game.intercept.death",
     "IDLingua": 1,
-    "Messaggio": "💀 INTERCETTATO DALLA PATTUGLIA SOVIETICA\n\nHai trascorso troppo tempo nelle zone pericolose. Una pattuglia sovietica ti ha intercettato e identificato come intruso. Sei stato catturato!"
+    "Messaggio": "💀 SCORTO DA UNA RONDA\n\nSei stato scorto da una ronda russa che ti arresta come spia. Una fine ingloriosa!"
   },
   {
     "Chiave": "game.intercept.death",
     "IDLingua": 2,
-    "Messaggio": "💀 INTERCEPTED BY SOVIET PATROL\n\nYou spent too much time in dangerous zones. A Soviet patrol has intercepted and identified you as an intruder. You have been captured!"
-  },
-  {
-    "Chiave": "game.over.tooLate",
-    "IDLingua": 1,
-    "Messaggio": "💀 HAI IMPIEGATO TROPPO TEMPO\n\nHai impiegato troppo tempo. Sta albeggiando e vieni scoperto da una pattuglia sovietica. Sei catturato."
-  },
-  {
-    "Chiave": "game.over.tooLate",
-    "IDLingua": 2,
-    "Messaggio": "💀 YOU TOOK TOO LONG\n\nYou took too long. Dawn is breaking and you are spotted by a Soviet patrol. You are captured."
+    "Messaggio": "💀 SPOTTED BY A PATROL\n\nYou have been spotted by a Russian patrol, which arrests you as a spy. An inglorious end!"
   },
   {
     "Chiave": "victory.phase1a",
     "IDLingua": 1,
-    "Messaggio": "\nTi inoltri nell'atrio con la torcia che proietta ombre danzanti sulle pareti di marmo. La tua figura si staglia contro il buio mentre avanzi con determinazione. All'improvviso, una voce familiare ti ferma:\n— «Aspetta! Sei tu... ce l'hai fatta!»\nÈ Ferenc, il tuo contatto segreto. Si avvicina rapidamente, lo sguardo vigile verso le ombre.\n— «Non abbiamo molto tempo. Mi servono i documenti che hai recuperato. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB. Poi devo portarti al confine.»\nGli porgi i tre documenti. Ferenc li nasconde rapidamente sotto il cappotto.\n— «Perfetto. Ora seguimi. Ho una jeep che ci aspetta fuori. Destinazione: settore americano.»\nLa jeep sfreccia nelle strade deserte di Berlino, i fari che tagliano l'oscurità della notte. Ferenc guida con sicurezza, evitando le pattuglie sovietiche con una precisione che tradisce anni di esperienza.\n— «Hai fatto un lavoro incredibile,» dice Ferenc mentre svolta in una strada laterale. «Quei documenti che mi hai consegnato sono fondamentali per l'operazione. Il fascicolo dell'ufficio personale, la lista di servizio e il dossier KGB... con questi possiamo smantellare la rete di spionaggio.»\nLa jeep rallenta. Davanti a voi, illuminata da potenti riflettori, si staglia la barriera del settore americano.\n— «Ci siamo. Ora tocca a te. Hai ancora quei documenti personali che ti ho dato? Mostrali alla guardia. Lei sa cosa fare.»\nFerenc ti stringe la mano con forza.\n— «Buona fortuna, agente. L'America ti aspetta dall'altra parte.»"
+    "Messaggio": "Da un angolo sbuca Ferenc.\n— «Sono felice di rivederti, Liebermann. Vedo che hai i documenti; molto bene. Herr Wiesenthal saprà farne buon uso.»\nFerenc prende i documenti che tu gli porgi e velocemente gli dà un'occhiata. Si infila le carte in una logora borsa.\n— «Seguimi senza far rumore: sta per albeggiare e bisogna far presto.»\nApre la porta con cautela e uscite insieme dalla casa.\n\nFai fatica a tenere il suo passo svelto, tipico della persona che deve sempre fare in fretta e di nascosto. Dopo qualche minuto, in cui avete girato per vie secondarie, passato reticolati ed evitato posti di blocco, si arresta e te ne indica uno più avanti.\n— «Io sono arrivato. Quella è la barriera col settore americano: fai l'indifferente e vedrai che a quest'ora passerai senza problemi. Poi prosegui per l'aeroporto: ti aspettano. Io provvederò alla consegna dei documenti. Addio.»\nLo guardi scomparire velocemente nel dedalo di strade alle tue spalle, tenendosi stretta la sua borsa logora."
   },
   {
     "Chiave": "victory.phase1a",
     "IDLingua": 2,
-    "Messaggio": "\nYou walk into the lobby with your torch casting dancing shadows on the marble walls. Your figure stands out against the darkness as you advance with determination. Suddenly, a familiar voice stops you:\n— \"Wait! It's you... you made it!\"\nIt's Ferenc, your secret contact. He approaches quickly, his gaze alert to the shadows.\n— \"We don't have much time. I need the documents you recovered. The personnel office file, the service list, and the KGB dossier. Then I must take you to the border.\"\nYou hand him the three documents. Ferenc quickly hides them under his coat.\n— \"Perfect. Now follow me. I have a jeep waiting outside. Destination: American sector.\"\nThe jeep speeds through Berlin's deserted streets, its headlights cutting through the darkness of the night. Ferenc drives confidently, avoiding Soviet patrols with a precision that betrays years of experience.\n— \"You did an incredible job,\" Ferenc says as he turns into a side street. \"Those documents you gave me are fundamental to the operation. The personnel office file, the service list, and the KGB dossier... with these we can dismantle the spy network.\"\nThe jeep slows down. Before you, illuminated by powerful spotlights, stands the American sector barrier.\n— \"We're here. Now it's your turn. Do you still have those personal documents I gave you? Show them to the guard. She knows what to do.\"\nFerenc shakes your hand firmly.\n— \"Good luck, agent. America awaits you on the other side.\""
+    "Messaggio": "Ferenc steps out from a corner.\n— \"I'm glad to see you again, Liebermann. I see you have the documents; very good. Herr Wiesenthal will put them to good use.\"\nFerenc takes the documents you hand him and glances through them quickly. He slips the papers into a worn bag.\n— \"Follow me without a sound: dawn is about to break and we must hurry.\"\nHe opens the door carefully and you leave the house together.\n\nYou struggle to keep up with his brisk pace, typical of someone who always has to move fast and unseen. After a few minutes of back streets, barbed wire and avoided checkpoints, he stops and points to one further ahead.\n— \"This is as far as I go. That is the barrier with the American sector: act casually and you'll see that at this hour you'll get through without any trouble. Then go on to the airport: they are waiting for you. I'll see to the delivery of the documents. Farewell.\"\nYou watch him vanish quickly into the maze of streets behind you, clutching his worn bag."
   },
 
   {
@@ -581,23 +691,323 @@
     "Messaggio": "Press SPACEBAR to continue..."
   },
   {
-    "Chiave": "narrative.command.useless",
+    "Chiave": "engine.matches.lit",
     "IDLingua": 1,
-    "Messaggio": "Non vedo alcuna utilità in questo."
+    "Messaggio": "Swcrapp!!! Fatto."
   },
   {
-    "Chiave": "narrative.command.useless",
+    "Chiave": "engine.matches.lit",
     "IDLingua": 2,
-    "Messaggio": "I don't see any use in that."
+    "Messaggio": "Scratch!!! Done."
   },
   {
-    "Chiave": "game.over.guardia_sospetta",
+    "Chiave": "engine.matches.finished",
     "IDLingua": 1,
-    "Messaggio": "La guardia nota il tuo comportamento strano e nervoso.\n- Cosa state facendo? Venite qui! -\nTi fermano per un controllo più approfondito. Quando scoprono i documenti falsi, sei perduto.\nVieni arrestato e avrai un processo come spia occidentale.\n\n*** GAME OVER ***\n\nSuggerimento: Devi porgere i documenti alla guardia!"
+    "Messaggio": "Li hai finiti!"
   },
   {
-    "Chiave": "game.over.guardia_sospetta",
+    "Chiave": "engine.matches.finished",
     "IDLingua": 2,
-    "Messaggio": "The guard notices your strange and nervous behavior.\n- What are you doing? Come here! -\nThey stop you for a thorough check. When they discover the fake documents, you're doomed.\nYou are arrested and will be tried as a Western spy.\n\n*** GAME OVER ***\n\nSuggestion: You must hand over the documents to the guard!"
+    "Messaggio": "You've run out of them!"
+  },
+  {
+    "Chiave": "engine.matches.out",
+    "IDLingua": 1,
+    "Messaggio": "Il fiammifero si spegne."
+  },
+  {
+    "Chiave": "engine.matches.out",
+    "IDLingua": 2,
+    "Messaggio": "The match goes out."
+  },
+  {
+    "Chiave": "engine.matches.none",
+    "IDLingua": 1,
+    "Messaggio": "Non hai fiammiferi."
+  },
+  {
+    "Chiave": "engine.matches.none",
+    "IDLingua": 2,
+    "Messaggio": "You have no matches."
+  },
+  {
+    "Chiave": "engine.interaction.alreadyDone",
+    "IDLingua": 1,
+    "Messaggio": "Non c'è bisogno di farlo di nuovo."
+  },
+  {
+    "Chiave": "engine.interaction.alreadyDone",
+    "IDLingua": 2,
+    "Messaggio": "There's no need to do that again."
+  },
+  {
+    "Chiave": "engine.spegni.notTime",
+    "IDLingua": 1,
+    "Messaggio": "Non è il momento di restare al buio."
+  },
+  {
+    "Chiave": "engine.spegni.notTime",
+    "IDLingua": 2,
+    "Messaggio": "This is no time to be left in the dark."
+  },
+  {
+    "Chiave": "engine.scappa.cantEscape",
+    "IDLingua": 1,
+    "Messaggio": "Svicola tutto a mancina... ma non puoi."
+  },
+  {
+    "Chiave": "engine.scappa.cantEscape",
+    "IDLingua": 2,
+    "Messaggio": "You dodge hard to the left... but you can't."
+  },
+  {
+    "Chiave": "engine.sorridi.cheese",
+    "IDLingua": 1,
+    "Messaggio": "Cheese..."
+  },
+  {
+    "Chiave": "engine.sorridi.cheese",
+    "IDLingua": 2,
+    "Messaggio": "Cheese..."
+  },
+  {
+    "Chiave": "engine.dormi.noTimeToWaste",
+    "IDLingua": 1,
+    "Messaggio": "Non perdere tempo. Hai una missione da compiere."
+  },
+  {
+    "Chiave": "engine.dormi.noTimeToWaste",
+    "IDLingua": 2,
+    "Messaggio": "Don't waste time. You have a mission to complete."
+  },
+  {
+    "Chiave": "engine.parla.toSelf",
+    "IDLingua": 1,
+    "Messaggio": "Parlare da solo non ti aiuterà a finire la missione."
+  },
+  {
+    "Chiave": "engine.parla.toSelf",
+    "IDLingua": 2,
+    "Messaggio": "Talking to yourself won't help you finish the mission."
+  },
+  {
+    "Chiave": "engine.parla.guardGerman",
+    "IDLingua": 1,
+    "Messaggio": "La guardia non sembra capire il tedesco."
+  },
+  {
+    "Chiave": "engine.parla.guardGerman",
+    "IDLingua": 2,
+    "Messaggio": "The guard doesn't seem to understand German."
+  },
+  {
+    "Chiave": "engine.light.noSourceHere",
+    "IDLingua": 1,
+    "Messaggio": "Non vedo alcuna luce qui."
+  },
+  {
+    "Chiave": "engine.light.noSourceHere",
+    "IDLingua": 2,
+    "Messaggio": "I don't see any light here."
+  },
+  {
+    "Chiave": "engine.torch.takeFirst",
+    "IDLingua": 1,
+    "Messaggio": "Prendi la torcia prima."
+  },
+  {
+    "Chiave": "engine.torch.takeFirst",
+    "IDLingua": 2,
+    "Messaggio": "Take the flashlight first."
+  },
+  {
+    "Chiave": "engine.torch.alreadyLit",
+    "IDLingua": 1,
+    "Messaggio": "La torcia è già accesa."
+  },
+  {
+    "Chiave": "engine.torch.alreadyLit",
+    "IDLingua": 2,
+    "Messaggio": "The flashlight is already on."
+  },
+  {
+    "Chiave": "engine.torch.broken",
+    "IDLingua": 1,
+    "Messaggio": "La torcia non funziona."
+  },
+  {
+    "Chiave": "engine.torch.broken",
+    "IDLingua": 2,
+    "Messaggio": "The flashlight doesn't work."
+  },
+  {
+    "Chiave": "engine.dig.bareHandsNoTool",
+    "IDLingua": 1,
+    "Messaggio": "Vuoi scavare a mani nude? Non hai un attrezzo."
+  },
+  {
+    "Chiave": "engine.dig.bareHandsNoTool",
+    "IDLingua": 2,
+    "Messaggio": "Do you want to dig with your bare hands? You don't have a tool."
+  },
+  {
+    "Chiave": "engine.dig.digging",
+    "IDLingua": 1,
+    "Messaggio": "Scava, scava, scava..."
+  },
+  {
+    "Chiave": "engine.dig.digging",
+    "IDLingua": 2,
+    "Messaggio": "Dig, dig, dig..."
+  },
+  {
+    "Chiave": "engine.dig.noToolHere",
+    "IDLingua": 1,
+    "Messaggio": "Ti manca l'attrezzo!"
+  },
+  {
+    "Chiave": "engine.dig.noToolHere",
+    "IDLingua": 2,
+    "Messaggio": "You don't have the right tool!"
+  },
+  {
+    "Chiave": "engine.dig.noPassageNorth",
+    "IDLingua": 1,
+    "Messaggio": "Pur scavando non crei un passaggio a nord."
+  },
+  {
+    "Chiave": "engine.dig.noPassageNorth",
+    "IDLingua": 2,
+    "Messaggio": "Even by digging you can't make a passage to the north."
+  },
+  {
+    "Chiave": "engine.rotate.nothingToTurn",
+    "IDLingua": 1,
+    "Messaggio": "Non vedo niente da ruotare."
+  },
+  {
+    "Chiave": "engine.rotate.nothingToTurn",
+    "IDLingua": 2,
+    "Messaggio": "I don't see anything to turn."
+  },
+  {
+    "Chiave": "engine.move.nothingHappens",
+    "IDLingua": 1,
+    "Messaggio": "Fatto: non accade niente."
+  },
+  {
+    "Chiave": "engine.move.nothingHappens",
+    "IDLingua": 2,
+    "Messaggio": "Done: nothing happens."
+  },
+  {
+    "Chiave": "engine.move.notPossible",
+    "IDLingua": 1,
+    "Messaggio": "Non è possibile."
+  },
+  {
+    "Chiave": "engine.move.notPossible",
+    "IDLingua": 2,
+    "Messaggio": "That's not possible."
+  },
+  {
+    "Chiave": "engine.load.scaleNeedsWeight",
+    "IDLingua": 1,
+    "Messaggio": "Per caricare una pesa occorre un peso."
+  },
+  {
+    "Chiave": "engine.load.scaleNeedsWeight",
+    "IDLingua": 2,
+    "Messaggio": "To load a scale you need a weight."
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecialOriginal",
+    "IDLingua": 1,
+    "Messaggio": "Non noto nulla di particolare."
+  },
+  {
+    "Chiave": "engine.examine.nothingSpecialOriginal",
+    "IDLingua": 2,
+    "Messaggio": "I notice nothing special."
+  },
+  {
+    "Chiave": "engine.examine.guard",
+    "IDLingua": 1,
+    "Messaggio": "È un sottufficiale russo, armato: ti guarda con curiosità."
+  },
+  {
+    "Chiave": "engine.examine.guard",
+    "IDLingua": 2,
+    "Messaggio": "He's an armed Russian NCO: he looks at you with curiosity."
+  },
+  {
+    "Chiave": "engine.attack.guardStrikes",
+    "IDLingua": 1,
+    "Messaggio": "Non sei molto veloce nella tua azione: la guardia scansa il tuo attacco e reagisce. Ti colpisce con il calcio del fucile e tu cadi tramortito: pessima fine di un'avventura quasi conclusa."
+  },
+  {
+    "Chiave": "engine.attack.guardStrikes",
+    "IDLingua": 2,
+    "Messaggio": "You're not very quick: the guard dodges your attack and strikes back. He hits you with the butt of his rifle and you fall unconscious: a sorry end to an adventure that was almost over."
+  },
+  {
+    "Chiave": "engine.rotate.knobPoints",
+    "IDLingua": 1,
+    "Messaggio": "Indica un verso."
+  },
+  {
+    "Chiave": "engine.rotate.knobPoints",
+    "IDLingua": 2,
+    "Messaggio": "It points one way."
+  },
+  {
+    "Chiave": "engine.move.leaveHouseWest",
+    "IDLingua": 1,
+    "Messaggio": "Se vai ad ovest lasci la casa: ma tu hai un lavoro da fare..."
+  },
+  {
+    "Chiave": "engine.move.leaveHouseWest",
+    "IDLingua": 2,
+    "Messaggio": "If you go west you'll leave the house: but you have a job to do..."
+  },
+  {
+    "Chiave": "engine.move.doorClosedPassage",
+    "IDLingua": 1,
+    "Messaggio": "Di lì non puoi andare: c'è una porta ma è chiusa."
+  },
+  {
+    "Chiave": "engine.move.doorClosedPassage",
+    "IDLingua": 2,
+    "Messaggio": "You can't go that way: there's a door, but it's closed."
+  },
+  {
+    "Chiave": "engine.move.rubbleBlocksWest",
+    "IDLingua": 1,
+    "Messaggio": "Delle macerie ti impediscono di andare ad ovest. Non si passa se non scavando."
+  },
+  {
+    "Chiave": "engine.move.rubbleBlocksWest",
+    "IDLingua": 2,
+    "Messaggio": "Rubble blocks your way west. You can't get through without digging."
+  },
+  {
+    "Chiave": "engine.move.passageCollapses",
+    "IDLingua": 1,
+    "Messaggio": "Appena ti lasci alle spalle il tratto di passaggio, questo crolla: sei stato fortunato a non restare sepolto dal crollo ma da quella parte ora non si può più passare."
+  },
+  {
+    "Chiave": "engine.move.passageCollapses",
+    "IDLingua": 2,
+    "Messaggio": "As soon as you leave the stretch of passage behind you, it collapses. You were lucky not to be buried by the cave-in, but you can't go back that way anymore."
+  },
+  {
+    "Chiave": "engine.move.passageCollapsedBlocked",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi passare: il passaggio è crollato."
+  },
+  {
+    "Chiave": "engine.move.passageCollapsedBlocked",
+    "IDLingua": 2,
+    "Messaggio": "You can't get through: the passage has collapsed."
   }
 ]

@@ -203,12 +203,13 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
     }
   }, 30000);
 
-  it('I58.1.E: turnsInDangerZone conta solo turni consuming in danger zone (integrazione pipeline)', () => {
+  // Aggiornato per decisione R2 (#107)
+  it('I58.1.E: openAreaTimer conta solo turni consuming in danger zone (integrazione pipeline)', () => {
     // Danger zone nota: 51
     setCurrentLocation(51);
-    expect(getGameState().turn.turnsInDangerZone).toBe(0);
+    expect(getGameState().turn.openAreaTimer).toBe(0);
 
-    // SYSTEM (non-consuming): NON deve incrementare
+    // SYSTEM (non-consuming): NON deve far partire il timer
     executeCommand({
       IsValid: true,
       CommandType: 'SYSTEM',
@@ -216,19 +217,20 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
       VerbConcept: 'INVENTARIO',
       Error: null,
     });
-    expect(getGameState().turn.turnsInDangerZone).toBe(0);
+    expect(getGameState().turn.openAreaTimer).toBe(0);
 
-    // ACTION (consuming): deve incrementare
-    executeCommand({
+    // ACTION (consuming) senza spostamento: il timer parte e scende (primo comando fermo)
+    const r = executeCommand({
       IsValid: true,
       CommandType: 'ACTION',
       CanonicalVerb: 'ESAMINARE',
       VerbConcept: 'ESAMINARE',
       Error: null,
     });
-    expect(getGameState().turn.turnsInDangerZone).toBe(1);
+    expect(getGameState().turn.openAreaTimer).toBe(1);
+    expect(r.resultType).not.toBe('GAME_OVER');
 
-    // Uscita in safe zone (57): al successivo consuming, deve resettare
+    // Uscita in safe zone (57): al successivo consuming, deve azzerarsi
     setCurrentLocation(57);
     executeCommand({
       IsValid: true,
@@ -237,7 +239,7 @@ describe('Issue #58 — Invarianti e edge cases (Sprint #58.3)', () => {
       VerbConcept: 'ESAMINARE',
       Error: null,
     });
-    expect(getGameState().turn.turnsInDangerZone).toBe(0);
+    expect(getGameState().turn.openAreaTimer).toBe(0);
   });
 
   it('Edge: setCurrentLocation con ID non presente non incrementa punteggio', () => {

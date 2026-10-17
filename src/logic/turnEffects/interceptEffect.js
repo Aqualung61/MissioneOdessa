@@ -1,42 +1,52 @@
 /**
- * Intercept Effect - Sistema intercettazione pattuglie sovietiche
- * 
- * Gestisce:
- * - Contatore turni in danger zone (luoghi 51, 52, 53, 55, 56, 58)
- * - Incremento immediato dal primo arrivo in zona pericolosa
- * - Reset automatico quando si esce dalla danger zone
- * - Esclusione automatica comandi SYSTEM (non consumano turno)
- * 
- * NOTA: Il game over (morte dopo 4 turni) è gestito da gameOverEffect.js
- * che DEVE essere eseguito DOPO questo effect per valutare il contatore aggiornato.
- * 
- * Dipendenza: DEVE essere eseguito DOPO gameOverEffect perché gameOverEffect
- * controlla il contatore PRIMA dell'incremento (pre-execution check).
- * 
- * Sprint 3.3.5.C
+ * Intercept Effect - Timer della zona aperta (R2, regola originale BAS 1290–1350, 2190)
+ *
+ * Luoghi della zona: 51, 52, 53, 55, 56, 58 (luoghi 26–31 dell'originale).
+ * - fuori dalla zona: `turn.openAreaTimer = 0`;
+ * - entrando (movimento riuscito nella zona): timer a 2 e avviso;
+ * - comando senza spostamento nella zona: il timer scende; a 0 la ronda arresta il giocatore,
+ *   altrimenti avviso. Un movimento fallito non è uno spostamento.
+ * In pratica si muore al secondo comando consecutivo senza spostamento nella zona.
+ *
+ * La morte è decisa da gameOverEffect tramite `turn.current.openAreaExpired`.
+ * `turn.turnsInDangerZone` resta nello stato solo per compatibilità dei salvataggi.
  */
+
+import { getSystemMessage } from '../systemMessages.js';
+import { appendTurnMessage } from './appendMessage.js';
+
+export const OPEN_AREA_LOCATIONS = [51, 52, 53, 55, 56, 58];
 
 /**
- * Applica effetto intercettazione al turno corrente
+ * Applica effetto zona aperta al turno corrente
  * @param {Object} gameState - Stato del gioco
- * @param {Object} _result - Risultato del comando (non usato)
- * @param {Object} _parseResult - Comando parsato (non usato)
+ * @param {Object} result - Risultato del comando (riceve l'avviso)
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function interceptEffect(gameState, _result, _parseResult) {
-  const { current, previous } = gameState.turn;
+export function interceptEffect(gameState, result) {
+  const turn = gameState.turn;
 
-  // === RESET CONTATORE ===
-  // Reset: uscita da danger zone (vai in luogo sicuro)
-  // Questo include anche l'arrivo al rifugio sicuro (luogo 57)
-  if (!current.inDangerZone && previous.inDangerZone) {
-    gameState.turn.turnsInDangerZone = 0;
+  if (!OPEN_AREA_LOCATIONS.includes(gameState.currentLocationId)) {
+    turn.openAreaTimer = 0;
+    return;
   }
 
-  // === INCREMENTO CONTATORE ===
-  // Incremento: SEMPRE quando sei in danger zone con consuming command
-  // (dal primo arrivo, senza skip del primo turno come darkness)
-  if (current.consumesTurn && current.inDangerZone) {
-    gameState.turn.turnsInDangerZone++;
+  const warning = getSystemMessage('timer.openArea.warning', gameState.currentLingua);
+
+  if (turn.movedThisTurn) {
+    turn.openAreaTimer = 2;
+    appendTurnMessage(result, warning);
+    return;
   }
+
+  // Stato caricato o inconsistente: nella zona il timer deve essere attivo
+  if (!(turn.openAreaTimer > 0)) {
+    turn.openAreaTimer = 2;
+  }
+  turn.openAreaTimer -= 1;
+
+  if (turn.openAreaTimer === 0) {
+    turn.current.openAreaExpired = true;
+    return;
+  }
+  appendTurnMessage(result, warning);
 }

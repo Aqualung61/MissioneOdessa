@@ -299,15 +299,16 @@ describe('victoryEffect - Sprint 3.3.5.D', () => {
       expect(state.awaitingContinue).toBe(false);
     });
 
-    it('dovrebbe resettare unusefulCommandsCounter a 0', () => {
+    // Aggiornato per decisione R4 (#107)
+    it('dovrebbe impostare guardTimer = 5 dopo l\'incontro con Ferenc', () => {
       const state = getGameState();
       setupVictoryPrerequisites(state);
-      state.unusefulCommandsCounter = 5; // Imposta valore non-zero
-      
+      state.guardTimer = 0; // Valore prima dell'arrivo alla barriera
+
       const result: any = { message: '', resultType: 'OK' };
       victoryEffect(state, result);
-      
-      expect(state.unusefulCommandsCounter).toBe(0);
+
+      expect(state.guardTimer).toBe(5);
     });
 
     it('dovrebbe impostare result.narrativePhase nel risultato', () => {

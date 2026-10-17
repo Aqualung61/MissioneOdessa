@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-**Versione 1.4.0** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
+**Versione 1.4.1** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 - Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Piano operativo (TODO dettagliato): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
@@ -113,7 +113,7 @@ Debug rapido: in due tab diverse, verifica che i valori in `sessionStorage` sian
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
 - La rotta `/api/version` restituisce un oggetto JSON con la versione attuale, ad esempio:
    ```json
-   { "version": "1.4.0" }
+   { "version": "1.4.1" }
    ```
 
 Verifica rapida (smoke check):
@@ -188,9 +188,9 @@ Vedi anche: [.env.example](.env.example).
 
 ### Limite turni (alba)
 
-- `GAME_MAX_TURNS_CONSUMED`: limite massimo di turni che consumano tempo (esclude comandi `SYSTEM`).
-   - Se la variabile non è impostata, il limite è disabilitato.
-   - Valore consigliato: vedi `.env.example` (impostato a 250).
+- `GAME_MAX_TURNS_CONSUMED`: override del limite dell'alba (regola di gioco: 200 turni che consumano tempo, esclusi i comandi `SYSTEM`).
+   - Solo per test; non impostare in produzione.
+   - Se la variabile non è impostata, vale la regola di gioco (200).
 
 Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
 
@@ -261,7 +261,7 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 
 ## Stato
 
-- **Versione attuale: 1.4.0** (15 ottobre 2026)
+- **Versione attuale: 1.4.1** (17 ottobre 2026)
 - **Test Coverage**: vedi output `npm test` (Vitest)
 - **Qualità**: ESLint clean, TypeScript strict typing
 - **i18n**: Full compliance IT/EN
