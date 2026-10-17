@@ -989,5 +989,25 @@
     "Chiave": "engine.move.rubbleBlocksWest",
     "IDLingua": 2,
     "Messaggio": "Rubble blocks your way west. You can't get through without digging."
+  },
+  {
+    "Chiave": "engine.move.passageCollapses",
+    "IDLingua": 1,
+    "Messaggio": "Appena ti lasci alle spalle il tratto di passaggio, questo crolla: sei stato fortunato a non restare sepolto dal crollo ma da quella parte ora non si può più passare."
+  },
+  {
+    "Chiave": "engine.move.passageCollapses",
+    "IDLingua": 2,
+    "Messaggio": "As soon as you leave the stretch of passage behind you, it collapses. You were lucky not to be buried by the cave-in, but you can't go back that way anymore."
+  },
+  {
+    "Chiave": "engine.move.passageCollapsedBlocked",
+    "IDLingua": 1,
+    "Messaggio": "Non puoi passare: il passaggio è crollato."
+  },
+  {
+    "Chiave": "engine.move.passageCollapsedBlocked",
+    "IDLingua": 2,
+    "Messaggio": "You can't get through: the passage has collapsed."
   }
 ]
