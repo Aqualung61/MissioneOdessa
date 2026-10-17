@@ -741,6 +741,10 @@ export function createEngine() {
           const bastone = (newState.Oggetti || []).find((o) => o.ID === 1);
           flags.bastoneLiberato = !!bastone && bastone.Attivo >= 3;
         }
+        // passaggioCrollato: dedotto da visitedPlaces (salvataggi senza il flag, #117).
+        if (typeof flags.passaggioCrollato !== 'boolean') {
+          flags.passaggioCrollato = (newState.visitedPlaces || []).includes(36);
+        }
         return flags;
       })(),
       // Deserializzazione Set del punteggio
@@ -1403,6 +1407,29 @@ export function createEngine() {
           const currentId = gameState.currentLocationId;
           const direzioni = getDirezioniLuogo(currentId);
           const nextId = direzioni?.[directionField];
+
+          // Passaggio crollato (32 → 36): nell'originale il crollo avviene una sola
+          // volta (BAS 330–340, 5160–5210); dopo, il passaggio resta bloccato (#117).
+          if (currentId === 32 && directionField === 'Sud') {
+            if (gameState.flags.passaggioCrollato) {
+              return {
+                accepted: true,
+                resultType: 'ERROR',
+                message: getSystemMessage('engine.move.passageCollapsedBlocked', gameState.currentLingua),
+                effects: [],
+              };
+            }
+            gameState.flags.passaggioCrollato = true;
+            setCurrentLocation(36);
+            return {
+              accepted: true,
+              resultType: 'OK',
+              message: getSystemMessage('engine.move.passageCollapses', gameState.currentLingua),
+              effects: [],
+              locationId: 36,
+              showLocation: true,
+            };
+          }
 
           if (typeof nextId !== 'number' || nextId < 1) {
             // Movimenti bloccati con un testo dedicato dell'originale (#109, L3, §4.7–4.9):
