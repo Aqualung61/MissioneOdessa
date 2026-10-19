@@ -171,7 +171,7 @@ Per ridurre rischi di input malevoli e payload eccessivi:
 Per ridurre flood/DoS, le API sono soggette a rate limiting:
 
 - Generale su `/api/*` (soglia più alta)
-- Più stretto su endpoint CPU-intensive: `POST /api/parser/parse`, `POST /api/engine/execute`
+- Più stretto su endpoint CPU-intensive: `POST /api/engine/execute`
 
 
 Nota: è definito anche un limiter "heavy" (opzionale) per eventuali endpoint futuri particolarmente costosi.
@@ -184,26 +184,15 @@ Variabili env utili:
 
 Vedi anche: [.env.example](.env.example).
 
-## Endpoint legacy (deprecati)
+## Endpoint legacy (rimossi nella v1.4.2)
+
+Gli endpoint `POST /api/engine/set-location` e `POST /api/parser/parse` sono stati rimossi nella v1.4.2: l'input del gioco passa solo da `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`). `GET /api/parser/stats` e `POST /api/parser/reload` restano, ma sono disponibili solo con `NODE_ENV` diverso da `production`.
 
 ### Limite turni (alba)
 
 - `GAME_MAX_TURNS_CONSUMED`: override del limite dell'alba (regola di gioco: 200 turni che consumano tempo, esclusi i comandi `SYSTEM`).
    - Solo per test; non impostare in produzione.
    - Se la variabile non è impostata, vale la regola di gioco (200).
-
-Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
-
-Gli endpoint legacy seguenti sono marcati come deprecati (`Deprecation`/`Sunset`) e possono essere disabilitati:
-
-- `POST /api/engine/set-location`
-- `POST /api/parser/parse`
-
-Per disabilitarli (risposta `410`):
-
-- `DISABLE_LEGACY_ENDPOINTS=1`
-
-Vedi anche: [.env.example](.env.example).
 
 ## CORS (M3)
 

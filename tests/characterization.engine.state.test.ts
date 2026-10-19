@@ -1,8 +1,7 @@
 /**
  * Test di caratterizzazione — motore: stato e traccia di debug (#63, lotto 0 v1.4.2,
  * Fase 1B-2). Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`,
- * §3.5; handoff: `Claude decompiler/20261019 - HO-18 Lotto 0 Rete di caratterizzazione -
- * v1.2.md`, Fase 1B-2.
+ * §3.5.
  *
  * Ambito: rami non coperti (dal report di copertura di Fase 1A/1B-1) di `setGameState`
  * ed `executeCommand` in `src/logic/engine.js`.

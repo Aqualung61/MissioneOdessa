@@ -24,6 +24,7 @@ export default [
       'web/js/odessa1.js',
       'types/**/*.d.ts',
       'scripts/**/*.cjs',
+      'Claude decompiler/',
     ],
   },
   js.configs.recommended,
