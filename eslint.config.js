@@ -46,6 +46,17 @@ export default [
       // Lasciamo la formattazione a Prettier (script dedicato)
     },
   },
+  // Regole di complessità in modalità avviso (#63, lotto 0 v1.4.2).
+  // TD: docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md, §3.6.
+  {
+    files: ['src/**/*.js'],
+    ignores: ['src/tests/**'],
+    rules: {
+      complexity: ['warn', 15],
+      'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-depth': ['warn', 4],
+    },
+  },
   // Disabilita regole per file minificati
   {
     files: ['**/*.min.js'],
