@@ -126,7 +126,6 @@ app.use(BASE_PATH + '/api', apiKeyAuth());
 
 // Rate limiting: generale su /api/* + più stretto su endpoint pesanti
 app.use(BASE_PATH + '/api', apiLimiter);
-app.use(BASE_PATH + '/api/parser/parse', parsingLimiter);
 app.use(BASE_PATH + '/api/engine/execute', parsingLimiter);
 app.use(BASE_PATH + '/api/parser/reload', heavyLimiter);
 

@@ -115,9 +115,6 @@ async function main() {
   const invMsg = inv.json?.engine?.message ?? '';
   print({ step: 'execute.INVENTORY', ok: inv.ok, status: inv.status, msgSample: typeof invMsg === 'string' ? invMsg.slice(0, 120) : null });
 
-  const setLoc = await requestJson('/api/engine/set-location', { method: 'POST', headers, body: { locationId: 24, consumeTurn: false } });
-  print({ step: 'engine.set-location.24', ok: setLoc.ok, status: setLoc.status, note: setLoc.ok ? 'OK' : 'skipped/fail (legacy disabled?)' });
-
   const mp = await requestJson('/api/engine/execute', { method: 'POST', headers, body: { input: 'MOVE PAINTING' } });
   const mpMsg = mp.json?.engine?.message ?? '';
   print({
@@ -127,16 +124,6 @@ async function main() {
     containsYouMove: typeof mpMsg === 'string' && mpMsg.includes('You move'),
     hasItalianAccents: typeof mpMsg === 'string' && /[àèéìòù]/.test(mpMsg),
     msgSample: typeof mpMsg === 'string' ? mpMsg.slice(0, 160) : null,
-  });
-
-  const parserLegacy = await requestJson('/api/parser/parse', { method: 'POST', body: { input: 'MOVE PAINTING' } });
-  print({
-    step: 'parser.parse.legacy',
-    ok: parserLegacy.ok,
-    status: parserLegacy.status,
-    isValid: parserLegacy.json?.IsValid,
-    commandType: parserLegacy.json?.CommandType,
-    canonicalVerb: parserLegacy.json?.CanonicalVerb,
   });
   } finally {
     child.kill('SIGTERM');

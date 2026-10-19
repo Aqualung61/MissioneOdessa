@@ -24,10 +24,6 @@ function getEngineOrSendError(req, res) {
   return engine;
 }
 
-function isTruthy(value) {
-  return value === '1' || value === 'true' || value === 'yes';
-}
-
 function computeRankKey(score) {
   if (score >= 134) return 'engine.rank.perfectionist';
   if (score >= 100) return 'engine.rank.master';
@@ -263,111 +259,6 @@ router.post('/reset', (req, res, next) => {
     engine.resetGameState(idLingua);
     const snap = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({ ok: true, state: snap }));
-  } catch (err) {
-    return next(err);
-  }
-});
-
-// Stato engine: set location
-router.post('/set-location', (req, res, next) => {
-  try {
-    const engine = getEngineOrSendError(req, res);
-    if (!engine) return;
-    // Legacy endpoint: usare POST /api/engine/execute (NAVIGATION) invece di set-location.
-    res.set('Deprecation', 'true');
-    res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
-    res.set('Cache-Control', 'no-store');
-
-    if (isTruthy(process.env.DISABLE_LEGACY_ENDPOINTS || '')) {
-      return res.status(410).json({
-        ok: false,
-        error: 'LEGACY_ENDPOINT_DISABLED',
-        message: 'Endpoint legacy disabilitato. Usa POST /api/engine/execute.',
-      });
-    }
-
-    const { locationId, consumeTurn } = req.body;
-    if (typeof locationId !== 'number' || locationId < 1) {
-      return res.status(400).json({ ok: false, error: 'Invalid locationId' });
-    }
-    
-    // Check awaiting restart: blocca navigazione se in attesa conferma riavvio
-    const state = engine.getGameStateSnapshot();
-    if (state.awaitingRestart) {
-      return res.json({ 
-        ok: false, 
-        gameOver: true,
-        message: 'Gioco in attesa di riavvio. Digita SI per riavviare o NO per terminare.',
-        turnMessages: [] 
-      });
-    }
-    
-    engine.setCurrentLocation(locationId);
-    
-    // Se consumeTurn=true, applica effetti turn system (per navigazione stella)
-    const turnMessages = [];
-    if (consumeTurn === true) {
-      // Simula parseResult NAVIGATION per turn system
-      const fakeParseResult = {
-        IsValid: true,
-        CommandType: 'NAVIGATION',
-        CanonicalVerb: 'NAVIGATION',
-        VerbConcept: 'NAVIGATION'
-      };
-      
-      // Prepara context e applica effetti
-      engine.prepareTurnContext(fakeParseResult);
-      
-      // Crea result fittizio per applyTurnEffects
-      const fakeResult = { accepted: true, resultType: 'OK', message: '', effects: [] };
-      const resultWithEffects = engine.applyTurnEffects(fakeResult, fakeParseResult);
-      
-      // Check game over triggato da turn effects (darkness, terminale, ecc.)
-      if (resultWithEffects.gameOver === true) {
-        return res.json({
-          ok: false,
-          gameOver: true,
-          gameOverReason: resultWithEffects.gameOverReason || 'UNKNOWN',
-          message: resultWithEffects.message || 'Game Over',
-          turnMessages: [resultWithEffects.message]
-        });
-      }
-      
-      // Check narrative phase (Ferenc victory sequence)
-      if (resultWithEffects.resultType === 'NARRATIVE') {
-        return res.json({
-          ok: true,
-          resultType: 'NARRATIVE',
-          message: resultWithEffects.message,
-          awaitingContinue: resultWithEffects.awaitingContinue || false,
-          narrativePhase: resultWithEffects.narrativePhase,
-          turnMessages: []
-        });
-      }
-      
-      // Check teleport (Ferenc finale)
-      if (resultWithEffects.resultType === 'TELEPORT') {
-        return res.json({
-          ok: true,
-          resultType: 'TELEPORT',
-          message: resultWithEffects.message,
-          locationId: resultWithEffects.locationId,
-          teleport: true,
-          narrativePhase: resultWithEffects.narrativePhase,
-          turnMessages: []
-        });
-      }
-      
-      // Estrai messaggi turn system (torcia spenta, etc.)
-      if (resultWithEffects.message) {
-        const lines = resultWithEffects.message.split('\n\n');
-        lines.forEach(line => {
-          if (line.trim()) turnMessages.push(line.trim());
-        });
-      }
-    }
-    
-    res.json({ ok: true, turnMessages });
   } catch (err) {
     return next(err);
   }

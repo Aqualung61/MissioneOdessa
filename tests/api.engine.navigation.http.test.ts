@@ -4,7 +4,7 @@ import type { Server } from 'http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
 import { ensureVocabulary } from '../src/logic/parser.js';
-import { createSessionState, fetchWithSession } from './testUtils/sessionFetch';
+import { createSessionState, fetchWithSession, type SessionState } from './testUtils/sessionFetch';
 
 type DirectionKey = 'Nord' | 'Est' | 'Sud' | 'Ovest' | 'Su' | 'Giu';
 
@@ -156,6 +156,30 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
     baseUrl = started.baseUrl;
   }
 
+  /**
+   * Posiziona la sessione a `locationId` senza l'endpoint legacy `set-location`
+   * (rimosso, #124): legge lo snapshot reale (`GET /api/engine/state`), modifica
+   * `currentLocationId` e `visitedPlaces`, e lo ricarica con
+   * `POST /api/engine/load-client-state` (`odessaData: { Luoghi: [] }`).
+   */
+  async function positionAt(session: SessionState, locationId: number): Promise<void> {
+    const stateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    expect(stateRes.status).toBe(200);
+    const stateBody = await stateRes.json();
+    const gameState = stateBody.state;
+    gameState.currentLocationId = locationId;
+    if (Array.isArray(gameState.visitedPlaces) && !gameState.visitedPlaces.includes(locationId)) {
+      gameState.visitedPlaces.push(locationId);
+    }
+
+    const loadRes = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameState, odessaData: { Luoghi: [] } }),
+    }, session);
+    expect(loadRes.status).toBe(200);
+  }
+
   it('direzione valida: 200, resultType=OK e state/ui su nuova location', async () => {
     await startEngineApi();
 
@@ -163,12 +187,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     const pick = findAnyValidMove();
 
-    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: pick.fromId }),
-    }, session);
-    expect(setLoc.status).toBe(200);
+    await positionAt(session, pick.fromId);
 
     const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
@@ -199,12 +218,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     const pick = findAnyBlockedMove();
 
-    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: pick.fromId }),
-    }, session);
-    expect(setLoc.status).toBe(200);
+    await positionAt(session, pick.fromId);
 
     const beforeStateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
     expect(beforeStateRes.status).toBe(200);
@@ -235,12 +249,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     const pick = findAnyTerminalMove();
 
-    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: pick.fromId }),
-    }, session);
-    expect(setLoc.status).toBe(200);
+    await positionAt(session, pick.fromId);
 
     const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
       method: 'POST',
@@ -267,12 +276,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     const pick = findAnyTerminalMove();
 
-    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: pick.fromId }),
-    }, session);
-    expect(setLoc.status).toBe(200);
+    await positionAt(session, pick.fromId);
 
     // Porta lo stato in awaitingRestart
     const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
@@ -310,12 +314,7 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     const pick = findAnyTerminalMove();
 
-    const setLoc = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: pick.fromId }),
-    }, session);
-    expect(setLoc.status).toBe(200);
+    await positionAt(session, pick.fromId);
 
     // Porta lo stato in awaitingRestart
     const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {

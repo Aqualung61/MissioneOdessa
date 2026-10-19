@@ -21,7 +21,7 @@
 - **Tests in** `tests/` (Vitest). Coprono API e invarianti principali.
 
 ## Integration & Extensibility
-- **Deploy pubblico:** usare i flag in `.env.example` (es. `API_AUTH_DISABLED`, `DISABLE_RUN_TESTS`, `TRUST_PROXY`).
+- **Deploy pubblico:** usare i flag in `.env.example` (es. `API_AUTH_DISABLED`, `TRUST_PROXY`).
 
 ## Examples
 - See `docs/raccomandazioni.md` for domain-specific modeling tips and next steps.
