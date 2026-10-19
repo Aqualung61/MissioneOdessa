@@ -1,6 +1,6 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
-import { parseCommand } from '../logic/parser.js';
+import { parseInput } from '../logic/parser.js';
 import { toCommandDTO } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
 import { mapParseErrorToUserMessage } from '../logic/messages.js';
@@ -171,7 +171,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         stats: computeStatsFromState(state),
       }));
     }
-    // ensureVocabulary ora chiamata automaticamente in parseCommand
+    // ensureVocabulary ora chiamata automaticamente in parseInput
     const state = engine.getGameStateSnapshot();
     // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
     if (state.awaitingEndConfirm) {
@@ -189,7 +189,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
     }
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
-      const engineResult = normalizeEngineResult(await engine.confirmRestart(input)); // dbPath rimosso
+      const engineResult = normalizeEngineResult(await engine.confirmRestart(input));
       const nextState = engine.getGameStateSnapshot();
       return res.json(maybeAttachDebug({
         ok: true,
@@ -201,7 +201,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
         stats: computeStatsFromState(nextState),
       }));
     }
-    const parsed = await parseCommand(null, input, state); // passa gameState
+    const parsed = await parseInput(input, state);
     if (parsed.IsValid !== true) {
       const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
       const currentState = engine.getGameStateSnapshot();
@@ -220,7 +220,7 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
       }));
     }
     const command = toCommandDTO(parsed);
-    const engineResult = normalizeEngineResult(await engine.executeCommandAsync(parsed)); // dbPath rimosso
+    const engineResult = normalizeEngineResult(await engine.executeCommandAsync(parsed));
     const nextState = engine.getGameStateSnapshot();
     res.json(maybeAttachDebug({
       ok: true,
