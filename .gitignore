@@ -45,6 +45,9 @@ test-results/
 backup/
 db/.project
 
+# Rapporto di copertura locale (#63, lotto 0 v1.4.2)
+coverage/
+
 # Local security audit reports
 audit-*.json
 

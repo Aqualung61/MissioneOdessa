@@ -1,0 +1,59 @@
+// Scenari della traccia di stato (lotto 0, v1.4.2). Dati, non codice di gioco.
+// prefix: { walkthrough: 'full_it'|'full_en'|'min_it'|'min_en', upTo: <passo> } oppure null (partita nuova)
+// env: variabili d'ambiente impostate solo per lo scenario
+export const ENGINE_SCENARIOS = [
+  // Percorsi completi
+  { id: 'W-min-it', lingua: 1, prefix: null, walkthrough: 'min_it' },
+  { id: 'W-min-en', lingua: 2, prefix: null, walkthrough: 'min_en' },
+  { id: 'W-full-it', lingua: 1, prefix: null, walkthrough: 'full_it' },
+  { id: 'W-full-en', lingua: 2, prefix: null, walkthrough: 'full_en' },
+  // R1 buio
+  { id: 'T-buio-movimento', lingua: 1, prefix: null, commands: ['posa torcia', 'esamina documenti', 'posa fiammiferi', 'e'] },
+  { id: 'T-buio-scadenza', lingua: 1, prefix: null, commands: ['posa torcia', 'esamina documenti', 'esamina documenti', 'esamina documenti', 'esamina documenti', 'n', 'e'] },
+  { id: 'T-buio-luce-ritrovata', lingua: 1, prefix: null, commands: ['e', 'n', 'prendi lampada', 'posa torcia', 'esamina documenti', 'accendi lampada', 's', 'o', 'e'] },
+  { id: 'T-buio-azioni', lingua: 1, prefix: null, commands: ['posa torcia', 'prendi torcia', 'inventario', 'accendi torcia', 'guarda', 'aiuto', 'punti'] },
+  // R2 zona aperta
+  { id: 'T-zona-movimento', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 109 }, commands: ['n', 's', 'e', 'n', 's', 'o'] },
+  { id: 'T-zona-fermo', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 109 }, commands: ['guarda', 'guarda', 'n'] },
+  { id: 'T-zona-rifiutato', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 110 }, commands: ['e', 'esamina documenti'] },
+  { id: 'T-zona-uscita', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 109 }, commands: ['guarda', 'o', 'e', 'guarda', 'inventario', 'guarda'] },
+  { id: 'T-zona-en', lingua: 2, prefix: { walkthrough: 'full_en', upTo: 109 }, commands: ['look', 'look'] },
+  // R3 alba
+  { id: 'T-alba-casa', lingua: 1, prefix: null, env: { GAME_MAX_TURNS_CONSUMED: '40' }, commands: Array(41).fill('guarda') },
+  { id: 'T-alba-aperto', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 109 }, envFromTurns: 1, commands: ['n', 'guarda'] },
+  { id: 'T-alba-ferma', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, env: { GAME_MAX_TURNS_CONSUMED: '10' }, commands: ['guarda', 'guarda', 'guarda'] },
+  // R4, R11 barriera e Ferenc
+  { id: 'T-guardia-arresto', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, commands: ['esamina documenti', 'guarda', 'esamina documenti', 'guarda', 'esamina documenti', 'guarda'] },
+  { id: 'T-guardia-sistema', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, commands: ['guarda', 'inventario', 'punti', 'aiuto', 'inventario', 'guarda'] },
+  { id: 'T-guardia-movimento', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, commands: ['n', 'n', 'n', 'n', 'n'] },
+  { id: 'T-guardia-vittoria-4', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, commands: ['guarda', 'n', 'esamina documenti', 'porgi documenti'] },
+  { id: 'T-ferenc-senza-documenti', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 144 }, commands: ['o', 'porgi documenti', 'guarda', 'guarda', 'guarda', 'guarda'] },
+  { id: 'T-guardia-colore', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 146 }, commands: ['esamina guardia', 'parla', 'sorridi', 'attacca guardia'] },
+  { id: 'T-guardia-en', lingua: 2, prefix: { walkthrough: 'full_en', upTo: 146 }, commands: ['examine guard', 'look', 'look', 'look', 'look'] },
+  // R8 fiammiferi, R9 luce
+  { id: 'L-fiammiferi', lingua: 1, prefix: null, commands: ['accendi fiammifero', 'guarda', 'guarda', 'guarda', 'accendi fiammifero', 'accendi fiammifero', 'accendi fiammifero', 'accendi fiammifero', 'accendi fiammifero', 'accendi fiammifero', 'inventario'] },
+  { id: 'L-lampada-lasciata', lingua: 1, prefix: null, commands: ['e', 'n', 'prendi lampada', 'accendi lampada', 'posa lampada', 's'] },
+  { id: 'L-lampada-e-fiammifero', lingua: 1, prefix: null, commands: ['e', 'n', 'prendi lampada', 'accendi lampada', 'posa lampada', 'accendi fiammifero', 's', 'guarda'] },
+  { id: 'L-lampada-senza-fiammiferi', lingua: 1, prefix: null, commands: ['posa fiammiferi', 'e', 'n', 'prendi lampada', 'accendi lampada', 'spegni torcia', 'spegni lampada'] },
+  // Enigmi (R5, R6, R7) e punteggio
+  { id: 'P-cassaforte-errata', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 37 }, commands: ['ruota destra', 'ruota destra', 'ruota sinistra', 'ruota sinistra', 'ruota destra', 'ruota sinistra', 'esamina cassaforte', 'gira manopola', 'esamina manopola'] },
+  { id: 'P-prendi-quadro', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 36 }, commands: ['prendi quadro', 'inventario', 'esamina cassaforte', 'sposta quadro', 'posa quadro', 'punti'] },
+  { id: 'P-reversibili', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 68 }, commands: ['prendi statuetta', 'n', 's'] },
+  { id: 'P-pesa', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 120 }, commands: ['prendi peso', 'scarica peso', 'carica peso', 'esamina botola', 'carica'] },
+  { id: 'P-macerie', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 101 }, commands: ['o', 'prendi bastone', 'esamina macerie', 'posa badile', 'scava macerie', 'prendi badile', 'scava', 'scava macerie', 'prendi bastone', 'esamina macerie'] },
+  { id: 'P-crollo', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 81 }, commands: ['n', 'scava macerie', 'esamina macerie', 's', 'n'] },
+  { id: 'P-porta-44', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 94 }, commands: ['e', 'apri porta', 'premi pulsante', 'apri porta', 'chiudi porta', 'pigia pulsante', 'e'] },
+  { id: 'P-inventario-pieno', lingua: 1, prefix: { walkthrough: 'full_it', upTo: 57 }, commands: ['inventario', 'o', 'n', 'prendi medaglione', 'e', 's', 'inventario'] },
+  // Movimenti speciali e lessico dell'originale
+  { id: 'M-speciali', lingua: 1, prefix: null, commands: ['o', 's', 'n', 'su', 'giu', 'muovi', 'vai', 'nord', 'est'] },
+  { id: 'M-colore', lingua: 1, prefix: null, commands: ['scappa', 'sorridi', 'dormi', 'siediti', 'parla', 'rispondi', 'osserva documenti', 'introduci documenti', 'attacca', 'uccidi', 'svicola', 'prendere documenti', 'esaminare documenti'] },
+  { id: 'M-errori', lingua: 1, prefix: null, commands: ['xyzzy', 'prendi xyzzy', 'prendi', 'nord sud', 'prendi la lampada', 'esamina il quadro', 'prendi lampada e torcia'] },
+  { id: 'M-errori-en', lingua: 2, prefix: null, commands: ['xyzzy', 'take xyzzy', 'take', 'look', 'examine papers', 'go north'] },
+];
+
+// Ripresa da salvataggio: snapshot al passo indicato, ricaricato con setGameState in un motore nuovo
+export const RESUME_SCENARIOS = [
+  { id: 'S-ripresa-full-it-91', lingua: 1, walkthrough: 'full_it', saveAt: 91 },
+  { id: 'S-ripresa-full-en-120', lingua: 2, walkthrough: 'full_en', saveAt: 120 },
+  { id: 'S-ripresa-v140', lingua: 1, walkthrough: 'full_it', saveFile: 'walkthrough/save_v140_full_it_step91.json', saveAt: 91 },
+];
