@@ -26,7 +26,7 @@ router.get('/stats', notInProduction, async (req, res, next) => {
       };
     });
     
-    res.json({ dbPathResolved: 'in-memory (global.odessaData)', byType });
+    res.json({ byType });
   } catch (err) {
     return next(err);
   }

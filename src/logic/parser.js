@@ -4,8 +4,6 @@
 // - Rimuove stopword
 // - Valida grammatica e produce ParseResult
 
-// Rimossi import sqlite3 e open, ora usa global.odessaData
-
 // Tipi comando per ParseResult
 export const CommandType = {
   ACTION: 'ACTION',
@@ -28,112 +26,126 @@ export const ParseErrorType = {
 // Questo evita che una prima costruzione (es. IT) venga riusata impropriamente per altre lingue (es. EN).
 const vocabCacheByLingua = new Map();
 
-// Rimossi vocabDbPath, ora usa global.odessaData sempre disponibile
-
 export function resetVocabularyCache() {
   vocabCacheByLingua.clear();
 }
 
-// Carica il vocabolario da global.odessaData e costruisce:
-// - tokenMap: Map<string, { type, canonical, termId }>
-// - canonicalByTerm: Map<termId, canonicalToken>
-export async function ensureVocabulary(gameState = null) {
-  // Usa global.odessaData
-  // Determina la lingua corrente dal gameState, default 1
-  const currentLingua = gameState?.currentLingua || 1;
+// === Lessico: unico punto di accesso ai dati statici (lotto 2, #63) ===
+// Nel lotto 3 `lexiconSource()` diventerà una chiamata all'accessor `getGameData()`
+// (TD 0 Architettura motore e regole, §4.2): per ora resta l'unico punto che legge
+// `global.odessaData` dentro questo modulo.
+function lexiconSource() {
+  return global.odessaData;
+}
 
-  const cached = vocabCacheByLingua.get(currentLingua);
-  if (cached) return cached;
-
-  // Simula la query JOIN usando filtri su global.odessaData
-  const rows = global.odessaData.VociLessico
-    .filter(vl => vl.ID_Lingua === currentLingua)
-    .map(vl => {
-      const tl = global.odessaData.TerminiLessico.find(tl => tl.ID_Termine === vl.ID_Termine);
+// Simula la query JOIN voce -> termine -> tipo, nello stesso ordine di VociLessico,
+// scartando le righe senza termine o senza tipo corrispondente.
+function loadLexiconRows(source, lingua) {
+  return source.VociLessico
+    .filter((vl) => vl.ID_Lingua === lingua)
+    .map((vl) => {
+      const tl = source.TerminiLessico.find((t) => t.ID_Termine === vl.ID_Termine);
       if (!tl) return null; // Skip se termine non trovato
-      const t = global.odessaData.TipiLessico.find(t => t.ID_TipoLessico === tl.ID_TipoLessico);
+      const t = source.TipiLessico.find((x) => x.ID_TipoLessico === tl.ID_TipoLessico);
       if (!t) return null; // Skip se tipo non trovato
       return {
         Tipo: t.NomeTipo,
         TermineID: tl.ID_Termine,
         Concetto: tl.Concetto,
-        Voce: vl.Voce
+        Voce: vl.Voce,
       };
     })
-    .filter(row => row !== null); // Rimuovi null
+    .filter((row) => row !== null);
+}
 
-  const tokenMap = new Map();
-  const canonicalByTerm = new Map();
+function mapTipoToCommandType(tipo) {
+  switch (tipo) {
+    case 'VERBO_AZIONE':
+      return CommandType.ACTION;
+    case 'NAVIGAZIONE':
+      return CommandType.NAVIGATION;
+    case 'SISTEMA':
+      return CommandType.SYSTEM;
+    case 'NOUN':
+      return CommandType.NOUN;
+    case 'STOPWORD':
+      return CommandType.STOPWORD;
+    default:
+      return null;
+  }
+}
 
-  // Precalcola lookup Oggetti (IT) -> ID, per localizzare i concetti NOUN quando possibile.
-  // Obiettivo: in EN il parser deve produrre NounConcept compatibile con Oggetti.json (nome localizzato),
-  // ma per concetti non-oggetto (es. DESTRA/SINISTRA) si mantiene il concetto originale.
-  const normalizeForComparison = (s) => String(s || '')
+function normalizeForComparison(s) {
+  return String(s || '')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/_/g, ' ')
     .toUpperCase()
     .trim()
     .replace(/\s+/g, ' ');
+}
+
+// Precalcola i concetti dei nomi localizzati per le lingue diverse dall'italiano.
+// Obiettivo: in EN il parser deve produrre NounConcept compatibile con Oggetti.json
+// (nome localizzato), ma per concetti non-oggetto (es. DESTRA/SINISTRA) si mantiene
+// il concetto originale.
+function buildLocalizedNounConcepts(rows, source, lingua) {
+  const localizedNounConceptByTerm = new Map();
+  if (lingua === 1) return localizedNounConceptByTerm;
 
   const oggettoIdByItName = new Map();
-  for (const o of (global.odessaData.Oggetti || [])) {
+  for (const o of source.Oggetti || []) {
     if (o.IDLingua !== 1) continue;
     const k = normalizeForComparison(o.Oggetto);
     if (!k) continue;
     oggettoIdByItName.set(k, o.ID);
   }
 
-  const localizedNounConceptByTerm = new Map();
-  if (currentLingua !== 1) {
-    for (const r of rows) {
-      const type = mapTipoToCommandType(r.Tipo);
-      if (type !== CommandType.NOUN) continue;
-      if (localizedNounConceptByTerm.has(r.TermineID)) continue;
+  for (const r of rows) {
+    const type = mapTipoToCommandType(r.Tipo);
+    if (type !== CommandType.NOUN) continue;
+    if (localizedNounConceptByTerm.has(r.TermineID)) continue;
 
-      const itKey = normalizeForComparison(r.Concetto);
-      const objId = oggettoIdByItName.get(itKey);
-      if (!objId) {
-        localizedNounConceptByTerm.set(r.TermineID, r.Concetto);
-        continue;
-      }
-      const obj = (global.odessaData.Oggetti || []).find(o => o.ID === objId && o.IDLingua === currentLingua);
-      localizedNounConceptByTerm.set(r.TermineID, obj?.Oggetto || r.Concetto);
+    const itKey = normalizeForComparison(r.Concetto);
+    const objId = oggettoIdByItName.get(itKey);
+    if (!objId) {
+      localizedNounConceptByTerm.set(r.TermineID, r.Concetto);
+      continue;
     }
+    const obj = (source.Oggetti || []).find((o) => o.ID === objId && o.IDLingua === lingua);
+    localizedNounConceptByTerm.set(r.TermineID, obj?.Oggetto || r.Concetto);
   }
+  return localizedNounConceptByTerm;
+}
 
-  // Forma canonica dei verbi d'azione (TD Lessico L2 risposte e testi, §4.2 c): se
-  // l'infinito (il concetto) è esso stesso una voce della lingua corrente, è la forma
-  // canonica; altrimenti resta la voce alfabeticamente minore, come oggi (invariato
-  // per l'inglese, dove il concetto è sempre il nome italiano).
+// Forma canonica dei verbi d'azione (TD Lessico L2 risposte e testi, §4.2 c): se
+// l'infinito (il concetto) è esso stesso una voce della lingua corrente, è la forma
+// canonica; altrimenti resta la voce alfabeticamente minore, come oggi (invariato
+// per l'inglese, dove il concetto è sempre il nome italiano).
+function buildActionCanonicalConcepts(rows) {
   const actionCanonicalConceptByTerm = new Map();
   for (const r of rows) {
     if (mapTipoToCommandType(r.Tipo) !== CommandType.ACTION) continue;
     if (actionCanonicalConceptByTerm.has(r.TermineID)) continue;
     const concetto = String(r.Concetto || '').toUpperCase();
-    const esisteComeVoce = rows.some(x => x.TermineID === r.TermineID && x.Voce.toUpperCase() === concetto);
+    const esisteComeVoce = rows.some((x) => x.TermineID === r.TermineID && x.Voce.toUpperCase() === concetto);
     actionCanonicalConceptByTerm.set(r.TermineID, esisteComeVoce ? concetto : null);
   }
+  return actionCanonicalConceptByTerm;
+}
 
-  function mapTipoToCommandType(tipo) {
-    switch (tipo) {
-      case 'VERBO_AZIONE':
-        return CommandType.ACTION;
-      case 'NAVIGAZIONE':
-        return CommandType.NAVIGATION;
-      case 'SISTEMA':
-        return CommandType.SYSTEM;
-      case 'NOUN':
-        return CommandType.NOUN;
-      case 'STOPWORD':
-        return CommandType.STOPWORD;
-      default:
-        return null;
-    }
-  }
+// Rimuove diacritici (accenti)
+function removeDiacritics(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 
-  // Funzione per rimuovere diacritici (accenti)
-  const removeDiacritics = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// Mappa token -> info e alias senza accenti (es. GIU -> GIÙ): l'alias si aggiunge
+// solo se il token non esiste già (vince il primo). Per il token "principale", per
+// un termine presente in più righe vince l'ultima (si sovrascrive `tokenMap.set`).
+// Costruisce anche `canonicalByTerm`, finalizzato da `applyCanonicalForms`.
+function buildTokenMap(rows, lingua, localizedNounConceptByTerm, actionCanonicalConceptByTerm) {
+  const tokenMap = new Map();
+  const canonicalByTerm = new Map();
 
   for (const r of rows) {
     const type = mapTipoToCommandType(r.Tipo);
@@ -154,37 +166,59 @@ export async function ensureVocabulary(gameState = null) {
     } else if (!prev || token < prev) {
       canonicalByTerm.set(r.TermineID, token);
     }
-    const concept = (type === CommandType.NOUN && currentLingua !== 1)
+    const concept = (type === CommandType.NOUN && lingua !== 1)
       ? (localizedNounConceptByTerm.get(r.TermineID) || r.Concetto)
       : r.Concetto;
     const info = { type, canonical: null, termId: r.TermineID, concept };
     tokenMap.set(token, info);
-    // Aggiungi alias senza diacritici per tollerare input senza accenti (es. GIU -> GIÙ)
     const noAcc = removeDiacritics(token);
     if (noAcc !== token && !tokenMap.has(noAcc)) {
       tokenMap.set(noAcc, info);
     }
   }
-  // Finalizza canonical
+  return { tokenMap, canonicalByTerm };
+}
+
+// Finalizza la forma canonica di ogni voce del tokenMap (muta tokenMap in place).
+function applyCanonicalForms(tokenMap, canonicalByTerm) {
   for (const [tok, info] of tokenMap) {
     const canon = canonicalByTerm.get(info.termId) || tok;
     tokenMap.set(tok, { ...info, canonical: canon });
   }
+  return tokenMap;
+}
+
+// Carica il vocabolario da global.odessaData e costruisce:
+// - tokenMap: Map<string, { type, canonical, termId, concept }>
+export async function ensureVocabulary(gameState = null) {
+  const currentLingua = gameState?.currentLingua || 1;
+
+  const cached = vocabCacheByLingua.get(currentLingua);
+  if (cached) return cached;
+
+  const source = lexiconSource();
+  const rows = loadLexiconRows(source, currentLingua);
+  const localizedNounConceptByTerm = buildLocalizedNounConcepts(rows, source, currentLingua);
+  const actionCanonicalConceptByTerm = buildActionCanonicalConcepts(rows);
+  const { tokenMap, canonicalByTerm } = buildTokenMap(rows, currentLingua, localizedNounConceptByTerm, actionCanonicalConceptByTerm);
+  applyCanonicalForms(tokenMap, canonicalByTerm);
 
   const built = { tokenMap };
   vocabCacheByLingua.set(currentLingua, built);
   return built;
-}// Preprocess: rimuove punteggiatura comune (ma preserva '?'), rimuove accenti, normalizza spazi
+}
+
+// Preprocess: rimuove punteggiatura comune (ma preserva '?'), rimuove accenti, normalizza spazi
 function normalizeInput(input) {
   const withoutPunct = input
     // sostituisci punteggiatura comune con spazio, ma NON rimuovere '?' che è un comando valido
     // Nota: in una character class JS, ']' chiude la classe. Per includerlo va escapato (\]) oppure
     // posizionato come primo carattere della classe; qui manteniamo l'escape per chiarezza.
     // '[' invece non necessita di escape all'interno della classe.
-  // Manteniamo qui l'escape esplicito di ']' (\]) per massima leggibilità; '[' resta
-  // non escapato perché non necessario all'interno della classe.
-  .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
-  const noAcc = withoutPunct.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    // Manteniamo qui l'escape esplicito di ']' (\]) per massima leggibilità; '[' resta
+    // non escapato perché non necessario all'interno della classe.
+    .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ');
+  const noAcc = withoutPunct.normalize('NFD').replace(/[̀-ͯ]/g, '');
   return noAcc.trim().toUpperCase().replace(/\s+/g, ' ');
 }
 
@@ -213,14 +247,10 @@ const ACTION_NO_OBJECT = new Set([
   'ATTACCARE',
 ]);
 
-export async function parseCommand(dbPath, input, gameState = null) {
-  const vocab = await ensureVocabulary(gameState);
-  const { tokenMap } = vocab;
-  const currentLingua = gameState?.currentLingua || 1;
+// ParseResult di base: stesse chiavi, stesso ordine, stessi valori iniziali di sempre.
+function createBaseResult(input) {
   const OriginalInput = typeof input === 'string' ? input : '';
-
-  // Contract: non deve mai throware per input invalido; deve ritornare un parseResult deterministico.
-  const base = {
+  return {
     IsValid: false,
     OriginalInput,
     NormalizedInput: '',
@@ -243,183 +273,219 @@ export async function parseCommand(dbPath, input, gameState = null) {
     UnknownToken: null,
     UnknownNounToken: null,
   };
+}
 
+// I quattro controlli iniziali, nell'ordine attuale (tabella di decisione #1-4).
+// Ritorna il ParseResult di errore, oppure null se l'input passa tutti i controlli.
+function validateRawInput(input, base) {
   if (typeof input !== 'string') {
     return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'NOT_A_STRING' };
   }
-
   if (hasControlChars(input)) {
     return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'CONTROL_CHARS' };
   }
-
   const trimmed = input.trim();
   if (trimmed.length === 0) {
     return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'EMPTY_INPUT' };
   }
-
   if (trimmed.length > 500) {
     return { ...base, Error: ParseErrorType.INVALID_INPUT, Details: 'LENGTH_OUT_OF_RANGE' };
   }
+  return null;
+}
 
+// Normalizzazione, divisione in token, eliminazione delle stopword, token originali
+// corrispondenti. Allineamento invariato: il token originale di posizione i è la
+// parola i dell'input diviso sugli spazi (prima della rimozione della punteggiatura).
+function tokenize(input, tokenMap) {
   const NormalizedInput = normalizeInput(input);
   const rawTokens = NormalizedInput.length ? NormalizedInput.split(' ') : [];
-  // Preserva i token originali (senza normalizzazione uppercase) per messaggi utente
+  const trimmed = input.trim();
   const originalTokens = trimmed.length ? trimmed.split(/\s+/) : [];
 
-  // Mappa token -> info e filtra STOPWORD
   const looked = rawTokens.map((t) => tokenMap.get(t) || null);
   const filteredTokens = [];
-  const filteredOriginalTokens = []; // Token originali corrispondenti
+  const filteredOriginalTokens = [];
   for (let i = 0; i < rawTokens.length; i++) {
     const info = looked[i];
     if (info && info.type === CommandType.STOPWORD) continue; // scarta
     filteredTokens.push({ token: rawTokens[i], info });
     filteredOriginalTokens.push(originalTokens[i] || rawTokens[i]);
   }
+  return { NormalizedInput, filteredTokens, filteredOriginalTokens };
+}
 
-  const baseWithNormalized = { ...base, NormalizedInput };
+// Costruttore condiviso per ACTION + nome (nome semplice o composto): NounIndex è
+// passato come parametro (idx per il nome semplice, null per il composto).
+function buildActionNounResult(verbInfo, nounInfo, nounLiteral, nounIndex, base) {
+  return {
+    ...base,
+    IsValid: true,
+    CommandType: CommandType.ACTION,
+    CanonicalVerb: verbInfo.canonical,
+    CanonicalNoun: nounInfo.canonical,
+    VerbTermId: verbInfo.termId,
+    VerbConcept: verbInfo.concept,
+    NounTermId: nounInfo.termId,
+    NounConcept: nounInfo.concept,
+    NounLiteral: nounLiteral,
+    NounIndex: nounIndex,
+  };
+}
 
-  // Nessun token utile
-  if (filteredTokens.length === 0) {
-    return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN };
+// Costruttore condiviso per CARICA/LOAD + nome (nome semplice o composto): stesso
+// esito di #98, NounIndex passato come parametro (idx per il nome semplice, null per
+// il composto, come oggi). Il verbo mostrato è sempre "caricare" (IT) / "load" (EN),
+// mai il concetto italiano forzato come canonico per i verbi di sistema.
+function buildCaricaResult(verbInfo, nounInfo, nounLiteral, nounIndex, base, currentLingua) {
+  return {
+    ...base,
+    IsValid: true,
+    CommandType: CommandType.ACTION,
+    CanonicalVerb: currentLingua === 1 ? 'CARICARE' : 'LOAD',
+    VerbTermId: verbInfo.termId,
+    VerbConcept: 'CARICARE',
+    CanonicalNoun: nounInfo.canonical,
+    NounTermId: nounInfo.termId,
+    NounConcept: nounInfo.concept,
+    NounLiteral: nounLiteral,
+    NounIndex: nounIndex,
+  };
+}
+
+// 1 token (tabella di decisione #6-9).
+function parseSingleToken({ token, info }, base) {
+  if (!info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
+
+  if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
+    return {
+      ...base,
+      IsValid: true,
+      CommandType: info.type,
+      CanonicalVerb: info.canonical,
+      VerbTermId: info.termId,
+      VerbConcept: info.concept,
+    };
   }
 
-  // Caso 1 token
-  if (filteredTokens.length === 1) {
-    const { token, info } = filteredTokens[0];
-    if (!info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: token };
-    if (info.type === CommandType.NAVIGATION || info.type === CommandType.SYSTEM) {
+  if (info.type === CommandType.ACTION) {
+    // Verbi che non richiedono oggetto
+    if (ACTION_NO_OBJECT.has(info.concept)) {
       return {
-        ...baseWithNormalized,
+        ...base,
         IsValid: true,
-        CommandType: info.type,
+        CommandType: CommandType.ACTION,
         CanonicalVerb: info.canonical,
         VerbTermId: info.termId,
         VerbConcept: info.concept,
       };
     }
-    if (info.type === CommandType.ACTION) {
-      // Verbi che non richiedono oggetto
-      if (ACTION_NO_OBJECT.has(info.concept)) {
-        return {
-          ...baseWithNormalized,
-          IsValid: true,
-          CommandType: CommandType.ACTION,
-          CanonicalVerb: info.canonical,
-          VerbTermId: info.termId,
-          VerbConcept: info.concept,
-        };
-      }
-      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
-    }
-    // NOUN singolo o altro
-    return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    return { ...base, Error: ParseErrorType.SYNTAX_ACTION_INCOMPLETE };
   }
 
-  // Caso 2 o 3 token (supporto indice numerico opzionale come terzo token)
+  // NOUN singolo o altro
+  return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+}
+
+// 3 token senza indice numerico finale: nome composto (2° e 3°), con ACTION o con
+// CARICARE (tabella di decisione #10-13). Supporto NOUN multi-parola per mantenere
+// compatibilità con VociLessico che contengono spazi (es. "LARGE TABLE").
+function parseCompoundNoun(t1, t2, t3, filteredOriginalTokens, tokenMap, base, currentLingua) {
+  if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+
+  const combinedToken = `${t2.token} ${t3.token}`;
+  const combinedInfo = tokenMap.get(combinedToken) || null;
+  const isCombinedNoun = !!combinedInfo && combinedInfo.type === CommandType.NOUN;
+  const nounLiteral = `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase();
+
+  if (isCombinedNoun && t1.info.type === CommandType.ACTION) {
+    return buildActionNounResult(t1.info, combinedInfo, nounLiteral, null, base);
+  }
+
+  // CARICA/LOAD seguito da un nome composto (vedi anche il caso a 2 token, sopra).
+  if (isCombinedNoun && t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE') {
+    return buildCaricaResult(t1.info, combinedInfo, nounLiteral, null, base, currentLingua);
+  }
+
+  return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+}
+
+// 2 token, o 3 con indice numerico finale (tabella di decisione #14-20).
+function parseTwoTokens(t1, t2, idx, filteredOriginalTokens, base, currentLingua) {
+  if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
+
+  if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
+    // CARICA/LOAD seguito da un nome diventa un'azione (#98, TD Lessico L2 risposte e
+    // testi, §5.2): da sola (un token) resta il caricamento della partita, gestito sopra.
+    if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE' && t2.info && t2.info.type === CommandType.NOUN) {
+      const nounLiteral = (filteredOriginalTokens[1] || t2.token).toLowerCase();
+      return buildCaricaResult(t1.info, t2.info, nounLiteral, idx, base, currentLingua);
+    }
+    // Non devono avere oggetto
+    return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+  }
+
+  if (t1.info.type === CommandType.ACTION) {
+    if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
+    if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    const nounLiteral = (filteredOriginalTokens[1] || t2.token).toLowerCase();
+    return buildActionNounResult(t1.info, t2.info, nounLiteral, idx, base);
+  }
+
+  // T1 NOUN o altro -> struttura non valida
+  return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+}
+
+/**
+ * Analizza un comando utente e produce un ParseResult deterministico; non lancia
+ * mai eccezioni per input invalido (#63, lotto 2: nuova firma senza `dbPath`).
+ * @param {*} input - testo digitato dal giocatore (qualunque valore: i non stringa
+ *   producono un ParseResult di errore, mai un'eccezione)
+ * @param {{currentLingua?: number}|null} gameState - stato di gioco, solo per la lingua
+ * @returns {Promise<object>} ParseResult
+ */
+export async function parseInput(input, gameState = null) {
+  const vocab = await ensureVocabulary(gameState);
+  const { tokenMap } = vocab;
+  const currentLingua = gameState?.currentLingua || 1;
+  const base = createBaseResult(input);
+
+  const invalid = validateRawInput(input, base);
+  if (invalid) return invalid;
+
+  const { NormalizedInput, filteredTokens, filteredOriginalTokens } = tokenize(input, tokenMap);
+  const baseWithNormalized = { ...base, NormalizedInput };
+
+  // Nessun token utile (tabella di decisione #5)
+  if (filteredTokens.length === 0) {
+    return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN };
+  }
+
+  if (filteredTokens.length === 1) {
+    return parseSingleToken(filteredTokens[0], baseWithNormalized);
+  }
+
+  // 2 o 3 token (supporto indice numerico opzionale come terzo token)
   if (filteredTokens.length === 2 || filteredTokens.length === 3) {
     const [t1, t2, t3] = filteredTokens;
     const idx = t3 && isDigits(t3.token) ? parseInt(t3.token, 10) : null;
     const extra = filteredTokens.length === 3 && idx === null;
 
-    // Supporto NOUN multi-parola (2 token) per mantenere compatibilità con VociLessico che contengono spazi.
-    // Esempio: "EXAMINE LARGE TABLE" -> NOUN="LARGE TABLE" se esiste una voce lessicale omonima.
     if (extra) {
-      if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
-
-      if (t1.info.type === CommandType.ACTION) {
-        const combinedToken = `${t2.token} ${t3.token}`;
-        const combinedInfo = tokenMap.get(combinedToken) || null;
-        if (combinedInfo && combinedInfo.type === CommandType.NOUN) {
-          return {
-            ...baseWithNormalized,
-            IsValid: true,
-            CommandType: CommandType.ACTION,
-            CanonicalVerb: t1.info.canonical,
-            CanonicalNoun: combinedInfo.canonical,
-            VerbTermId: t1.info.termId,
-            VerbConcept: t1.info.concept,
-            NounTermId: combinedInfo.termId,
-            NounConcept: combinedInfo.concept,
-            NounLiteral: `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase(),
-            NounIndex: null,
-          };
-        }
-      }
-
-      // CARICA/LOAD seguito da un nome composto (vedi anche il caso a 2 token, sopra).
-      if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE') {
-        const combinedToken = `${t2.token} ${t3.token}`;
-        const combinedInfo = tokenMap.get(combinedToken) || null;
-        if (combinedInfo && combinedInfo.type === CommandType.NOUN) {
-          return {
-            ...baseWithNormalized,
-            IsValid: true,
-            CommandType: CommandType.ACTION,
-            CanonicalVerb: currentLingua === 1 ? 'CARICARE' : 'LOAD',
-            VerbTermId: t1.info.termId,
-            VerbConcept: 'CARICARE',
-            CanonicalNoun: combinedInfo.canonical,
-            NounTermId: combinedInfo.termId,
-            NounConcept: combinedInfo.concept,
-            NounLiteral: `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase(),
-            NounIndex: null,
-          };
-        }
-      }
-
-      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+      return parseCompoundNoun(t1, t2, t3, filteredOriginalTokens, tokenMap, baseWithNormalized, currentLingua);
     }
-
-    if (!t1.info) return { ...baseWithNormalized, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
-
-    if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
-      // CARICA/LOAD seguito da un nome diventa un'azione (#98, TD Lessico L2 risposte e
-      // testi, §5.2): da sola (un token) resta il caricamento della partita, gestito sopra.
-      // Il verbo mostrato nei messaggi generici è sempre "caricare" (IT) / "load" (EN),
-      // mai il concetto italiano forzato come canonico per i verbi di sistema (§5, precisazione 1).
-      if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE' && t2.info && t2.info.type === CommandType.NOUN) {
-        return {
-          ...baseWithNormalized,
-          IsValid: true,
-          CommandType: CommandType.ACTION,
-          CanonicalVerb: currentLingua === 1 ? 'CARICARE' : 'LOAD',
-          VerbTermId: t1.info.termId,
-          VerbConcept: 'CARICARE',
-          CanonicalNoun: t2.info.canonical,
-          NounTermId: t2.info.termId,
-          NounConcept: t2.info.concept,
-          NounLiteral: (filteredOriginalTokens[1] || t2.token).toLowerCase(),
-          NounIndex: idx,
-        };
-      }
-      // Non devono avere oggetto
-      return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
-    }
-
-    if (t1.info.type === CommandType.ACTION) {
-      if (!t2.info) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
-      if (t2.info.type !== CommandType.NOUN) return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
-      return {
-        ...baseWithNormalized,
-        IsValid: true,
-        CommandType: CommandType.ACTION,
-        CanonicalVerb: t1.info.canonical,
-        CanonicalNoun: t2.info.canonical,
-        VerbTermId: t1.info.termId,
-        VerbConcept: t1.info.concept,
-        NounTermId: t2.info.termId,
-        NounConcept: t2.info.concept,
-        NounLiteral: (filteredOriginalTokens[1] || t2.token).toLowerCase(),
-        NounIndex: idx,
-      };
-    }
-
-    // T1 NOUN o altro -> struttura non valida
-    return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    return parseTwoTokens(t1, t2, idx, filteredOriginalTokens, baseWithNormalized, currentLingua);
   }
 
-  // Troppi token
+  // Troppi token (tabella di decisione #21)
   return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 }
 
+/**
+ * @deprecated usare `parseInput(input, gameState)`. Involucro compatibile mantenuto
+ * per i test protetti che chiamano `parseCommand(null, ...)` (27 file); da rimuovere
+ * solo quando quei test potranno migrare (non in v1.4.2, TD Lotto 2 Parser, D-L2-1).
+ */
+export async function parseCommand(dbPath, input, gameState = null) {
+  return parseInput(input, gameState);
+}
