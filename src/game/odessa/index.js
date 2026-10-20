@@ -11,6 +11,8 @@ import { loadWeight } from './handlers/weight.js';
 import { spegni, scappa, sorridi, dormi, parla } from './handlers/flavor.js';
 import { attackGuard } from './handlers/guard.js';
 import { dig } from './handlers/dig.js';
+import { prerequisiteTypes } from './interactions/prerequisites.js';
+import { effectTypes } from './interactions/effects.js';
 import { interaction } from '../../logic/core/handlers/interaction.js';
 import { rotateDirection, rotateKnob } from './handlers/rotate.js';
 import { moveObject } from './handlers/move.js';
@@ -53,5 +55,7 @@ export const odessaGame = {
     drop,               // 26 core.action.drop
     fallback,           // 27 core.action.fallback
   ],
+  prerequisiteTypes,
+  effectTypes,
   rules,
 };

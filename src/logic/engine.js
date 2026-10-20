@@ -10,21 +10,12 @@ import { applyAllTurnEffects } from './turnEffects/index.js';
 import { isEngineDebugEnabled, pushEngineDebugEvent, resetEngineDebugTrace } from './engineDebug.js';
 
 import { appVersion } from '../version.js';
-import { EFFECT_TYPES, PREREQUISITE_TYPES } from './interactionSchema.js';
 import { odessaGame } from '../game/odessa/index.js';
 import { getGameData } from './core/gameData.js';
 import { createContext } from './core/context.js';
 import { dispatch } from './core/dispatch.js';
 import { buildCommand } from './core/command.js';
-
-// Avvisi per tipi sconosciuti nei dati delle interazioni: una sola volta per tipo e processo.
-const warnedUnknownTypes = new Set();
-function warnUnknownTypeOnce(kind, tipo) {
-  const key = `${kind}:${tipo}`;
-  if (warnedUnknownTypes.has(key)) return;
-  warnedUnknownTypes.add(key);
-  console.warn(`[engine] ${kind} di tipo sconosciuto in Interazioni.json: ${tipo}`);
-}
+import { cercaEseguiInterazione } from './core/interactions.js';
 
 // Factory: ogni sessione ottiene un motore con stato proprio (closure), senza istanze di modulo.
 export function createEngine(game = odessaGame) {
@@ -927,103 +918,6 @@ export function createEngine(game = odessaGame) {
     return str.toUpperCase().replace(/\s+/g, '_');
   }
 
-  // Funzione per verificare i prerequisiti di un'interazione.
-  // Restituisce { ok: true } oppure { ok: false, prerequisito } con il primo prerequisito fallito.
-  function verificaPrerequisiti(prerequisiti) {
-    if (!prerequisiti || prerequisiti.length === 0) return { ok: true };
-    
-    for (const req of prerequisiti) {
-      if (req.tipo === 'OGGETTO_IN_INVENTARIO') {
-        const oggetto = gameState.Oggetti.find(o => 
-          normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
-          o.IDLuogo === 0 && 
-          o.Attivo >= 3
-        );
-        if (!oggetto) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'OGGETTO_IN_LUOGO') {
-        const oggetto = gameState.Oggetti.find(o => 
-          normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
-          o.IDLuogo === req.luogo && 
-          o.Attivo >= 1
-        );
-        if (!oggetto) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'OGGETTO_VISIBILE') {
-        const oggetto = gameState.Oggetti.find(o => 
-          normalizeForComparison(o.Oggetto) === normalizeForComparison(req.target) && 
-          o.IDLuogo === req.luogo && 
-          o.Attivo >= 1
-        );
-        if (!oggetto) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'SEQUENZA_COMPLETATA') {
-        const seq = gameState.sequenze[req.target];
-        if (!seq || !seq.completata) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'INTERAZIONE_ESEGUITA') {
-        if (!gameState.interazioniEseguite.includes(req.target)) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'FLAG_FALSE') {
-        if (getNestedProperty(gameState, req.flag)) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'INVENTARIO_NON_PIENO') {
-        // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
-        const oggettiInInventario = (gameState.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
-        if (oggettiInInventario.length >= game.config.regole.limiteInventario) return { ok: false, prerequisito: req };
-      } else if (req.tipo === 'DIREZIONE_APERTA') {
-        // Vero se la direzione è attualmente aperta tramite toggle (es. porta del 44, pulsante)
-        const key = `${req.luogo}_${req.direzione}`;
-        const isOpen = !!gameState.direzioniToggle[key];
-        if (!isOpen) return { ok: false, prerequisito: req };
-      } else if (!PREREQUISITE_TYPES.has(req.tipo)) {
-        // Tipo sconosciuto: fail-closed (prerequisito non soddisfatto), segnalato una sola volta.
-        warnUnknownTypeOnce('prerequisito', req.tipo);
-        return { ok: false, prerequisito: req };
-      }
-    }
-    return { ok: true };
-  }
-
-  // === SISTEMA PUNTEGGIO MISTERI ===
-  // Assegna +3 punti quando un mistero viene risolto automaticamente tramite effetti
-  // statoPreToggle: stato del toggle PRIMA dell'effetto (solo per TOGGLE_DIREZIONE), calcolato in applicaEffetti
-  function assegnaPunteggioMistero(effetto, { statoPreToggle } = {}) {
-    let misteroId = null;
-    
-    // Task 4a: VISIBILITA - oggetto diventa visibile
-    if (effetto.tipo === 'VISIBILITA') {
-      misteroId = `visibilita_${effetto.target}`;
-    }
-    
-    // Task 4b: SBLOCCA_DIREZIONE - direzione sbloccata permanentemente
-    // IMPORTANTE: Direzioni bidirezionali (A↔B) contano come 1 solo mistero
-    // Usiamo sempre la coppia (min, max) per normalizzare
-    else if (effetto.tipo === 'SBLOCCA_DIREZIONE') {
-      const luogoA = effetto.luogo;
-      const luogoB = effetto.destinazione;
-      // Normalizza: usa sempre coppia ordinata (min, max)
-      const min = Math.min(luogoA, luogoB);
-      const max = Math.max(luogoA, luogoB);
-      misteroId = `direzione_${min}_${max}`;
-    }
-    
-    // Task 4c: TOGGLE_DIREZIONE - solo prima apertura (0 → valore)
-    else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
-      // Usa lo stato PRE-toggle passato da applicaEffetti()
-      // Assegna punti solo se sta APRENDO (false → true)
-      // Chiusure (true → false) e riaperture successive: NO +3
-      if (statoPreToggle === false) {
-        // Normalizza come SBLOCCA_DIREZIONE: usa coppia ordinata (min, max)
-        const luogoA = effetto.luogo;
-        const luogoB = effetto.destinazione;
-        const min = Math.min(luogoA, luogoB);
-        const max = Math.max(luogoA, luogoB);
-        misteroId = `direzione_${min}_${max}`;
-      }
-    }
-    
-    // Assegna +3 punti se il mistero non è già stato risolto
-    if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
-      gameState.punteggio.totale += game.config.punteggio.mistero;
-      gameState.punteggio.misteriRisolti.add(misteroId);
-    }
-  }
-
   /**
    * Consuma un fiammifero (R8, §4.2): usata da `accendi fiammifero` e dall'effetto
    * CONSUMA_FIAMMIFERO (interazione `accendi_lampada`). Se la scorta si esaurisce,
@@ -1070,237 +964,6 @@ export function createEngine(game = odessaGame) {
     return { accepted: true, resultType: 'OK', message, effects: [] };
   }
 
-  // Funzione per applicare gli effetti di un'interazione
-  // @param {boolean} skipMisteri - true se l'interazione ha `punteggio: false` (R7, §4.1):
-  //   nessun punto mistero per i suoi effetti
-  // @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. fiammiferi finiti)
-  function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } = {}) {
-    const extraMessages = [];
-    for (const effetto of effetti) {
-      // Stato precedente al toggle: variabile locale (non si scrive sui dati globali condivisi)
-      let statoPreToggle;
-      if (effetto.tipo === 'VISIBILITA') {
-        // Se l'effetto specifica un luogo, cerca solo lì. Altrimenti cerca nel luogo corrente
-        const targetLuogo = effetto.luogo !== undefined ? effetto.luogo : luogoCorrente;
-        const oggetto = gameState.Oggetti.find(o => 
-          normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target) &&
-          (targetLuogo === undefined || o.IDLuogo === targetLuogo)
-        );
-        if (oggetto) {
-          oggetto.Attivo = effetto.valore;
-        }
-      } else if (effetto.tipo === 'SPOSTA_OGGETTO') {
-        const oggetto = gameState.Oggetti.find(o => 
-          normalizeForComparison(o.Oggetto) === normalizeForComparison(effetto.target)
-        );
-        if (oggetto) {
-          oggetto.IDLuogo = effetto.a_luogo;
-        }
-      } else if (effetto.tipo === 'SBLOCCA_DIREZIONE') {
-        // Modifica la direzione nel gameState (da implementare con Luoghi dinamici)
-        // Per ora registriamo l'effetto
-        const key = `${effetto.luogo}_${effetto.direzione}`;
-        if (!gameState.direzioniSbloccate) gameState.direzioniSbloccate = {};
-        gameState.direzioniSbloccate[key] = effetto.destinazione;
-      } else if (effetto.tipo === 'TOGGLE_DIREZIONE') {
-        const key = `${effetto.luogo}_${effetto.direzione}`;
-        if (!gameState.direzioniToggle[key]) {
-          gameState.direzioniToggle[key] = false;
-        }
-        // Salva stato PRIMA del toggle per assegnaPunteggioMistero
-        statoPreToggle = gameState.direzioniToggle[key];
-        gameState.direzioniToggle[key] = !gameState.direzioniToggle[key];
-      } else if (effetto.tipo === 'VITTORIA') {
-        gameState.ended = true;
-        gameState.victory = true;
-      } else if (effetto.tipo === 'SEQUENZA') {
-        // Gestione sequenze (es. combinazione cassaforte)
-        // Questo effetto viene gestito direttamente in cercaEseguiInterazione
-        // perché richiede accesso alla risposta e controllo flusso
-      } else if (effetto.tipo === 'SET_FLAG') {
-        // Imposta un flag in gameState usando percorso nested (es. "timers.lampadaAccesa")
-        setNestedProperty(gameState, effetto.flag, effetto.valore);
-      } else if (effetto.tipo === 'RESET_COUNTER') {
-        // Resetta un counter in gameState a 0 (es. "turn.turnsInDarkness")
-        setNestedProperty(gameState, effetto.counter, 0);
-      } else if (effetto.tipo === 'CONSUMA_FIAMMIFERO') {
-        // R8: consumo di un fiammifero (interazione accendi_lampada)
-        if (consumaFiammifero()) {
-          extraMessages.push(getSystemMessage('engine.matches.finished', gameState.currentLingua));
-        }
-      } else if (!EFFECT_TYPES.has(effetto.tipo)) {
-        warnUnknownTypeOnce('effetto', effetto.tipo);
-      }
-      
-      // === SISTEMA PUNTEGGIO MISTERI ===
-      // Assegna +3 punti se questo effetto risolve un mistero (non per punteggio: false, §4.1)
-      if (!skipMisteri) {
-        assegnaPunteggioMistero(effetto, { statoPreToggle });
-      }
-    }
-    return extraMessages;
-  }
-
-  // Funzione per cercare e eseguire un'interazione
-  function cercaEseguiInterazione(verb, noun) {
-    const interazioni = (getGameData().Interazioni || [])
-      .filter(i => i.IDLingua === gameState.currentLingua);
-    
-    // Cerca un'interazione che corrisponda
-    for (const interazione of interazioni) {
-      if (normalizeForComparison(interazione.trigger.verbo) === normalizeForComparison(verb) &&
-          normalizeForComparison(interazione.trigger.oggetto) === normalizeForComparison(noun)) {
-        
-        // Verifica luogo
-        if (interazione.condizioni.luogo && interazione.condizioni.luogo !== gameState.currentLocationId) {
-          continue;
-        }
-        
-        // Verifica se già eseguita (se non ripetibile)
-        if (!interazione.ripetibile && gameState.interazioniEseguite.includes(interazione.id)) {
-          const messaggio = interazione.risposta_gia_eseguita || getSystemMessage('engine.interaction.alreadyDone', gameState.currentLingua);
-          return { accepted: true, resultType: 'OK', message: messaggio, effects: [] };
-        }
-        
-        // Verifica prerequisiti
-        const esitoPrerequisiti = verificaPrerequisiti(interazione.condizioni.prerequisiti);
-        if (!esitoPrerequisiti.ok) {
-          const rispostaPrerequisito = esitoPrerequisiti.prerequisito.risposta;
-          if (rispostaPrerequisito) {
-            // Risposta dedicata: nessun effetto, nessun punteggio, interazione non registrata come eseguita
-            return { accepted: true, resultType: 'OK', message: rispostaPrerequisito, effects: [] };
-          }
-          // Senza risposta dedicata: passa all'interazione successiva
-          continue;
-        }
-        
-        // Interazione trovata e valida
-        // Determina la risposta (per toggle)
-        let risposta = interazione.risposta;
-        if (interazione.trigger.verbo === 'PREMERE' || interazione.trigger.verbo === 'RUOTARE') {
-          // Verifica stato toggle
-          const primoEffetto = interazione.effetti.find(e => e.tipo === 'TOGGLE_DIREZIONE');
-          if (primoEffetto) {
-            const key = `${primoEffetto.luogo}_${primoEffetto.direzione}`;
-            const statoCorrente = gameState.direzioniToggle[key] || false;
-            risposta = statoCorrente ? interazione.risposta_chiudi : interazione.risposta_apri;
-          }
-        }
-        
-        // Gestione speciale per effetto SEQUENZA
-        const effettoSequenza = interazione.effetti.find(e => e.tipo === 'SEQUENZA');
-        if (effettoSequenza) {
-          const key = effettoSequenza.target;
-          const direzione = effettoSequenza.direzione;
-          
-          // Inizializza sequenza se non esiste
-          if (!gameState.sequenze[key]) {
-            gameState.sequenze[key] = {
-              pattern: effettoSequenza.pattern,
-              progressione: [],
-              completata: false
-            };
-          }
-          
-          const seq = gameState.sequenze[key];
-          
-          // Se già completata, non fare nulla
-          if (seq.completata) {
-            return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.safeAlreadyOpen', gameState.currentLingua), effects: [] };
-          }
-          
-          // Verifica se la direzione è corretta per il passo attuale
-          const passoAtteso = seq.pattern[seq.progressione.length];
-          
-          if (direzione === passoAtteso) {
-            seq.progressione.push(direzione);
-            
-            // Sequenza completata?
-            if (seq.progressione.length === seq.pattern.length) {
-              seq.completata = true;
-              
-              // § 3.2.3 Task 5: Award +2 points for cassaforte sequence completion
-              // Anomalia nota (TD Lotto 3 Configurazione di gioco, E-6, v1.1): punteggio di
-              // interazione (+2), ma deduplicato in misteriRisolti invece di interazioniPunteggio.
-              // Comportamento invariato, non osservabile dal giocatore; da riconsiderare nel lotto 4b.
-              if (!gameState.punteggio.misteriRisolti.has('sequenza_cassaforte')) {
-                gameState.punteggio.misteriRisolti.add('sequenza_cassaforte');
-                gameState.punteggio.totale += game.config.punteggio.interazione;
-              }
-              
-              applicaEffetti(effettoSequenza.effetti_completamento, interazione.condizioni.luogo);
-              risposta = interazione.risposta_completa;
-              
-              // Usa funzione centralizzata per descrizione luogo e oggetti
-              const descrizioneCompleta = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
-              const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
-              
-              return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
-            } else {
-              risposta = interazione.risposta_step;
-              return { accepted: true, resultType: 'OK', message: risposta, effects: [] };
-            }
-          } else {
-            // Errore: reset sequenza
-            seq.progressione = [];
-            risposta = interazione.risposta_errore;
-            return { accepted: true, resultType: 'OK', message: risposta, effects: [] };
-          }
-        }
-        
-        // === SISTEMA PUNTEGGIO: Assegna +2 punti PRIMA di applicare effetti ===
-        // Importante: deve avvenire PRIMA di applicaEffetti() perché VITTORIA imposta ended=true
-        // Campo `punteggio` (R7, §4.1): assente -> chiave = id; stringa -> chiave condivisa
-        // con l'interazione indicata; false -> nessun +2 (e nessun mistero, vedi applicaEffetti)
-        const punteggioSkip = interazione.punteggio === false;
-        const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
-        if (!punteggioSkip && !gameState.punteggio.interazioniPunteggio.has(chiavePunteggio)) {
-          gameState.punteggio.totale += game.config.punteggio.interazione;
-          gameState.punteggio.interazioniPunteggio.add(chiavePunteggio);
-        }
-
-        // Segna come eseguita
-        if (!interazione.ripetibile) {
-          gameState.interazioniEseguite.push(interazione.id);
-        }
-
-        // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-        const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo, { skipMisteri: punteggioSkip });
-        if (extraMessages.length > 0) {
-          risposta = risposta + '\n\n' + extraMessages.join('\n\n');
-        }
-
-        // Verifica se è VITTORIA per aggiungere flag ended nella risposta
-        const hasVittoriaEffect = interazione.effetti.some(e => e.tipo === 'VITTORIA');
-        const resultBase = { 
-          accepted: true, 
-          resultType: 'OK', 
-          effects: interazione.effetti
-        };
-        
-        // Se VITTORIA, aggiungi flag ended e victory alla risposta
-        if (hasVittoriaEffect) {
-          resultBase.ended = true;
-          resultBase.victory = true;
-        }
-        
-        // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
-        const haVisibilitaEffects = interazione.effetti.some(e => e.tipo === 'VISIBILITA');
-        if (haVisibilitaEffects) {
-          // Usa funzione centralizzata per descrizione luogo e oggetti
-          const descrizioneCompleta = generaDescrizioneLuogoConOggetti(gameState.currentLocationId);
-          const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
-          
-          return { ...resultBase, message: messaggioCompleto };
-        }
-        
-        return { ...resultBase, message: risposta };
-      }
-    }
-    
-    return null;
-  }
-
   // Funzioni del motore esposte ai gestori di verbo (TD Lotto 4a, §3.2); leggono sempre
   // il `gameState` corrente della closure.
   const helpers = {
@@ -1311,7 +974,12 @@ export function createEngine(game = odessaGame) {
       (obj.IDLuogo === gameState.currentLocationId || obj.IDLuogo === 0) &&
       obj.Attivo >= 1
     ),
-    cercaEseguiInterazione,
+    getNestedProperty,
+    setNestedProperty,
+    consumaFiammifero,
+    // Interazioni (TD Lotto 4b, §3.1): stessa firma per i gestori del lotto 4a; il contesto
+    // si crea a ogni chiamata sul `gameState` corrente.
+    cercaEseguiInterazione: (verb, noun) => cercaEseguiInterazione(verb, noun, createContext(gameState, game, helpers)),
     accendiFiammifero,
     setCurrentLocation,
     getDirezioniLuogo,

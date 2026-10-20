@@ -62,10 +62,22 @@ I parametri specifici di Odessa (ID di luoghi e oggetti con ruolo speciale, rego
 - Rimosso codice morto: casi `SU/GIU/GIÙ` della mappa direzioni e stub `default` di SYSTEM.
 - Nuova regola ESLint `no-restricted-imports` (error) su `src/logic/core/**` verso `**/game/**`; nuovo `tests/architecture.test.ts` (dipendenze, ordine dei gestori, copertura del lessico, equivalenza `createEngine()`/`createEngine(odessaGame)`).
 
+## v1.4.2 — lotto 4b: interazioni
+
+### Sintesi
+`verificaPrerequisiti` (complessità 23), `applicaEffetti` (21), `cercaEseguiInterazione` (30, 103 righe) e `assegnaPunteggioMistero` escono da `engine.js`: un ciclo generico in `core/` e registri di prerequisiti ed effetti nel gioco. Comportamento invariato, protetto da istantanea delle risposte, tracce motore e HTTP, salvataggi, caratterizzazione e percorsi completi (138 punti).
+
+### Modifiche
+- Nuovo `src/logic/core/interactions.js` (ricerca ed esecuzione delle interazioni, sequenze, punteggio di interazione, risultato) e, in `src/game/odessa/`, i registri `interactions/prerequisites.js` (8 tipi) e `interactions/effects.js` (9 tipi), `scoring.js` (punteggio dei misteri) e le regole `toggleResponseVerbs` e `sequence` in `rules.js` (#63).
+- La ricerca nei registri usa `Object.hasOwn`: un tipo che coincide con una proprietà ereditata (es. `toString`) produce l'avviso di tipo sconosciuto come prima.
+- `warnUnknownTypeOnce` spostata in `core/` (stesso testo e stessa memoria per processo); `getNestedProperty`, `setNestedProperty`, `consumaFiammifero` esposte ai gestori tramite `helpers`.
+- Nuovo `tests/interactions.registry.test.ts`: chiavi dei registri uguali a quelle di `interactionSchema.js` in entrambe le direzioni, voci tutte funzioni, verbi con risposta di apertura/chiusura coerenti con i dati, tipi ereditati.
+- Anomalia nota trascritta senza correzione: il completamento della combinazione della cassaforte conta come "mistero risolto" (D-4b-4).
+
 ## Quality gates
 - Build: PASS
-- Test (Vitest): PASS (499 passed, 17 skipped prima del lotto 4a; 507 passed, 17 skipped dopo, incluso `tests/architecture.test.ts`)
-- Lint: PASS (uscita 0) — 11 avvisi `complexity`, 6 `max-lines-per-function`, 3 `max-depth` in `src/` (da 12/7/6 prima del lotto 4a; nessun avviso nei file nuovi)
+- Test (Vitest): PASS (507 passed, 17 skipped prima del lotto 4b; 515 passed, 17 skipped dopo, incluso `tests/interactions.registry.test.ts`)
+- Lint: PASS (uscita 0) — 8 avvisi `complexity`, 5 `max-lines-per-function`, 1 `max-depth` in `src/` (da 11/6/3 prima del lotto 4b; nessun avviso nei file nuovi)
 
 ## Note
 - Dopo il deploy della v1.4.2, eliminare la variabile `DISABLE_LEGACY_ENDPOINTS` da Railway (impostata a `1` il 2026-10-19 come misura provvisoria, non più necessaria).
