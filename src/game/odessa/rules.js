@@ -3,6 +3,33 @@
 import { rankKeyFor } from '../../logic/core/gameConfig.js';
 import { CONFIG } from './config.js';
 
+// Punteggio dei misteri (TD Lotto 4b, §3.3): riesportato come regola del gioco.
+export { awardMystery } from './scoring.js';
+
+// Verbi delle interazioni che rispondono con il testo di apertura/chiusura del toggle
+// (`risposta_apri` / `risposta_chiudi`) invece di `risposta` (TD Lotto 4b, §3.4 passo 5;
+// D-4b-3: regola esplicita di Odessa, non generica). Il test dei registri verifica che ogni
+// interazione dei dati con un effetto TOGGLE_DIREZIONE abbia il verbo in questo insieme.
+export const toggleResponseVerbs = new Set(['PREMERE', 'RUOTARE']);
+
+// Regole della sequenza (cassaforte) usate dal meccanismo generico di `core/interactions.js`
+// (TD Lotto 4b, §3.4.1).
+export const sequence = {
+  // Sequenza già completata: "la cassaforte è già aperta".
+  alreadyCompletedMessageKey: 'engine.safeAlreadyOpen',
+
+  // § 3.2.3 Task 5: Award +2 points for cassaforte sequence completion
+  // Anomalia nota (TD Lotto 3 Configurazione di gioco, E-6, v1.1; TD Lotto 4b D-4b-4): punteggio di
+  // interazione (+2), ma deduplicato in misteriRisolti invece di interazioniPunteggio, con
+  // chiave fissa (non `seqKey`). Comportamento invariato, trascritto alla lettera.
+  onCompleted(seqKey, ctx) {
+    if (!ctx.state.punteggio.misteriRisolti.has('sequenza_cassaforte')) {
+      ctx.state.punteggio.misteriRisolti.add('sequenza_cassaforte');
+      ctx.state.punteggio.totale += ctx.game.config.punteggio.interazione;
+    }
+  },
+};
+
 /**
  * Verifica se c'è una fonte di luce attiva
  * (spostata alla lettera da `hasFonteLuceAttiva` di `turnEffects/torchEffect.js`).
