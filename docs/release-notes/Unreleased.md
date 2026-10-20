@@ -51,10 +51,21 @@ I parametri specifici di Odessa (ID di luoghi e oggetti con ruolo speciale, rego
 - Nuova `tests/gameConfig.test.ts`: caricamento e congelamento di `CONFIG`, validazione (chiave di primo livello e chiave annidata mancante, ID non intero, `versione` errata), coerenza di tutti gli ID e le chiavi di messaggio citati in `Configurazione.json` con i dati reali (`Luoghi.json`, `Oggetti.json`, `MessaggiSistema.json`, `TerminiLessico.json`), equivalenza di `rankKeyFor` con la cascata per ogni punteggio da 0 a 140.
 - Nessuna modifica a `src/initOdessa.js`: la configurazione non passa da `global.odessaData`, indipendente dall'ordine di inizializzazione.
 
+## v1.4.2 — lotto 4a: contesto, dispatch e gestori di verbo
+
+### Sintesi
+`executeCommandLegacy` (complessità 155) è sostituita da un contesto di esecuzione, un `dispatch` e 27 gestori di verbo in ordine di precedenza vincolante. Comportamento invariato, protetto dalle reti esistenti (istantanea risposte, tracce motore e HTTP, parser, salvataggi, caratterizzazione, percorsi completi con 138 punti).
+
+### Modifiche
+- Nuovi moduli generici in `src/logic/core/` (`gameData`, `context`, `dispatch`, `command`, `handlers/*`) e specifici in `src/game/odessa/` (`index`, `rules`, `handlers/*`): `createEngine(game = odessaGame)`, API di `engine.js` invariata (#63).
+- Le letture di `global.odessaData` in `engine.js` passano da `getGameData()`; `hasFonteLuceAttiva` unificata in `rules.hasActiveLight` (riesportata da `torchEffect.js`); derivazione dei flag dei salvataggi in `rules.deriveLoadedFlags`.
+- Rimosso codice morto: casi `SU/GIU/GIÙ` della mappa direzioni e stub `default` di SYSTEM.
+- Nuova regola ESLint `no-restricted-imports` (error) su `src/logic/core/**` verso `**/game/**`; nuovo `tests/architecture.test.ts` (dipendenze, ordine dei gestori, copertura del lessico, equivalenza `createEngine()`/`createEngine(odessaGame)`).
+
 ## Quality gates
 - Build: PASS
-- Test (Vitest): PASS (477 passed, 17 skipped prima del lotto 3; 499 passed, 17 skipped dopo, incluso `tests/gameConfig.test.ts`)
-- Lint: PASS (uscita 0) — 12 avvisi `complexity`, 7 `max-lines-per-function`, 6 `max-depth` in `src/` (da 12/7/3 prima del lotto 3; l'aumento di `max-depth` è un conteggio preesistente smascherato dalla rimozione della cascata dei ranghi, non una complessità introdotta dal lotto — vedi i report delle Fasi 1A/1B dell'issue #63)
+- Test (Vitest): PASS (499 passed, 17 skipped prima del lotto 4a; 507 passed, 17 skipped dopo, incluso `tests/architecture.test.ts`)
+- Lint: PASS (uscita 0) — 11 avvisi `complexity`, 6 `max-lines-per-function`, 3 `max-depth` in `src/` (da 12/7/6 prima del lotto 4a; nessun avviso nei file nuovi)
 
 ## Note
 - Dopo il deploy della v1.4.2, eliminare la variabile `DISABLE_LEGACY_ENDPOINTS` da Railway (impostata a `1` il 2026-10-19 come misura provvisoria, non più necessaria).
