@@ -15,6 +15,10 @@
  */
 
 import { getSystemMessage } from '../systemMessages.js';
+import { CONFIG } from '../../game/odessa/config.js';
+
+// Fascicolo, Lista di servizio, Dossier (TD Lotto 3, §3.2: oggetti.vittoria).
+const [FASCICOLO_ID, LISTA_ID, DOSSIER_ID] = CONFIG.oggetti.vittoria;
 
 /**
  * Verifica se il giocatore ha i prerequisiti per la vittoria
@@ -22,8 +26,8 @@ import { getSystemMessage } from '../systemMessages.js';
  * @returns {boolean} - True se tutti i prerequisiti sono soddisfatti
  */
 function checkVictoryPrerequisites(gameState) {
-  // Prerequisito 1: Luogo ID=1 (Atrio)
-  if (gameState.currentLocationId !== 1) {
+  // Prerequisito 1: luogo iniziale (Atrio)
+  if (gameState.currentLocationId !== CONFIG.luoghi.iniziale) {
     return false;
   }
 
@@ -32,20 +36,20 @@ function checkVictoryPrerequisites(gameState) {
     return false;
   }
 
-  // Prerequisito 3: Fascicolo (ID=16) in inventario
-  const fascicolo = gameState.Oggetti.find(o => o.ID === 16);
+  // Prerequisito 3: Fascicolo in inventario
+  const fascicolo = gameState.Oggetti.find(o => o.ID === FASCICOLO_ID);
   if (!fascicolo || fascicolo.IDLuogo !== 0) {
     return false;
   }
 
-  // Prerequisito 4: Lista di servizio (ID=6) in inventario
-  const lista = gameState.Oggetti.find(o => o.ID === 6);
+  // Prerequisito 4: Lista di servizio in inventario
+  const lista = gameState.Oggetti.find(o => o.ID === LISTA_ID);
   if (!lista || lista.IDLuogo !== 0) {
     return false;
   }
 
-  // Prerequisito 5: Dossier (ID=34) in inventario
-  const dossier = gameState.Oggetti.find(o => o.ID === 34);
+  // Prerequisito 5: Dossier in inventario
+  const dossier = gameState.Oggetti.find(o => o.ID === DOSSIER_ID);
   if (!dossier || dossier.IDLuogo !== 0) {
     return false;
   }
@@ -59,8 +63,8 @@ function checkVictoryPrerequisites(gameState) {
  * @param {Object} result - Risultato del comando da modificare
  */
 function startEndingSequence(gameState, result) {
-  // Assegna +4 punti per l'incontro con Ferenc
-  gameState.punteggio.totale += 4;
+  // Assegna i punti per l'incontro con Ferenc
+  gameState.punteggio.totale += CONFIG.punteggio.ferenc;
 
   // Ottieni testo Ferenc (dialogo + viaggio combinati)
   const ferencText = getSystemMessage('victory.phase1a', gameState.currentLingua);
@@ -78,7 +82,7 @@ function startEndingSequence(gameState, result) {
  */
 function teleportToBarrier(gameState, result, customMessage) {
   for (const oggetto of gameState.Oggetti) {
-    if (oggetto.ID === 35 && oggetto.IDLuogo === 0) continue;
+    if (oggetto.ID === CONFIG.oggetti.documenti && oggetto.IDLuogo === 0) continue;
     oggetto.Attivo = 0;        // Invisibile e non interagibile
     oggetto.IDLuogo = -1;      // Rimosso dal gioco
     oggetto.Inventario = false; // Non in inventario
@@ -91,16 +95,16 @@ function teleportToBarrier(gameState, result, customMessage) {
   gameState.turn.darknessTimer = 0;
   gameState.turn.openAreaTimer = 0;
 
-  // Timer della guardia: 4 comandi liberi, arresto al 5° (R4)
-  gameState.guardTimer = 5;
+  // Timer della guardia: comandi liberi, poi arresto (R4)
+  gameState.guardTimer = CONFIG.regole.timerGuardia;
 
-  // Teleport al luogo 59
-  gameState.currentLocationId = 59;
-  gameState.turn.current.location = 59;
+  // Teleport alla barriera
+  gameState.currentLocationId = CONFIG.luoghi.barriera;
+  gameState.turn.current.location = CONFIG.luoghi.barriera;
 
-  // Assegna +1 punto per arrivo al luogo 59
-  gameState.visitedPlaces.add(59);
-  gameState.punteggio.totale += 1;
+  // Assegna il punto per l'arrivo alla barriera
+  gameState.visitedPlaces.add(CONFIG.luoghi.barriera);
+  gameState.punteggio.totale += CONFIG.punteggio.luogo;
 
   // Blocca TUTTI i movimenti (per la fase 2)
   gameState.movementBlocked = true;
@@ -114,7 +118,7 @@ function teleportToBarrier(gameState, result, customMessage) {
   result.accepted = true;
   result.resultType = 'TELEPORT';
   result.message = customMessage || '💡 SUGGERIMENTO: Devi porgere i documenti alla guardia.';
-  result.locationId = 59;          // Client deve aggiornare location
+  result.locationId = CONFIG.luoghi.barriera; // Client deve aggiornare location
   result.teleport = true;           // Flag per client
   result.narrativePhase = 'ENDING_PHASE_2_WAIT';
 }

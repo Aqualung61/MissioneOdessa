@@ -9,14 +9,11 @@
 
 import { getSystemMessage } from '../systemMessages.js';
 import { appendTurnMessage } from './appendMessage.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
-export const DAWN_TURN_LIMIT = 200;
+export const DAWN_TURN_LIMIT = CONFIG.regole.limiteAlba;
 
-const DAWN_WARNINGS = {
-  30: 'timer.dawn.warning30',
-  15: 'timer.dawn.warning15',
-  5: 'timer.dawn.warning5',
-};
+const DAWN_WARNINGS = CONFIG.regole.avvisiAlba;
 
 /**
  * Limite dell'alba in turni consumati.

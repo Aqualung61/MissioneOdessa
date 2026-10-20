@@ -38,11 +38,24 @@ Riscritto l'interno di `src/logic/parser.js` (complessità 38 e 53 su `3c1a379`)
 - `src/api/engineRoutes.js` e `scripts/measure-session-memory.mjs` passati a `parseInput`; rimosso il campo `dbPathResolved` da `GET /api/parser/stats` e i commenti SQLite/`dbPath` obsoleti (#63, #126).
 - Nuove istantanee protette: `tests/parser.full.test.ts` (ParseResult completo, 12.966 casi + 10 input non stringa) e `tests/parser.vocabulary.test.ts` (vocabolario IT/EN).
 
+## v1.4.2 — lotto 3: configurazione di gioco
+
+### Sintesi
+I parametri specifici di Odessa (ID di luoghi e oggetti con ruolo speciale, regole numeriche, insiemi lessicali, punteggio e ranghi) sono stati spostati da letterali sparsi nel codice a un unico file dati, `src/data-internal/Configurazione.json`, caricato da un modulo dedicato. Comportamento invariato, protetto dalle reti esistenti e da una nuova suite di test sulla configurazione.
+
+### Modifiche
+- Nuovo `src/data-internal/Configurazione.json` (versionato, convalidato all'avvio) con le sezioni `luoghi`, `oggetti`, `regole`, `punteggio`, `lessico` (#63).
+- Nuovo caricatore generico `src/logic/core/gameConfig.js` (`loadGameConfig`, validazione di schema e delle chiavi richieste, congelamento in profondità, `rankKeyFor`) e `src/game/odessa/config.js` (`CONFIG` di Odessa, caricato all'importazione del modulo; un file mancante o non valido impedisce l'avvio del server con un messaggio esplicito).
+- Sostituiti in `src/logic/engine.js`, `src/logic/parser.js`, `src/api/engineRoutes.js` e nei 7 moduli di `src/logic/turnEffects/` i letterali specifici di Odessa (luogo iniziale, barriera, pesa, cassaforte, zone aperte, passaggio crollato, movimenti bloccati con testo dedicato, macerie esaminabili, torcia/lampada/fiammiferi/badile/documenti, limiti e timer, punteggi, ranghi, verbi bloccati al buio e senza oggetto) con letture da `CONFIG` (#63, #123).
+- Rimossa la cascata locale `computeRankKey` di `engineRoutes.js`, sostituita dalla funzione condivisa `rankKeyFor`.
+- Nuova `tests/gameConfig.test.ts`: caricamento e congelamento di `CONFIG`, validazione (chiave di primo livello e chiave annidata mancante, ID non intero, `versione` errata), coerenza di tutti gli ID e le chiavi di messaggio citati in `Configurazione.json` con i dati reali (`Luoghi.json`, `Oggetti.json`, `MessaggiSistema.json`, `TerminiLessico.json`), equivalenza di `rankKeyFor` con la cascata per ogni punteggio da 0 a 140.
+- Nessuna modifica a `src/initOdessa.js`: la configurazione non passa da `global.odessaData`, indipendente dall'ordine di inizializzazione.
+
 ## Quality gates
 - Build: PASS
-- Test (Vitest): PASS (477 passed, 17 skipped)
-- Lint: PASS (uscita 0) — 12 avvisi `complexity`, 7 `max-lines-per-function`, 3 `max-depth` in `src/` (da 14/9/3 prima del lotto 2)
+- Test (Vitest): PASS (477 passed, 17 skipped prima del lotto 3; 499 passed, 17 skipped dopo, incluso `tests/gameConfig.test.ts`)
+- Lint: PASS (uscita 0) — 12 avvisi `complexity`, 7 `max-lines-per-function`, 6 `max-depth` in `src/` (da 12/7/3 prima del lotto 3; l'aumento di `max-depth` è un conteggio preesistente smascherato dalla rimozione della cascata dei ranghi, non una complessità introdotta dal lotto — vedi i report delle Fasi 1A/1B dell'issue #63)
 
 ## Note
 - Dopo il deploy della v1.4.2, eliminare la variabile `DISABLE_LEGACY_ENDPOINTS` da Railway (impostata a `1` il 2026-10-19 come misura provvisoria, non più necessaria).
-- Dettagli completi (copertura prima/dopo, rami residui, candidati issue, misure, tempi): vedi i report delle issue #63 (lotti 0 e 2) e #124/#125/#126 (lotto 1).
+- Dettagli completi (copertura prima/dopo, rami residui, candidati issue, misure, tempi): vedi i report delle issue #63 (lotti 0, 2 e 3) e #124/#125/#126 (lotto 1).

@@ -11,6 +11,8 @@ import { isEngineDebugEnabled, pushEngineDebugEvent, resetEngineDebugTrace } fro
 
 import { appVersion } from '../version.js';
 import { EFFECT_TYPES, PREREQUISITE_TYPES } from './interactionSchema.js';
+import { rankKeyFor } from './core/gameConfig.js';
+import { CONFIG } from '../game/odessa/config.js';
 
 // Avvisi per tipi sconosciuti nei dati delle interazioni: una sola volta per tipo e processo.
 const warnedUnknownTypes = new Set();
@@ -23,10 +25,7 @@ function warnUnknownTypeOnce(kind, tipo) {
 
 // Verbi (concetti) che al buio non si eseguono: "È troppo buio per farlo." (R1, BAS 240–250).
 // Restano eseguibili: movimento, POSARE, LASCIARE, ACCENDERE, DORMIRE e i comandi di sistema.
-const DARK_BLOCKED_VERBS = new Set([
-  'PRENDERE', 'ESAMINARE', 'GUARDARE', 'LEGGERE', 'SPOSTARE', 'RUOTARE', 'INFILARE',
-  'METTERE', 'SCAVARE', 'PREMERE', 'PORGERE', 'APRIRE', 'CHIUDERE', 'SCARICARE',
-]);
+const DARK_BLOCKED_VERBS = new Set(CONFIG.regole.verbiBloccatiAlBuio);
 
 // Factory: ogni sessione ottiene un motore con stato proprio (closure), senza istanze di modulo.
 export function createEngine() {
@@ -102,9 +101,9 @@ export function createEngine() {
     openStates: { BOTOLA: false },
     awaitingEndConfirm: false,
     awaitingRestart: false,
-    currentLocationId: 1,
+    currentLocationId: CONFIG.luoghi.iniziale,
     ended: false,
-    visitedPlaces: new Set([1]),
+    visitedPlaces: new Set([CONFIG.luoghi.iniziale]),
     Oggetti: [],
     interazioniEseguite: [], // ID delle interazioni già eseguite (non ripetibili)
     direzioniSbloccate: {}, // Direzioni sbloccate permanentemente
@@ -115,7 +114,7 @@ export function createEngine() {
     
     // === SISTEMA PUNTEGGIO ===
     punteggio: {
-      totale: 1, // Luogo iniziale (ID=1) già visitato
+      totale: CONFIG.punteggio.luogo, // Luogo iniziale (ID=1) già visitato
       interazioniPunteggio: new Set(), // ID interazioni completate
       misteriRisolti: new Set()        // ID misteri completati
       // NOTA: usa visitedPlaces esistente per punteggio luoghi (no duplicazione)
@@ -128,7 +127,7 @@ export function createEngine() {
       lampadaAccesa: false,            // Stato della lampada
       azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
       ultimoLuogoPericoloso: null,     // ID per reset al cambio stanza
-      matchesLeft: 6,                  // Fiammiferi rimasti (R8)
+      matchesLeft: CONFIG.regole.fiammiferiIniziali, // Fiammiferi rimasti (R8)
       matchTimer: 0                    // Turni di luce residui del fiammifero acceso (R8)
     },
 
@@ -144,12 +143,12 @@ export function createEngine() {
       current: {
         parseResult: null,         // Comando corrente
         consumesTurn: false,       // Se questo comando consuma turno
-        location: 1,               // Luogo attuale
+        location: CONFIG.luoghi.iniziale, // Luogo attuale
         hasLight: false,           // Se ha fonte di luce attiva
         inDangerZone: false        // Se in zona pericolosa
       },
       previous: {
-        location: 1,               // Luogo precedente
+        location: CONFIG.luoghi.iniziale, // Luogo precedente
         hasLight: false,           // Se aveva luce
         consumedTurn: false,       // Se turno precedente fu consumato
         inDangerZone: false        // Se era in zona pericolosa
@@ -225,9 +224,9 @@ export function createEngine() {
       openStates: { BOTOLA: false },
       awaitingEndConfirm: false,
       awaitingRestart: false,
-      currentLocationId: 1,
+      currentLocationId: CONFIG.luoghi.iniziale,
       ended: false,
-      visitedPlaces: new Set([1]),
+      visitedPlaces: new Set([CONFIG.luoghi.iniziale]),
       Oggetti: [],
       interazioniEseguite: [],
       direzioniSbloccate: {},
@@ -238,7 +237,7 @@ export function createEngine() {
       
       // === SISTEMA PUNTEGGIO ===
       punteggio: {
-        totale: 1, // Luogo iniziale (ID=1) già visitato
+        totale: CONFIG.punteggio.luogo, // Luogo iniziale (ID=1) già visitato
         interazioniPunteggio: new Set(),
         misteriRisolti: new Set()
       },
@@ -250,7 +249,7 @@ export function createEngine() {
         lampadaAccesa: false,
         azioniInLuogoPericoloso: 0,
         ultimoLuogoPericoloso: null,
-        matchesLeft: 6,
+        matchesLeft: CONFIG.regole.fiammiferiIniziali,
         matchTimer: 0
       },
 
@@ -266,12 +265,12 @@ export function createEngine() {
         current: {
           parseResult: null,         // Comando corrente
           consumesTurn: false,       // Se questo comando consuma turno
-          location: 1,               // Luogo attuale
+          location: CONFIG.luoghi.iniziale, // Luogo attuale
           hasLight: false,           // Se ha fonte di luce attiva
           inDangerZone: false        // Se in zona pericolosa
         },
         previous: {
-          location: 1,               // Luogo precedente
+          location: CONFIG.luoghi.iniziale, // Luogo precedente
           hasLight: false,           // Se aveva luce
           consumedTurn: false,       // Se turno precedente fu consumato
           inDangerZone: false        // Se era in zona pericolosa
@@ -376,13 +375,13 @@ export function createEngine() {
    */
   function hasFonteLuceAttiva() {
     // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
-    if (gameState.currentLocationId === 59) {
+    if (gameState.currentLocationId === CONFIG.luoghi.barriera) {
       return true;
     }
 
     // Verifica torcia elettrica (ID=37) nell'inventario e non spenta.
     // Source of truth inventario: `IDLuogo === 0` (come in v1.3.2).
-    const torcia = gameState.Oggetti.find((o) => o.ID === 37);
+    const torcia = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.torcia);
     if (torcia && torcia.IDLuogo === 0 && !gameState.timers.torciaDifettosa) {
       return true;
     }
@@ -390,7 +389,7 @@ export function createEngine() {
     // Verifica lampada (ID=27) accesa: fa luce solo dove si trova, in inventario o nel luogo
     // corrente (R8, §4.3). Altrove il comportamento non cambia (R9: allontanarsene è morte immediata).
     if (gameState.timers.lampadaAccesa) {
-      const lampada = gameState.Oggetti.find((o) => o.ID === 27);
+      const lampada = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.lampada);
       if (lampada && (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId)) {
         return true;
       }
@@ -411,7 +410,7 @@ export function createEngine() {
    */
   function prepareTurnContext(parseResult) {
     // Luoghi pericolosi (zona intercettazione): 51, 52, 53, 55, 56, 58
-    const dangerZones = [51, 52, 53, 55, 56, 58];
+    const dangerZones = CONFIG.luoghi.zoneAperte;
     
     // Salva stato precedente (shallow copy di current, con fallback per prima esecuzione)
     const prev = gameState.turn.current || {};
@@ -492,7 +491,7 @@ export function createEngine() {
     // === RICALCOLO inDangerZone dopo esecuzione comando ===
     // BUGFIX Sprint 3.3.5.C: Se il comando ha cambiato location (NAVIGATION),
     // dobbiamo ricalcolare inDangerZone con la nuova location
-    const dangerZones = [51, 52, 53, 55, 56, 58];
+    const dangerZones = CONFIG.luoghi.zoneAperte;
     const updatedInDangerZone = dangerZones.includes(gameState.currentLocationId);
     gameState.turn.current.inDangerZone = updatedInDangerZone;
 
@@ -761,13 +760,13 @@ export function createEngine() {
       // Timer della guardia (R4): default 5 se il salvataggio è già alla barriera
       guardTimer: typeof newState.guardTimer === 'number'
         ? newState.guardTimer
-        : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? 5 : 0),
+        : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? CONFIG.regole.timerGuardia : 0),
       // Fiammiferi (R8): default per i salvataggi che non li contengono (§4.1)
       timers: (() => {
         const timers = { ...(newState.timers || {}) };
         if (typeof timers.matchesLeft !== 'number') {
-          const fiammiferi = (newState.Oggetti || []).find((o) => o.ID === 36);
-          timers.matchesLeft = fiammiferi && fiammiferi.IDLuogo !== -1 ? 6 : 0;
+          const fiammiferi = (newState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.fiammiferi);
+          timers.matchesLeft = fiammiferi && fiammiferi.IDLuogo !== -1 ? CONFIG.regole.fiammiferiIniziali : 0;
         }
         if (typeof timers.matchTimer !== 'number') {
           timers.matchTimer = 0;
@@ -785,23 +784,23 @@ export function createEngine() {
         current: newState.turn.current ? {
           parseResult: newState.turn.current.parseResult || null,
           consumesTurn: newState.turn.current.consumesTurn || false,
-          location: newState.turn.current.location || newState.currentLocationId || 1,
+          location: newState.turn.current.location || newState.currentLocationId || CONFIG.luoghi.iniziale,
           hasLight: newState.turn.current.hasLight || false,
           inDangerZone: newState.turn.current.inDangerZone || false
         } : {
           parseResult: null,
           consumesTurn: false,
-          location: newState.currentLocationId || 1,
+          location: newState.currentLocationId || CONFIG.luoghi.iniziale,
           hasLight: false,
           inDangerZone: false
         },
         previous: newState.turn.previous ? {
-          location: newState.turn.previous.location || 1,
+          location: newState.turn.previous.location || CONFIG.luoghi.iniziale,
           hasLight: newState.turn.previous.hasLight || false,
           consumedTurn: newState.turn.previous.consumedTurn || false,
           inDangerZone: newState.turn.previous.inDangerZone || false
         } : {
-          location: 1,
+          location: CONFIG.luoghi.iniziale,
           hasLight: false,
           consumedTurn: false,
           inDangerZone: false
@@ -817,12 +816,12 @@ export function createEngine() {
         current: {
           parseResult: null,
           consumesTurn: false,
-          location: newState.currentLocationId || 1,
+          location: newState.currentLocationId || CONFIG.luoghi.iniziale,
           hasLight: false,
           inDangerZone: false
         },
         previous: {
-          location: 1,
+          location: CONFIG.luoghi.iniziale,
           hasLight: false,
           consumedTurn: false
         }
@@ -845,7 +844,7 @@ export function createEngine() {
       const luogo = global.odessaData?.Luoghi?.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
       const isTerminal = luogo ? luogo.Terminale === -1 : null;
       if (luogo && !isTerminal) {
-        gameState.punteggio.totale += 1;
+        gameState.punteggio.totale += CONFIG.punteggio.luogo;
       }
 
       if (before) {
@@ -1009,7 +1008,7 @@ export function createEngine() {
       } else if (req.tipo === 'INVENTARIO_NON_PIENO') {
         // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
         const oggettiInInventario = (gameState.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
-        if (oggettiInInventario.length >= 5) return { ok: false, prerequisito: req };
+        if (oggettiInInventario.length >= CONFIG.regole.limiteInventario) return { ok: false, prerequisito: req };
       } else if (req.tipo === 'DIREZIONE_APERTA') {
         // Vero se la direzione è attualmente aperta tramite toggle (es. porta del 44, pulsante)
         const key = `${req.luogo}_${req.direzione}`;
@@ -1064,7 +1063,7 @@ export function createEngine() {
     
     // Assegna +3 punti se il mistero non è già stato risolto
     if (misteroId && !gameState.punteggio.misteriRisolti.has(misteroId)) {
-      gameState.punteggio.totale += 3;
+      gameState.punteggio.totale += CONFIG.punteggio.mistero;
       gameState.punteggio.misteriRisolti.add(misteroId);
     }
   }
@@ -1077,11 +1076,11 @@ export function createEngine() {
    */
   function consumaFiammifero() {
     if (typeof gameState.timers.matchesLeft !== 'number') {
-      gameState.timers.matchesLeft = 6;
+      gameState.timers.matchesLeft = CONFIG.regole.fiammiferiIniziali;
     }
     gameState.timers.matchesLeft = Math.max(0, gameState.timers.matchesLeft - 1);
     if (gameState.timers.matchesLeft === 0) {
-      const fiammiferi = gameState.Oggetti.find((o) => o.ID === 36);
+      const fiammiferi = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.fiammiferi);
       if (fiammiferi) {
         fiammiferi.IDLuogo = -1;
         fiammiferi.Attivo = 0;
@@ -1098,7 +1097,7 @@ export function createEngine() {
    */
   function accendiFiammifero() {
     const fiammiferi = gameState.Oggetti.find((o) =>
-      o.ID === 36 &&
+      o.ID === CONFIG.oggetti.fiammiferi &&
       (o.IDLuogo === 0 || o.IDLuogo === gameState.currentLocationId) &&
       o.Attivo >= 1
     );
@@ -1107,7 +1106,7 @@ export function createEngine() {
     }
 
     const finished = consumaFiammifero();
-    gameState.timers.matchTimer = 2;
+    gameState.timers.matchTimer = CONFIG.regole.turniLuceFiammifero;
     let message = getSystemMessage('engine.matches.lit', gameState.currentLingua);
     if (finished) {
       message += '\n\n' + getSystemMessage('engine.matches.finished', gameState.currentLingua);
@@ -1265,9 +1264,12 @@ export function createEngine() {
               seq.completata = true;
               
               // § 3.2.3 Task 5: Award +2 points for cassaforte sequence completion
+              // Anomalia nota (TD Lotto 3 Configurazione di gioco, E-6, v1.1): punteggio di
+              // interazione (+2), ma deduplicato in misteriRisolti invece di interazioniPunteggio.
+              // Comportamento invariato, non osservabile dal giocatore; da riconsiderare nel lotto 4b.
               if (!gameState.punteggio.misteriRisolti.has('sequenza_cassaforte')) {
                 gameState.punteggio.misteriRisolti.add('sequenza_cassaforte');
-                gameState.punteggio.totale += 2;
+                gameState.punteggio.totale += CONFIG.punteggio.interazione;
               }
               
               applicaEffetti(effettoSequenza.effetti_completamento, interazione.condizioni.luogo);
@@ -1297,7 +1299,7 @@ export function createEngine() {
         const punteggioSkip = interazione.punteggio === false;
         const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
         if (!punteggioSkip && !gameState.punteggio.interazioniPunteggio.has(chiavePunteggio)) {
-          gameState.punteggio.totale += 2;
+          gameState.punteggio.totale += CONFIG.punteggio.interazione;
           gameState.punteggio.interazioniPunteggio.add(chiavePunteggio);
         }
 
@@ -1410,7 +1412,7 @@ export function createEngine() {
 
           // Passaggio crollato (32 → 36): nell'originale il crollo avviene una sola
           // volta (BAS 330–340, 5160–5210); dopo, il passaggio resta bloccato (#117).
-          if (currentId === 32 && directionField === 'Sud') {
+          if (currentId === CONFIG.luoghi.passaggioCrollato.luogo && directionField === CONFIG.luoghi.passaggioCrollato.direzione) {
             if (gameState.flags.passaggioCrollato) {
               return {
                 accepted: true,
@@ -1420,13 +1422,13 @@ export function createEngine() {
               };
             }
             gameState.flags.passaggioCrollato = true;
-            setCurrentLocation(36);
+            setCurrentLocation(CONFIG.luoghi.passaggioCrollato.destinazione);
             return {
               accepted: true,
               resultType: 'OK',
               message: getSystemMessage('engine.move.passageCollapses', gameState.currentLingua),
               effects: [],
-              locationId: 36,
+              locationId: CONFIG.luoghi.passaggioCrollato.destinazione,
               showLocation: true,
             };
           }
@@ -1435,14 +1437,11 @@ export function createEngine() {
             // Movimenti bloccati con un testo dedicato dell'originale (#109, L3, §4.7–4.9):
             // sostituiscono il messaggio generico solo in quei luoghi e condizioni; il
             // turno si consuma comunque, come per ogni movimento bloccato.
-            if (currentId === 1 && directionField === 'Ovest') {
-              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.leaveHouseWest', gameState.currentLingua), effects: [] };
-            }
-            if (currentId === 44 && directionField === 'Est') {
-              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.doorClosedPassage', gameState.currentLingua), effects: [] };
-            }
-            if (currentId === 49 && directionField === 'Ovest') {
-              return { accepted: true, resultType: 'ERROR', message: getSystemMessage('engine.move.rubbleBlocksWest', gameState.currentLingua), effects: [] };
+            const movimentoBloccatoConTesto = CONFIG.luoghi.movimentiBloccatiConTesto.find(
+              (m) => m.luogo === currentId && m.direzione === directionField
+            );
+            if (movimentoBloccatoConTesto) {
+              return { accepted: true, resultType: 'ERROR', message: getSystemMessage(movimentoBloccatoConTesto.messaggio, gameState.currentLingua), effects: [] };
             }
             return {
               accepted: true,
@@ -1498,11 +1497,7 @@ export function createEngine() {
               const misteri = gameState.punteggio.misteriRisolti.size;
               
               // Ranghi basati su soglie (localizzati)
-              let rangoKey = 'engine.rank.novice';
-              if (totale >= 100) rangoKey = 'engine.rank.master';
-              else if (totale >= 67) rangoKey = 'engine.rank.investigator';
-              else if (totale >= 34) rangoKey = 'engine.rank.explorer';
-              if (totale >= 134) rangoKey = 'engine.rank.perfectionist';
+              const rangoKey = rankKeyFor(totale, CONFIG.punteggio.ranghi);
               
               const rango = getSystemMessage(rangoKey, gameState.currentLingua);
               const breakdown = getSystemMessage('engine.score.breakdown', gameState.currentLingua, [
@@ -1559,7 +1554,7 @@ export function createEngine() {
           }
 
           // ACCENDI FIAMMIFERO (R8): gestito dal motore, non come interazione (nessun punteggio)
-          const fiammiferiRecord = gameState.Oggetti.find((o) => o.ID === 36);
+          const fiammiferiRecord = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.fiammiferi);
           if (concept === 'ACCENDERE' && fiammiferiRecord &&
               normalizeForComparison(fiammiferiRecord.Oggetto) === normalizeForComparison(noun)) {
             return accendiFiammifero();
@@ -1571,7 +1566,7 @@ export function createEngine() {
           // sola volta); senza il peso in inventario, risposta dedicata. Con altri nomi,
           // "carica" resta un'azione senza effetto (nessun intervento qui).
           if (concept === 'CARICARE' && (noun === 'PESO' || noun === 'PESA' || noun === 'WEIGHT' || noun === 'SCALE')) {
-            if (gameState.currentLocationId === 57) {
+            if (gameState.currentLocationId === CONFIG.luoghi.pesa) {
               const pesoLocalizzato = gameState.currentLingua === 1 ? 'PESO' : 'WEIGHT';
               // L'interazione già eseguita (es. prima con "metti peso") ha spostato il
               // peso dall'inventario (IDLuogo 0) al luogo 57: va riconosciuta come già
@@ -1612,7 +1607,7 @@ export function createEngine() {
           }
           // PARLA, RISPONDI: stessa risposta ovunque tranne alla barriera (59).
           if (concept === 'PARLARE') {
-            const chiave = gameState.currentLocationId === 59 ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
+            const chiave = gameState.currentLocationId === CONFIG.luoghi.barriera ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
             return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
           }
           // === Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109) ===
@@ -1620,7 +1615,7 @@ export function createEngine() {
           // come l'arresto della guardia, nessun effetto sul punteggio). Fuori dalla
           // barriera (E1): nessun testo nuovo, prosegue con l'elaborazione standard
           // (risposta generica del porting, come ogni altro verbo senza effetto).
-          if (concept === 'ATTACCARE' && gameState.currentLocationId === 59) {
+          if (concept === 'ATTACCARE' && gameState.currentLocationId === CONFIG.luoghi.barriera) {
             gameState.awaitingRestart = true;
             return {
               accepted: false,
@@ -1634,7 +1629,7 @@ export function createEngine() {
           // ACCENDI senza nome, o ACCENDI LUCE: prima fonte applicabile (torcia, poi
           // fiammifero, poi lampada); nessuna fonte -> risposta dedicata.
           if (concept === 'ACCENDERE' && (!noun || noun === 'LUCE')) {
-            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.torcia);
             const torciaConTe = !!torciaRecord && torciaRecord.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
             if (torciaConTe) {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.torch.alreadyLit', gameState.currentLingua), effects: [] };
@@ -1645,7 +1640,7 @@ export function createEngine() {
             if (fiammiferiDisponibili) {
               return accendiFiammifero();
             }
-            const lampadaConTe = gameState.Oggetti.some((o) => o.ID === 27 && o.IDLuogo === 0 && o.Attivo >= 3);
+            const lampadaConTe = gameState.Oggetti.some((o) => o.ID === CONFIG.oggetti.lampada && o.IDLuogo === 0 && o.Attivo >= 3);
             if (lampadaConTe) {
               const lampadaLocalizzata = gameState.currentLingua === 1 ? 'LAMPADA' : 'LAMP';
               const risultatoLampada = cercaEseguiInterazione('ACCENDERE', lampadaLocalizzata);
@@ -1659,7 +1654,7 @@ export function createEngine() {
           // non "TORCIA_ELETTRICA".
           const torciaElettricaLocalizzata = gameState.currentLingua === 1 ? 'TORCIA_ELETTRICA' : 'FLASHLIGHT';
           if (concept === 'ACCENDERE' && noun === torciaElettricaLocalizzata) {
-            const torciaRecord = gameState.Oggetti.find((o) => o.ID === 37);
+            const torciaRecord = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.torcia);
             const conTe = !!torciaRecord && torciaRecord.IDLuogo === 0;
             const nelLuogo = !!torciaRecord && torciaRecord.IDLuogo === gameState.currentLocationId;
             if (conTe) {
@@ -1677,21 +1672,22 @@ export function createEngine() {
             const macerieLocalizzata = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
             const senzaNomeOMacerie = !noun || noun === macerieLocalizzata;
             if (senzaNomeOMacerie) {
-              const LUOGHI_SCAVA_MACERIE_DELEGATA = new Set([11, 49]);
+              const LUOGHI_SCAVA_MACERIE_DELEGATA = new Set(CONFIG.luoghi.scavoDelegatoAInterazione);
               if (!noun && LUOGHI_SCAVA_MACERIE_DELEGATA.has(gameState.currentLocationId)) {
                 const risultatoScava = cercaEseguiInterazione('SCAVARE', macerieLocalizzata);
                 if (risultatoScava) return risultatoScava;
               }
-              if (gameState.currentLocationId === 32 || gameState.currentLocationId === 36) {
-                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+              if (CONFIG.luoghi.scavoSenzaAttrezzo.includes(gameState.currentLocationId)) {
+                const haBadile = gameState.Oggetti.some((o) => o.ID === CONFIG.oggetti.badile && o.IDLuogo === 0 && o.Attivo >= 3);
                 if (!haBadile) {
                   return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.dig.bareHandsNoTool', gameState.currentLingua), effects: [] };
                 }
-                const chiave = gameState.currentLocationId === 36 ? 'engine.dig.noPassageNorth' : 'engine.dig.digging';
+                // A 36, sotto il passaggio crollato, scavando non si trova un passaggio a nord (E-4, v1.1).
+                const chiave = gameState.currentLocationId === CONFIG.luoghi.passaggioCrollato.destinazione ? 'engine.dig.noPassageNorth' : 'engine.dig.digging';
                 return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
               }
               if (!noun) {
-                const haBadile = gameState.Oggetti.some((o) => o.ID === 4 && o.IDLuogo === 0 && o.Attivo >= 3);
+                const haBadile = gameState.Oggetti.some((o) => o.ID === CONFIG.oggetti.badile && o.IDLuogo === 0 && o.Attivo >= 3);
                 const chiave = haBadile ? 'engine.dig.digging' : 'engine.dig.noToolHere';
                 return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
               }
@@ -1724,13 +1720,13 @@ export function createEngine() {
           // "sposta quadro"/"prendi quadro"), in biblioteca (24). Senza cassaforte visibile:
           // prosegue con l'elaborazione standard, che dà "Non vedi manopola qui." (nessun
           // oggetto MANOPOLA nei dati, §4.10 generale).
-          if (concept === 'RUOTARE' && noun === 'MANOPOLA' && gameState.currentLocationId === 24 && gameState.flags.cassaforteScoperta) {
+          if (concept === 'RUOTARE' && noun === 'MANOPOLA' && gameState.currentLocationId === CONFIG.luoghi.cassaforte && gameState.flags.cassaforteScoperta) {
             return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.rotate.knobPoints', gameState.currentLingua), effects: [] };
           }
           // MUOVI/SPOSTA senza interazione dedicata (D3): solo se l'oggetto è presente,
           // altrimenti il comportamento di oggi (oggetto non qui) resta invariato.
           if ((concept === 'SPOSTARE' || verb === 'MUOVI' || verb === 'SPOSTA') && noun && oggetto) {
-            const trasportabile = oggetto.Attivo >= 3 || oggetto.ID === 3 || oggetto.ID === 33;
+            const trasportabile = oggetto.Attivo >= 3 || CONFIG.oggetti.spostabiliAncheSeFissi.includes(oggetto.ID);
             const chiave = trasportabile ? 'engine.move.nothingHappens' : 'engine.move.notPossible';
             return { accepted: true, resultType: 'OK', message: getSystemMessage(chiave, gameState.currentLingua), effects: [] };
           }
@@ -1756,19 +1752,19 @@ export function createEngine() {
             // 4.1 (#109, L3): esamina/guarda guardia/uomo, solo alla barriera (59).
             // Altrove: nessun oggetto GUARDIA nei dati, prosegue con l'elaborazione
             // standard (§4.10 generale: "Non vedi guardia qui.").
-            if (noun === 'GUARDIA' && gameState.currentLocationId === 59) {
+            if (noun === 'GUARDIA' && gameState.currentLocationId === CONFIG.luoghi.barriera) {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.guard', gameState.currentLingua), effects: [] };
             }
             // 4.4 (#109, L3, E2): oggetti scenici del gioco originale, senza controllo
             // di presenza (azione sempre valida, come nel BAS).
-            const OGGETTI_SCENICI_SENZA_PRESENZA = new Set(['FILO_SPINATO', 'ARREDAMENTO', 'ELEVATORE', 'PARETE']);
+            const OGGETTI_SCENICI_SENZA_PRESENZA = new Set(CONFIG.regole.oggettiSceniciSenzaPresenza);
             if (OGGETTI_SCENICI_SENZA_PRESENZA.has(noun)) {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
             }
             // 4.5 (#109, L3): macerie ai luoghi 11, 32, 36 (al 49 resta la descrizione
             // dell'oggetto, invariata: non toccata da questo blocco).
             const macerieLocalizzataPerEsamina = gameState.currentLingua === 1 ? 'MACERIE' : 'RUBBLE';
-            if (noun === macerieLocalizzataPerEsamina && [11, 32, 36].includes(gameState.currentLocationId)) {
+            if (noun === macerieLocalizzataPerEsamina && CONFIG.luoghi.macerieEsaminabili.includes(gameState.currentLocationId)) {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.examine.nothingSpecialOriginal', gameState.currentLingua), effects: [] };
             }
             // Con oggetto: mostra descrizione dell'oggetto
@@ -1796,7 +1792,7 @@ export function createEngine() {
           if (concept === 'PRENDERE' || verb === 'PRENDI') {
             // Controlla limite inventario (max 5 oggetti)
             const oggettiInInventario = (gameState.Oggetti || []).filter(obj => obj.IDLuogo === 0 && obj.Attivo >= 3);
-            if (oggettiInInventario.length >= 5) {
+            if (oggettiInInventario.length >= CONFIG.regole.limiteInventario) {
               return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.take.inventoryFull', gameState.currentLingua), effects: [] };
             }
             // Trova l'oggetto nel luogo corrente

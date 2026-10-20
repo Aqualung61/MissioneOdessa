@@ -4,6 +4,8 @@
 // - Rimuove stopword
 // - Valida grammatica e produce ParseResult
 
+import { CONFIG } from '../game/odessa/config.js';
+
 // Tipi comando per ParseResult
 export const CommandType = {
   ACTION: 'ACTION',
@@ -236,16 +238,11 @@ function hasControlChars(s) {
 }
 
 // Alcuni verbi d'azione non richiedono oggetto, in base al concetto (valido in ogni lingua):
-// DORMIRE: azione senza oggetto
-// ESAMINARE/GUARDARE: possono essere usati senza oggetto per descrivere il luogo
-// SCAVARE/ACCENDERE: possono essere usati senza oggetto (TD Lessico L2 risposte e testi, §5.2)
-// SPEGNERE/SCAPPARE/SORRIDERE/SEDERSI/PARLARE: verbi nuovi del lotto L2b, senza oggetto (§5.2)
-// ATTACCARE: verbo nuovo del lotto L3, senza oggetto (TD Lessico L3, §5)
-const ACTION_NO_OBJECT = new Set([
-  'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
-  'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
-  'ATTACCARE',
-]);
+// TD Lotto 3 Configurazione di gioco, §3.2 (lessico.verbiSenzaOggetto); storia della
+// regola: DORMIRE (azione senza oggetto); ESAMINARE/GUARDARE (descrivono il luogo);
+// SCAVARE/ACCENDERE (TD Lessico L2 risposte e testi, §5.2); SPEGNERE/SCAPPARE/
+// SORRIDERE/SEDERSI/PARLARE (lotto L2b, §5.2); ATTACCARE (lotto L3, TD Lessico L3, §5).
+const ACTION_NO_OBJECT = new Set(CONFIG.lessico.verbiSenzaOggetto);
 
 // ParseResult di base: stesse chiavi, stesso ordine, stessi valori iniziali di sempre.
 function createBaseResult(input) {
