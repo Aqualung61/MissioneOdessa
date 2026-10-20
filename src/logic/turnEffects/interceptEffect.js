@@ -14,8 +14,9 @@
 
 import { getSystemMessage } from '../systemMessages.js';
 import { appendTurnMessage } from './appendMessage.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
-export const OPEN_AREA_LOCATIONS = [51, 52, 53, 55, 56, 58];
+export const OPEN_AREA_LOCATIONS = CONFIG.luoghi.zoneAperte;
 
 /**
  * Applica effetto zona aperta al turno corrente
@@ -33,14 +34,14 @@ export function interceptEffect(gameState, result) {
   const warning = getSystemMessage('timer.openArea.warning', gameState.currentLingua);
 
   if (turn.movedThisTurn) {
-    turn.openAreaTimer = 2;
+    turn.openAreaTimer = CONFIG.regole.timerZonaAperta;
     appendTurnMessage(result, warning);
     return;
   }
 
   // Stato caricato o inconsistente: nella zona il timer deve essere attivo
   if (!(turn.openAreaTimer > 0)) {
-    turn.openAreaTimer = 2;
+    turn.openAreaTimer = CONFIG.regole.timerZonaAperta;
   }
   turn.openAreaTimer -= 1;
 

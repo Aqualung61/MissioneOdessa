@@ -9,6 +9,8 @@ import { validateCommandInput, validateSaveData } from '../middleware/validation
 import { appVersion } from '../version.js';
 import { getEngineDebugTrace, isEngineDebugEnabled } from '../logic/engineDebug.js';
 import { attachEngineSession } from '../middleware/sessionContext.js';
+import { rankKeyFor } from '../logic/core/gameConfig.js';
+import { CONFIG } from '../game/odessa/config.js';
 
 const router = express.Router();
 
@@ -24,21 +26,13 @@ function getEngineOrSendError(req, res) {
   return engine;
 }
 
-function computeRankKey(score) {
-  if (score >= 134) return 'engine.rank.perfectionist';
-  if (score >= 100) return 'engine.rank.master';
-  if (score >= 67) return 'engine.rank.investigator';
-  if (score >= 34) return 'engine.rank.explorer';
-  return 'engine.rank.novice';
-}
-
 function computeStatsFromState(state) {
   const visitedPlaces = state?.visitedPlaces?.length || 0;
   const interactions = state?.punteggio?.interazioniPunteggio?.length || 0;
   const mysteries = state?.punteggio?.misteriRisolti?.length || 0;
   const score = state?.punteggio?.totale || 0;
 
-  const rankKey = computeRankKey(score);
+  const rankKey = rankKeyFor(score, CONFIG.punteggio.ranghi);
   const lingua = typeof state?.currentLingua === 'number' ? state.currentLingua : 1;
   const rank = getSystemMessage(rankKey, lingua);
 

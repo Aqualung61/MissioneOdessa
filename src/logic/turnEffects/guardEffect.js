@@ -9,12 +9,9 @@
 
 import { getSystemMessage } from '../systemMessages.js';
 import { appendTurnMessage } from './appendMessage.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
-const GUARD_WARNINGS = {
-  3: 'timer.guard.warning1',
-  2: 'timer.guard.warning2',
-  1: 'timer.guard.warning3',
-};
+const GUARD_WARNINGS = CONFIG.regole.avvisiGuardia;
 
 /**
  * Applica effetto guardia al turno corrente
@@ -25,12 +22,12 @@ export function guardEffect(gameState, result) {
   if (gameState.ended || gameState.awaitingRestart) {
     return;
   }
-  if (gameState.narrativeState !== 'ENDING_PHASE_2_WAIT' || gameState.currentLocationId !== 59) {
+  if (gameState.narrativeState !== 'ENDING_PHASE_2_WAIT' || gameState.currentLocationId !== CONFIG.luoghi.barriera) {
     return;
   }
 
   if (typeof gameState.guardTimer !== 'number') {
-    gameState.guardTimer = 5;
+    gameState.guardTimer = CONFIG.regole.timerGuardia;
   }
   gameState.guardTimer -= 1;
   const key = GUARD_WARNINGS[gameState.guardTimer];

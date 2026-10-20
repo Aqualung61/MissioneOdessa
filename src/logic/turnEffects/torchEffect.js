@@ -10,6 +10,7 @@
  */
 
 import { getSystemMessage } from '../systemMessages.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
 /**
  * Verifica se c'è una fonte di luce attiva
@@ -18,17 +19,17 @@ import { getSystemMessage } from '../systemMessages.js';
  *   fiammifero acceso o luogo 59)
  */
 export function hasFonteLuceAttiva(gameState) {
-  // Alla barriera (luogo 59) la luce è garantita (BAS 1030–1050)
-  if (gameState.currentLocationId === 59) return true;
+  // Alla barriera la luce è garantita (BAS 1030–1050; luogo 59 in Odessa)
+  if (gameState.currentLocationId === CONFIG.luoghi.barriera) return true;
 
-  // Torcia: ID=37 in inventario E funzionante
-  const torcia = gameState.Oggetti.find(o => o.ID === 37);
+  // Torcia: in inventario E funzionante
+  const torcia = gameState.Oggetti.find(o => o.ID === CONFIG.oggetti.torcia);
   const hasTorcia = torcia &&
                     torcia.IDLuogo === 0 &&
                     !gameState.timers.torciaDifettosa;
 
   // Lampada accesa: fa luce solo dove si trova, in inventario o nel luogo corrente (R8, §4.3)
-  const lampada = gameState.Oggetti.find(o => o.ID === 27);
+  const lampada = gameState.Oggetti.find(o => o.ID === CONFIG.oggetti.lampada);
   const hasLampada = gameState.timers.lampadaAccesa &&
                       !!lampada &&
                       (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId);
@@ -49,7 +50,7 @@ export function hasFonteLuceAttiva(gameState) {
 export function torchEffect(gameState, result, _parseResult) {
   // Guard clause: controlla torcia solo se non ancora difettosa (check una-tantum)
   if (!gameState.timers.torciaDifettosa) {
-    const torcia = gameState.Oggetti.find(o => o.ID === 37);
+    const torcia = gameState.Oggetti.find(o => o.ID === CONFIG.oggetti.torcia);
     
     // PENALITÀ: Torcia posata → diventa immediatamente difettosa
     if (torcia && torcia.IDLuogo !== 0) {
@@ -71,7 +72,7 @@ export function torchEffect(gameState, result, _parseResult) {
       gameState.turn.current.hasLight = hasFonteLuceAttiva(gameState);
     }
     // USURA: Dopo 6 turni consuming, la torcia si esaurisce
-    else if (gameState.turn.totalTurnsConsumed >= 6) {
+    else if (gameState.turn.totalTurnsConsumed >= CONFIG.regole.turniTorciaFunzionante) {
       gameState.timers.torciaDifettosa = true;
       
       // Messaggio differenziato in base a disponibilità lampada

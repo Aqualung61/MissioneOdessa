@@ -18,6 +18,7 @@
 import { getSystemMessage } from '../systemMessages.js';
 import { OPEN_AREA_LOCATIONS } from './interceptEffect.js';
 import { getDawnTurnLimit } from './dawnEffect.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
 function setGameOver(gameState, result, messageKey, reason) {
   result.accepted = false;
@@ -46,7 +47,7 @@ export function gameOverEffect(gameState, result, parseResult) {
   // Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo,
   // e non ha altre fonti di luce (torcia in inventario e funzionante), game over immediato.
   if (parseResult?.CommandType === 'NAVIGATION' && gameState.timers.lampadaAccesa === true) {
-    const lampada = (gameState.Oggetti || []).find((o) => o.ID === 27);
+    const lampada = (gameState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.lampada);
 
     // La regola si applica solo se la lampada è accesa ma NON è in inventario.
     if (lampada && lampada.IDLuogo !== 0) {
@@ -58,7 +59,7 @@ export function gameOverEffect(gameState, result, parseResult) {
         currentLocationId !== lampada.IDLuogo;
 
       if (movedAwayFromLampRoom) {
-        const torcia = (gameState.Oggetti || []).find((o) => o.ID === 37);
+        const torcia = (gameState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.torcia);
         const hasWorkingTorchInInventory =
           !!torcia &&
           torcia.IDLuogo === 0 &&
@@ -121,7 +122,7 @@ export function gameOverEffect(gameState, result, parseResult) {
   // === CHECK 4: GUARDIA ALLA BARRIERA (R4) ===
   // Timer della guardia scaduto senza aver porto i documenti
   if (gameState.narrativeState === 'ENDING_PHASE_2_WAIT' &&
-      gameState.currentLocationId === 59 &&
+      gameState.currentLocationId === CONFIG.luoghi.barriera &&
       typeof gameState.guardTimer === 'number' &&
       gameState.guardTimer <= 0) {
     setGameOver(gameState, result, 'timer.guard.arrest', 'GUARD_ARREST');
