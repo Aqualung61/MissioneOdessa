@@ -58,6 +58,19 @@ export default [
       'max-depth': ['warn', 4],
     },
   },
+  // Dipendenze del motore generico (#63, lotto 4a v1.4.2; TD Lotto 4a, §5.2; TD 0 §4.7):
+  // `src/logic/core/**` non importa da `src/game/**`.
+  {
+    files: ['src/logic/core/**/*.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/game/**'],
+          message: 'src/logic/core non deve dipendere da un gioco specifico (src/game/**).',
+        }],
+      }],
+    },
+  },
   // Disabilita regole per file minificati
   {
     files: ['**/*.min.js'],
