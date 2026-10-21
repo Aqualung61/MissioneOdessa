@@ -1,11 +1,14 @@
 // Helper per accedere ai messaggi di sistema localizzati
 
+import { getGameData } from './core/gameData.js';
+
 let messaggiSistema = [];
 
-// Carica i messaggi di sistema dai dati globali
+// Carica i messaggi di sistema dai dati di gioco (letti alla chiamata)
 export function loadMessaggiSistema() {
-  if (global.odessaData && global.odessaData.MessaggiSistema) {
-    messaggiSistema = global.odessaData.MessaggiSistema;
+  const data = getGameData();
+  if (data && data.MessaggiSistema) {
+    messaggiSistema = data.MessaggiSistema;
   }
 }
 

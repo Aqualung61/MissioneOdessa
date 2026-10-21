@@ -1,10 +1,11 @@
 // Parser di comandi utente conforme REQ01
-// - Carica lessico da global.odessaData in memoria (Map token -> { type, canonical, termId })
+// - Carica lessico dai dati statici di gioco in memoria (Map token -> { type, canonical, termId })
 // - Normalizza input (trim, upper, collapse spaces)
 // - Rimuove stopword
 // - Valida grammatica e produce ParseResult
 
 import { CONFIG } from '../game/odessa/config.js';
+import { getGameData } from './core/gameData.js';
 
 // Tipi comando per ParseResult
 export const CommandType = {
@@ -33,11 +34,10 @@ export function resetVocabularyCache() {
 }
 
 // === Lessico: unico punto di accesso ai dati statici (lotto 2, #63) ===
-// Nel lotto 3 `lexiconSource()` diventerà una chiamata all'accessor `getGameData()`
-// (TD 0 Architettura motore e regole, §4.2): per ora resta l'unico punto che legge
-// `global.odessaData` dentro questo modulo.
+// `lexiconSource()` è l'unico punto di questo modulo che legge i dati statici, tramite
+// l'accessor `getGameData()` (TD 0 Architettura motore e regole, §4.8); letto a ogni chiamata.
 function lexiconSource() {
-  return global.odessaData;
+  return getGameData();
 }
 
 // Simula la query JOIN voce -> termine -> tipo, nello stesso ordine di VociLessico,
@@ -190,7 +190,7 @@ function applyCanonicalForms(tokenMap, canonicalByTerm) {
   return tokenMap;
 }
 
-// Carica il vocabolario da global.odessaData e costruisce:
+// Carica il vocabolario dai dati statici di gioco e costruisce:
 // - tokenMap: Map<string, { type, canonical, termId, concept }>
 export async function ensureVocabulary(gameState = null) {
   const currentLingua = gameState?.currentLingua || 1;

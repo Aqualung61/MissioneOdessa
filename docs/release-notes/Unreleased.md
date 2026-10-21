@@ -74,10 +74,25 @@ I parametri specifici di Odessa (ID di luoghi e oggetti con ruolo speciale, rego
 - Nuovo `tests/interactions.registry.test.ts`: chiavi dei registri uguali a quelle di `interactionSchema.js` in entrambe le direzioni, voci tutte funzioni, verbi con risposta di apertura/chiusura coerenti con i dati, tipi ereditati.
 - Anomalia nota trascritta senza correzione: il completamento della combinazione della cassaforte conta come "mistero risolto" (D-4b-4).
 
+## v1.4.2 — lotto 5: effetti di turno, stato, route ed ESLint a `error`
+
+### Sintesi
+Chiusura del refactor del motore: `createEngine` (838 righe) diventa una facciata di 5 righe attorno a un contenitore unico; stato, turno, luoghi, aiuto, conferme ed esecuzione escono da `engine.js` in `src/logic/core/`, i fiammiferi in `src/game/odessa/matches.js`; gli effetti di turno sono forniti dalla definizione del gioco (`odessaGame.turnEffects`). `errorHandler`, `validateInterazioni`, `mapParseErrorToUserMessage`, `/execute`, `/storia` e `gameOverEffect` sono scomposti sotto le soglie. Refactor a comportamento invariato, con una sola eccezione (D-5-4).
+
+### Modifiche
+- Nuovi moduli `core/state.js` (stato iniziale, caricamento, snapshot, dati originali), `core/turn.js`, `core/location.js`, `core/help.js`, `core/confirm.js`, `core/execute.js`; regole nuove in `rules.js` (`isDangerZone`, `initialOpenStates`, `initialMatches`, `deriveLoadedGuardTimer`, `deriveLoadedTimers`) (#63).
+- Accesso ai dati statici solo tramite `getGameData()` in tutto `src/` (compreso `configRoute.js`); nuovo `tests/gameData.access.test.ts` (#63).
+- Una sola tabella dei dettagli di input non valido (`messages.js`); il rango nelle statistiche usa la stessa regola del comando `PUNTI`.
+- **Eccezione al comportamento invariato (D-5-4):** i salvataggi senza `interazioniEseguite`, `direzioniToggle`, `sequenze` o `direzioniSbloccate` si caricano con il valore vuoto e non producono più errori 500 (prima: `TypeError` alla prima interazione che usava la collezione).
+- **ESLint di complessità bloccante in CI (D-5-5):** `complexity`, `max-lines-per-function` e `max-depth` passano a `error` (soglie invariate) e lo script `lint` è `eslint . --max-warnings 0` (#123).
+- Nuovi test: cinque di caratterizzazione (`errorHandler`, caricamento dello stato, ordine delle chiavi HTTP, route di servizio, schema delle interazioni), `state.load-defaults`, `location.toggle`; aggiunte a `architecture.test.ts`.
+
 ## Quality gates
 - Build: PASS
 - Test (Vitest): PASS (507 passed, 17 skipped prima del lotto 4b; 515 passed, 17 skipped dopo, incluso `tests/interactions.registry.test.ts`)
+- Test (Vitest, lotto 5): PASS (675 passed, 17 skipped, incluse le 160 nuove prove di caratterizzazione e dei default)
 - Lint: PASS (uscita 0) — 8 avvisi `complexity`, 5 `max-lines-per-function`, 1 `max-depth` in `src/` (da 11/6/3 prima del lotto 4b; nessun avviso nei file nuovi)
+- Lint (lotto 5): PASS (`eslint . --max-warnings 0`, uscita 0, 0 avvisi; le tre regole di complessità sono ora `error`)
 
 ## Note
 - Dopo il deploy della v1.4.2, eliminare la variabile `DISABLE_LEGACY_ENDPOINTS` da Railway (impostata a `1` il 2026-10-19 come misura provvisoria, non più necessaria).
