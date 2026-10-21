@@ -76,7 +76,7 @@ function getNestedProperty(obj, path) {
   return current;
 }
 
-// Stub: entra in luogo terminale (da implementare secondo logica app)
+// Entra in un luogo terminale: imposta il luogo corrente e l'attesa di riavvio (usata dai test dei luoghi terminali).
 async function enterLocationOf(eng, locationId) {
   // Logica: entra in luogo terminale, imposta stato di riavvio
   eng.state.awaitingRestart = true;
@@ -162,7 +162,7 @@ function buildEngineApi(eng, helpers) {
   const execute = (parseResult) => runCommand(eng, helpers, parseResult);
   return {
     enterLocation: (locationId) => enterLocationOf(eng, locationId),
-    // Stub: esecuzione comando asincrona (da implementare secondo logica app)
+    // Involucro asincrono di executeCommand, usato da POST /api/engine/execute.
     executeCommandAsync: async (parseResult) => execute(parseResult),
     confirmEnd: (risposta) => confirmEndOf(eng, risposta),
     confirmRestart: (risposta) => confirmRestartOf(eng, risposta, reset),
