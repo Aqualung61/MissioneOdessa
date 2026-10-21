@@ -8,6 +8,11 @@
  * 4. Copertura del lessico: concetti di NAVIGAZIONE e SISTEMA tutti gestiti.
  * 5. `createEngine()` e `createEngine(odessaGame)` danno le stesse risposte.
  * 6. `rules.hasActiveLight` è la funzione riesportata da `torchEffect.js`.
+ *
+ * Aggiunte del lotto 5 (TD Lotto 5 v1.2, §5.2, con E-5):
+ * 7. `odessaGame.turnEffects` è lo stesso array `TURN_EFFECTS` (non una copia).
+ * 8. `core/turn.js` e `core/state.js` non contengono dettagli di Odessa (ricerca testuale).
+ * 9. `createEngine` restituisce le 21 chiavi dell'API nell'ordine di `e088e7c`.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -19,6 +24,7 @@ import { createEngine } from '../src/logic/engine.js';
 import { odessaGame } from '../src/game/odessa/index.js';
 import * as rules from '../src/game/odessa/rules.js';
 import { hasFonteLuceAttiva } from '../src/logic/turnEffects/torchEffect.js';
+import { TURN_EFFECTS } from '../src/logic/turnEffects/index.js';
 import { HANDLED_NAV_CONCEPTS, directionFieldFor } from '../src/logic/core/handlers/navigation.js';
 import { HANDLED_SYSTEM_CONCEPTS } from '../src/logic/core/handlers/system.js';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
@@ -175,5 +181,44 @@ describe('Architettura del motore (#63, lotto 4a, TD §5.1)', () => {
   it('6. rules.hasActiveLight è la funzione riesportata da torchEffect.js', () => {
     expect(hasFonteLuceAttiva).toBe(rules.hasActiveLight);
     expect(odessaGame.rules.hasActiveLight).toBe(rules.hasActiveLight);
+  });
+
+  it('7. odessaGame.turnEffects è lo stesso array TURN_EFFECTS', () => {
+    expect(odessaGame.turnEffects).toBe(TURN_EFFECTS);
+    expect(Array.isArray(odessaGame.turnEffects)).toBe(true);
+  });
+
+  it('8. core/turn.js e core/state.js non contengono dettagli di Odessa', () => {
+    const forbidden = ['zoneAperte', 'BOTOLA', 'ENDING_PHASE', 'fiammiferi'];
+    for (const name of ['turn.js', 'state.js']) {
+      const source = readFileSync(resolve(coreDir, name), 'utf8');
+      for (const word of forbidden) expect(source.includes(word), `${name}: ${word}`).toBe(false);
+    }
+  });
+
+  it('9. createEngine restituisce le 21 chiavi dell\'API nell\'ordine di e088e7c', () => {
+    expect(Object.keys(createEngine())).toEqual([
+      'enterLocation',
+      'executeCommandAsync',
+      'confirmEnd',
+      'confirmRestart',
+      'initializeOriginalData',
+      'getGameState',
+      'resetGameState',
+      'shouldConsumeTurn',
+      'hasFonteLuceAttiva',
+      'prepareTurnContext',
+      'runPreExecutionChecks',
+      'applyTurnEffects',
+      'generateHelpMessage',
+      'generaDescrizioneLuogoConOggetti',
+      'getOggetti',
+      'getDirezioniLuogo',
+      'setGameState',
+      'setCurrentLocation',
+      'getGameStateSnapshot',
+      'toCommandDTO',
+      'executeCommand',
+    ]);
   });
 });

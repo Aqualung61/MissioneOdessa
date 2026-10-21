@@ -22,6 +22,7 @@ import { openClose } from '../../logic/core/handlers/openClose.js';
 import { take } from '../../logic/core/handlers/take.js';
 import { drop } from '../../logic/core/handlers/drop.js';
 import { fallback } from '../../logic/core/handlers/fallback.js';
+import { TURN_EFFECTS } from '../../logic/turnEffects/index.js';
 
 export const odessaGame = {
   id: 'odessa',
@@ -57,5 +58,7 @@ export const odessaGame = {
   ],
   prerequisiteTypes,
   effectTypes,
+  // Effetti di turno (TD Lotto 5, §3.2): lo stesso array di `TURN_EFFECTS`, non una copia.
+  turnEffects: TURN_EFFECTS,
   rules,
 };

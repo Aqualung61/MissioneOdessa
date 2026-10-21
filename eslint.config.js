@@ -47,15 +47,16 @@ export default [
       // Lasciamo la formattazione a Prettier (script dedicato)
     },
   },
-  // Regole di complessità in modalità avviso (#63, lotto 0 v1.4.2).
-  // TD: docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md, §3.6.
+  // Regole di complessità bloccanti (#63, lotto 5 v1.4.2, D-5-5): erano 'warn' dal lotto 0
+  // (TD Lotto 0 Rete di caratterizzazione, §3.6). Soglie invariate; lo script `lint` usa
+  // `--max-warnings 0`. Nessuna deroga `eslint-disable` ammessa per queste regole in src/.
   {
     files: ['src/**/*.js'],
     ignores: ['src/tests/**'],
     rules: {
-      complexity: ['warn', 15],
-      'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
-      'max-depth': ['warn', 4],
+      complexity: ['error', 15],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-depth': ['error', 4],
     },
   },
   // Dipendenze del motore generico (#63, lotto 4a v1.4.2; TD Lotto 4a, §5.2; TD 0 §4.7):

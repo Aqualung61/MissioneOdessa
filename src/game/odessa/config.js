@@ -1,7 +1,7 @@
 // Configurazione di gioco di Odessa (src/data-internal/Configurazione.json).
 // TD Lotto 3 Configurazione di gioco, §3.1: caricata all'importazione del modulo,
-// non da `global.odessaData` (D-L3-1: indipendente dall'ordine di inizializzazione,
-// non toccata dai test che sostituiscono `global.odessaData` con dati parziali).
+// non dai dati statici in memoria (D-L3-1: indipendente dall'ordine di inizializzazione,
+// non toccata dai test che sostituiscono i dati statici con dati parziali).
 // Un errore di caricamento impedisce l'avvio del server con un messaggio esplicito.
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';

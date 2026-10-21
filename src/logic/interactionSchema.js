@@ -65,6 +65,107 @@ function effectsOf(record) {
   return Array.isArray(record?.effetti) ? record.effetti : [];
 }
 
+function whereOf(record) {
+  return `[${record?.id ?? '?'} / lingua ${record?.IDLingua ?? '?'}]`;
+}
+
+// Tipo del prerequisito (ammesso e con i campi obbligatori del suo tipo).
+function checkPrerequisiteType(req, at, errors) {
+  if (!PREREQUISITE_TYPES.has(req?.tipo)) {
+    errors.push(`${at} tipo non ammesso: ${req?.tipo}`);
+    return;
+  }
+  for (const field of PREREQUISITE_REQUIRED_FIELDS[req.tipo]) {
+    if (req[field] === undefined || req[field] === null || req[field] === '') {
+      errors.push(`${at} (${req.tipo}) campo obbligatorio mancante: ${field}`);
+    }
+  }
+}
+
+function checkPrerequisite(req, idx, where, errors) {
+  const at = `${where} prerequisito #${idx + 1}`;
+  checkPrerequisiteType(req, at, errors);
+  for (const key of Object.keys(req ?? {})) {
+    if (!PREREQUISITE_KEYS.has(key)) errors.push(`${at} chiave non ammessa: ${key}`);
+  }
+  if (req?.risposta !== undefined && typeof req.risposta !== 'string') {
+    errors.push(`${at} risposta deve essere una stringa`);
+  }
+}
+
+// Controlli di un singolo record: chiavi di primo livello, prerequisiti, effetti.
+function checkRecord(record, errors) {
+  const where = whereOf(record);
+
+  for (const key of Object.keys(record ?? {})) {
+    if (!INTERACTION_TOP_LEVEL_KEYS.has(key)) errors.push(`${where} chiave non ammessa: ${key}`);
+  }
+
+  prerequisitesOf(record).forEach((req, idx) => checkPrerequisite(req, idx, where, errors));
+
+  effectsOf(record).forEach((eff, idx) => {
+    if (!EFFECT_TYPES.has(eff?.tipo)) {
+      errors.push(`${where} effetto #${idx + 1} tipo non ammesso: ${eff?.tipo}`);
+    }
+  });
+}
+
+// Validazione di `punteggio`: `false` oppure stringa che riferisce un id esistente nella stessa lingua.
+function checkPunteggio(record, byLang, errors) {
+  const where = whereOf(record);
+  if (record?.punteggio === undefined) return;
+  if (record.punteggio !== false && typeof record.punteggio !== 'string') {
+    errors.push(`${where} punteggio deve essere false o una stringa`);
+    return;
+  }
+  if (typeof record.punteggio === 'string') {
+    const idsStessaLingua = byLang.get(record.IDLingua);
+    if (!idsStessaLingua || !idsStessaLingua.has(record.punteggio)) {
+      errors.push(`${where} punteggio riferisce un id inesistente nella stessa lingua: ${record.punteggio}`);
+    }
+  }
+}
+
+// Coerenza di un id tra due lingue: tipi di prerequisito, risposte, tipi di effetto, punteggio.
+function compareRecords(id, a, b, baseLang, lang, errors) {
+  const reqA = prerequisitesOf(a);
+  const reqB = prerequisitesOf(b);
+  const typesA = reqA.map((r) => r?.tipo).join(',');
+  const typesB = reqB.map((r) => r?.tipo).join(',');
+  if (typesA !== typesB) {
+    errors.push(`[${id}] tipi di prerequisito diversi tra lingue ${baseLang} e ${lang}: ${typesA} / ${typesB}`);
+  } else {
+    reqA.forEach((r, idx) => {
+      if (typeof r?.risposta === 'string' !== (typeof reqB[idx]?.risposta === 'string')) {
+        errors.push(`[${id}] prerequisito #${idx + 1}: risposta presente solo in una lingua (${baseLang}/${lang})`);
+      }
+    });
+  }
+  const effA = effectsOf(a).map((e) => e?.tipo).join(',');
+  const effB = effectsOf(b).map((e) => e?.tipo).join(',');
+  if (effA !== effB) {
+    errors.push(`[${id}] tipi di effetto diversi tra lingue ${baseLang} e ${lang}: ${effA} / ${effB}`);
+  }
+  if (a?.punteggio !== b?.punteggio) {
+    errors.push(`[${id}] punteggio diverso tra lingue ${baseLang} e ${lang}: ${JSON.stringify(a?.punteggio)} / ${JSON.stringify(b?.punteggio)}`);
+  }
+}
+
+// Coerenza IT/EN: stessi id; per ogni id, stessi tipi nello stesso ordine; risposta presente in entrambe.
+function checkLanguagePair(base, other, baseLang, lang, errors) {
+  for (const id of base.keys()) {
+    if (!other.has(id)) errors.push(`[${id}] presente in lingua ${baseLang} ma assente in lingua ${lang}`);
+  }
+  for (const id of other.keys()) {
+    if (!base.has(id)) errors.push(`[${id}] presente in lingua ${lang} ma assente in lingua ${baseLang}`);
+  }
+  for (const [id, a] of base.entries()) {
+    const b = other.get(id);
+    if (!b) continue;
+    compareRecords(id, a, b, baseLang, lang, errors);
+  }
+}
+
 /**
  * Valida i record di Interazioni.json (tutte le lingue).
  * @param {Array<Object>} records
@@ -77,96 +178,18 @@ export function validateInterazioni(records) {
   const byLang = new Map();
 
   for (const record of records) {
-    const where = `[${record?.id ?? '?'} / lingua ${record?.IDLingua ?? '?'}]`;
-
-    for (const key of Object.keys(record ?? {})) {
-      if (!INTERACTION_TOP_LEVEL_KEYS.has(key)) errors.push(`${where} chiave non ammessa: ${key}`);
-    }
-
-    prerequisitesOf(record).forEach((req, idx) => {
-      const at = `${where} prerequisito #${idx + 1}`;
-      if (!PREREQUISITE_TYPES.has(req?.tipo)) {
-        errors.push(`${at} tipo non ammesso: ${req?.tipo}`);
-      } else {
-        for (const field of PREREQUISITE_REQUIRED_FIELDS[req.tipo]) {
-          if (req[field] === undefined || req[field] === null || req[field] === '') {
-            errors.push(`${at} (${req.tipo}) campo obbligatorio mancante: ${field}`);
-          }
-        }
-      }
-      for (const key of Object.keys(req ?? {})) {
-        if (!PREREQUISITE_KEYS.has(key)) errors.push(`${at} chiave non ammessa: ${key}`);
-      }
-      if (req?.risposta !== undefined && typeof req.risposta !== 'string') {
-        errors.push(`${at} risposta deve essere una stringa`);
-      }
-    });
-
-    effectsOf(record).forEach((eff, idx) => {
-      if (!EFFECT_TYPES.has(eff?.tipo)) {
-        errors.push(`${where} effetto #${idx + 1} tipo non ammesso: ${eff?.tipo}`);
-      }
-    });
-
+    checkRecord(record, errors);
     if (!byLang.has(record?.IDLingua)) byLang.set(record?.IDLingua, new Map());
     byLang.get(record?.IDLingua).set(record?.id, record);
   }
 
-  // Validazione di `punteggio`: `false` oppure stringa che riferisce un id esistente nella stessa lingua.
-  for (const record of records) {
-    const where = `[${record?.id ?? '?'} / lingua ${record?.IDLingua ?? '?'}]`;
-    if (record?.punteggio === undefined) continue;
-    if (record.punteggio !== false && typeof record.punteggio !== 'string') {
-      errors.push(`${where} punteggio deve essere false o una stringa`);
-      continue;
-    }
-    if (typeof record.punteggio === 'string') {
-      const idsStessaLingua = byLang.get(record.IDLingua);
-      if (!idsStessaLingua || !idsStessaLingua.has(record.punteggio)) {
-        errors.push(`${where} punteggio riferisce un id inesistente nella stessa lingua: ${record.punteggio}`);
-      }
-    }
-  }
+  for (const record of records) checkPunteggio(record, byLang, errors);
 
-  // Coerenza IT/EN: stessi id; per ogni id, stessi tipi nello stesso ordine; risposta presente in entrambe.
   const langs = [...byLang.keys()];
   if (langs.length > 1) {
     const [baseLang, ...others] = langs;
     const base = byLang.get(baseLang);
-    for (const lang of others) {
-      const other = byLang.get(lang);
-      for (const id of base.keys()) {
-        if (!other.has(id)) errors.push(`[${id}] presente in lingua ${baseLang} ma assente in lingua ${lang}`);
-      }
-      for (const id of other.keys()) {
-        if (!base.has(id)) errors.push(`[${id}] presente in lingua ${lang} ma assente in lingua ${baseLang}`);
-      }
-      for (const [id, a] of base.entries()) {
-        const b = other.get(id);
-        if (!b) continue;
-        const reqA = prerequisitesOf(a);
-        const reqB = prerequisitesOf(b);
-        const typesA = reqA.map((r) => r?.tipo).join(',');
-        const typesB = reqB.map((r) => r?.tipo).join(',');
-        if (typesA !== typesB) {
-          errors.push(`[${id}] tipi di prerequisito diversi tra lingue ${baseLang} e ${lang}: ${typesA} / ${typesB}`);
-        } else {
-          reqA.forEach((r, idx) => {
-            if (typeof r?.risposta === 'string' !== (typeof reqB[idx]?.risposta === 'string')) {
-              errors.push(`[${id}] prerequisito #${idx + 1}: risposta presente solo in una lingua (${baseLang}/${lang})`);
-            }
-          });
-        }
-        const effA = effectsOf(a).map((e) => e?.tipo).join(',');
-        const effB = effectsOf(b).map((e) => e?.tipo).join(',');
-        if (effA !== effB) {
-          errors.push(`[${id}] tipi di effetto diversi tra lingue ${baseLang} e ${lang}: ${effA} / ${effB}`);
-        }
-        if (a?.punteggio !== b?.punteggio) {
-          errors.push(`[${id}] punteggio diverso tra lingue ${baseLang} e ${lang}: ${JSON.stringify(a?.punteggio)} / ${JSON.stringify(b?.punteggio)}`);
-        }
-      }
-    }
+    for (const lang of others) checkLanguagePair(base, byLang.get(lang), baseLang, lang, errors);
   }
 
   return errors;

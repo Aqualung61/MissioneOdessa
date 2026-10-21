@@ -35,7 +35,7 @@ export function verificaPrerequisiti(prerequisiti, ctx) {
 // Funzione per applicare gli effetti di un'interazione
 // @param {boolean} skipMisteri - true se l'interazione ha `punteggio: false` (R7, §4.1):
 //   nessun punto mistero per i suoi effetti
-// @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. fiammiferi finiti)
+// @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. avvisi prodotti dagli effetti)
 export function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } = {}, ctx) {
   const extraMessages = [];
   for (const effetto of effetti) {

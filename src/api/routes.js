@@ -1,5 +1,6 @@
 import express from 'express';
 import { attachEngineSession } from '../middleware/sessionContext.js';
+import { getGameData } from '../logic/core/gameData.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get('/frontend-messages/:lingua', async (req, res, next) => {
     if (!lingua || (lingua !== 1 && lingua !== 2)) {
       return res.status(400).json({ ok: false, error: 'Lingua non valida (1=IT, 2=EN)' });
     }
-    const messaggiFrontend = global.odessaData.MessaggiFrontend || [];
+    const messaggiFrontend = getGameData().MessaggiFrontend || [];
     const filtered = messaggiFrontend.filter(m => m.IDLingua === lingua);
     res.json({ ok: true, messages: filtered, count: filtered.length });
   } catch (err) {
@@ -23,32 +24,35 @@ router.get('/frontend-messages/:lingua', async (req, res, next) => {
 router.get('/introduzione', async (req, res) => {
   const id = parseInt(req.query.id, 10) || 1;
   const lingua = parseInt(req.query.lingua, 10) || 1;
-  const introduzioni = global.odessaData.Introduzione || [];
+  const introduzioni = getGameData().Introduzione || [];
   const row = introduzioni.find(intro => intro.ID == id && intro.IDLingua == lingua);
   res.json({ testo: row?.Testo || '' });
 });
+
+// Campi della risposta di /storia, nell'ordine di uscita: [campo della risposta, campo dei dati].
+const STORIA_FIELDS = [
+  ['testo1', 'Testo1'],
+  ['testo2', 'Testo2'],
+  ['labelLinks', 'LabelLinks'],
+  ['labelDocumenti', 'LabelDocumenti'],
+  ['autoreLine', 'AutoreLine'],
+  ['genereLine', 'GenereLine'],
+  ['piattaformaLine', 'PiattaformaLine'],
+];
 
 // GET /api/storia - restituisce testi markdown e label localizzata per la pagina storia
 router.get('/storia', async (req, res) => {
   const id = parseInt(req.query.id, 10) || 1;
   const lingua = parseInt(req.query.lingua, 10) || 1;
-  const storie = global.odessaData.Storia || [];
+  const storie = getGameData().Storia || [];
   const row = storie.find(storia => storia.ID == id && storia.IDLingua == lingua);
-  res.json({
-    testo1: row?.Testo1 || '',
-    testo2: row?.Testo2 || '',
-    labelLinks: row?.LabelLinks || '',
-    labelDocumenti: row?.LabelDocumenti || '',
-    autoreLine: row?.AutoreLine || '',
-    genereLine: row?.GenereLine || '',
-    piattaformaLine: row?.PiattaformaLine || '',
-  });
+  res.json(Object.fromEntries(STORIA_FIELDS.map(([campoRisposta, campoDati]) => [campoRisposta, row?.[campoDati] || ''])));
 });
 
 // GET /api/luoghi - restituisce tutti i luoghi
 router.get('/luoghi', async (req, res) => {
-  const luoghi = global.odessaData.Luoghi || [];
-  const luoghiLogici = global.odessaData.LuoghiLogici || [];
+  const luoghi = getGameData().Luoghi || [];
+  const luoghiLogici = getGameData().LuoghiLogici || [];
   const luoghiConImmagini = luoghi.map(luogo => {
     const luogoLogico = luoghiLogici.find(ll => ll.ID_LuogoLogico == luogo.ID_LuogoLogico);
     return { 
