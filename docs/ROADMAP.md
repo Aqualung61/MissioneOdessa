@@ -1,80 +1,32 @@
-# Roadmap (Next Steps)
+# Roadmap
 
-Questo file è una **sintesi** dei prossimi step.
-La **fonte di verità operativa** (stato, discussione, assegnazioni, chiusura automatica via PR) deve restare su **GitHub Issues + Milestones**.
-
-Documento operativo (da usare come TODO dettagliato, con HLD/TD/Plan per ogni issue):
-- [docs/20260113_nextsteps.md](20260113_nextsteps.md)
-
-## Link rapidi (GitHub)
+Sintesi breve. La **fonte di verità** (stato, discussione, assegnazioni) sono **GitHub Issues e Milestones**; questo file si aggiorna a ogni rilascio.
 
 - Issues aperte: https://github.com/Aqualung61/MissioneOdessa/issues
-- Nuova Issue: https://github.com/Aqualung61/MissioneOdessa/issues/new/choose
 - Milestones: https://github.com/Aqualung61/MissioneOdessa/milestones
-- Nuova Milestone: https://github.com/Aqualung61/MissioneOdessa/milestones/new
+- Piano operativo di gennaio 2026, conservato come **storico**: [20260113_nextsteps.md](20260113_nextsteps.md)
 
-Suggerimento: quando apri una PR, usa `Fixes #<id>` nella descrizione per chiudere automaticamente la Issue al merge.
+## Fatto
 
-## Milestones suggerite
+- **v1.4.2 — Refactor del motore:** motore, parser e configurazione riorganizzati a comportamento invariato, endpoint legacy rimossi, ESLint di complessità bloccante (#63, #123, #124, #125, #126). [Note](release-notes/2026-10-21_v1.4.2.md)
+- **v1.4.1 — Fedeltà all'originale:** regole, enigmi, punteggio, lessico e risposte dal sorgente BASIC del 1986. [Note](release-notes/2026-10-17_v1.4.1.md)
+- **v1.4.0 — Stabilità:** sessioni isolate, robustezza, difetti. [Note](release-notes/2026-10-15_v1.4.0.md)
 
-Milestones già create su GitHub (nomi allineati alla UI):
+## Prossimo (milestone v1.4.3 — Parser: nomi composti)
 
-- **v1.3.2 (Stability e UX)**
-- **v1.3.3 (i18n + polish)**
-- **v1.3.4 (Cross-browser QA)**
-- **v1.4.0 (Release readiness)**
+- #128 — Parser: nomi di 3+ parole e preposizione "di".
+- #137 — `help` EN: voci in maiuscolo.
 
-Nota: **v1.3.3** è stata rilasciata il **17 gennaio 2026**.
+## Dopo (senza milestone)
 
-## Now (prossima iterazione)
+- #127 — Frontend: `executeCommandOnServer`.
+- #129 — Candidati dalla traccia del lotto 0.
+- #138 — Frontend: messaggi dedicati per 409 `LANGUAGE_MISMATCH` e 429 `RATE_LIMITED`.
+- #139 — Motore: candidati emersi dal refactor v1.4.2.
+- #140 — API: candidati di gestione degli errori.
 
-1) **Comandi troppo veloci (race/rapid input): analisi + soluzione**
-   - Obiettivo: evitare doppie esecuzioni/desync UI/server quando l’utente invia input molto rapidamente.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/57
+## Convenzioni
 
-## Done (recent)
-
-- **Parser: validazione e messaggi per comandi non previsti/scorretti**
-   - Obiettivo: messaggi coerenti, nessun 500/stack leak, IT/EN allineati.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/55
-
-- **HELP: ridurre hints (spoiler-free)**
-  - Obiettivo: help più “neutro”, con comandi base e pochi esempi non risolutivi.
-  - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/56 (chiusa)
-
-## Next
-
-4) **Debug esteso scoring/intercettazione/game over + invarianti**
-   - Obiettivo: definire invarianti (es. punteggio monotono, game-over blocca, contatori coerenti) e aumentare copertura test dove serve.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/58
-
-5) **i18n: completamento messaggi e label (backend + frontend)**
-   - Obiettivo: eliminare chiavi mancanti/fallback, coerenza terminologica IT/EN.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/59
-
-6) **Cambio lingua in `odessa_storia.html`**
-   - Obiettivo: selettore lingua con persistenza (localStorage) e UI coerente.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/60
-
-## Later
-
-7) **QA cross-browser (Edge/Safari) + mobile**
-   - Obiettivo: checklist riproducibile su pagine storia/intro/main, viewport e input.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/61
-
-8) **Pubblicazione progetto (repo pubblico)**
-   - Obiettivo: checklist pre-public (segreti, .env.example, hardening, attribution/licenze, contenuti).
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/62
-
-9) **Quality gate: ESLint complexity rules + refactor funzioni critiche**
-   - Obiettivo: rendere misurabile la manutenibilità (limiti ESLint) e ridurre complessità di `executeCommand()`/`ensureVocabulary()`.
-   - GitHub: https://github.com/Aqualung61/MissioneOdessa/issues/63
-
-## Convenzioni consigliate (Issues)
-
-- Titoli brevi e azionabili (es. `Parser: messaggi per input invalidi`).
-- Labels minime (proposta): `bug`, `enhancement`, `docs`, `i18n`, `parser`, `ux`, `stability`, `cross-browser`, `priority:high|medium|low`.
-- Ogni Issue “Next” dovrebbe avere:
-  - breve descrizione
-  - acceptance criteria (AC)
-  - milestone assegnata
+- Un'issue per ogni lavoro eseguibile, con criteri di accettazione e milestone.
+- Etichette: `type:*`, `area:*`, `priority:P*`.
+- Le PR di lotto usano `Refs #<n>`; `Fixes #<n>` solo nella PR finale verso `main`.
