@@ -16,6 +16,7 @@
 
 import { getSystemMessage } from '../systemMessages.js';
 import { appendTurnMessage } from './appendMessage.js';
+import { CONFIG } from '../../game/odessa/config.js';
 
 /**
  * Applica effetto darkness al turno corrente
@@ -40,10 +41,10 @@ export function darknessEffect(gameState, result, parseResult) {
 
   if (!hasLight) {
     if (turn.darknessTimer === 0) {
-      turn.darknessTimer = 3;
+      turn.darknessTimer = CONFIG.regole.timerBuio;
     }
     // L'avviso di torcia guasta contiene già l'avviso di pericolo
-    if (gameState.currentLocationId !== 59 && !turn.current.torchDefectiveWarning) {
+    if (gameState.currentLocationId !== CONFIG.luoghi.barriera && !turn.current.torchDefectiveWarning) {
       appendTurnMessage(result, getSystemMessage('timer.darkness.warning', gameState.currentLingua));
     }
   } else {

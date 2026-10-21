@@ -4,6 +4,20 @@
 
 ---
 
+## v1.4.2 (21 ottobre 2026)
+
+### Refactor del motore
+
+- Motore: `createEngine` come facciata, nucleo generico in `src/logic/core/` e parte di Odessa in `src/game/odessa/`; gestori di verbo, registri di interazioni, effetti di turno dalla definizione del gioco (#63, #123).
+- Parser: nuova `parseInput`, `parseCommand` deprecato; configurazione di gioco in `Configurazione.json` (#63, #123).
+- API: rimossi gli endpoint legacy e `DISABLE_LEGACY_ENDPOINTS`; `/api/parser/stats` e `/reload` solo fuori produzione; `tsconfig` NodeNext (#124, #125, #126).
+- Qualità: ESLint di complessità bloccante (`--max-warnings 0`), reti di caratterizzazione, copertura (#63, #123).
+- Unica modifica di comportamento: i salvataggi incompleti si caricano senza errori 500 (D-5-4).
+
+Dettagli: [docs/release-notes/2026-10-21_v1.4.2.md](docs/release-notes/2026-10-21_v1.4.2.md)
+
+---
+
 ## v1.4.1 (17 ottobre 2026)
 
 ### Fedeltà all'originale

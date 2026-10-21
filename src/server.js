@@ -16,6 +16,7 @@ import { registerApiConfigRoutes } from './api/configRoute.js';
 import { initOdessa } from './initOdessa.js';
 import { resetGameState, initializeOriginalData } from './logic/engine.js';
 import { loadMessaggiSistema } from './logic/systemMessages.js';
+import { getGameData } from './logic/core/gameData.js';
 import { apiKeyAuth } from './middleware/auth.js';
 import { apiLimiter, parsingLimiter, heavyLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -60,7 +61,7 @@ console.log(`Base path: ${BASE_PATH || 'root'}`);
 // Carica tutto il DB in memoria
 try {
   await initOdessa();
-  console.log('Dati caricati in memoria con tabelle:', Object.keys(global.odessaData).join(', '));
+  console.log('Dati caricati in memoria con tabelle:', Object.keys(getGameData()).join(', '));
   // Salva copia immutabile dei dati originali
   initializeOriginalData();
   // Inizializza gameState con log per Step 1
@@ -126,7 +127,6 @@ app.use(BASE_PATH + '/api', apiKeyAuth());
 
 // Rate limiting: generale su /api/* + più stretto su endpoint pesanti
 app.use(BASE_PATH + '/api', apiLimiter);
-app.use(BASE_PATH + '/api/parser/parse', parsingLimiter);
 app.use(BASE_PATH + '/api/engine/execute', parsingLimiter);
 app.use(BASE_PATH + '/api/parser/reload', heavyLimiter);
 

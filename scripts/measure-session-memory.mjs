@@ -4,7 +4,7 @@
 
 import { initOdessa } from '../src/initOdessa.js';
 import { createEngine } from '../src/logic/engine.js';
-import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
+import { ensureVocabulary, parseInput } from '../src/logic/parser.js';
 
 const SESSIONS = 1000;
 const MAX_ACTIVE_KB = 30;
@@ -27,7 +27,7 @@ await ensureVocabulary();
 
 const parsed = [];
 for (const cmd of COMMANDS) {
-  parsed.push(await parseCommand(null, cmd));
+  parsed.push(await parseInput(cmd));
 }
 
 // Riscaldamento: compila il bytecode condiviso prima della misura.

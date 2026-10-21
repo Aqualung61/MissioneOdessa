@@ -24,6 +24,7 @@ export default [
       'web/js/odessa1.js',
       'types/**/*.d.ts',
       'scripts/**/*.cjs',
+      'Claude decompiler/',
     ],
   },
   js.configs.recommended,
@@ -44,6 +45,31 @@ export default [
       'space-infix-ops': 'warn',
       'no-multiple-empty-lines': ['warn', { max: 2 }],
       // Lasciamo la formattazione a Prettier (script dedicato)
+    },
+  },
+  // Regole di complessità bloccanti (#63, lotto 5 v1.4.2, D-5-5): erano 'warn' dal lotto 0
+  // (TD Lotto 0 Rete di caratterizzazione, §3.6). Soglie invariate; lo script `lint` usa
+  // `--max-warnings 0`. Nessuna deroga `eslint-disable` ammessa per queste regole in src/.
+  {
+    files: ['src/**/*.js'],
+    ignores: ['src/tests/**'],
+    rules: {
+      complexity: ['error', 15],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-depth': ['error', 4],
+    },
+  },
+  // Dipendenze del motore generico (#63, lotto 4a v1.4.2; TD Lotto 4a, §5.2; TD 0 §4.7):
+  // `src/logic/core/**` non importa da `src/game/**`.
+  {
+    files: ['src/logic/core/**/*.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/game/**'],
+          message: 'src/logic/core non deve dipendere da un gioco specifico (src/game/**).',
+        }],
+      }],
     },
   },
   // Disabilita regole per file minificati

@@ -1,14 +1,15 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
-import { parseCommand } from '../logic/parser.js';
+import { parseInput } from '../logic/parser.js';
 import { toCommandDTO } from '../logic/engine.js';
 import { resetVocabularyCache } from '../logic/parser.js';
-import { mapParseErrorToUserMessage } from '../logic/messages.js';
+import { mapParseErrorToUserMessage, invalidInputMessageKey } from '../logic/messages.js';
 import { getSystemMessage } from '../logic/systemMessages.js';
 import { validateCommandInput, validateSaveData } from '../middleware/validation.js';
 import { appVersion } from '../version.js';
 import { getEngineDebugTrace, isEngineDebugEnabled } from '../logic/engineDebug.js';
 import { attachEngineSession } from '../middleware/sessionContext.js';
+import { odessaGame } from '../game/odessa/index.js';
 
 const router = express.Router();
 
@@ -24,25 +25,19 @@ function getEngineOrSendError(req, res) {
   return engine;
 }
 
-function isTruthy(value) {
-  return value === '1' || value === 'true' || value === 'yes';
-}
-
-function computeRankKey(score) {
-  if (score >= 134) return 'engine.rank.perfectionist';
-  if (score >= 100) return 'engine.rank.master';
-  if (score >= 67) return 'engine.rank.investigator';
-  if (score >= 34) return 'engine.rank.explorer';
-  return 'engine.rank.novice';
+// Numero di elementi di un array opzionale (0 se assente o vuoto).
+function countOf(list) {
+  return list?.length || 0;
 }
 
 function computeStatsFromState(state) {
-  const visitedPlaces = state?.visitedPlaces?.length || 0;
-  const interactions = state?.punteggio?.interazioniPunteggio?.length || 0;
-  const mysteries = state?.punteggio?.misteriRisolti?.length || 0;
+  const visitedPlaces = countOf(state?.visitedPlaces);
+  const interactions = countOf(state?.punteggio?.interazioniPunteggio);
+  const mysteries = countOf(state?.punteggio?.misteriRisolti);
   const score = state?.punteggio?.totale || 0;
 
-  const rankKey = computeRankKey(score);
+  // Rango: stessa regola del comando PUNTI (TD Lotto 5, D-5-6).
+  const rankKey = odessaGame.rules.rankKey(score);
   const lingua = typeof state?.currentLingua === 'number' ? state.currentLingua : 1;
   const rank = getSystemMessage(rankKey, lingua);
 
@@ -115,24 +110,60 @@ function normalizeEngineResult(engine) {
   return normalized;
 }
 
-function mapInvalidInputDetailsToI18nKey(details) {
-  switch (details) {
-    case 'EMPTY_INPUT':
-      return 'parse.error.emptyInput';
-    case 'CONTROL_CHARS':
-      return 'parse.error.controlChars';
-    case 'LENGTH_OUT_OF_RANGE':
-      return 'parse.error.lengthOutOfRange';
-    case 'NOT_A_STRING':
-      return 'parse.error.notAString';
-    default:
-      return 'parse.error.invalidInputGeneric';
-  }
-}
-
 function maybeAttachDebug(payload) {
   if (!isEngineDebugEnabled()) return payload;
   return { ...payload, debug: getEngineDebugTrace() };
+}
+
+// Aggiunge in coda state, ui e stats (in quest'ordine) al corpo di una risposta di /execute.
+function withState(engine, payload, state) {
+  return {
+    ...payload,
+    state,
+    ui: buildUiFromState(state, engine),
+    stats: computeStatsFromState(state),
+  };
+}
+
+// 400: input non valido (dal validatore, oppure non stringa).
+function sendInvalidInput(res, engine, details, parseResult) {
+  const state = engine.getGameStateSnapshot();
+  const userMessage = getSystemMessage(invalidInputMessageKey(details), state.currentLingua);
+  return res.status(400).json(maybeAttachDebug(withState(engine, {
+    ok: false,
+    error: 'INVALID_INPUT',
+    details,
+    userMessage,
+    parseResult,
+    command: null,
+    engine: null,
+  }, state)));
+}
+
+// 200 ok: conferma FINE/riavvio (parseResult e command nulli) oppure comando eseguito.
+function sendExecuted(res, engine, parseResult, command, engineResult) {
+  const nextState = engine.getGameStateSnapshot();
+  return res.json(maybeAttachDebug(withState(engine, {
+    ok: true,
+    parseResult,
+    command,
+    engine: engineResult,
+  }, nextState)));
+}
+
+// Parse error = errore "utente" (comando sconosciuto / sintassi): non è un Bad Request.
+// Restituiamo 200 per evitare rumore in console (F12) e gestiamo il messaggio a livello UI.
+function sendParseError(res, engine, parsed, state) {
+  const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
+  const currentState = engine.getGameStateSnapshot();
+  return res.status(200).json(maybeAttachDebug(withState(engine, {
+    ok: false,
+    parseResult: parsed,
+    command: null,
+    engine: null,
+    error: parsed.Error,
+    userMessage,
+  }, currentState)));
 }
 
 router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
@@ -141,100 +172,30 @@ router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach
     if (!engine) return;
 
     if (req.commandInputValidationError) {
-      const state = engine.getGameStateSnapshot();
       const details = req.commandInputValidationError.details;
-      const i18nKey = mapInvalidInputDetailsToI18nKey(details);
-      const userMessage = getSystemMessage(i18nKey, state.currentLingua);
-      return res.status(400).json(maybeAttachDebug({
-        ok: false,
-        error: 'INVALID_INPUT',
-        details,
-        userMessage,
-        parseResult: { IsValid: false, Error: 'INVALID_INPUT', Details: details },
-        command: null,
-        engine: null,
-        state,
-        ui: buildUiFromState(state, engine),
-        stats: computeStatsFromState(state),
-      }));
+      return sendInvalidInput(res, engine, details, { IsValid: false, Error: 'INVALID_INPUT', Details: details });
     }
 
     const { input } = req.body || {};
     if (!input || typeof input !== 'string') {
-      const state = engine.getGameStateSnapshot();
-      return res.status(400).json(maybeAttachDebug({
-        ok: false,
-        error: 'INVALID_INPUT',
-        details: 'NOT_A_STRING',
-        userMessage: getSystemMessage('parse.error.notAString', state.currentLingua),
-        parseResult: null,
-        command: null,
-        engine: null,
-        state,
-        ui: buildUiFromState(state, engine),
-        stats: computeStatsFromState(state),
-      }));
+      return sendInvalidInput(res, engine, 'NOT_A_STRING', null);
     }
-    // ensureVocabulary ora chiamata automaticamente in parseCommand
+    // ensureVocabulary ora chiamata automaticamente in parseInput
     const state = engine.getGameStateSnapshot();
     // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
     if (state.awaitingEndConfirm) {
-      const engineResult = normalizeEngineResult(engine.confirmEnd(input));
-      const nextState = engine.getGameStateSnapshot();
-      return res.json(maybeAttachDebug({
-        ok: true,
-        parseResult: null,
-        command: null,
-        engine: engineResult,
-        state: nextState,
-        ui: buildUiFromState(nextState, engine),
-        stats: computeStatsFromState(nextState),
-      }));
+      return sendExecuted(res, engine, null, null, normalizeEngineResult(engine.confirmEnd(input)));
     }
     // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
     if (state.awaitingRestart) {
-      const engineResult = normalizeEngineResult(await engine.confirmRestart(input)); // dbPath rimosso
-      const nextState = engine.getGameStateSnapshot();
-      return res.json(maybeAttachDebug({
-        ok: true,
-        parseResult: null,
-        command: null,
-        engine: engineResult,
-        state: nextState,
-        ui: buildUiFromState(nextState, engine),
-        stats: computeStatsFromState(nextState),
-      }));
+      return sendExecuted(res, engine, null, null, normalizeEngineResult(await engine.confirmRestart(input)));
     }
-    const parsed = await parseCommand(null, input, state); // passa gameState
+    const parsed = await parseInput(input, state);
     if (parsed.IsValid !== true) {
-      const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
-      const currentState = engine.getGameStateSnapshot();
-      // Parse error = errore "utente" (comando sconosciuto / sintassi): non è un Bad Request.
-      // Restituiamo 200 per evitare rumore in console (F12) e gestiamo il messaggio a livello UI.
-      return res.status(200).json(maybeAttachDebug({
-        ok: false,
-        parseResult: parsed,
-        command: null,
-        engine: null,
-        error: parsed.Error,
-        userMessage,
-        state: currentState,
-        ui: buildUiFromState(currentState, engine),
-        stats: computeStatsFromState(currentState),
-      }));
+      return sendParseError(res, engine, parsed, state);
     }
     const command = toCommandDTO(parsed);
-    const engineResult = normalizeEngineResult(await engine.executeCommandAsync(parsed)); // dbPath rimosso
-    const nextState = engine.getGameStateSnapshot();
-    res.json(maybeAttachDebug({
-      ok: true,
-      parseResult: parsed,
-      command,
-      engine: engineResult,
-      state: nextState,
-      ui: buildUiFromState(nextState, engine),
-      stats: computeStatsFromState(nextState),
-    }));
+    return sendExecuted(res, engine, parsed, command, normalizeEngineResult(await engine.executeCommandAsync(parsed)));
   } catch (err) {
     return next(err);
   }
@@ -268,111 +229,6 @@ router.post('/reset', (req, res, next) => {
   }
 });
 
-// Stato engine: set location
-router.post('/set-location', (req, res, next) => {
-  try {
-    const engine = getEngineOrSendError(req, res);
-    if (!engine) return;
-    // Legacy endpoint: usare POST /api/engine/execute (NAVIGATION) invece di set-location.
-    res.set('Deprecation', 'true');
-    res.set('Sunset', 'Wed, 01 Jul 2026 00:00:00 GMT');
-    res.set('Cache-Control', 'no-store');
-
-    if (isTruthy(process.env.DISABLE_LEGACY_ENDPOINTS || '')) {
-      return res.status(410).json({
-        ok: false,
-        error: 'LEGACY_ENDPOINT_DISABLED',
-        message: 'Endpoint legacy disabilitato. Usa POST /api/engine/execute.',
-      });
-    }
-
-    const { locationId, consumeTurn } = req.body;
-    if (typeof locationId !== 'number' || locationId < 1) {
-      return res.status(400).json({ ok: false, error: 'Invalid locationId' });
-    }
-    
-    // Check awaiting restart: blocca navigazione se in attesa conferma riavvio
-    const state = engine.getGameStateSnapshot();
-    if (state.awaitingRestart) {
-      return res.json({ 
-        ok: false, 
-        gameOver: true,
-        message: 'Gioco in attesa di riavvio. Digita SI per riavviare o NO per terminare.',
-        turnMessages: [] 
-      });
-    }
-    
-    engine.setCurrentLocation(locationId);
-    
-    // Se consumeTurn=true, applica effetti turn system (per navigazione stella)
-    const turnMessages = [];
-    if (consumeTurn === true) {
-      // Simula parseResult NAVIGATION per turn system
-      const fakeParseResult = {
-        IsValid: true,
-        CommandType: 'NAVIGATION',
-        CanonicalVerb: 'NAVIGATION',
-        VerbConcept: 'NAVIGATION'
-      };
-      
-      // Prepara context e applica effetti
-      engine.prepareTurnContext(fakeParseResult);
-      
-      // Crea result fittizio per applyTurnEffects
-      const fakeResult = { accepted: true, resultType: 'OK', message: '', effects: [] };
-      const resultWithEffects = engine.applyTurnEffects(fakeResult, fakeParseResult);
-      
-      // Check game over triggato da turn effects (darkness, terminale, ecc.)
-      if (resultWithEffects.gameOver === true) {
-        return res.json({
-          ok: false,
-          gameOver: true,
-          gameOverReason: resultWithEffects.gameOverReason || 'UNKNOWN',
-          message: resultWithEffects.message || 'Game Over',
-          turnMessages: [resultWithEffects.message]
-        });
-      }
-      
-      // Check narrative phase (Ferenc victory sequence)
-      if (resultWithEffects.resultType === 'NARRATIVE') {
-        return res.json({
-          ok: true,
-          resultType: 'NARRATIVE',
-          message: resultWithEffects.message,
-          awaitingContinue: resultWithEffects.awaitingContinue || false,
-          narrativePhase: resultWithEffects.narrativePhase,
-          turnMessages: []
-        });
-      }
-      
-      // Check teleport (Ferenc finale)
-      if (resultWithEffects.resultType === 'TELEPORT') {
-        return res.json({
-          ok: true,
-          resultType: 'TELEPORT',
-          message: resultWithEffects.message,
-          locationId: resultWithEffects.locationId,
-          teleport: true,
-          narrativePhase: resultWithEffects.narrativePhase,
-          turnMessages: []
-        });
-      }
-      
-      // Estrai messaggi turn system (torcia spenta, etc.)
-      if (resultWithEffects.message) {
-        const lines = resultWithEffects.message.split('\n\n');
-        lines.forEach(line => {
-          if (line.trim()) turnMessages.push(line.trim());
-        });
-      }
-    }
-    
-    res.json({ ok: true, turnMessages });
-  } catch (err) {
-    return next(err);
-  }
-});
-
 // Nuovo endpoint per salvare stato client
 router.post('/save-client-state', (req, res, next) => {
   try {
@@ -388,7 +244,7 @@ router.post('/save-client-state', (req, res, next) => {
     const saveData = {
       gameState,
       // Nota: per compatibilità con save preesistenti manteniamo odessaData.Luoghi,
-      // ma lato server NON applichiamo mai mutazioni a global.odessaData per singolo player.
+      // ma lato server NON applichiamo mai mutazioni ai dati statici di gioco per singolo player.
       odessaData: {
         Luoghi: luoghi,
         Oggetti: gameState.Oggetti,

@@ -28,19 +28,28 @@ describe('Sprint #59.1 — Multi-session isolation (API)', () => {
       const sessionA = createSessionState();
       const sessionB = createSessionState();
 
-      const setA = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      // Movimenti reali al posto dell'endpoint legacy set-location (rimosso, #124):
+      // sessione A "e" (1 -> 2), sessione B "e", "e" (1 -> 2 -> 3).
+      const moveA = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId: 2, consumeTurn: false }),
+        body: JSON.stringify({ input: 'e' }),
       }, sessionA);
-      expect(setA.status).toBe(200);
+      expect(moveA.status).toBe(200);
 
-      const setB = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
+      const moveB1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId: 3, consumeTurn: false }),
+        body: JSON.stringify({ input: 'e' }),
       }, sessionB);
-      expect(setB.status).toBe(200);
+      expect(moveB1.status).toBe(200);
+
+      const moveB2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'e' }),
+      }, sessionB);
+      expect(moveB2.status).toBe(200);
 
       const stateARes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, sessionA);
       expect(stateARes.status).toBe(200);

@@ -1,0 +1,97 @@
+/**
+ * Traccia HTTP (#63, lotto 0 v1.4.2).
+ * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.2-§3.3.
+ *
+ * Rigenera, con `generateHttpTrace()` (porting TypeScript del generatore di riferimento
+ * `Claude decompiler/gen_http_trace.mjs`, fuori dal repository), la traccia di 8 scenari
+ * attraverso i router di produzione e la confronta passo per passo con il fixture
+ * protetto `tests/fixtures/trace/http_trace.json`. Nessuna modalità di aggiornamento:
+ * nella v1.4.2 la traccia non si rigenera; nei lotti successivi questo file si modifica
+ * solo se la TD del lotto lo dichiara, con motivazione (TD §5).
+ */
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { generateHttpTrace } from './testUtils/trace.js';
+
+interface Step {
+  i: number;
+  req: string;
+  input?: unknown;
+  status: number;
+  body: unknown;
+  sha: string;
+}
+
+interface Scenario {
+  id: string;
+  steps: Step[];
+}
+
+interface Trace {
+  scenarios: Scenario[];
+}
+
+const root = resolve(__dirname, '..');
+const fixturePath = resolve(root, 'tests', 'fixtures', 'trace', 'http_trace.json');
+
+describe('Traccia HTTP (#63, lotto 0)', () => {
+  let generated: Trace;
+  let baseline: Trace;
+
+  beforeAll(async () => {
+    generated = (await generateHttpTrace()) as unknown as Trace;
+    baseline = JSON.parse(readFileSync(fixturePath, 'utf8')) as Trace;
+  });
+
+  it(
+    'riproduce lo stesso numero di scenari e richieste del fixture registrato',
+    () => {
+      expect(generated.scenarios.length).toBe(baseline.scenarios.length);
+      const genSteps = generated.scenarios.reduce((a, s) => a + s.steps.length, 0);
+      const baseSteps = baseline.scenarios.reduce((a, s) => a + s.steps.length, 0);
+      expect(genSteps).toBe(baseSteps);
+    },
+    60000
+  );
+
+  it(
+    'riproduce passo per passo lo stesso input, stato HTTP, corpo e sha del fixture registrato',
+    () => {
+      const diffs: string[] = [];
+      const byId = new Map(baseline.scenarios.map((s) => [s.id, s]));
+
+      for (const gs of generated.scenarios) {
+        const bs = byId.get(gs.id);
+        if (!bs) {
+          diffs.push(`scenario=${gs.id}: assente nel fixture`);
+          continue;
+        }
+        const count = Math.max(gs.steps.length, bs.steps.length);
+        for (let i = 0; i < count && diffs.length < 20; i++) {
+          const g = gs.steps[i];
+          const b = bs.steps[i];
+          if (!g || !b) {
+            diffs.push(`scenario=${gs.id} passo=${i}: presente solo in ${g ? 'generato' : 'fixture'}`);
+            continue;
+          }
+          const fields: Array<keyof Step> = ['req', 'input', 'status', 'body', 'sha'];
+          for (const field of fields) {
+            const gv = JSON.stringify(g[field]);
+            const bv = JSON.stringify(b[field]);
+            if (gv !== bv) {
+              diffs.push(
+                `scenario=${gs.id} passo=${g.i ?? i} input="${JSON.stringify(g.input ?? b.input)}" campo=${field}: prima="${bv}" dopo="${gv}"`
+              );
+              if (diffs.length >= 20) break;
+            }
+          }
+        }
+      }
+
+      expect(diffs.length, diffs.join('\n')).toBe(0);
+    },
+    60000
+  );
+});

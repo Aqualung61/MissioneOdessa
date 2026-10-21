@@ -1,0 +1,59 @@
+{
+  "versione": 1,
+  "gioco": "odessa",
+  "luoghi": {
+    "iniziale": 1,
+    "barriera": 59,
+    "pesa": 57,
+    "cassaforte": 24,
+    "zoneAperte": [51, 52, 53, 55, 56, 58],
+    "passaggioCrollato": { "luogo": 32, "direzione": "Sud", "destinazione": 36 },
+    "movimentiBloccatiConTesto": [
+      { "luogo": 1, "direzione": "Ovest", "messaggio": "engine.move.leaveHouseWest" },
+      { "luogo": 44, "direzione": "Est", "messaggio": "engine.move.doorClosedPassage" },
+      { "luogo": 49, "direzione": "Ovest", "messaggio": "engine.move.rubbleBlocksWest" }
+    ],
+    "macerieEsaminabili": [11, 32, 36],
+    "scavoDelegatoAInterazione": [11, 49],
+    "scavoSenzaAttrezzo": [32, 36]
+  },
+  "oggetti": {
+    "torcia": 37,
+    "lampada": 27,
+    "fiammiferi": 36,
+    "badile": 4,
+    "documenti": 35,
+    "vittoria": [16, 6, 34],
+    "spostabiliAncheSeFissi": [3, 33]
+  },
+  "regole": {
+    "limiteInventario": 5,
+    "fiammiferiIniziali": 6,
+    "turniLuceFiammifero": 2,
+    "timerBuio": 3,
+    "timerZonaAperta": 2,
+    "turniTorciaFunzionante": 6,
+    "timerGuardia": 5,
+    "avvisiGuardia": { "3": "timer.guard.warning1", "2": "timer.guard.warning2", "1": "timer.guard.warning3" },
+    "limiteAlba": 200,
+    "avvisiAlba": { "30": "timer.dawn.warning30", "15": "timer.dawn.warning15", "5": "timer.dawn.warning5" },
+    "verbiBloccatiAlBuio": ["PRENDERE", "ESAMINARE", "GUARDARE", "LEGGERE", "SPOSTARE", "RUOTARE", "INFILARE", "METTERE", "SCAVARE", "PREMERE", "PORGERE", "APRIRE", "CHIUDERE", "SCARICARE"],
+    "oggettiSceniciSenzaPresenza": ["FILO_SPINATO", "ARREDAMENTO", "ELEVATORE", "PARETE"]
+  },
+  "punteggio": {
+    "luogo": 1,
+    "interazione": 2,
+    "mistero": 3,
+    "ferenc": 4,
+    "ranghi": [
+      { "minimo": 134, "chiave": "engine.rank.perfectionist" },
+      { "minimo": 100, "chiave": "engine.rank.master" },
+      { "minimo": 67, "chiave": "engine.rank.investigator" },
+      { "minimo": 34, "chiave": "engine.rank.explorer" },
+      { "minimo": 0, "chiave": "engine.rank.novice" }
+    ]
+  },
+  "lessico": {
+    "verbiSenzaOggetto": ["DORMIRE", "ESAMINARE", "GUARDARE", "SCAVARE", "ACCENDERE", "SPEGNERE", "SCAPPARE", "SORRIDERE", "SEDERSI", "PARLARE", "ATTACCARE"]
+  }
+}

@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-**Versione 1.4.1** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
+**Versione 1.4.2** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 - Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
-- Piano operativo (TODO dettagliato): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
+- Piano operativo (storico, gennaio 2026): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
 - Release readiness (pre-public): [docs/20260118_issue_62_release_readiness_prepublic_checklist.md](docs/20260118_issue_62_release_readiness_prepublic_checklist.md)
 - Tracking (fonte di verità):
    - Issues: https://github.com/Aqualung61/MissioneOdessa/issues
@@ -113,7 +113,7 @@ Debug rapido: in due tab diverse, verifica che i valori in `sessionStorage` sian
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
 - La rotta `/api/version` restituisce un oggetto JSON con la versione attuale, ad esempio:
    ```json
-   { "version": "1.4.1" }
+   { "version": "1.4.2" }
    ```
 
 Verifica rapida (smoke check):
@@ -171,7 +171,7 @@ Per ridurre rischi di input malevoli e payload eccessivi:
 Per ridurre flood/DoS, le API sono soggette a rate limiting:
 
 - Generale su `/api/*` (soglia più alta)
-- Più stretto su endpoint CPU-intensive: `POST /api/parser/parse`, `POST /api/engine/execute`
+- Più stretto su endpoint CPU-intensive: `POST /api/engine/execute`
 
 
 Nota: è definito anche un limiter "heavy" (opzionale) per eventuali endpoint futuri particolarmente costosi.
@@ -184,26 +184,15 @@ Variabili env utili:
 
 Vedi anche: [.env.example](.env.example).
 
-## Endpoint legacy (deprecati)
+## Endpoint legacy (rimossi nella v1.4.2)
+
+Gli endpoint `POST /api/engine/set-location` e `POST /api/parser/parse` sono stati rimossi nella v1.4.2: l'input del gioco passa solo da `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`). `GET /api/parser/stats` e `POST /api/parser/reload` restano, ma sono disponibili solo con `NODE_ENV` diverso da `production`.
 
 ### Limite turni (alba)
 
 - `GAME_MAX_TURNS_CONSUMED`: override del limite dell'alba (regola di gioco: 200 turni che consumano tempo, esclusi i comandi `SYSTEM`).
    - Solo per test; non impostare in produzione.
    - Se la variabile non è impostata, vale la regola di gioco (200).
-
-Per l'input del gioco, il target è usare **solo** `POST /api/engine/execute` (il server gestisce parsing + logica + snapshot `state/ui/stats`).
-
-Gli endpoint legacy seguenti sono marcati come deprecati (`Deprecation`/`Sunset`) e possono essere disabilitati:
-
-- `POST /api/engine/set-location`
-- `POST /api/parser/parse`
-
-Per disabilitarli (risposta `410`):
-
-- `DISABLE_LEGACY_ENDPOINTS=1`
-
-Vedi anche: [.env.example](.env.example).
 
 ## CORS (M3)
 
@@ -261,7 +250,7 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 
 ## Stato
 
-- **Versione attuale: 1.4.1** (17 ottobre 2026)
+- **Versione attuale: 1.4.2** (21 ottobre 2026)
 - **Test Coverage**: vedi output `npm test` (Vitest)
 - **Qualità**: ESLint clean, TypeScript strict typing
 - **i18n**: Full compliance IT/EN

@@ -1,4 +1,5 @@
 // src/api/configRoute.js
+import { getGameData } from '../logic/core/gameData.js';
 
 /**
  * Normalizza un base path per uso client.
@@ -23,7 +24,7 @@ export function registerApiConfigRoutes(app, { basePath = '', limiter } = {}) {
   const basePathNormalized = normalizeBasePath(basePath);
 
   function sendApiConfig(_req, res) {
-    const lingueRaw = global?.odessaData?.Lingue;
+    const lingueRaw = getGameData()?.Lingue;
     const lingue = Array.isArray(lingueRaw)
       ? lingueRaw.map((row) => ({
         ID: row?.ID,

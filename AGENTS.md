@@ -72,7 +72,7 @@ Do not treat files under `docs/obsolete/` as current requirements.
 - Full tests: `npm test`.
 - Lint: `npm run lint`.
 - Format check: `npm run format:check`.
-- Navigation vocabulary check: `npm run check:nav`.
+- Navigation vocabulary check: covered by tests/lexicon.nav-voices.test.ts (part of npm test).
 - API version smoke check, with the local server already running: `curl -s http://localhost:3001/api/version`.
 
 Do not invent substitute commands when a documented command fails. Capture the failure, inspect the repository and environment, and report `FAIL` or `BLOCKED`.
@@ -119,7 +119,7 @@ Run the smallest relevant checks first. Before declaring an implementation compl
 3. `npm run build`;
 4. `npm test`.
 
-Also run `npm run typecheck`, `npm run format:check`, `npm run check:nav`, API smoke checks, cross-browser checks, or production validation when relevant to the change and authorized.
+Also run `npm run typecheck`, `npm run format:check`, API smoke checks, cross-browser checks, or production validation when relevant to the change and authorized.
 
 Report every expected check as `PASS`, `FAIL`, `NOT RUN`, or `BLOCKED`. Never infer success from unchanged code or from an earlier run.
 
