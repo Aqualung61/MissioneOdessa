@@ -94,20 +94,32 @@ function helpMessageEn(termini) {
     return long || short || voices[0];
   }
 
-  const direzioni = termini
-    .filter(t => t.ID_TipoLessico === 2)
-    .map(t => pickDirectionVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
-    .sort((a, b) => a.localeCompare(b, 'en'));
+  // Presentazione (#137): iniziale maiuscola e resto minuscolo; ordine calcolato sulle voci grezze.
+  function toDisplay(raw) {
+    const lower = raw.toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }
 
-  const sistema = termini
-    .filter(t => t.ID_TipoLessico === 3)
-    .map(t => pickPrimaryVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
-    .sort((a, b) => a.localeCompare(b, 'en'));
+  function listFor(tipo, pick) {
+    return termini
+      .filter(t => t.ID_TipoLessico === tipo)
+      .map(t => {
+        const raw = pick(t.ID_Termine);
+        return raw ? { sortKey: raw, shown: formatEnEntry(raw) } : { sortKey: capitalizeCommand(t.Concetto), shown: capitalizeCommand(t.Concetto) };
+      })
+      .sort((a, b) => a.sortKey.localeCompare(b.sortKey, 'en'))
+      .map(e => e.shown);
+  }
 
-  const verbi = termini
-    .filter(t => t.ID_TipoLessico === 1)
-    .map(t => pickPrimaryVoice(t.ID_Termine) || capitalizeCommand(t.Concetto))
-    .sort((a, b) => a.localeCompare(b, 'en'));
+  // Direzioni: "NORTH (N)" -> "North (N)"; l'abbreviazione resta in maiuscolo.
+  function formatEnEntry(raw) {
+    const m = /^(.*?)( \([^)]*\))?$/.exec(raw);
+    return toDisplay(m[1]) + (m[2] || '');
+  }
+
+  const direzioni = listFor(2, pickDirectionVoice);
+  const sistema = listFor(3, pickPrimaryVoice);
+  const verbi = listFor(1, pickPrimaryVoice);
 
   let msg = '<b>Available commands:</b>\n';
   msg += '<i>Directions: ' + direzioni.join(', ') + '</i>\n';
