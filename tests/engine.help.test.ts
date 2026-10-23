@@ -79,12 +79,12 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(message).toContain('<i>Directions:');
     expect(message).toContain('<i>System:');
     expect(message).toContain('<i>Actions:');
-    expect(message).toContain('NORTH');
-    expect(message).toContain('SOUTH');
-    expect(message).toContain('EAST');
-    expect(message).toContain('WEST');
-    expect(message).toContain('HELP');
-    expect(message).toContain('INVENTORY');
+    expect(message).toContain('North');
+    expect(message).toContain('South');
+    expect(message).toContain('East');
+    expect(message).toContain('West');
+    expect(message).toContain('Help');
+    expect(message).toContain('Inventory');
   });
 
   it('AIUTO viene riconosciuto e eseguito correttamente', async () => {
