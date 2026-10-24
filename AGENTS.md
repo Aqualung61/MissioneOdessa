@@ -77,6 +77,14 @@ Do not treat files under `docs/obsolete/` as current requirements.
 
 Do not invent substitute commands when a documented command fails. Capture the failure, inspect the repository and environment, and report `FAIL` or `BLOCKED`.
 
+## npm version rule (temporary)
+
+- The global npm on the maintainer's machine is npm 12, by choice; this is not an error and must not be changed or reported.
+- Inside this repository, run every npm command as `npx -y npm@11.19.1 <command>` (for example `ci`, `install`, `audit`, `audit fix`, `ls`, `run <script>`, `test`). Wherever this file writes `npm <command>`, read it in this form.
+- Never run a bare `npm ci` or `npm install`, nor any bare npm command that reads or writes `package-lock.json` or `node_modules`. npm 12 blocks install scripts by default, so it would produce a `node_modules` different from the one built by CI, which uses the npm bundled with its Node (10.x), and invalidate the checks.
+- Do not install or uninstall npm globally.
+- This section is removed when the project migrates its Node/npm versions.
+
 ## Project invariants
 
 - Runtime game content is loaded from versioned JSON under `src/data-internal/`; no runtime database is part of the current architecture.
