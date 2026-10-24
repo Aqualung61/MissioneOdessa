@@ -190,8 +190,28 @@ function applyCanonicalForms(tokenMap, canonicalByTerm) {
   return tokenMap;
 }
 
+// Indice dei nomi di 3 o più parole (#128). Per ogni voce NOUN con almeno 3 parole,
+// la chiave derivata è l'insieme dei suoi token, normalizzati come l'input e senza i
+// token STOPWORD (che `tokenize` scarta dall'input). Si costruisce dal tokenMap, che non
+// cambia. A parità di chiave vince la prima voce; la chiave esistente nel tokenMap
+// prevale comunque su quella derivata (vedi `lookupNounKey`).
+function buildLongNounIndex(tokenMap) {
+  const longNounIndex = new Map();
+  for (const [voce, info] of tokenMap) {
+    if (info.type !== CommandType.NOUN) continue;
+    const words = normalizeInput(voce).split(' ');
+    if (words.length < 3) continue;
+    const kept = words.filter((w) => tokenMap.get(w)?.type !== CommandType.STOPWORD);
+    if (kept.length < 2) continue;
+    const key = kept.join(' ');
+    if (!longNounIndex.has(key)) longNounIndex.set(key, info);
+  }
+  return longNounIndex;
+}
+
 // Carica il vocabolario dai dati statici di gioco e costruisce:
 // - tokenMap: Map<string, { type, canonical, termId, concept }>
+// - longNounIndex: Map<chiave derivata, info> per i nomi di 3 o più parole
 export async function ensureVocabulary(gameState = null) {
   const currentLingua = gameState?.currentLingua || 1;
 
@@ -205,7 +225,7 @@ export async function ensureVocabulary(gameState = null) {
   const { tokenMap, canonicalByTerm } = buildTokenMap(rows, currentLingua, localizedNounConceptByTerm, actionCanonicalConceptByTerm);
   applyCanonicalForms(tokenMap, canonicalByTerm);
 
-  const built = { tokenMap };
+  const built = { tokenMap, longNounIndex: buildLongNounIndex(tokenMap) };
   vocabCacheByLingua.set(currentLingua, built);
   return built;
 }
@@ -384,16 +404,24 @@ function parseSingleToken({ token, info }, base) {
   return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 }
 
-// 3 token senza indice numerico finale: nome composto (2° e 3°), con ACTION o con
-// CARICARE (tabella di decisione #10-13). Supporto NOUN multi-parola per mantenere
-// compatibilità con VociLessico che contengono spazi (es. "LARGE TABLE").
-function parseCompoundNoun(t1, t2, t3, filteredOriginalTokens, tokenMap, base, currentLingua) {
+// Cerca il resto dei token dopo il verbo come nome: la chiave esistente nel tokenMap
+// vince sempre; se non esiste, si usa la chiave derivata di un nome di 3+ parole.
+function lookupNounKey(key, { tokenMap, longNounIndex }) {
+  return tokenMap.get(key) || longNounIndex.get(key) || null;
+}
+
+// Nome composto (tutti i token dopo il verbo), con ACTION o con CARICARE: 3 token senza
+// indice numerico finale (tabella di decisione #10-13, 13a) o più di 3 token (#21a).
+// Supporto NOUN multi-parola per mantenere compatibilità con VociLessico che contengono
+// spazi (es. "LARGE TABLE") e, dal #128, con i nomi di 3+ parole il cui resto coincide
+// per intero con la chiave derivata.
+function parseCompoundNoun(t1, rest, filteredOriginalTokens, vocab, base, currentLingua) {
   if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 
-  const combinedToken = `${t2.token} ${t3.token}`;
-  const combinedInfo = tokenMap.get(combinedToken) || null;
+  const combinedToken = rest.map((t) => t.token).join(' ');
+  const combinedInfo = lookupNounKey(combinedToken, vocab);
   const isCombinedNoun = !!combinedInfo && combinedInfo.type === CommandType.NOUN;
-  const nounLiteral = `${filteredOriginalTokens[1]} ${filteredOriginalTokens[2]}`.toLowerCase();
+  const nounLiteral = filteredOriginalTokens.slice(1).join(' ').toLowerCase();
 
   if (isCombinedNoun && t1.info.type === CommandType.ACTION) {
     return buildActionNounResult(t1.info, combinedInfo, nounLiteral, null, base);
@@ -469,12 +497,16 @@ export async function parseInput(input, gameState = null) {
     const extra = filteredTokens.length === 3 && idx === null;
 
     if (extra) {
-      return parseCompoundNoun(t1, t2, t3, filteredOriginalTokens, tokenMap, baseWithNormalized, currentLingua);
+      return parseCompoundNoun(t1, [t2, t3], filteredOriginalTokens, vocab, baseWithNormalized, currentLingua);
     }
     return parseTwoTokens(t1, t2, idx, filteredOriginalTokens, baseWithNormalized, currentLingua);
   }
 
-  // Troppi token (tabella di decisione #21)
+  // Più di 3 token: valido solo con verbo noto e nome di 3+ parole (#21a); altrimenti
+  // troppi token, anche con primo token sconosciuto (tabella di decisione #21)
+  if (filteredTokens[0].info) {
+    return parseCompoundNoun(filteredTokens[0], filteredTokens.slice(1), filteredOriginalTokens, vocab, baseWithNormalized, currentLingua);
+  }
   return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 }
 
