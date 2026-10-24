@@ -268,13 +268,22 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
     }
   });
 
-  it('TC-03: "esamina bastone di comando" invariato rispetto a oggi (E4: "di" non è ignorata)', async () => {
-    const r = await pickFields('esamina bastone di comando', 1);
-    // Limite preesistente del parser sui nomi di 3+ parole significative (L2b, non
-    // toccato da questo lotto): "di" resta un token pieno, 4 token filtrati in
-    // totale, sempre "troppi token".
-    expect(r.IsValid).toBe(false);
-    expect(r.Error).toBe('SYNTAX_INVALID_STRUCTURE');
+  // Aggiornato per #128 (v1.4.4, TD Parser nomi lunghi v1.1, §5.1): il nome di 3+ parole
+  // "bastone di comando" è riconosciuto per intero, con la stessa risposta di "esamina
+  // bastone". "di" resta un token pieno (E4): "esamina bastone comando" resta non valido.
+  it('TC-03: "esamina bastone di comando" è valido con la stessa risposta di "esamina bastone"; "esamina bastone comando" resta non valido (E4: "di" non è ignorata)', async () => {
+    const lungo = await pickFields('esamina bastone di comando', 1);
+    expect(lungo).toEqual(await pickFields('esamina bastone', 1));
+    expect(lungo.IsValid).toBe(true);
+    expect(lungo.NounConcept).toBe('BASTONE_DI_COMANDO');
+
+    const risposteLungo = await run(await playUpTo(1, 0), 'esamina bastone di comando');
+    const risposteBreve = await run(await playUpTo(1, 0), 'esamina bastone');
+    expect(risposteLungo.message).toBe(risposteBreve.message);
+
+    const parziale = await pickFields('esamina bastone comando', 1);
+    expect(parziale.IsValid).toBe(false);
+    expect(parziale.Error).toBe('SYNTAX_INVALID_STRUCTURE');
   });
 
   it('TC-04: "attacca guardia" alla barriera — fine partita, motivo GUARD_ATTACK, richiesta di riavvio', async () => {
