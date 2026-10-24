@@ -4,6 +4,18 @@
 
 ---
 
+## v1.4.3 (24 ottobre 2026)
+
+### Sicurezza e testi
+
+- Dipendenze: lock npm aggiornato, 0 vulnerabilità nelle dipendenze di produzione; chiusa l'elusione del limitatore di frequenza con indirizzi IPv4-mapped IPv6 (#144).
+- `help` in inglese: voci con iniziale maiuscola e resto minuscolo (#137).
+- Test del limitatore di frequenza con `X-Forwarded-For` (#147), senza impatto sul gioco.
+
+Dettagli: [docs/release-notes/2026-10-24_v1.4.3.md](docs/release-notes/2026-10-24_v1.4.3.md)
+
+---
+
 ## v1.4.2 (21 ottobre 2026)
 
 ### Refactor del motore
