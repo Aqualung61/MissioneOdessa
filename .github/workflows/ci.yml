@@ -20,9 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Nota: alcune devDependencies richiedono Node >= 18.18.
-        # Pinniamo a una patch recente per evitare runner con 18.<18.18.
-        node-version: [18.20.x, 20.x]
+        # Nota: vite e vitest richiedono Node ^20.19.0 || >=22.12.0 (vitest anche ^20 || ^22 || >=24):
+        # Node 18 non e' supportato.
+        node-version: [20.x, 22.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +38,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
