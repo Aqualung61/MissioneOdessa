@@ -63110,7 +63110,7 @@
      "result": {
       "accepted": true,
       "effects": [],
-      "message": "<b>Comandi disponibili:</b>\n<i>Direzioni: Alto, Basso, Est, Nord, Ovest, Sud</i>\n<i>Sistema: Aiuto, Carica, Fine, Inventario, Punti, Salva</i>\n<i>Azioni: Accendi, Apri, Attaccare, Chiudi, Dormire, Esamina, Guarda, Infila, Lascia, Leggi, Metti, Parlare, Porgere, Posa, Premere, Prendi, Ruotare, Scappare, Scaricare, Scavare, Sedersi, Sorridere, Spegnere, Sposta</i>\n\n",
+      "message": "<b>Comandi disponibili:</b>\n<i>Direzioni: Alto, Basso, Est, Nord, Ovest, Sud</i>\n<i>Sistema: Aiuto, Carica, Fine, Inventario, Punti, Salva</i>\n<i>Azioni: Accendi, Apri, Attacca, Chiudi, Dormi, Esamina, Guarda, Infila, Lascia, Leggi, Metti, Parla, Porgi, Posa, Premi, Prendi, Ruota, Scappa, Scarica, Scava, Siediti, Sorridi, Spegni, Sposta</i>\n\n",
       "resultType": "OK",
       "showLocation": true
      },
@@ -63158,7 +63158,7 @@
       "turns": 4,
       "unlocked": {}
      },
-     "sha": "1bf69b8ffe98ed752949c64de5debd4022523d8971896281f0817ad8364878d2"
+     "sha": "d230d0824d3c853e925a1657db7aeded6059055ea64b853bee143f4c0e77e220"
     },
     {
      "i": 7,
@@ -73372,7 +73372,7 @@
      "result": {
       "accepted": true,
       "effects": [],
-      "message": "<b>Comandi disponibili:</b>\n<i>Direzioni: Alto, Basso, Est, Nord, Ovest, Sud</i>\n<i>Sistema: Aiuto, Carica, Fine, Inventario, Punti, Salva</i>\n<i>Azioni: Accendi, Apri, Attaccare, Chiudi, Dormire, Esamina, Guarda, Infila, Lascia, Leggi, Metti, Parlare, Porgere, Posa, Premere, Prendi, Ruotare, Scappare, Scaricare, Scavare, Sedersi, Sorridere, Spegnere, Sposta</i>\n\n",
+      "message": "<b>Comandi disponibili:</b>\n<i>Direzioni: Alto, Basso, Est, Nord, Ovest, Sud</i>\n<i>Sistema: Aiuto, Carica, Fine, Inventario, Punti, Salva</i>\n<i>Azioni: Accendi, Apri, Attacca, Chiudi, Dormi, Esamina, Guarda, Infila, Lascia, Leggi, Metti, Parla, Porgi, Posa, Premi, Prendi, Ruota, Scappa, Scarica, Scava, Siediti, Sorridi, Spegni, Sposta</i>\n\n",
       "resultType": "OK",
       "showLocation": true
      },
@@ -73594,7 +73594,7 @@
        "50_Est": 49
       }
      },
-     "sha": "d18dca341c1978ebdd0c7f444851fe5e5d445f9e91da4e9233864c41d2c49216"
+     "sha": "cd31bd385dc468982c11e58e34c0852ae9c1abc72029f3088c3d0f17819c7a37"
     },
     {
      "i": 151,
