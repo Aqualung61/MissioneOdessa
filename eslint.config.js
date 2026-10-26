@@ -25,6 +25,7 @@ export default [
       'types/**/*.d.ts',
       'scripts/**/*.cjs',
       'Claude decompiler/',
+      'scripts/baselines/',
     ],
   },
   js.configs.recommended,
