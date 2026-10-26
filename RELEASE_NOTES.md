@@ -4,6 +4,16 @@
 
 ---
 
+## v1.4.4 (26 ottobre 2026)
+
+### Parser
+
+- Il parser riconosce i nomi di oggetto di tre o più parole digitati per intero, ad esempio `esamina bastone di comando` e `examine tapestry in terrible condition`; prima davano un errore di struttura (#128).
+
+Dettagli: [docs/release-notes/2026-10-26_v1.4.4.md](docs/release-notes/2026-10-26_v1.4.4.md)
+
+---
+
 ## v1.4.3 (24 ottobre 2026)
 
 ### Sicurezza e testi

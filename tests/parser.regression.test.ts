@@ -5,7 +5,8 @@
  * `examine`, `sleep` EN da soli; L2b: verbi da soli e `carica`/`load` con un nome,
  * TD Lessico L2 risposte e testi, §5.5 v1.1; L3: i 194 casi con una voce rimossa
  * (E5), stesso esito di una parola sconosciuta nella stessa posizione, TD Lessico L3
- * nomi luoghi e guardia, §6.2 v1.1). Il corpus è protetto: si aggiorna solo
+ * nomi luoghi e guardia, §6.2 v1.1; #128: i nomi di 3+ parole dopo un verbo d'azione
+ * o `carica`/`load`, regola P-1, TD Parser nomi lunghi v1.1, §5.1). Il corpus è protetto: si aggiorna solo
  * aggiungendo cambi attesi motivati nella specifica del lotto che lo richiede.
  */
 
@@ -87,7 +88,8 @@ const BARE_VERB_CHANGES: Record<string, ParsedFields> = {
 // Aggiornato per #109 (lotto L2b): i 12 casi con un nome di 3 o più parole
 // significative restano invariati (limite preesistente del parser sui nomi composti,
 // non raggiunto da nessun verbo oggi: TD §5.5 v1.1). Elencati esplicitamente per
-// verificarli separatamente dal conteggio totale (sotto).
+// verificarli separatamente dal conteggio totale (sotto). Dal #128 (v1.4.4) il limite è
+// superato: restano fuori da L2b, ma sono validi per la regola P-1 (vedi sotto).
 const CARICA_LOAD_UNCHANGED_INPUTS: Array<{ lang: number; input: string }> = [
   { lang: 1, input: 'carica arazzo in pessime condizioni' },
   { lang: 1, input: 'carica banco degli attrezzi' },
@@ -127,6 +129,81 @@ function expectedForCaricaLoad(testCase: BaselineCase, byLangInput: Map<string, 
   return { IsValid: true, CommandType: 'ACTION', VerbConcept: 'CARICARE', NounConcept: nounConcept, Error: 'NONE' };
 }
 
+// Aggiornato per #128 (v1.4.4, TD Parser nomi lunghi v1.1, §5.1): regola P-1. Un comando
+// `verbo (azione o CARICARE) + resto`, in cui il resto dei token (senza stopword)
+// coincide con la chiave derivata di una voce NOUN di 3 o più parole, era non valido e ora
+// è valido, con lo stesso esito del comando con la voce breve dello stesso termine. La
+// regola si ricava dai dati lessicali (VociLessico, TerminiLessico, TipiLessico) e dalla
+// voce breve registrata nel corpus, mai dall'output del parser.
+interface LexiconByLang {
+  stopwords: Set<string>;
+  actionVerbs: Set<string>;
+  caricaVerbs: Set<string>;
+  longNouns: Map<string, number>; // chiave derivata -> ID_Termine
+  shortVoce: Map<number, string>; // ID_Termine -> voce breve (1 parola, NOUN)
+}
+
+function normalizeWords(text: string): string[] {
+  return text
+    .replace(/[.,;:!"'“”‘’()[\]{}…]/g, ' ')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+    .toUpperCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 0);
+}
+
+function lexiconTipo(idTermine: number): { tipo: string; concetto: string } {
+  const termine = TerminiLessico.find((t) => t.ID_Termine === idTermine);
+  const tipo = TipiLessico.find((t) => t.ID_TipoLessico === termine?.ID_TipoLessico);
+  return { tipo: tipo?.NomeTipo ?? '', concetto: termine?.Concetto ?? '' };
+}
+
+const lexiconCache = new Map<number, LexiconByLang>();
+
+function lexiconFor(lang: number): LexiconByLang {
+  const cached = lexiconCache.get(lang);
+  if (cached) return cached;
+  const voci = VociLessico.filter((v) => v.ID_Lingua === lang).map((v) => ({ ...v, ...lexiconTipo(v.ID_Termine) }));
+  const stopwords = new Set(voci.filter((v) => v.tipo === 'STOPWORD').map((v) => normalizeWords(v.Voce).join(' ')));
+  const lex: LexiconByLang = {
+    stopwords,
+    actionVerbs: new Set(voci.filter((v) => v.tipo === 'VERBO_AZIONE').map((v) => v.Voce.toUpperCase())),
+    caricaVerbs: new Set(voci.filter((v) => v.tipo === 'SISTEMA' && v.concetto === 'CARICARE').map((v) => v.Voce.toUpperCase())),
+    longNouns: new Map(),
+    shortVoce: new Map(),
+  };
+  for (const v of voci.filter((x) => x.tipo === 'NOUN')) {
+    const words = normalizeWords(v.Voce);
+    if (words.length === 1 && !lex.shortVoce.has(v.ID_Termine)) lex.shortVoce.set(v.ID_Termine, v.Voce);
+    if (words.length >= 3) lex.longNouns.set(words.filter((w) => !stopwords.has(w)).join(' '), v.ID_Termine);
+  }
+  lexiconCache.set(lang, lex);
+  return lex;
+}
+
+/**
+ * Regola P-1: esito atteso di un caso del corpus, o null se il caso non è P-1. Il valore
+ * è quello del comando equivalente con la voce breve dello stesso termine (per
+ * carica/load, quello previsto dalla regola L2b).
+ */
+function expectedForLongNoun(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): ParsedFields | null {
+  const lex = lexiconFor(testCase.lang);
+  const tokens = normalizeWords(testCase.input).filter((w) => !lex.stopwords.has(w));
+  if (tokens.length < 3) return null;
+  const [verb, ...rest] = tokens;
+  const isAction = lex.actionVerbs.has(verb);
+  if (!isAction && !lex.caricaVerbs.has(verb)) return null;
+  const termId = lex.longNouns.get(rest.join(' '));
+  const shortVoce = termId === undefined ? undefined : lex.shortVoce.get(termId);
+  if (!shortVoce) return null;
+
+  const riferimento = byLangInput.get(`${testCase.lang}|${`${verb} ${shortVoce}`.toLowerCase()}`);
+  if (!riferimento) return null;
+  return isAction ? toFields(riferimento) : expectedForCaricaLoad(riferimento, byLangInput);
+}
+
 // Aggiornato per #109 (lotto L3): le 4 voci rimosse (E5) — BOTTON_LEGACY (IT, EN),
 // TAVOLO_LEGACY (IT), TABLE_LEGACY (EN) — come regola, non come elenco: ogni caso del
 // corpus che contiene una di queste parole, in qualunque posizione, deve dare lo
@@ -156,6 +233,10 @@ async function computeExpected(testCase: BaselineCase, byLangInput: Map<string, 
   const legacyExpected = await expectedForLegacyRemoval(testCase);
   if (legacyExpected) {
     return legacyExpected;
+  }
+  const longNounExpected = expectedForLongNoun(testCase, byLangInput);
+  if (longNounExpected) {
+    return longNounExpected;
   }
   const caricaExpected = expectedForCaricaLoad(testCase, byLangInput);
   if (caricaExpected) {
@@ -200,7 +281,11 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
     expect(mismatches.length, mismatches.join('\n')).toBe(0);
   });
 
-  it('i cambi attesi del lotto L2b sono esattamente 150 (8 verbi da soli + 94 IT + 48 EN con CARICA/LOAD), e i 12 nomi di 3+ parole restano invariati', () => {
+  // Ricalcolo per #128: la regola L2b resta di 150 cambi (8 + 94 + 48), perché esclude per
+  // definizione i nomi di 3+ parole; i 12 casi con carica/load non fanno più parte dei
+  // "invariati" ma della regola P-1 (211 casi del corpus: 12 carica/load + 199 con altri
+  // verbi d'azione), che si somma alla L2b senza sovrapporsi (150 + 211 = 361).
+  it('i cambi attesi del lotto L2b sono esattamente 150 (8 verbi da soli + 94 IT + 48 EN con CARICA/LOAD); i 12 nomi di 3+ parole con carica/load restano fuori da L2b e sono coperti dalla regola P-1 (#128)', () => {
     // Conteggio della sola regola L2b (EXPECTED_CHANGES L1 + BARE_VERB_CHANGES + CARICA/LOAD),
     // senza il livello di L3 (rimozione E5): quest'ultimo è un livello indipendente,
     // aggiunto sopra in `computeExpected`, non una modifica alla regola L2b in sé. Per i
@@ -220,14 +305,35 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
     // 8 (verbi da soli) + 94 (IT carica/load + nome) + 48 (EN load + nome) = 150
     expect(changedCount).toBe(150);
 
+    // I 12 casi restano fuori da L2b (la baseline li registra non validi) e passano a
+    // validi (CARICARE + il nome) per la regola P-1 del #128.
     for (const { lang, input } of CARICA_LOAD_UNCHANGED_INPUTS) {
       const testCase = byLangInput.get(`${lang}|${input.toLowerCase()}`);
       expect(testCase, `caso non trovato nel corpus: "${input}" (lingua ${lang})`).toBeDefined();
       if (!testCase) continue;
-      const expected = expectedForCaricaLoad(testCase, byLangInput) || toFields(testCase);
-      expect(expected, `"${input}" deve restare invariato`).toEqual(toFields(testCase));
-      expect(expected.Error, `"${input}" deve restare SYNTAX_INVALID_STRUCTURE`).toBe('SYNTAX_INVALID_STRUCTURE');
+      expect(expectedForCaricaLoad(testCase, byLangInput), `"${input}" non è coperto da L2b`).toBeNull();
+      expect(testCase.Error, `"${input}" è registrato SYNTAX_INVALID_STRUCTURE`).toBe('SYNTAX_INVALID_STRUCTURE');
+      const expected = expectedForLongNoun(testCase, byLangInput);
+      expect(expected, `"${input}" deve essere valido (P-1)`).not.toBeNull();
+      expect(expected?.IsValid).toBe(true);
+      expect(expected?.VerbConcept).toBe('CARICARE');
     }
+  });
+
+  // Aggiunto per #128 (v1.4.4, TD Parser nomi lunghi v1.1, §5.1)
+  it('la regola P-1 (#128) riguarda esattamente 211 casi del corpus (12 carica/load + 199 altri verbi d\'azione), tutti registrati SYNTAX_INVALID_STRUCTURE, e diventano validi', async () => {
+    const p1Cases = baseline.cases.filter((c) => expectedForLongNoun(c, byLangInput) !== null);
+    expect(p1Cases.length).toBe(211);
+    expect(p1Cases.filter((c) => /^(?:carica|load)\s/i.test(c.input.trim())).length).toBe(12);
+    for (const c of p1Cases) {
+      expect(c.Error, `"${c.input}" (lingua ${c.lang})`).toBe('SYNTAX_INVALID_STRUCTURE');
+      const expected = expectedForLongNoun(c, byLangInput);
+      expect(expected?.IsValid, `"${c.input}" (lingua ${c.lang})`).toBe(true);
+      const actual = toFields(await parseCommand(null, c.input, { currentLingua: c.lang }));
+      expect(actual, `"${c.input}" (lingua ${c.lang})`).toEqual(expected);
+    }
+    // La regola L2b e la regola P-1 non si sovrappongono
+    for (const c of p1Cases) expect(expectedForCaricaLoad(c, byLangInput)).toBeNull();
   });
 
   // Aggiornato per #109 (lotto L3)
