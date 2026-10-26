@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml/badge.svg)](https://github.com/Aqualung61/MissioneOdessa/actions/workflows/ci.yml)
 
-**Versione 1.4.3** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
+**Versione 1.4.4** - Adventure testuale con backend Node.js/Express, frontend statico e API REST basata su dati JSON statici.
 
 - Roadmap / Next steps: [docs/ROADMAP.md](docs/ROADMAP.md)
 - Piano operativo (storico, gennaio 2026): [docs/20260113_nextsteps.md](docs/20260113_nextsteps.md)
@@ -113,7 +113,7 @@ Debug rapido: in due tab diverse, verifica che i valori in `sessionStorage` sian
 - La versione dell'app è sincronizzata con il campo `version` in `package.json`.
 - La rotta `/api/version` restituisce un oggetto JSON con la versione attuale, ad esempio:
    ```json
-   { "version": "1.4.3" }
+   { "version": "1.4.4" }
    ```
 
 Verifica rapida (smoke check):
@@ -250,7 +250,7 @@ I dati originali sono stati esportati da SQLite a JSON. Per modifiche, editare i
 
 ## Stato
 
-- **Versione attuale: 1.4.3** (24 ottobre 2026)
+- **Versione attuale: 1.4.4** (26 ottobre 2026)
 - **Test Coverage**: vedi output `npm test` (Vitest)
 - **Qualità**: ESLint clean, TypeScript strict typing
 - **i18n**: Full compliance IT/EN

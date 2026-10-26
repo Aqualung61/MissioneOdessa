@@ -8,17 +8,15 @@ Sintesi breve. La **fonte di verità** (stato, discussione, assegnazioni) sono *
 
 ## Fatto
 
+- **v1.4.4 — Parser: nomi composti:** riconoscimento dei nomi di oggetto di 3+ parole (#128). [Note](release-notes/2026-10-26_v1.4.4.md)
+- **v1.4.3 — Sicurezza e testi:** lock npm aggiornato, `help` EN con iniziale maiuscola, test del limitatore di frequenza (#137, #144, #147). [Note](release-notes/2026-10-24_v1.4.3.md)
 - **v1.4.2 — Refactor del motore:** motore, parser e configurazione riorganizzati a comportamento invariato, endpoint legacy rimossi, ESLint di complessità bloccante (#63, #123, #124, #125, #126). [Note](release-notes/2026-10-21_v1.4.2.md)
 - **v1.4.1 — Fedeltà all'originale:** regole, enigmi, punteggio, lessico e risposte dal sorgente BASIC del 1986. [Note](release-notes/2026-10-17_v1.4.1.md)
 - **v1.4.0 — Stabilità:** sessioni isolate, robustezza, difetti. [Note](release-notes/2026-10-15_v1.4.0.md)
 
-## Prossimo (milestone v1.4.3 — Parser: nomi composti)
-
-- #128 — Parser: nomi di 3+ parole e preposizione "di".
-- #137 — `help` EN: voci in maiuscolo.
-
 ## Dopo (senza milestone)
 
+- #150 — Test: instabilità sporadica di `tests/engine.examine-open.test.ts` (`VociLessico` non definita in `beforeAll`), preesistente.
 - #127 — Frontend: `executeCommandOnServer`.
 - #129 — Candidati dalla traccia del lotto 0.
 - #138 — Frontend: messaggi dedicati per 409 `LANGUAGE_MISMATCH` e 429 `RATE_LIMITED`.
