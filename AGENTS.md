@@ -62,8 +62,8 @@ Do not treat files under `docs/obsolete/` as current requirements.
 
 ## Environment and commands
 
-- Preferred local Node version: Node `20`, from `.nvmrc` / `.node-version`.
-- CI compatibility: Node `20.x` and `22.x`.
+- Preferred local Node version: Node `24`, from `.nvmrc` / `.node-version`.
+- CI compatibility: Node `22.x` and `24.x`.
 - Install reproducibly: `npm ci`.
 - Run development server: `npm run dev`.
 - Run production entry point locally: `npm start`.

@@ -2,7 +2,7 @@
 
 Questi script producono i fixture protetti sotto `tests/fixtures/`. Si usano **solo** per cambi attesi e dichiarati in una TD: una baseline non si rigenera per far passare un test.
 
-Sono stati verificati con Node 24.22.1 (Windows); la CI gira su Node 20.x e 22.x. Scrivere sempre in una cartella ignorata (ad esempio `output/<nome>/`), mai sopra ai fixture, poi confrontare ed eventualmente copiare il risultato. Il confronto va fatto sui byte del blob committato (`git show origin/main:<percorso>`), perche' la copia di lavoro puo' avere fine riga CRLF.
+Sono stati verificati con Node 24.22.1 (Windows); la CI gira su Node 22.x e 24.x. Scrivere sempre in una cartella ignorata (ad esempio `output/<nome>/`), mai sopra ai fixture, poi confrontare ed eventualmente copiare il risultato. Il confronto va fatto sui byte del blob committato (`git show origin/main:<percorso>`), perche' la copia di lavoro puo' avere fine riga CRLF.
 
 `<repo>` e' la radice del repository, `<out>` la cartella di output. Eseguire da qualunque cartella.
 
