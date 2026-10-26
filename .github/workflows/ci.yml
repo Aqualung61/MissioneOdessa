@@ -20,9 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Nota: vite e vitest richiedono Node ^20.19.0 || >=22.12.0 (vitest anche ^20 || ^22 || >=24):
-        # Node 18 non e' supportato.
-        node-version: [20.x, 22.x]
+        # Nota: vite richiede Node ^20.19.0 || >=22.12.0 e vitest ^20 || ^22 || >=24:
+        # si verificano le due LTS supportate (Node 20 e 18 non sono piu' coperti).
+        node-version: [22.x, 24.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
