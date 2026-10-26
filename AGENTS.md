@@ -136,7 +136,7 @@ Report every expected check as `PASS`, `FAIL`, `NOT RUN`, or `BLOCKED`. Never in
 - Work from a task branch, not directly on `main`.
 - Preferred branch pattern from current project documentation: `issue-<number>/<sprint-or-short-slug>`.
 - Use a pull request into `main` even though branch protection is not currently enabled.
-- Use `Part of #<number>` for intermediate work and `Fixes #<number>` only when all issue acceptance criteria are satisfied.
+- Use `Refs #<number>` for intermediate work and `Fixes #<number>` only when all issue acceptance criteria are satisfied.
 - Follow the existing concise commit style and reference the issue when useful; no conventional-commit policy is currently enforced.
 - Update release notes when behavior, configuration, operations, security, or user-visible functionality changes.
 - Verify the actual deployment target and procedure at Release Gate; do not infer them solely from dated Railway notes.
