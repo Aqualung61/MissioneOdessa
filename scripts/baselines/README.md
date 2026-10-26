@@ -18,5 +18,6 @@ Sono stati verificati con Node 24.22.1 (Windows); la CI gira su Node 20.x e 22.x
 Note:
 
 - `gen_parse.mjs` dipende dai fixture delle risposte: rigenerare prima `responses_baseline.json` se cambia.
+- `gen_http_trace.mjs` scrive nella cartella di output due file: `http_trace.json` **e** `save_v141_full_it_step91.json`. Non indicare mai `tests/fixtures/trace/` come cartella di output: sovrascriverebbe anche il salvataggio storico.
 - `save_v141_full_it_step91.json` e' un salvataggio storico v1.4.1: l'output di `gen_http_trace.mjs` differisce dal fixture per `timestamp` e `version`, che non vanno rigenerati.
 - Mancano i generatori di `parser_baseline.json` e dei fixture di walkthrough.
