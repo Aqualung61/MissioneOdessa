@@ -6,7 +6,7 @@
  * - Keep compatibility for existing 4xx responses by not touching them.
  * - Provide minimal, predictable JSON shapes for 5xx depending on API area.
  *
- * Sequenza (TD Lotto 5, §3.7; invariata): JSON malformato → log di errore → headersSent →
+ * Sequenza: JSON malformato → log di errore → headersSent →
  * CORS 403 → stato → non-API (testo) → /api/parser (busta IsValid) → busta standard.
  */
 
@@ -73,6 +73,15 @@ function sendStandardApiError(err, res, httpStatus, isProd) {
   return res.status(httpStatus).json({ ok: false, error: errorValue });
 }
 
+/**
+ * Middleware Express di gestione errori: risponde con un corpo sanificato (in produzione senza `err.message`).
+ * Ordine di valutazione: JSON malformato, log, headersSent, CORS 403, stato, non-API (testo), `/api/parser`, busta standard.
+ * @param {*} err - errore ricevuto
+ * @param {Object} req - richiesta Express
+ * @param {Object} res - risposta Express
+ * @param {function} next - callback Express
+ * @returns {*} la risposta inviata, oppure `next(err)` se le intestazioni sono già state inviate
+ */
 export function errorHandler(err, req, res, next) {
   const isProd = process.env.NODE_ENV === 'production';
   const url = (req?.originalUrl ?? req?.url ?? '').toString();

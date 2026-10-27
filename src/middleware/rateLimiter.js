@@ -4,6 +4,12 @@ function isTruthy(value) {
   return value === '1' || value === 'true' || value === 'yes';
 }
 
+/**
+ * Crea un limitatore di frequenza. Disattivato con `RATE_LIMIT_DISABLED` o `options.enabled === false`.
+ * In ambiente di test il massimo predefinito è molto alto.
+ * @param {{windowMs?: number, max?: number, enabled?: boolean}} [options] - finestra in ms (predefinita 60000), massimo di richieste per finestra
+ * @returns {function(Object, Object, function): void} middleware Express
+ */
 export function createRateLimiter(options) {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const disabled = isTruthy(process.env.RATE_LIMIT_DISABLED || '') || options?.enabled === false;
@@ -28,19 +34,25 @@ export function createRateLimiter(options) {
   });
 }
 
-// Generale su /api/*
+/**
+ * Limitatore generale su `/api/*`: 120 richieste al minuto.
+ */
 export const apiLimiter = createRateLimiter({
   windowMs: 60_000,
   max: 120,
 });
 
-// Endpoint CPU-intensive: parse/execute
+/**
+ * Limitatore per gli endpoint onerosi (parse/execute): 30 richieste al minuto.
+ */
 export const parsingLimiter = createRateLimiter({
   windowMs: 60_000,
   max: 30,
 });
 
-// Endpoint pesanti (opzionale)
+/**
+ * Limitatore per gli endpoint pesanti: 5 richieste al minuto.
+ */
 export const heavyLimiter = createRateLimiter({
   windowMs: 60_000,
   max: 5,

@@ -5,16 +5,14 @@
  * - Usura torcia dopo 6 turni consuming (totalTurnsConsumed >= 6)
  * - Penalità immediata se torcia posata (IDLuogo != 0)
  * - Aggiornamento hasLight in base a disponibilità fonti luce
- * 
- * Sprint 3.3.5.A
  */
 
 import { getSystemMessage } from '../systemMessages.js';
 import { CONFIG } from '../../game/odessa/config.js';
 import { hasActiveLight as hasFonteLuceAttiva } from '../../game/odessa/rules.js';
 
-// La verifica della fonte di luce vive in `game/odessa/rules.js` (TD Lotto 4a, §3.4,
-// D-4a-4); qui resta riesportata con il nome storico.
+// La verifica della fonte di luce vive in `game/odessa/rules.js`;
+// qui resta riesportata con il nome storico.
 export { hasFonteLuceAttiva };
 
 /**

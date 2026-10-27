@@ -1,9 +1,8 @@
-// Gestore generico di SYSTEM (TD Lotto 4a, §4, riga 5): blocco 1466–1514 di 4acdd1b
-// trascritto alla lettera (R1). Lo stub `default` ("Stub: sistema …") è stato rimosso in
-// P5 (TD §3.6): il lessico ha solo i 6 concetti gestiti; un caso residuo cade nel
+// Gestore generico di SYSTEM.
+// Il lessico ha solo i 6 concetti gestiti; un caso residuo cade nel
 // ripiego di `dispatch`.
 
-// Concetti di SISTEMA gestiti (TD Lotto 4a, §5.1 punto 4: confrontati con il lessico).
+// Concetti di SISTEMA gestiti (confrontati con il lessico).
 export const HANDLED_SYSTEM_CONCEPTS = ['INVENTARIO', 'AIUTO', 'SALVARE', 'CARICARE', 'PUNTI', 'FINE'];
 
 // 5 — core.system

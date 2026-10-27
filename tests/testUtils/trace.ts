@@ -1,10 +1,10 @@
 /**
- * Generazione delle tracce di caratterizzazione (#63, lotto 0 v1.4.2).
+ * Generazione delle tracce di caratterizzazione (#63).
  * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.2.
  *
  * Porta in TypeScript, senza cambiarne il risultato, l'algoritmo dei generatori di
- * riferimento (`Claude decompiler/gen_trace.mjs` e `Claude decompiler/gen_http_trace.mjs`,
- * fuori dal repository). Usa solo API pubblica del motore, del parser e dei router di
+ * riferimento (`scripts/baselines/gen_trace.mjs` e `scripts/baselines/gen_http_trace.mjs`).
+ * Usa solo API pubblica del motore, del parser e dei router di
  * produzione; un motore nuovo per scenario; stessa normalizzazione e stesso JSON canonico.
  *
  * La scrittura di `save_v141_full_it_step91.json` dal generatore HTTP non è portata qui:

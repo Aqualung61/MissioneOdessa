@@ -1,13 +1,13 @@
 /**
- * Traccia HTTP (#63, lotto 0 v1.4.2).
+ * Traccia HTTP (#63).
  * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.2-§3.3.
  *
  * Rigenera, con `generateHttpTrace()` (porting TypeScript del generatore di riferimento
- * `Claude decompiler/gen_http_trace.mjs`, fuori dal repository), la traccia di 8 scenari
+ * `scripts/baselines/gen_http_trace.mjs`), la traccia di 8 scenari
  * attraverso i router di produzione e la confronta passo per passo con il fixture
  * protetto `tests/fixtures/trace/http_trace.json`. Nessuna modalità di aggiornamento:
- * nella v1.4.2 la traccia non si rigenera; nei lotti successivi questo file si modifica
- * solo se la TD del lotto lo dichiara, con motivazione (TD §5).
+ * la traccia non si rigenera; questo file si modifica
+ * solo se la specifica lo dichiara, con motivazione.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';

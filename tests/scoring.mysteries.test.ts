@@ -1,5 +1,5 @@
 /**
- * Test Sistema Punteggio Misteri (Sprint 3.2.2)
+ * Test Sistema Punteggio Misteri
  * Testa assegnazione automatica +3 punti per VISIBILITA, SBLOCCA_DIREZIONE, TOGGLE_DIREZIONE
  */
 
@@ -320,7 +320,7 @@ describe('Sprint 3.2.2 - Sistema Punteggio Misteri', () => {
       const puntiLuoghi = luoghi.length; // +1 per ogni luogo visitato
       const puntiInterazioni = interazioni.length * 2; // +2 per ogni interazione
       const puntiMisteri = misteriUnici.size * 3; // +3 per ogni mistero
-      const puntiFerenc = 4; // +4 per Ferenc (Sprint 3.3.5.D)
+      const puntiFerenc = 4; // +4 per Ferenc
       
       const totaleMax = puntiLuoghi + puntiInterazioni + puntiMisteri + puntiFerenc;
       

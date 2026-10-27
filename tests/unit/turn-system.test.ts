@@ -1,5 +1,5 @@
 /**
- * Test Unit per Sistema Turn (Sprint 3.3.1 + 3.3.2 + 3.3.3)
+ * Test Unit per Sistema Turn
  * Verifica shouldConsumeTurn, hasFonteLuceAttiva, prepareTurnContext, runPreExecutionChecks, estensione gameState.turn
  */
 
@@ -19,7 +19,7 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
       expect(state.turn).toBeDefined();
       expect(state.turn.globalTurnNumber).toBe(0);
       expect(state.turn.totalTurnsConsumed).toBe(0);
-      // turnsWithTorch rimosso - sistema torcia ora usa solo timers.torciaDifettosa
+      // turnsWithTorch non esiste più: il sistema torcia usa solo timers.torciaDifettosa
       expect(state.turn.turnsInDarkness).toBe(0);
       expect(state.turn.turnsInDangerZone).toBe(0);
       
@@ -160,23 +160,22 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
 
   describe('Contatori turn', () => {
     it('globalTurnNumber dovrebbe incrementare ad ogni comando (anche non-consuming)', () => {
-      expect(true).toBe(true); // Implementato in Sprint 3.3.2
+      expect(true).toBe(true);
     });
 
     it('totalTurnsConsumed dovrebbe incrementare solo per comandi consuming', () => {
-      expect(true).toBe(true); // Implementato in Sprint 3.3.2
+      expect(true).toBe(true);
     });
 
     it('turnsWithTorch dovrebbe incrementare con torcia attiva', () => {
-      expect(true).toBe(true); // Implementato in Sprint 3.3.5
+      expect(true).toBe(true);
     });
 
     it('turnsInDarkness dovrebbe incrementare senza luce', () => {
-      expect(true).toBe(true); // Implementato in Sprint 3.3.5
+      expect(true).toBe(true);
     });
 
-    // Test eliminato: deprecato - vedere tests/unit/intercept-effect.test.ts
-    // per test completi del sistema intercettazione (Sprint 3.3.5.C)
+    // Per i test del sistema intercettazione vedere tests/unit/intercept-effect.test.ts
   });
 
   describe('TurnContext snapshot', () => {
@@ -307,8 +306,8 @@ describe('Sistema Turn - Sprint 3.3.1', () => {
     });
   });
 
-  // Note: Intercettazione check rimosso da runPreExecutionChecks (Sprint 3.3.5.C)
-  // Ora gestito da interceptEffect middleware + gameOverEffect CHECK 3
+  // Nota: il controllo di intercettazione non è in runPreExecutionChecks:
+  // lo gestiscono interceptEffect e gameOverEffect CHECK 3.
   // Vedere tests/unit/intercept-effect.test.ts e tests/unit/gameover-effect.test.ts
 
   describe('runPreExecutionChecks (Sprint 3.3.3)', () => {

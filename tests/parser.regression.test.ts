@@ -1,13 +1,13 @@
 /**
- * Corpus di non regressione del parser (#109, lotto L1).
+ * Corpus di non regressione del parser (#109).
  * Verifica che l'analisi di ogni comando registrato sulla baseline `release/v1.4.1`
- * (f65a102) resti identica, salvo i cambi attesi dei lotti successivi (L1: `look`,
- * `examine`, `sleep` EN da soli; L2b: verbi da soli e `carica`/`load` con un nome,
- * TD Lessico L2 risposte e testi, §5.5 v1.1; L3: i 194 casi con una voce rimossa
- * (E5), stesso esito di una parola sconosciuta nella stessa posizione, TD Lessico L3
- * nomi luoghi e guardia, §6.2 v1.1; #128: i nomi di 3+ parole dopo un verbo d'azione
- * o `carica`/`load`, regola P-1, TD Parser nomi lunghi v1.1, §5.1). Il corpus è protetto: si aggiorna solo
- * aggiungendo cambi attesi motivati nella specifica del lotto che lo richiede.
+ * resti identica, salvo i cambi attesi (`look`, `examine`, `sleep` EN da soli; verbi da soli e
+ * `carica`/`load` con un nome (TD Lessico L2 risposte e testi, §5.5 v1.1);
+ * i 194 casi con una voce rimossa (E5), stesso esito di una parola sconosciuta nella
+ * stessa posizione (TD Lessico L3 nomi luoghi e guardia, §6.2 v1.1);
+ * #128: i nomi di 3+ parole dopo un verbo d'azione o `carica`/`load`, regola P-1
+ * (TD Parser nomi lunghi v1.1, §5.1). Il corpus è protetto: si aggiorna solo
+ * aggiungendo cambi attesi motivati in una specifica.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -62,7 +62,7 @@ function toFields(c: { IsValid: boolean; CommandType: string | null; VerbConcept
   return { IsValid: c.IsValid, CommandType: c.CommandType, VerbConcept: c.VerbConcept, NounConcept: c.NounConcept, Error: c.Error };
 }
 
-// Aggiornato per #109 (lotto L1): cambi attesi (TD Lessico L1 sinonimi §4, §5.1):
+// Cambi attesi (TD Lessico L1 sinonimi §4, §5.1):
 // `look`, `examine` e `sleep` (EN) da soli sono validi come i corrispondenti italiani
 // `guarda`, `esamina`, `dormi`. Per questi tre casi EN il test non accetta più il
 // valore della baseline: richiede solo il valore nuovo.
@@ -72,7 +72,7 @@ const EXPECTED_CHANGES: Record<string, ParsedFields> = {
   SLEEP: { IsValid: true, CommandType: 'ACTION', VerbConcept: 'DORMIRE', NounConcept: null, Error: 'NONE' },
 };
 
-// Aggiornato per #109 (lotto L2b): 8 verbi che diventano validi da soli, per regola
+// 8 verbi che diventano validi da soli, per regola
 // (TD Lessico L2 risposte e testi, §5.5 v1.1). Chiave: `${lang}|${INPUT_NORMALIZZATO}`.
 const BARE_VERB_CHANGES: Record<string, ParsedFields> = {
   '1|SCAVA': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'SCAVARE', NounConcept: null, Error: 'NONE' },
@@ -85,10 +85,10 @@ const BARE_VERB_CHANGES: Record<string, ParsedFields> = {
   '2|LIGHT': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
 };
 
-// Aggiornato per #109 (lotto L2b): i 12 casi con un nome di 3 o più parole
+// I 12 casi con un nome di 3 o più parole
 // significative restano invariati (limite preesistente del parser sui nomi composti,
-// non raggiunto da nessun verbo oggi: TD §5.5 v1.1). Elencati esplicitamente per
-// verificarli separatamente dal conteggio totale (sotto). Dal #128 (v1.4.4) il limite è
+// non raggiunto da nessun verbo: TD §5.5 v1.1). Elencati esplicitamente per
+// verificarli separatamente dal conteggio totale (sotto). Con #128 (v1.4.4) il limite è
 // superato: restano fuori da L2b, ma sono validi per la regola P-1 (vedi sotto).
 const CARICA_LOAD_UNCHANGED_INPUTS: Array<{ lang: number; input: string }> = [
   { lang: 1, input: 'carica arazzo in pessime condizioni' },
@@ -109,7 +109,7 @@ const CARICA_LOAD_UNCHANGED_INPUTS: Array<{ lang: number; input: string }> = [
  * Regola L2b: `carica <nome>` (lingua 1) e `load <nome>` (lingua 1 o 2) diventano
  * un'azione valida (concetto CARICARE) con il nome, tranne quando il nome ha 3 o più
  * parole (limite preesistente del parser: anche un verbo d'azione esistente, non
- * toccato da questo lotto, non riconosce quei nomi come un'unica voce; verificato
+ * toccato da questa regola, non riconosce quei nomi come un'unica voce; verificato
  * sulla baseline per "esamina" / "examine", invariati). In quel caso il valore resta
  * quello della baseline.
  */
@@ -129,7 +129,7 @@ function expectedForCaricaLoad(testCase: BaselineCase, byLangInput: Map<string, 
   return { IsValid: true, CommandType: 'ACTION', VerbConcept: 'CARICARE', NounConcept: nounConcept, Error: 'NONE' };
 }
 
-// Aggiornato per #128 (v1.4.4, TD Parser nomi lunghi v1.1, §5.1): regola P-1. Un comando
+// Regola P-1 (#128, TD Parser nomi lunghi v1.1, §5.1). Un comando
 // `verbo (azione o CARICARE) + resto`, in cui il resto dei token (senza stopword)
 // coincide con la chiave derivata di una voce NOUN di 3 o più parole, era non valido e ora
 // è valido, con lo stesso esito del comando con la voce breve dello stesso termine. La
@@ -204,7 +204,7 @@ function expectedForLongNoun(testCase: BaselineCase, byLangInput: Map<string, Ba
   return isAction ? toFields(riferimento) : expectedForCaricaLoad(riferimento, byLangInput);
 }
 
-// Aggiornato per #109 (lotto L3): le 4 voci rimosse (E5) — BOTTON_LEGACY (IT, EN),
+// Le 4 voci rimosse (E5) — BOTTON_LEGACY (IT, EN),
 // TAVOLO_LEGACY (IT), TABLE_LEGACY (EN) — come regola, non come elenco: ogni caso del
 // corpus che contiene una di queste parole, in qualunque posizione, deve dare lo
 // stesso esito di una parola chiaramente inesistente nella stessa posizione (TD
@@ -295,7 +295,7 @@ describe('Corpus di non regressione del parser (#109)', () => {
     let changedCount = 0;
     for (const testCase of baseline.cases) {
       const normalizedInput = testCase.input.trim().toUpperCase();
-      if (testCase.lang === 2 && EXPECTED_CHANGES[normalizedInput]) continue; // cambio del lotto L1, non di L2b
+      if (testCase.lang === 2 && EXPECTED_CHANGES[normalizedInput]) continue; // cambio atteso di L1, non di L2b
 
       const baselineExpected = toFields(testCase);
       const bareKey = `${testCase.lang}|${normalizedInput}`;
@@ -336,7 +336,7 @@ describe('Corpus di non regressione del parser (#109)', () => {
     for (const c of p1Cases) expect(expectedForCaricaLoad(c, byLangInput)).toBeNull();
   });
 
-  // Aggiornato per #109 (lotto L3)
+  // Regola di rimozione delle voci (E5)
   it('i cambi attesi per la voce rimossa sono esattamente 194 casi (una voce rimossa, E5): ciascuno dà oggi lo stesso esito di una parola sconosciuta nella stessa posizione, nessun altro caso è toccato da questa regola', async () => {
     const legacyCases = baseline.cases.filter((c) => LEGACY_REMOVED_WORDS.test(c.input));
     expect(legacyCases.length).toBe(194);

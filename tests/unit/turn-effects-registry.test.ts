@@ -1,5 +1,5 @@
 /**
- * Test Unit per turnEffects/index.js - Registry Pattern (Sprint 3.3.5.B)
+ * Test Unit per turnEffects/index.js - Registry Pattern
  * Verifica ordine esecuzione, isolation, registry integrity
  */
 

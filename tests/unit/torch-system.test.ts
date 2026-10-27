@@ -1,5 +1,5 @@
 /**
- * Test per applyTurnEffects - Sistema Torcia (Sprint 3.3.5.A)
+ * Test per applyTurnEffects - Sistema Torcia
  * Verifica logica di spegnimento torcia dopo 6 turni
  */
 

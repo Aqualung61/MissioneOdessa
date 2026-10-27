@@ -1,6 +1,5 @@
-// Gestore generico ACTION per ESAMINA/GUARDA (TD Lotto 4a, §4, riga 23): blocchi
-// 1734–1742 e 1771–1773 di 4acdd1b trascritti alla lettera (R1). L'oggetto presente si
-// ricalcola qui, dopo le interazioni (R3); i casi speciali con nome stanno nel
+// Gestore generico ACTION per ESAMINA/GUARDA. L'oggetto presente si
+// ricalcola qui, dopo le interazioni; i casi speciali con nome stanno nel
 // gestore del gioco che lo precede.
 
 // 23 — core.action.examine

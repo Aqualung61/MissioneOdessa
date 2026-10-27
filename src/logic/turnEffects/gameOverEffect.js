@@ -12,11 +12,9 @@
  * Questo effect DEVE seguire gli effetti dei timer nel registry TURN_EFFECTS perché
  * valuta i timer già aggiornati.
  *
- * Struttura (TD Lotto 5, §3.5): `GAME_OVER_CHECKS` è un elenco ordinato di controlli; ognuno
+ * Struttura: `GAME_OVER_CHECKS` è un elenco ordinato di controlli; ognuno
  * restituisce `{ messageKey, reason }` oppure `null`. Il primo controllo non nullo chiama
  * `setGameOver` e interrompe la valutazione degli altri.
- *
- * Sprint 3.3.5.B (refactoring unificazione game over)
  */
 
 import { getSystemMessage } from '../systemMessages.js';
@@ -122,7 +120,7 @@ function dawn(gameState) {
   return { messageKey, reason: 'TOO_LATE' };
 }
 
-// Ordine vincolante (TD Lotto 5, §4): il primo controllo che scatta ferma gli altri.
+// Ordine vincolante: il primo controllo che scatta ferma gli altri.
 export const GAME_OVER_CHECKS = [lampAbandoned, darkness, terminalLocation, openArea, guardArrest, dawn];
 
 /**

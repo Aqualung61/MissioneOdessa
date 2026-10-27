@@ -1,12 +1,12 @@
 /**
- * Test di caratterizzazione — motore: stato e traccia di debug (#63, lotto 0 v1.4.2,
- * Fase 1B-2). Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`,
+ * Test di caratterizzazione — motore: stato e traccia di debug (#63).
+ * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`,
  * §3.5.
  *
- * Ambito: rami non coperti (dal report di copertura di Fase 1A/1B-1) di `setGameState`
+ * Ambito: rami non coperti di `setGameState`
  * ed `executeCommand` in `src/logic/engine.js`.
  *
- * `setGameState` è la funzione di compatibilità dei salvataggi (TD §3.4): accetta stati
+ * `setGameState` è la funzione di compatibilità dei salvataggi: accetta stati
  * parziali o di formato precedente e applica valori di default documentati nel codice
  * ("default per i salvataggi che non li contengono"). I test qui sotto costruiscono
  * stati parziali plausibili (derivati da snapshot reali, con singoli campi rimossi per
@@ -18,7 +18,7 @@
  * `tests/engine.debug.trace.test.ts` (file protetto, non modificato): un evento per
  * `EXECUTE_COMMAND_BLOCKED` e per il caso "awaitingRestart cambiato durante un comando
  * che consuma turno", non ancora esercitati da quel file. La variabile d'ambiente è
- * ripristinata a fine di ogni test (regola 6 di TD §3.5).
+ * ripristinata a fine di ogni test.
  */
 
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
@@ -220,11 +220,8 @@ describe('Caratterizzazione — motore: traccia di debug (executeCommand, #63)',
 });
 
 /**
- * Rami aggiuntivi di `executeCommandLegacy` individuati in Fase 1B-2 dopo aver
- * corretto l'intervallo di riga della funzione nel report di copertura (il report di
- * Fase 1B-1 misurava solo fino alla riga 1748; la funzione arriva in realtà alla riga
- * 1853, includendo i rami generici di ESAMINA/APRI-CHIUDI/PRENDI/POSA finali). Vedi
- * `Claude decompiler/20261019 - HO-18 Report Fase 1B-2 - v1.0.md` per il dettaglio.
+ * Rami aggiuntivi di `executeCommand`: i rami generici di
+ * ESAMINA/APRI-CHIUDI/PRENDI/POSA finali.
  */
 describe('Caratterizzazione — motore: executeCommand, rami ESAMINA/APRI-CHIUDI/PRENDI (#63)', () => {
   const fullIt = loadWalkthroughCommands('full_it');

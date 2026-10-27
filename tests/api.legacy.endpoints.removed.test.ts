@@ -1,5 +1,5 @@
 /**
- * Endpoint legacy rimossi, lotto 1 v1.4.2 (#124).
+ * Endpoint legacy rimossi (#124).
  * Specifica: `docs/20261019 - TD Lotto 1 Pulizia ed endpoint legacy - v1.0.md`, §3.1-§3.2, §4.
  * Sostituisce `tests/api.legacy.endpoints.disabled.test.ts` (meccanismo `DISABLE_LEGACY_ENDPOINTS`
  * rimosso): `POST /api/engine/set-location` e `POST /api/parser/parse` ora rispondono come

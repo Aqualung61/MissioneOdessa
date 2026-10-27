@@ -1,7 +1,7 @@
 /**
- * Generazione delle risposte per l'istantanea del lessico (#109, lotto L2a).
+ * Generazione delle risposte per l'istantanea del lessico (#109).
  * Stesse regole, stesso ordine e stesso formato del generatore di riferimento
- * (`Claude decompiler/20261016 - L2 gen_responses.mjs`); condiviso tra
+ * (`scripts/baselines/gen_responses.mjs`); condiviso tra
  * `tests/responses.snapshot.test.ts` e `tests/responses.language.test.ts` per evitare
  * due implementazioni indipendenti dello stesso algoritmo.
  */

@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-// Rimosso @ts-expect-error inutilizzato
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import VociLessico from '../src/data-internal/VociLessico.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';

@@ -1,5 +1,5 @@
 /**
- * Lessico L1: sinonimi e parser (#109, lotto L1)
+ * Lessico L1: sinonimi e parser (#109)
  * Specifica: docs/20261015 - TD Lessico L1 sinonimi - v1.1.md, §5.2 (TB-01…TB-08).
  *
  * Motore e parser reali (parseCommand + executeCommand). Per i luoghi precisi si
@@ -155,14 +155,14 @@ describe('Lessico L1: sinonimi e parser (#109)', () => {
       expect(r.message, command).toBe(expectedDescription);
     }
 
-    // sleep: accettato dal parser; la risposta del motore si corregge nel lotto L2
+    // sleep: accettato dal parser
     const sleep = await run(newEngine(2), 'sleep');
     expect(sleep.resultType).not.toBe('ERROR');
     expect(sleep.resultType).not.toBe('GAME_OVER');
   });
 
   it('TB-07: "a" (IT) da solo resta un comando senza verbo (D1)', async () => {
-    // Aggiornato per #109 (lotto L3): "a" è ora una preposizione registrata (E4, TD
+    // "a" è una preposizione registrata (E4, TD
     // Lessico L3 nomi luoghi e guardia, §3) e non più un token sconosciuto; da sola,
     // senza verbo, resta comunque un comando non riconosciuto (nessun token utile
     // dopo il filtro delle parole vuote), ma senza più l'informazione del token

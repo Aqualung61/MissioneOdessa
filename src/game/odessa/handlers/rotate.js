@@ -1,5 +1,4 @@
-// Gestori ACTION di Odessa per GIRA/RUOTA (TD Lotto 4a, §4, righe 19–20): blocchi
-// 1715–1725 di 4acdd1b trascritti alla lettera (R1).
+// Gestori ACTION di Odessa per GIRA/RUOTA.
 
 // 19 — odessa.action.rotateDirection
 // GIRA/RUOTA DESTRA/SINISTRA (D4): fuori dalla biblioteca, o in biblioteca con la
@@ -12,7 +11,7 @@ export const rotateDirection = {
 };
 
 // 20 — odessa.action.rotateKnob
-// GIRA/RUOTA MANOPOLA (E3, L3, #109): solo con la cassaforte visibile (dopo
+// GIRA/RUOTA MANOPOLA: solo con la cassaforte visibile (dopo
 // "sposta quadro"/"prendi quadro"), in biblioteca (24). Senza cassaforte visibile:
 // prosegue con l'elaborazione standard, che dà "Non vedi manopola qui." (nessun
 // oggetto MANOPOLA nei dati, §4.10 generale).

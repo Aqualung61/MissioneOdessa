@@ -7,7 +7,10 @@
 import { CONFIG } from '../game/odessa/config.js';
 import { getGameData } from './core/gameData.js';
 
-// Tipi comando per ParseResult
+/**
+ * Tipi di comando di un ParseResult.
+ * @type {Object<string, string>}
+ */
 export const CommandType = {
   ACTION: 'ACTION',
   NAVIGATION: 'NAVIGATION',
@@ -16,6 +19,10 @@ export const CommandType = {
   STOPWORD: 'STOPWORD',
 };
 
+/**
+ * Codici di errore di un ParseResult (`NONE` se l'input è valido).
+ * @type {Object<string, string>}
+ */
 export const ParseErrorType = {
   NONE: 'NONE',
   INVALID_INPUT: 'INVALID_INPUT',
@@ -29,13 +36,17 @@ export const ParseErrorType = {
 // Questo evita che una prima costruzione (es. IT) venga riusata impropriamente per altre lingue (es. EN).
 const vocabCacheByLingua = new Map();
 
+/**
+ * Svuota la cache del vocabolario (una voce per lingua).
+ * @returns {void}
+ */
 export function resetVocabularyCache() {
   vocabCacheByLingua.clear();
 }
 
-// === Lessico: unico punto di accesso ai dati statici (lotto 2, #63) ===
+// === Lessico: unico punto di accesso ai dati statici (#63) ===
 // `lexiconSource()` è l'unico punto di questo modulo che legge i dati statici, tramite
-// l'accessor `getGameData()` (TD 0 Architettura motore e regole, §4.8); letto a ogni chiamata.
+// l'accessor `getGameData()`; letto a ogni chiamata.
 function lexiconSource() {
   return getGameData();
 }
@@ -120,9 +131,9 @@ function buildLocalizedNounConcepts(rows, source, lingua) {
   return localizedNounConceptByTerm;
 }
 
-// Forma canonica dei verbi d'azione (TD Lessico L2 risposte e testi, §4.2 c): se
+// Forma canonica dei verbi d'azione: se
 // l'infinito (il concetto) è esso stesso una voce della lingua corrente, è la forma
-// canonica; altrimenti resta la voce alfabeticamente minore, come oggi (invariato
+// canonica; altrimenti resta la voce alfabeticamente minore (invariato
 // per l'inglese, dove il concetto è sempre il nome italiano).
 function buildActionCanonicalConcepts(rows) {
   const actionCanonicalConceptByTerm = new Map();
@@ -209,9 +220,13 @@ function buildLongNounIndex(tokenMap) {
   return longNounIndex;
 }
 
-// Carica il vocabolario dai dati statici di gioco e costruisce:
-// - tokenMap: Map<string, { type, canonical, termId, concept }>
-// - longNounIndex: Map<chiave derivata, info> per i nomi di 3 o più parole
+/**
+ * Carica il vocabolario dai dati statici di gioco e lo memorizza per lingua. Costruisce:
+ * - `tokenMap`: `Map<string, { type, canonical, termId, concept }>`
+ * - `longNounIndex`: `Map<chiave derivata, info>` per i nomi di 3 o più parole
+ * @param {{currentLingua?: number}|null} [gameState] - stato di gioco, solo per la lingua (predefinita 1)
+ * @returns {Promise<{tokenMap: Map, longNounIndex: Map}>}
+ */
 export async function ensureVocabulary(gameState = null) {
   const currentLingua = gameState?.currentLingua || 1;
 
@@ -258,10 +273,10 @@ function hasControlChars(s) {
 }
 
 // Alcuni verbi d'azione non richiedono oggetto, in base al concetto (valido in ogni lingua):
-// TD Lotto 3 Configurazione di gioco, §3.2 (lessico.verbiSenzaOggetto); storia della
-// regola: DORMIRE (azione senza oggetto); ESAMINARE/GUARDARE (descrivono il luogo);
-// SCAVARE/ACCENDERE (TD Lessico L2 risposte e testi, §5.2); SPEGNERE/SCAPPARE/
-// SORRIDERE/SEDERSI/PARLARE (lotto L2b, §5.2); ATTACCARE (lotto L3, TD Lessico L3, §5).
+// (`lessico.verbiSenzaOggetto`):
+// DORMIRE (azione senza oggetto); ESAMINARE/GUARDARE (descrivono il luogo);
+// SCAVARE/ACCENDERE; SPEGNERE/SCAPPARE/
+// SORRIDERE/SEDERSI/PARLARE; ATTACCARE.
 const ACTION_NO_OBJECT = new Set(CONFIG.lessico.verbiSenzaOggetto);
 
 // ParseResult di base: stesse chiavi, stesso ordine, stessi valori iniziali di sempre.
@@ -282,7 +297,7 @@ function createBaseResult(input) {
     NounConcept: null,
     // Nome digitato dal giocatore (minuscolo, senza parole vuote; per i nomi composti
     // le parole digitate unite da uno spazio), usato nei messaggi generici quando il
-    // nome non corrisponde a un oggetto (TD Lessico L3, §4.10).
+    // nome non corrisponde a un oggetto.
     NounLiteral: null,
     Error: ParseErrorType.NONE,
     Details: null,
@@ -440,8 +455,8 @@ function parseTwoTokens(t1, t2, idx, filteredOriginalTokens, base, currentLingua
   if (!t1.info) return { ...base, Error: ParseErrorType.COMMAND_UNKNOWN, UnknownToken: t1.token };
 
   if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
-    // CARICA/LOAD seguito da un nome diventa un'azione (#98, TD Lessico L2 risposte e
-    // testi, §5.2): da sola (un token) resta il caricamento della partita, gestito sopra.
+    // CARICA/LOAD seguito da un nome diventa un'azione (#98):
+    // da sola (un token) resta il caricamento della partita, gestito sopra.
     if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE' && t2.info && t2.info.type === CommandType.NOUN) {
       const nounLiteral = (filteredOriginalTokens[1] || t2.token).toLowerCase();
       return buildCaricaResult(t1.info, t2.info, nounLiteral, idx, base, currentLingua);
@@ -463,7 +478,7 @@ function parseTwoTokens(t1, t2, idx, filteredOriginalTokens, base, currentLingua
 
 /**
  * Analizza un comando utente e produce un ParseResult deterministico; non lancia
- * mai eccezioni per input invalido (#63, lotto 2: nuova firma senza `dbPath`).
+ * mai eccezioni per input invalido (#63).
  * @param {*} input - testo digitato dal giocatore (qualunque valore: i non stringa
  *   producono un ParseResult di errore, mai un'eccezione)
  * @param {{currentLingua?: number}|null} gameState - stato di gioco, solo per la lingua
@@ -513,7 +528,7 @@ export async function parseInput(input, gameState = null) {
 /**
  * @deprecated usare `parseInput(input, gameState)`. Involucro compatibile mantenuto
  * per i test protetti che chiamano `parseCommand(null, ...)` (27 file); da rimuovere
- * solo quando quei test potranno migrare (non in v1.4.2, TD Lotto 2 Parser, D-L2-1).
+ * solo quando quei test potranno migrare.
  */
 export async function parseCommand(dbPath, input, gameState = null) {
   return parseInput(input, gameState);

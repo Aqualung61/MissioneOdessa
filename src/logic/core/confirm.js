@@ -1,8 +1,13 @@
-// Conferme FINE e riavvio (SI/NO), estratte da `engine.js` (TD Lotto 5, §3.4.4).
-// Leggono `eng.state` a ogni chiamata (R1): `confirmRestart` può riassegnarlo (reset).
+// Conferme FINE e riavvio (SI/NO).
+// Leggono `eng.state` a ogni chiamata: `confirmRestart` può riassegnarlo (reset).
 import { getSystemMessage } from '../systemMessages.js';
 
-// Conferma fine gioco (SI/NO) quando lo stato è in attesa di conferma.
+/**
+ * Conferma o annulla la fine della partita (risposta SI/NO) quando lo stato è in attesa di conferma.
+ * @param {Object} eng - contenitore del motore
+ * @param {string} risposta - testo digitato (S, SI, SÌ, Y, YES / N, NO)
+ * @returns {Object} risultato con `accepted`, `resultType` e, se presente, `message`
+ */
 export function confirmEnd(eng, risposta) {
   const r = (risposta || '').trim().toUpperCase();
 
@@ -33,7 +38,13 @@ export function confirmEnd(eng, risposta) {
   return { accepted: false, resultType: 'ERROR' };
 }
 
-// Conferma riavvio. `resetGameState(lingua)` è la funzione di reset del motore (composizione della facciata).
+/**
+ * Conferma o rifiuta il riavvio (risposta SI/NO). Con SI chiama `resetGameState` nella lingua corrente.
+ * @param {Object} eng - contenitore del motore
+ * @param {string} risposta - testo digitato (S, SI, SÌ, Y, YES / N, NO)
+ * @param {function(number): void} resetGameState - funzione di reset del motore
+ * @returns {Object} risultato con `accepted` e `resultType`
+ */
 export function confirmRestart(eng, risposta, resetGameState) {
   // Normalizza risposta
   const r = (risposta || '').trim().toUpperCase();

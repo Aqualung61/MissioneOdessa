@@ -1,15 +1,15 @@
 /**
- * Istantanea delle risposte (#109, lotti L2a, L2b e L3).
+ * Istantanea delle risposte (#109).
  * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.1;
- * aggiornato per #109 (lotto L3): TD Lessico L3 nomi luoghi e guardia, §6.1 v1.1.
+ * TD Lessico L3 nomi luoghi e guardia, §6.1 v1.1.
  *
  * Rigenera, con le stesse regole, lo stesso ordine e lo stesso formato del
- * generatore di riferimento (`Claude decompiler/20261016 - L2 gen_responses.mjs`),
+ * generatore di riferimento (`scripts/baselines/gen_responses.mjs`),
  * la risposta di ogni comando del lessico in 7 punti della partita (IT ed EN) e la
  * confronta con l'istantanea protetta `tests/fixtures/responses/responses_baseline.json`.
  *
- * Aggiornamento dell'istantanea (solo in Fase 1B, solo per differenze attese della
- * specifica del lotto): `UPDATE_RESPONSES=1 npx vitest run tests/responses.snapshot.test.ts`.
+ * Aggiornamento dell'istantanea (solo per differenze attese della
+ * specifica): `UPDATE_RESPONSES=1 npx vitest run tests/responses.snapshot.test.ts`.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -55,8 +55,8 @@ describe('Istantanea delle risposte (#109)', () => {
 
       expect(diffs.length, diffs.join('\n')).toBe(0);
     },
-    // Timeout esteso (#109, lotto L3): genera ~88.000 risposte con motore e parser
-    // reali (vedi generateResponses, cresciuto con il lessico di L3), più lento del
+    // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
+    // reali (vedi generateResponses), più lento del
     // default di Vitest sotto carico nella suite completa.
     60000
   );

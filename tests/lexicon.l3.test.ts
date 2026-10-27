@@ -9,7 +9,7 @@
  * Un caso per ogni riga di §4, in IT e in EN, più TC-01…TC-06 di §6.3. Include
  * esplicitamente i casi che i 7 punti dell'istantanea non raggiungono (4.3 manopola
  * con e senza cassaforte visibile; 4.5 macerie a 11, 32, 36; 4.8 porta del 44 chiusa
- * e aperta; 4.9 tinello prima e dopo lo scavo), e i 4 casi di R1 (Fase 1A: la parola
+ * e aperta; 4.9 tinello prima e dopo lo scavo), e i 4 casi della correzione sulla parola
  * digitata, non la forma canonica, per i nomi senza oggetto).
  *
  * TC-06 coincide con i test di completamento e punteggio massimo, già coperti
@@ -212,7 +212,7 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
   });
 
   it('4.10 / R1: nei messaggi generici si mostra la parola effettivamente digitata, non la forma canonica', async () => {
-    // I quattro casi esatti della correzione R1 (Fase 1A): un nome con sinonimo
+    // I quattro casi esatti della correzione: un nome con sinonimo
     // alfabeticamente non minore (cucina/kitchen rispetto ad archivio/archive; uomo
     // rispetto a guardia; knob rispetto a dial) deve mostrare la parola digitata.
     const prendiCucina = await run(newEngine(1), 'prendi cucina');

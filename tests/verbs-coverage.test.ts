@@ -4,12 +4,12 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 import TipiLessico from '../src/data-internal/TipiLessico.json';
 
-// Aggiornato per #109 (lotto L1): l'insieme dei verbi ammessi senza oggetto è basato
+// L'insieme dei verbi ammessi senza oggetto è basato
 // sul concetto (valido per ogni sinonimo e in ogni lingua), come il parser
 // (TD Lessico L1 sinonimi, §4), non su un elenco di forme italiane.
-// Aggiornato per #109 (lotto L2b): aggiunti i verbi di §5.2 ammessi senza oggetto
+// Aggiunti i verbi di §5.2 ammessi senza oggetto
 // (TD Lessico L2 risposte e testi, §5.2).
-// Aggiornato per #109 (lotto L3): aggiunto ATTACCARE, ammesso senza oggetto
+// Aggiunto ATTACCARE, ammesso senza oggetto
 // (TD Lessico L3 nomi luoghi e guardia, §5).
 const NO_OBJECT_CONCEPTS = new Set([
   'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',

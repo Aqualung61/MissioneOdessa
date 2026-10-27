@@ -1,12 +1,10 @@
 /**
- * Test di caratterizzazione — effetti di turno (#63, lotto 0 v1.4.2, Fase 1B-2).
- * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5;
- * handoff: `Claude decompiler/20261019 - HO-18 Lotto 0 Rete di caratterizzazione -
- * v1.2.md`, Fase 1B-2.
+ * Test di caratterizzazione — effetti di turno (#63).
+ * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5.
  *
  * Ambito: `getDawnTurnLimit` (`src/logic/turnEffects/dawnEffect.js`), unico ramo
  * raggiungibile individuato tra gli effetti di turno non ancora coperto. Variabile
- * d'ambiente impostata solo durante il test e ripristinata subito dopo (TD §3.5, regola 6).
+ * d'ambiente impostata solo durante il test e ripristinata subito dopo.
  */
 
 import { describe, it, expect, afterEach } from 'vitest';

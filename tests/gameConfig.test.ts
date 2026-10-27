@@ -11,8 +11,8 @@ import Oggetti from '../src/data-internal/Oggetti.json';
 import MessaggiSistema from '../src/data-internal/MessaggiSistema.json';
 import TerminiLessico from '../src/data-internal/TerminiLessico.json';
 
-// TD Lotto 3 Configurazione di gioco, §4.1: base per la configurazione minima valida
-// usata nei test di validazione (§3.1.1), modificata di volta in volta per violare
+// Base per la configurazione minima valida
+// usata nei test di validazione, modificata di volta in volta per violare
 // esattamente un vincolo.
 function baseConfig() {
   return {

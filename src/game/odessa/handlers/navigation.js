@@ -1,8 +1,7 @@
-// Gestori di NAVIGATION specifici di Odessa (TD Lotto 4a, §4, righe 2 e 3). Blocchi
-// trascritti alla lettera dallo switch dei comandi di `engine.js` su 4acdd1b (R1).
+// Gestori di NAVIGATION specifici di Odessa: passaggio crollato e movimenti bloccati con testo dedicato.
 import { directionFieldFor } from '../../../logic/core/handlers/navigation.js';
 
-// 2 — odessa.nav.collapsedPassage (righe 1413–1434 di 4acdd1b)
+// 2 — odessa.nav.collapsedPassage
 // Passaggio crollato (32 → 36): nell'originale il crollo avviene una sola
 // volta (BAS 330–340, 5160–5210); dopo, il passaggio resta bloccato (#117).
 export const collapsedPassage = {
@@ -33,8 +32,8 @@ export const collapsedPassage = {
   },
 };
 
-// 3 — odessa.nav.blockedWithText (righe 1436–1445 di 4acdd1b)
-// Movimenti bloccati con un testo dedicato dell'originale (#109, L3, §4.7–4.9):
+// 3 — odessa.nav.blockedWithText
+// Movimenti bloccati con un testo dedicato dell'originale:
 // sostituiscono il messaggio generico solo in quei luoghi e condizioni; il
 // turno si consuma comunque, come per ogni movimento bloccato.
 function findBlockedWithText(cmd, ctx) {

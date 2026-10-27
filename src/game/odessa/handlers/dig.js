@@ -1,5 +1,4 @@
-// Gestore ACTION di Odessa (TD Lotto 4a, §4, riga 17): blocco 1670–1696 di 4acdd1b
-// trascritto alla lettera (R1).
+// Gestore ACTION di Odessa: SCAVA.
 
 // 17 — odessa.action.dig
 // SCAVA: senza nome (o con "macerie" dove non esiste un'interazione dedicata),

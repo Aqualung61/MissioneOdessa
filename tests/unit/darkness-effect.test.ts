@@ -1,5 +1,5 @@
 /**
- * Test Unit per darknessEffect.js (Sprint 3.3.5.B)
+ * Test Unit per darknessEffect.js
  * Test isolato del middleware darkness countdown
  */
 

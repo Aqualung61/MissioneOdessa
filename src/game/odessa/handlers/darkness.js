@@ -1,9 +1,9 @@
-// Gestore ACTION di Odessa (TD Lotto 4a, §4, riga 6): blocco 1549–1554 di 4acdd1b
-// trascritto alla lettera (R1). `DARK_BLOCKED_VERBS` arriva qui dal motore (TD §3.5).
+// Gestore ACTION di Odessa: azioni bloccate dal buio.
+// `DARK_BLOCKED_VERBS` arriva qui dalla configurazione del gioco.
 
 // 6 — odessa.action.darkness
 // Al buio alcune azioni non si eseguono (R1, BAS 240–250); il turno è consumato.
-// CARICARE con un nome (#98, L2b): equivale a METTERE (es. "carica peso"), quindi
+// CARICARE con un nome (#98): equivale a METTERE (es. "carica peso"), quindi
 // bloccato al buio come METTERE; la forma "carica" da sola è un comando di SISTEMA
 // e non passa da questo gestore, quindi il caricamento della partita non è mai bloccato.
 // Verbi (concetti) che al buio non si eseguono: "È troppo buio per farlo." (R1, BAS 240–250).

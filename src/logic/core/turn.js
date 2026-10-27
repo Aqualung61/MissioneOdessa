@@ -1,5 +1,5 @@
-// Sistema Turn (v3.0): funzioni generiche del turno, estratte da `engine.js` (TD Lotto 5, §3.4.2).
-// Nessuna funzione conserva lo stato tra due chiamate (R1): lo stato è sempre un parametro,
+// Sistema Turn (v3.0): funzioni generiche del turno.
+// Nessuna funzione conserva lo stato tra due chiamate: lo stato è sempre un parametro,
 // letto al momento della chiamata. I dettagli del gioco passano da `game.rules` e `game.turnEffects`.
 import { getSystemMessage } from '../systemMessages.js';
 
@@ -38,7 +38,7 @@ export function prepareTurnContext(gameState, game, parseResult) {
     location: prev.location || gameState.currentLocationId,
     hasLight: prev.hasLight || false,
     consumedTurn: prev.consumesTurn || false,
-    inDangerZone: prev.inDangerZone || false  // BUGFIX Sprint 3.3.5.C
+    inDangerZone: prev.inDangerZone || false
   };
 
   // Determina proprietà turno corrente
@@ -71,7 +71,7 @@ export function prepareTurnContext(gameState, game, parseResult) {
  * NOTA:
  * - awaitingRestart NON è verificato qui perché gestito direttamente
  *   in engineRoutes.js che bypassa il parser quando awaitingRestart = true
- * - Intercettazione NON è più qui: migrata a gameOverEffect (Sprint 3.3.5.C)
+ * - Intercettazione NON è più qui: gestita da gameOverEffect
  * - awaitingContinue NON è più qui: gestito da victoryEffect middleware
  *
  * @param {Object} gameState - Stato del gioco
@@ -79,7 +79,7 @@ export function prepareTurnContext(gameState, game, parseResult) {
  * @returns {Object|null} - Oggetto risultato se bloccato, null se ok
  */
 export function runPreExecutionChecks(gameState, parseResult) {
-  // Check movement block: guardia blocca movimento (Sprint 3.4.B)
+  // Check movement block: guardia blocca movimento
   if (gameState.movementBlocked && parseResult.CommandType === 'NAVIGATION') {
     return {
       accepted: false,
@@ -109,14 +109,14 @@ export function applyTurnEffects(gameState, game, result, parseResult) {
   gameState.turn.current.hasLight = game.rules.hasActiveLight(gameState);
 
   // === RICALCOLO inDangerZone dopo esecuzione comando ===
-  // BUGFIX Sprint 3.3.5.C: Se il comando ha cambiato location (NAVIGATION),
+  // Se il comando ha cambiato location (NAVIGATION),
   // dobbiamo ricalcolare inDangerZone con la nuova location
   gameState.turn.current.inDangerZone = game.rules.isDangerZone(gameState);
 
   // Movimento riuscito: luogo cambiato rispetto all'inizio del turno (R1, R2)
   gameState.turn.movedThisTurn = gameState.currentLocationId !== gameState.turn.current.location;
 
-  // === APPLICA EFFETTI TEMPORALI DEL GIOCO (Sprint 3.3.5) ===
+  // === APPLICA EFFETTI TEMPORALI DEL GIOCO ===
   // Ogni effetto modifica gameState e result, nell'ordine di `game.turnEffects`
   for (const effect of game.turnEffects) {
     effect(gameState, result, parseResult);
@@ -125,7 +125,7 @@ export function applyTurnEffects(gameState, game, result, parseResult) {
   // Logica incremento:
   // - globalTurnNumber: incrementato SEMPRE (anche per comandi SYSTEM)
   // - totalTurnsConsumed: incrementato SOLO per comandi consuming (NAVIGATION, ACTION)
-  // I misteri sono gestiti dal “Sistema Punteggio Misteri” (Sprint 3.2.2), non come effetti di turno.
+  // I misteri sono gestiti dal “Sistema Punteggio Misteri”, non come effetti di turno.
 
   return result;
 }

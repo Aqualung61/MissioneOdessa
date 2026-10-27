@@ -1,5 +1,5 @@
 /**
- * Punteggio massimo (HO-08, #99/#95)
+ * Punteggio massimo (#99/#95)
  * Il massimo si calcola dai dati IT riproducendo le regole di punteggio del
  * motore v1.4.0: va aggiornato insieme a esse. Insieme al percorso completo,
  * che dimostra che 138 è raggiungibile, fissa il massimo in entrambe le direzioni.

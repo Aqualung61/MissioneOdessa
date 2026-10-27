@@ -1,11 +1,11 @@
 /**
- * Caratterizzazione delle route di servizio (#63, lotto 5 v1.4.2, P0).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.0.md`, §5.1 test 4.
+ * Caratterizzazione delle route di servizio (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.1 test 4.
  *
  * Fuori produzione: `GET /api/lingue`, `GET /api/parser/stats`, `POST /api/parser/reload`,
  * `GET /api/storia` (lingua 2, id inesistente, valori predefiniti), `GET /api/introduzione`.
  * Si verificano stato HTTP, corpo e ORDINE delle chiavi. Gli attesi sono stati ricavati
- * eseguendo il baseline (`e088e7c`); per i testi lunghi (Storia, Introduzione) il valore atteso
+ * eseguendo il codice di riferimento; per i testi lunghi (Storia, Introduzione) il valore atteso
  * è letto da `src/data-internal/*.json`, mentre l'ordine delle chiavi è scritto qui.
  */
 

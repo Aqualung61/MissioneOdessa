@@ -1,7 +1,7 @@
-// Registro dei prerequisiti di Odessa (TD Lotto 4b, §3.2): tipo → (req, ctx) => boolean,
-// `true` = soddisfatto. Corpi trascritti alla lettera da `verificaPrerequisiti` di
-// `engine.js` (ce547fd, righe 936–972); la condizione di fallimento originale
-// (`if (...) return { ok: false }`) è invertita in modo esplicito in `return <condizione di successo>`.
+// Registro dei prerequisiti di Odessa: tipo → (req, ctx) => boolean,
+// `true` = soddisfatto. La condizione di fallimento
+// (`if (...) return { ok: false }`) è invertita in modo esplicito in
+// `return <condizione di successo>`.
 
 export const prerequisiteTypes = {
   // originale: if (!oggetto) fallisce
@@ -24,7 +24,7 @@ export const prerequisiteTypes = {
     return !!oggetto;
   },
 
-  // Stessa condizione di OGGETTO_IN_LUOGO oggi (TD Lotto 4b §3.2, §8): due voci distinte, identiche.
+  // Stessa condizione di OGGETTO_IN_LUOGO: due voci distinte, identiche.
   // originale: if (!oggetto) fallisce
   OGGETTO_VISIBILE: (req, ctx) => {
     const oggetto = ctx.state.Oggetti.find(o =>

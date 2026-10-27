@@ -1,15 +1,12 @@
 /**
- * Test di caratterizzazione — motore: azioni e interazioni (#63, lotto 0 v1.4.2, Fase 1B-1).
- * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5;
- * handoff: `Claude decompiler/20261019 - HO-18 Lotto 0 Rete di caratterizzazione - v1.2.md`,
- * Fase 1B-1.
+ * Test di caratterizzazione — motore: azioni e interazioni (#63).
+ * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5.
  *
- * Ambito: rami non coperti (dal report di copertura di Fase 1A) di
- * `executeCommandLegacy`, `cercaEseguiInterazione` e `verificaPrerequisiti` in
+ * Ambito: rami non coperti di
+ * `executeCommand`, `cercaEseguiInterazione` e `verificaPrerequisiti` in
  * `src/logic/engine.js`, raggiungibili con il gioco reale (parser + motore,
- * nessun ramo forzato, nessuna correzione — regole di TD §3.5). I rami residui
- * (irraggiungibili o difensivi con i dati attuali) sono elencati nel report di
- * Fase 1B-1, non in questo file.
+ * nessun ramo forzato, nessuna correzione). I rami residui
+ * (irraggiungibili o difensivi con i dati attuali) non sono coperti da questo file.
  *
  * Ogni test usa solo API pubblica (`createEngine`, `parseCommand`, `executeCommand`)
  * e verifica i messaggi tramite chiave con `getSystemMessage`.

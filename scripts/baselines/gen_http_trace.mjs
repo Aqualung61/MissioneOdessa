@@ -1,4 +1,4 @@
-// Generatore indipendente della traccia HTTP (v1.4.2, lotto 0).
+// Generatore indipendente della traccia HTTP.
 // Uso: node gen_http_trace.mjs <repo> <out-dir>
 // Monta in-process i router di produzione (/api, /api/engine) ed errorHandler; nessun endpoint legacy.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';

@@ -1,11 +1,18 @@
 // Interazioni: cicli generici su prerequisiti ed effetti, ricerca ed esecuzione delle
-// interazioni (TD Lotto 4b, §3.1–§3.4). I tipi concreti vivono nei registri del gioco
+// interazioni. I tipi concreti vivono nei registri del gioco
 // (`game.prerequisiteTypes`, `game.effectTypes`) e i casi specifici nelle regole del gioco
 // (`game.rules`): questo modulo non conosce nessun tipo né dato di Odessa.
 import { getGameData } from './gameData.js';
 
 // Avvisi per tipi sconosciuti nei dati delle interazioni: una sola volta per tipo e processo.
 const warnedUnknownTypes = new Set();
+/**
+ * Segnala con `console.warn` un tipo di prerequisito o di effetto sconosciuto nei dati, una sola volta
+ * per tipo e per processo.
+ * @param {string} kind - `'prerequisito'` o `'effetto'`
+ * @param {string} tipo - tipo sconosciuto
+ * @returns {void}
+ */
 export function warnUnknownTypeOnce(kind, tipo) {
   const key = `${kind}:${tipo}`;
   if (warnedUnknownTypes.has(key)) return;
@@ -13,8 +20,12 @@ export function warnUnknownTypeOnce(kind, tipo) {
   console.warn(`[engine] ${kind} di tipo sconosciuto in Interazioni.json: ${tipo}`);
 }
 
-// Funzione per verificare i prerequisiti di un'interazione.
-// Restituisce { ok: true } oppure { ok: false, prerequisito } con il primo prerequisito fallito.
+/**
+ * Verifica i prerequisiti di un'interazione. Un tipo sconosciuto non è soddisfatto (fail-closed).
+ * @param {Array<Object>} prerequisiti - prerequisiti dell'interazione (anche vuoti o assenti)
+ * @param {Object} ctx - contesto di esecuzione
+ * @returns {{ok: boolean, prerequisito?: Object}} `ok: true`, oppure `ok: false` con il primo prerequisito fallito
+ */
 export function verificaPrerequisiti(prerequisiti, ctx) {
   if (!prerequisiti || prerequisiti.length === 0) return { ok: true };
 
@@ -32,33 +43,41 @@ export function verificaPrerequisiti(prerequisiti, ctx) {
   return { ok: true };
 }
 
-// Funzione per applicare gli effetti di un'interazione
-// @param {boolean} skipMisteri - true se l'interazione ha `punteggio: false` (R7, §4.1):
-//   nessun punto mistero per i suoi effetti
-// @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. avvisi prodotti dagli effetti)
+/**
+ * Applica gli effetti di un'interazione e assegna i punti mistero.
+ * @param {Array<Object>} effetti - effetti dell'interazione
+ * @param {number} luogoCorrente - ID del luogo corrente
+ * @param {{skipMisteri?: boolean}} opzioni - `skipMisteri`: true se l'interazione ha `punteggio: false` (R7, §4.1):
+ *   nessun punto mistero per i suoi effetti
+ * @param {Object} ctx - contesto di esecuzione
+ * @returns {string[]} messaggi aggiuntivi da accodare alla risposta (es. avvisi prodotti dagli effetti)
+ */
 export function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } = {}, ctx) {
   const extraMessages = [];
   for (const effetto of effetti) {
     // Solo voci proprie del registro (vedi verificaPrerequisiti)
     const apply = Object.hasOwn(ctx.game.effectTypes, effetto.tipo) ? ctx.game.effectTypes[effetto.tipo] : undefined;
-    // `info`: valore restituito dall'effetto (oggi solo `statoPreToggle`), variabile locale
+    // `info`: valore restituito dall'effetto (solo `statoPreToggle`), variabile locale
     let info;
     if (apply) info = apply(effetto, ctx, { luogoCorrente, extraMessages });
     else warnUnknownTypeOnce('effetto', effetto.tipo);
 
     // === SISTEMA PUNTEGGIO MISTERI ===
     // Assegna i punti se questo effetto risolve un mistero (non per punteggio: false, §4.1);
-    // per un tipo sconosciuto la regola non assegna nulla (R2: avviso, poi regola)
+    // per un tipo sconosciuto la regola non assegna nulla (avviso, poi regola)
     if (!skipMisteri) ctx.game.rules.awardMystery(effetto, info ?? {}, ctx);
   }
   return extraMessages;
 }
 
-// Passo 7 (TD Lotto 4b, §3.4): punteggio dell'interazione. Restituisce `punteggioSkip`.
-// === SISTEMA PUNTEGGIO: Assegna +2 punti PRIMA di applicare effetti ===
-// Importante: deve avvenire PRIMA di applicaEffetti() perché VITTORIA imposta ended=true
-// Campo `punteggio` (R7, §4.1): assente -> chiave = id; stringa -> chiave condivisa
-// con l'interazione indicata; false -> nessun +2 (e nessun mistero, vedi applicaEffetti)
+/**
+ * Assegna il punteggio dell'interazione PRIMA di applicarne gli effetti, perché VITTORIA imposta `ended=true`.
+ * Campo `punteggio` (R7, §4.1): assente → chiave = id; stringa → chiave condivisa con l'interazione indicata;
+ * `false` → nessun +2 (e nessun mistero, vedi `applicaEffetti`).
+ * @param {Object} interazione - record di `Interazioni.json`
+ * @param {Object} ctx - contesto di esecuzione
+ * @returns {boolean} `punteggioSkip`: true se l'interazione ha `punteggio: false`
+ */
 export function assegnaPunteggioInterazione(interazione, ctx) {
   const punteggioSkip = interazione.punteggio === false;
   const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
@@ -69,7 +88,7 @@ export function assegnaPunteggioInterazione(interazione, ctx) {
   return punteggioSkip;
 }
 
-// Passo 10 (TD Lotto 4b, §3.4): risultato dell'interazione eseguita. Ordine delle chiavi:
+// Risultato dell'interazione eseguita. Ordine delle chiavi:
 // accepted, resultType, effects, poi ended, victory (se VITTORIA), poi message.
 function buildInteractionResult(interazione, risposta, ctx) {
   // Verifica se è VITTORIA per aggiungere flag ended nella risposta
@@ -99,11 +118,17 @@ function buildInteractionResult(interazione, risposta, ctx) {
   return { ...resultBase, message: risposta };
 }
 
-// Passo 6 (TD Lotto 4b, §3.4.1): meccanismo generico delle sequenze (effetto SEQUENZA con
-// `pattern`, `direzione`, `effetti_completamento` e risposte `risposta_step` /
-// `risposta_errore` / `risposta_completa`). I due casi specifici del gioco sono regole:
-// `rules.sequence.alreadyCompletedMessageKey` e `rules.sequence.onCompleted`.
-// Nessun +2 di interazione e nessuna registrazione in `interazioniEseguite` (TD §4).
+/**
+ * Meccanismo generico delle sequenze (effetto SEQUENZA con `pattern`, `direzione`, `effetti_completamento`
+ * e risposte `risposta_step` / `risposta_errore` / `risposta_completa`). I due casi specifici del gioco sono
+ * regole: `rules.sequence.alreadyCompletedMessageKey` e `rules.sequence.onCompleted`.
+ * Nessun +2 di interazione e nessuna registrazione in `interazioniEseguite`.
+ * @param {Object} interazione - record di `Interazioni.json`
+ * @param {Object} effettoSequenza - effetto SEQUENZA dell'interazione
+ * @param {string} risposta - risposta base dell'interazione
+ * @param {Object} ctx - contesto di esecuzione
+ * @returns {Object} risultato dell'esecuzione del passo
+ */
 export function eseguiSequenza(interazione, effettoSequenza, risposta, ctx) {
   const key = effettoSequenza.target;
   const direzione = effettoSequenza.direzione;
@@ -157,7 +182,7 @@ export function eseguiSequenza(interazione, effettoSequenza, risposta, ctx) {
   }
 }
 
-// Passi 5–10 (TD Lotto 4b, §3.4): interazione trovata e valida; restituisce sempre un risultato.
+// Interazione trovata e valida; restituisce sempre un risultato.
 function eseguiInterazione(interazione, ctx) {
   // Interazione trovata e valida
   // Determina la risposta (per toggle): verbi con risposta di apertura/chiusura (regola del gioco)
@@ -194,8 +219,14 @@ function eseguiInterazione(interazione, ctx) {
   return buildInteractionResult(interazione, risposta, ctx);
 }
 
-// Funzione per cercare e eseguire un'interazione (passi 1–4 di TD Lotto 4b, §3.4).
-// `null` è l'unico esito senza risultato e non è preceduto da alcuna mutazione.
+/**
+ * Cerca ed esegue l'interazione che corrisponde a verbo e nome nella lingua corrente.
+ * `null` è l'unico esito senza risultato e non è preceduto da alcuna mutazione.
+ * @param {string} verb - verbo (concetto) del comando
+ * @param {string} noun - nome (concetto) del comando
+ * @param {Object} ctx - contesto di esecuzione
+ * @returns {Object|null} risultato dell'interazione, oppure `null` se nessuna si applica
+ */
 export function cercaEseguiInterazione(verb, noun, ctx) {
   const interazioni = (getGameData().Interazioni || [])
     .filter(i => i.IDLingua === ctx.state.currentLingua);

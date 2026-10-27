@@ -1,11 +1,16 @@
-// Luoghi: descrizione, direzioni e luogo corrente, estratti da `engine.js` (TD Lotto 5, §3.4.4).
-// Ogni funzione riceve il contenitore `eng` e legge `eng.state` al momento della chiamata (R1).
+// Luoghi: descrizione, direzioni e luogo corrente.
+// Ogni funzione riceve il contenitore `eng` e legge `eng.state` al momento della chiamata.
 import { getGameData } from './gameData.js';
 import { isEngineDebugEnabled, pushEngineDebugEvent } from '../engineDebug.js';
 import { getSystemMessage } from '../systemMessages.js';
 import { debugStateSnapshot } from './state.js';
 
-// Funzione centralizzata per generare descrizione luogo con oggetti presenti
+/**
+ * Descrizione (HTML) del luogo con l'elenco degli oggetti presenti, nella lingua corrente.
+ * @param {Object} eng - contenitore del motore ({ game, state, originalOggetti })
+ * @param {number} idLuogo - ID del luogo
+ * @returns {string} testo, vuoto se il luogo non esiste nella lingua corrente
+ */
 export function generaDescrizioneLuogoConOggetti(eng, idLuogo) {
   const gameState = eng.state;
   const luogo = getGameData().Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
@@ -36,7 +41,7 @@ export function generaDescrizioneLuogoConOggetti(eng, idLuogo) {
  * @param {number} idLuogo
  * @param {string} direzione
  * @returns {Object|null} l'effetto TOGGLE_DIREZIONE trovato, o `null` se l'interazione non esiste
- *   (TD Lotto 5, E-7: il chiamante assegna `effetto.destinazione`, anche se assente, come prima)
+ *   (il chiamante assegna `effetto.destinazione`, anche se assente)
  */
 export function toggleDestination(data, lingua, idLuogo, direzione) {
   const isToggle = (e) => e.tipo === 'TOGGLE_DIREZIONE' && e.luogo === idLuogo && e.direzione === direzione;
@@ -75,7 +80,12 @@ function applyToggledDirections(direzioni, gameState, idLuogo) {
   }
 }
 
-// Funzione per ottenere le direzioni disponibili per un luogo
+/**
+ * Direzioni di un luogo (`Nord`, `Est`, `Sud`, `Ovest`, `Su`, `Giu`) con sblocchi e toggle applicati.
+ * @param {Object} eng - contenitore del motore
+ * @param {number} idLuogo - ID del luogo
+ * @returns {Object} direzione → valore dei dati del luogo; oggetto vuoto se il luogo non esiste nella lingua corrente
+ */
 export function getDirezioniLuogo(eng, idLuogo) {
   const gameState = eng.state;
   const luogo = getGameData().Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
@@ -113,7 +123,13 @@ function pushLocationEvent(eng, before, wasNewVisit, isTerminal) {
   });
 }
 
-// Funzione per impostare il luogo corrente
+/**
+ * Imposta il luogo corrente. Alla prima visita lo registra in `visitedPlaces` e assegna il punto-luogo
+ * (non per i luoghi terminali).
+ * @param {Object} eng - contenitore del motore
+ * @param {number} locationId - ID del luogo
+ * @returns {void}
+ */
 export function setCurrentLocation(eng, locationId) {
   const gameState = eng.state;
   const before = isEngineDebugEnabled() ? debugStateSnapshot(gameState) : null;

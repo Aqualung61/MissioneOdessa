@@ -1,6 +1,5 @@
 /**
- * Test per verificare il wrapper executeCommand con pipeline commentata (Sprint 3.3.4)
- * Verifica che il wrapper chiami correttamente executeCommandLegacy
+ * Test della validazione di `executeCommand` (parseResult nullo o non valido)
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';

@@ -1,4 +1,4 @@
-// Scenari della traccia di stato (lotto 0, v1.4.2). Dati, non codice di gioco.
+// Scenari della traccia di stato. Dati, non codice di gioco.
 // prefix: { walkthrough: 'full_it'|'full_en'|'min_it'|'min_en', upTo: <passo> } oppure null (partita nuova)
 // env: variabili d'ambiente impostate solo per lo scenario
 export const ENGINE_SCENARIOS = [

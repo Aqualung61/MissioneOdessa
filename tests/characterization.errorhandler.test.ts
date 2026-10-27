@@ -1,13 +1,13 @@
 /**
- * Caratterizzazione di `errorHandler` (#63, lotto 5 v1.4.2, P0).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.0.md`, §5.1 test 1.
+ * Caratterizzazione di `errorHandler` (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.1 test 1.
  *
  * Tabella di 31 casi, ciascuno in sviluppo e in produzione, con `req`/`res`/`next` finti.
  * Per ogni caso si verificano: stato HTTP, corpo JSON o testo, intestazioni impostate,
  * chiamate a `next` (con l'errore stesso, indicato come '<err>'), argomenti di
  * `console.warn` e `console.error` (uguaglianza stretta: anche `message: undefined`).
- * Gli attesi sono stati ricavati eseguendo il codice del baseline (`e088e7c`) e controllati
- * a mano rispetto a `src/middleware/errorHandler.js`; non si aggiornano nel lotto 5.
+ * Gli attesi sono stati ricavati eseguendo il codice di riferimento e controllati
+ * a mano rispetto a `src/middleware/errorHandler.js`; non si aggiornano.
  *
  * Sono caratterizzati anche comportamenti che sembrano difetti (casi 10, 24, 31): non si correggono.
  */

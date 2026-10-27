@@ -1,18 +1,18 @@
 /**
- * Test di architettura (#63, lotto 4a v1.4.2).
- * Specifica: TD Lotto 4a Gestori di verbo v1.0, §5.1.
+ * Test di architettura (#63).
+ * Specifica: `docs/20261020 - TD Lotto 4a Gestori di verbo - v1.0.md`, §5.1.
  *
  * 1. `src/logic/core/**` non importa da `src/game/**` (import statici e dinamici).
- * 2. Ordine degli `id` dei gestori = tabella di precedenza di TD §4.
+ * 2. Ordine degli `id` dei gestori = tabella di precedenza della specifica (§4).
  * 3. Forma dei gestori: `id` unici, `types` validi, `run` funzione.
  * 4. Copertura del lessico: concetti di NAVIGAZIONE e SISTEMA tutti gestiti.
  * 5. `createEngine()` e `createEngine(odessaGame)` danno le stesse risposte.
  * 6. `rules.hasActiveLight` è la funzione riesportata da `torchEffect.js`.
  *
- * Aggiunte del lotto 5 (TD Lotto 5 v1.2, §5.2, con E-5):
+ * Altri controlli (`docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.2, con E-5):
  * 7. `odessaGame.turnEffects` è lo stesso array `TURN_EFFECTS` (non una copia).
  * 8. `core/turn.js` e `core/state.js` non contengono dettagli di Odessa (ricerca testuale).
- * 9. `createEngine` restituisce le 21 chiavi dell'API nell'ordine di `e088e7c`.
+ * 9. `createEngine` restituisce le 21 chiavi dell'API nell'ordine registrato.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';

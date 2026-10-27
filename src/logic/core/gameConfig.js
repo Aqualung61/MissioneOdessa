@@ -1,5 +1,5 @@
-// Caricatore generico di configurazione di gioco (TD 0 Architettura motore e
-// regole; TD Lotto 3 Configurazione di gioco, §3.1, §3.1.1). Nessun riferimento ai
+// Caricatore generico di configurazione di gioco (architettura del motore e
+// regole). Nessun riferimento ai
 // valori o alla semantica di uno specifico gioco: la sola conoscenza di schema è
 // l'elenco minimo delle sezioni di primo livello richieste e la convenzione "una
 // chiave di nome `minimo` può valere 0" (soglia inclusiva di un livello/fascia),
@@ -20,8 +20,12 @@ function isInteger(value) {
   return typeof value === 'number' && Number.isInteger(value);
 }
 
-// Congela l'oggetto e, ricorsivamente, ogni oggetto/array annidato: una mutazione
-// (anche solo `push`/`splice` su un array) lancia `TypeError` in modalità strict.
+/**
+ * Congela l'oggetto e, ricorsivamente, ogni oggetto/array annidato: una mutazione
+ * (anche solo `push`/`splice` su un array) lancia `TypeError` in modalità strict.
+ * @param {*} value - valore da congelare (i non oggetti sono restituiti invariati)
+ * @returns {*} lo stesso valore
+ */
 export function deepFreeze(value) {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return value;
   Object.freeze(value);
@@ -125,8 +129,7 @@ export function loadGameConfig(filePath, options = {}) {
 
 /**
  * Restituisce la `chiave` del primo elemento di `ranghi` con `score >= minimo`,
- * scorrendo l'array nell'ordine in cui è scritto nel file (tipicamente decrescente):
- * TD Lotto 3 Configurazione di gioco, §3.4.
+ * scorrendo l'array nell'ordine in cui è scritto nel file (tipicamente decrescente).
  * @param {number} score - punteggio da classificare
  * @param {Array<{minimo: number, chiave: string}>} ranghi
  * @returns {string|null} la chiave del rango, o null se nessuna soglia è superata

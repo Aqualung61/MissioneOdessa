@@ -13,7 +13,7 @@ import { odessaGame } from '../game/odessa/index.js';
 
 const router = express.Router();
 
-// Sprint #59.1: multi-session per-tab (no cookie)
+// Multi-session per-tab (no cookie)
 router.use(attachEngineSession);
 
 function getEngineOrSendError(req, res) {
@@ -36,7 +36,7 @@ function computeStatsFromState(state) {
   const mysteries = countOf(state?.punteggio?.misteriRisolti);
   const score = state?.punteggio?.totale || 0;
 
-  // Rango: stessa regola del comando PUNTI (TD Lotto 5, D-5-6).
+  // Rango: stessa regola del comando PUNTI.
   const rankKey = odessaGame.rules.rankKey(score);
   const lingua = typeof state?.currentLingua === 'number' ? state.currentLingua : 1;
   const rank = getSystemMessage(rankKey, lingua);
@@ -309,8 +309,7 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
   }
 });
 
-// Nuovo endpoint per ottenere direzioni dinamiche di un luogo
-// Integrato con turn pipeline per Sprint 3.3.5.A (Torcia)
+// Endpoint per ottenere direzioni dinamiche di un luogo
 router.get('/direzioni/:idLuogo', (req, res, next) => {
   try {
     const engine = getEngineOrSendError(req, res);

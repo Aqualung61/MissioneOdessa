@@ -1,16 +1,14 @@
 /**
- * Controllo della lingua delle risposte (#109, lotti L2a, L2b e L3).
+ * Controllo della lingua delle risposte (#109).
  * Specifica: docs/20261016 - TD Lessico L2 risposte e testi - v1.1.md, §4.4;
- * aggiornato per #109 (lotto L2b), precisazione 2: le parole solo italiane includono
+ * Le parole solo italiane includono
  * anche i nomi dei concetti (`TerminiLessico`) che non sono voci inglesi.
  *
  * Sulle stesse risposte generate per l'istantanea (§4.1): nessuna risposta inglese
  * contiene parole solo italiane, nessuna risposta italiana contiene parole solo
- * inglesi, nessuna risposta contiene segnaposto rotti. Prima della correzione del
- * lotto L2a, il controllo trovava esattamente i difetti (a) e (b) della specifica;
- * dopo L2a, L2b e L3 deve risultare pulito, senza eccezioni (aggiornato per #109,
- * lotto L3: TD Lessico L3 nomi luoghi e guardia, §4.10 v1.1 — la rimozione di E5
- * toglie l'ultimo falso positivo, `botton`).
+ * inglesi, nessuna risposta contiene segnaposto rotti. Deve risultare pulito,
+ * senza eccezioni (TD Lessico L3 nomi luoghi e guardia, §4.10 v1.1 — la rimozione
+ * di E5 toglie l'ultimo falso positivo, `botton`).
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -45,10 +43,10 @@ const IT_WORDS_FALSE_POSITIVE_IN_EN = new Set(['i', 'b']);
 // - "d" (voce EN: abbreviazione di "down") compare in IT nel testo di un enigma
 //   ("D S S D S"), lettere di un codice, non una parola inglese.
 const EN_WORDS_FALSE_POSITIVE_IN_IT = new Set(['a', 'd']);
-// Aggiornato per #109 (lotto L2b), precisazione 2: anche i nomi dei concetti
+// Anche i nomi dei concetti
 // (TerminiLessico) che non sono voci inglesi contano come "parole solo italiane" (un
 // concetto italiano mostrato in inglese, es. "caricare", è un difetto).
-// Aggiornato per #109 (lotto L3): rimosso "botton" (concetto della voce residua
+// "botton" non è più nell'elenco (concetto della voce residua
 // BOTTON_LEGACY, L2a), tolta dal lessico con la rimozione E5 (TD Lessico L3, §3).
 // Nessun falso positivo residuo in questa categoria.
 const IT_CONCEPTS_FALSE_POSITIVE_IN_EN = new Set<string>();
@@ -76,7 +74,7 @@ function buildExclusiveWordSets(): { itOnly: string[]; enOnly: string[] } {
 }
 
 /**
- * Aggiornato per #109 (lotto L2b), precisazione 2: nomi dei concetti (sempre
+ * Nomi dei concetti (sempre
  * italiani, `TerminiLessico.Concetto`) che non sono anche una voce inglese. Un
  * concetto italiano mostrato in un messaggio inglese (es. "caricare" al posto di
  * "load") è un difetto di traduzione, non diverso da una voce solo italiana.
@@ -128,8 +126,8 @@ describe('Controllo della lingua delle risposte (#109)', () => {
 
       expect(violations.length, violations.slice(0, 50).join('\n')).toBe(0);
     },
-    // Timeout esteso (#109, lotto L3): genera ~88.000 risposte con motore e parser
-    // reali (vedi generateResponses, cresciuto con il lessico di L3), più lento del
+    // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
+    // reali (vedi generateResponses), più lento del
     // default di Vitest sotto carico nella suite completa.
     60000
   );

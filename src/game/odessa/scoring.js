@@ -1,6 +1,5 @@
-// Punteggio dei misteri di Odessa (TD Lotto 4b, §3.3): `assegnaPunteggioMistero` di
-// `engine.js` (ce547fd, righe 985–1025) trascritta alla lettera e divisa in due:
-// `mysteryIdFor` (quale mistero risolve un effetto) e `awardMystery` (assegnazione dei punti).
+// Punteggio dei misteri di Odessa: `mysteryIdFor` (quale mistero risolve un effetto) e
+// `awardMystery` (assegnazione dei punti).
 
 /**
  * Identificativo del mistero risolto da un effetto, oppure `null`.
@@ -47,7 +46,7 @@ export function mysteryIdFor(effetto, { statoPreToggle } = {}) {
 
 /**
  * Assegna i punti mistero se l'effetto risolve un mistero non ancora risolto.
- * Per un tipo sconosciuto o senza mistero non assegna nulla (R2).
+ * Per un tipo sconosciuto o senza mistero non assegna nulla.
  */
 export function awardMystery(effetto, info, ctx) {
   const misteroId = mysteryIdFor(effetto, info);

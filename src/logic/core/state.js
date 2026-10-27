@@ -1,9 +1,12 @@
-// Stato di gioco: iniziale, caricamento, snapshot e dati originali, estratti da `engine.js`
-// (TD Lotto 5, §3.3). Nessuna funzione conserva lo stato tra due chiamate (R1): ricevono lo
+// Stato di gioco: iniziale, caricamento, snapshot e dati originali.
+// Nessuna funzione conserva lo stato tra due chiamate: ricevono lo
 // stato (o i dati) come parametro e restituiscono il risultato. Dettagli del gioco da `game`.
 
-// Chiave su `globalThis` della copia condivisa dei dati originali (Sprint #59.1: una sola copia
-// per processo, non una per sessione).
+/**
+ * Chiave su `globalThis` della copia condivisa dei dati originali (una sola copia
+ * per processo, non una per sessione).
+ * @type {string}
+ */
 export const ORIGINAL_OGGETTI_KEY = '__odessaOriginalOggetti';
 
 /**
@@ -127,8 +130,8 @@ export function createInitialState(game, idLingua) {
   };
 }
 
-// === CARICAMENTO (ex setGameState) ===
-// Trascrizione alla lettera (TD Lotto 5, §3.3.2, R2–R6): operatori `||`/`=== true` invariati.
+// === CARICAMENTO ===
+// Operatori `||`/`=== true` invariati rispetto al formato dei salvataggi.
 
 // Deserializzazione Set del punteggio
 function loadPunteggio(punteggio) {
@@ -185,7 +188,7 @@ function loadTurnPrevious(previous, game) {
   };
 }
 
-// Salvataggio senza `turn` (R4): `previous` SENZA `inDangerZone`, come oggi. Non va uniformato.
+// Salvataggio senza `turn`: `previous` SENZA `inDangerZone`. Non va uniformato.
 function loadMissingTurn(newState, game) {
   return {
     globalTurnNumber: 0,
@@ -220,9 +223,9 @@ function loadTurn(newState, game) {
   };
 }
 
-// D-5-4 (TD Lotto 5, §3.3.4): le quattro collezioni mancanti (`undefined` o `null`) si caricano
-// con il valore vuoto; un valore presente, anche di tipo errato, non si tocca. Prima di questo
-// default un salvataggio senza la collezione dava errore 500 alla prima interazione che la usava.
+// Le quattro collezioni mancanti (`undefined` o `null`) si caricano
+// con il valore vuoto; un valore presente, anche di tipo errato, non si tocca. Un salvataggio
+// senza la collezione dava altrimenti errore 500 alla prima interazione che la usava.
 function loadCollectionDefaults(newState) {
   return {
     interazioniEseguite: newState.interazioniEseguite ?? [],
@@ -270,7 +273,7 @@ function snapshotPunteggio(punteggio) {
   };
 }
 
-// Turn System v3.0 (Sprint 3.3.5)
+// Turn System v3.0
 function snapshotTurn(turn) {
   return {
     globalTurnNumber: turn.globalTurnNumber,

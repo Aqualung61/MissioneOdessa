@@ -1,6 +1,6 @@
 // Configurazione di gioco di Odessa (src/data-internal/Configurazione.json).
-// TD Lotto 3 Configurazione di gioco, §3.1: caricata all'importazione del modulo,
-// non dai dati statici in memoria (D-L3-1: indipendente dall'ordine di inizializzazione,
+// Caricata all'importazione del modulo,
+// non dai dati statici in memoria (indipendente dall'ordine di inizializzazione,
 // non toccata dai test che sostituiscono i dati statici con dati parziali).
 // Un errore di caricamento impedisce l'avvio del server con un messaggio esplicito.
 import { fileURLToPath } from 'node:url';
@@ -10,8 +10,8 @@ import { loadGameConfig } from '../../logic/core/gameConfig.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = resolve(__dirname, '..', '..', 'data-internal', 'Configurazione.json');
 
-// Percorsi puntati di tutte le chiavi di TD Lotto 3 Configurazione di gioco, §3.2
-// (E-2, v1.1): `loadGameConfig` verifica la presenza di ciascuno e cita il percorso
+// Percorsi puntati di tutte le chiavi della configurazione:
+// `loadGameConfig` verifica la presenza di ciascuno e cita il percorso
 // mancante nel messaggio d'errore, restando generico (l'elenco è specifico di Odessa
 // e vive qui, non nel caricatore).
 const REQUIRED_PATHS = [
@@ -54,4 +54,8 @@ const REQUIRED_PATHS = [
   'lessico.verbiSenzaOggetto',
 ];
 
+/**
+ * Configurazione di Odessa, letta da `Configurazione.json` all'importazione del modulo e congelata (`deepFreeze`).
+ * @type {Object}
+ */
 export const CONFIG = loadGameConfig(CONFIG_PATH, { required: REQUIRED_PATHS });
