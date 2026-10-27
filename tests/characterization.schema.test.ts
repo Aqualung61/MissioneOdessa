@@ -87,7 +87,7 @@ const EXPECTED_ERRORS = [
   '[t] prerequisito #1: risposta presente solo in una lingua (1/2)',
 ];
 
-describe('validateInterazioni — caratterizzazione (lotto 5, P0)', () => {
+describe('validateInterazioni — caratterizzazione', () => {
   it('record malformati: elenco completo dei messaggi, nell\'ordine', () => {
     expect(validateInterazioni(MALFORMED)).toEqual(EXPECTED_ERRORS);
   });

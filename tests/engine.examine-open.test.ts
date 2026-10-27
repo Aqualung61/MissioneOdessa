@@ -69,7 +69,8 @@ describe('Engine: ESAMINA e APRI/CHIUDI', () => {
     expect(res.message).toContain('atrio');
   });
 
-  // Test temporaneamente disabilitato - richiede setup di oggetti apribili specifici
+  // Resta saltato: nessun altro test asserisce openStates.BOTOLA (characterization.engine.state
+  // controlla solo i messaggi). Serve la botola visibile, come al passo 120 di full_it.
   it.skip('APRI oggetto -> aperto; CHIUDI oggetto -> chiuso', async () => {
     let parsed = await parseCommand(null, 'APRI BOTOLA');
     let res = executeCommand(parsed);

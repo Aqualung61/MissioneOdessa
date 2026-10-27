@@ -15,7 +15,7 @@ import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 
 const gameState = { currentLingua: 1 };
 
-describe('Caratterizzazione — parser: rami di parseCommand (#63, lotto 0, Fase 1B-2)', () => {
+describe('Caratterizzazione — parser: rami di parseCommand (#63)', () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();

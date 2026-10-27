@@ -113,45 +113,8 @@ describe('Sprint 3.2.2 - Sistema Punteggio Misteri', () => {
   });
 
   describe('SBLOCCA_DIREZIONE: +3 punti per prima apertura bidirezionale', () => {
-    it.skip('dovrebbe assegnare +3 punti per INFILA MEDAGLIONE (sblocca 20↔21)', () => {
-      const state = getGameState();
-      
-      // Setup prerequisiti: forma circolare visibile + medaglione in inventario
-      state.currentLocationId = 20;
-      
-      // Rendi forma circolare visibile (prerequisito)
-      const formaCircolare = state.Oggetti.find((o: { Oggetto: string; Attivo: number }) => o.Oggetto === 'Forma circolare');
-      if (formaCircolare) formaCircolare.Attivo = 1;
-      
-      // Metti medaglione in inventario
-      const medaglione = state.Oggetti.find((o: { Oggetto: string; IDLuogo: number; Inventario: boolean; Attivo: number }) => o.Oggetto === 'Medaglione');
-      if (medaglione) {
-        medaglione.IDLuogo = 0;
-        medaglione.Inventario = true;
-        medaglione.Attivo = 1;
-      }
-      
-      const punteggioBefore = state.punteggio.totale;
-      
-      // Esegui INFILA MEDAGLIONE (sblocca direzioni 20↔21)
-      const result = executeCommand({
-        IsValid: true,
-        CommandType: 'ACTION',
-        CanonicalVerb: 'INFILARE',
-        VerbConcept: 'INFILARE',
-        CanonicalNoun: 'MEDAGLIONE',
-        NounConcept: 'MEDAGLIONE',
-        Error: null
-      });
-      
-      // Verifica mistero risolto (1 solo mistero per coppia bidirezionale)
-      expect(result.accepted).toBe(true);
-      // +2 per interazione + +3 per mistero = +5 totali
-      expect(state.punteggio.totale).toBe(punteggioBefore + 5);
-      expect(state.punteggio.misteriRisolti.has('direzione_20_21')).toBe(true);
-      expect(state.punteggio.interazioniPunteggio.has('infila_medaglione_forma_20')).toBe(true);
-    });
-
+    // Resta saltato: nessun altro test asserisce il rifiuto del secondo INFILA MEDAGLIONE al luogo 20
+    // (accepted=false, nessun punto in più); il setup a mano dello stato non soddisfa i prerequisiti.
     it.skip('NON dovrebbe assegnare punti duplicati per direzione bidirezionale (20↔21)', () => {
       const state = getGameState();
       

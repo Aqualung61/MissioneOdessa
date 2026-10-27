@@ -36,7 +36,7 @@ interface Trace {
 const root = resolve(__dirname, '..');
 const fixturePath = resolve(root, 'tests', 'fixtures', 'trace', 'http_trace.json');
 
-describe('Traccia HTTP (#63, lotto 0)', () => {
+describe('Traccia HTTP (#63)', () => {
   let generated: Trace;
   let baseline: Trace;
 

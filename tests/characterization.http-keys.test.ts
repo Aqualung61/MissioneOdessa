@@ -90,7 +90,7 @@ const EXPECTED: Record<string, string> = {
 
 // ---------------------------------------------------------------------------
 
-describe('Ordine delle chiavi dei corpi HTTP (lotto 5, P0)', () => {
+describe('Ordine delle chiavi dei corpi HTTP', () => {
   let server: Server;
   let base = '';
   const actual: Record<string, string> = {};

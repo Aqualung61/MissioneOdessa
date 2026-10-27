@@ -228,7 +228,7 @@ const CASES: Case[] = [
     prod: { status: 500, json: { ok: false, error: 'INTERNAL_ERROR' }, error: [ [ '[error]', { method: 'POST', url: '/api/x', message: 123, stack: 'STACK 31' } ] ] } },
 ];
 
-describe('errorHandler — caratterizzazione (lotto 5, P0)', () => {
+describe('errorHandler — caratterizzazione', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

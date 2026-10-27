@@ -75,7 +75,7 @@ async function runCommands(engine: Engine, commands: string[]): Promise<void> {
   }
 }
 
-describe('Compatibilità dei salvataggi v1.4.1 (#63, lotto 0)', () => {
+describe('Compatibilità dei salvataggi v1.4.1 (#63)', () => {
   const save = loadJson<{ gameState: Json }>(FIXTURE_PATH);
   const walkthrough = loadJson<Walkthrough>(WALKTHROUGH_PATH);
   const commandsUpTo91 = walkthrough.steps.filter((s) => s.step <= 91).map((s) => s.command);
@@ -100,22 +100,6 @@ describe('Compatibilità dei salvataggi v1.4.1 (#63, lotto 0)', () => {
 
     expect(stripVolatile(produced)).toEqual(stripVolatile(save));
   });
-
-  it(
-    'caricamento via setGameState: i passi 92-147 completano la vittoria con punteggio 138 e 147 turni',
-    async () => {
-      const engine = newEngine(1);
-      engine.setGameState(JSON.parse(JSON.stringify(save.gameState)));
-      await runCommands(engine, commandsAfter91);
-
-      const state = engine.getGameState();
-      expect(state.victory).toBe(walkthrough.expected.victory);
-      expect(state.ended).toBe(walkthrough.expected.ended);
-      expect(state.turn.totalTurnsConsumed).toBe(walkthrough.expected.finalTurns);
-      expect(state.punteggio.totale).toBe(walkthrough.expected.score);
-    },
-    60000
-  );
 
   it(
     'caricamento via HTTP (load-client-state): i passi 92-147 via /execute completano la vittoria con punteggio 138 e 147 turni',

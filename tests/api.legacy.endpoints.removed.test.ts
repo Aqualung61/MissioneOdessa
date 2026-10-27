@@ -28,7 +28,7 @@ function startServer(app: express.Express): Promise<StartedServer> {
   });
 }
 
-describe('Endpoint legacy rimossi (lotto 1, #124)', () => {
+describe('Endpoint legacy rimossi (#124)', () => {
   let server: Server;
   let baseUrl = '';
   const prevNodeEnv = process.env.NODE_ENV;

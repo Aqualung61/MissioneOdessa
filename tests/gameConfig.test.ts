@@ -75,7 +75,7 @@ function writeFixture(obj: unknown, dir: string, filename = 'Configurazione.json
   return filePath;
 }
 
-describe('gameConfig — caricamento e validazione (TD Lotto 3, §3.1, §3.1.1)', () => {
+describe('gameConfig — caricamento e validazione', () => {
   const tempDirs: string[] = [];
 
   function makeTempDir() {
@@ -195,7 +195,7 @@ describe('gameConfig — caricamento e validazione (TD Lotto 3, §3.1, §3.1.1)'
   });
 });
 
-describe('gameConfig — coerenza dei dati Odessa (TD Lotto 3, §4.1 punto 3)', () => {
+describe('gameConfig — coerenza dei dati Odessa', () => {
   const luoghiIds = new Set(Luoghi.map((l) => l.ID));
   const oggettiIds = new Set(Oggetti.map((o) => o.ID));
   const messaggiChiavi = new Set(MessaggiSistema.map((m) => m.Chiave));
@@ -272,7 +272,7 @@ describe('gameConfig — coerenza dei dati Odessa (TD Lotto 3, §4.1 punto 3)', 
   });
 });
 
-describe('rankKeyFor (TD Lotto 3, §3.4)', () => {
+describe('rankKeyFor', () => {
   // Oracolo riscritto indipendentemente dalla cascata originale di engine.js/engineRoutes.js.
   function oracle(score: number): string {
     if (score >= 134) return 'engine.rank.perfectionist';
@@ -293,7 +293,7 @@ describe('rankKeyFor (TD Lotto 3, §3.4)', () => {
   });
 });
 
-describe('alias di configurazione esportati dai turnEffects (TD Lotto 3, D-L3-5)', () => {
+describe('alias di configurazione esportati dai turnEffects', () => {
   it('DAWN_TURN_LIMIT coincide con CONFIG.regole.limiteAlba', () => {
     expect(DAWN_TURN_LIMIT).toBe(CONFIG.regole.limiteAlba);
   });

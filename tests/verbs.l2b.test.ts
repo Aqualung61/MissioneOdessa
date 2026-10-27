@@ -448,7 +448,7 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
     }
   });
 
-  it('TB-05: ogni comando nuovo del lotto L2b consuma un turno', async () => {
+  it('TB-05: ogni comando nuovo consuma un turno', async () => {
     for (const lingua of [1, 2]) {
       const comandi = lingua === 1 ? ['spegni', 'scappa', 'sorridi', 'dormi', 'siediti', 'parla'] : ['extinguish', 'flee', 'smile', 'sleep', 'sit', 'talk'];
       const engine = newEngine(lingua);

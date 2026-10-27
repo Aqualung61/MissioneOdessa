@@ -87,7 +87,7 @@ function buildConceptWordsWithoutEnglishVoce(): string[] {
   return termini.map((t) => t.Concetto.toLowerCase()).filter((c) => !enVoci.has(c));
 }
 
-describe('Controllo della lingua delle risposte (#109, lotto L2a)', () => {
+describe('Controllo della lingua delle risposte (#109)', () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();

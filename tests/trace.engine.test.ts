@@ -36,7 +36,7 @@ interface Trace {
 const root = resolve(__dirname, '..');
 const fixturePath = resolve(root, 'tests', 'fixtures', 'trace', 'engine_trace.json');
 
-describe('Traccia dello stato del motore (#63, lotto 0)', () => {
+describe('Traccia dello stato del motore (#63)', () => {
   let generated: Trace;
   let baseline: Trace;
 

@@ -53,7 +53,7 @@ async function runMany(engine: Engine, inputs: string[]) {
   for (const c of inputs) await run(engine, c);
 }
 
-describe('Caratterizzazione — motore: azioni e interazioni (#63, lotto 0, Fase 1B-1)', () => {
+describe('Caratterizzazione — motore: azioni e interazioni (#63)', () => {
   const fullIt = loadWalkthroughCommands('full_it');
 
   beforeAll(async () => {
@@ -61,7 +61,7 @@ describe('Caratterizzazione — motore: azioni e interazioni (#63, lotto 0, Fase
     await ensureVocabulary();
   });
 
-  it('executeCommandLegacy — SYSTEM INVENTARIO con inventario vuoto', async () => {
+  it('executeCommand — SYSTEM INVENTARIO con inventario vuoto', async () => {
     const engine = newEngine(1);
     // I tre oggetti iniziali (Documenti, Fiammiferi, Torcia) partono in inventario:
     // vanno posati per osservare il ramo "inventario vuoto".

@@ -12,7 +12,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { getDawnTurnLimit, DAWN_TURN_LIMIT } from '../src/logic/turnEffects/dawnEffect.js';
 
-describe('Caratterizzazione — effetti di turno: getDawnTurnLimit (#63, lotto 0, Fase 1B-2)', () => {
+describe('Caratterizzazione — effetti di turno: getDawnTurnLimit (#63)', () => {
   const prev = process.env.GAME_MAX_TURNS_CONSUMED;
 
   afterEach(() => {

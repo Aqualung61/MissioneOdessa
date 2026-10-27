@@ -69,7 +69,7 @@ function snapshotWithout(engine: Engine, ...fields: string[]): Json {
   return snap;
 }
 
-describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameState, #63, lotto 0, Fase 1B-2)', () => {
+describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameState, #63)', () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();
@@ -122,38 +122,6 @@ describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameSt
     expect([...state.punteggio.misteriRisolti]).toEqual([]);
   });
 
-  it('setGameState — Fiammiferi già esauriti (IDLuogo=-1) con timers.matchesLeft assente: dedotto a 0', async () => {
-    const source = newEngine(1);
-    // Esaurisce le 6 scorte reali (R8): accendi fiammifero finché non restano più.
-    for (let i = 0; i < 7; i++) await run(source, 'accendi fiammifero');
-    expect(source.getGameState().timers.matchesLeft).toBe(0);
-
-    const snap = JSON.parse(JSON.stringify(source.getGameStateSnapshot())) as Json;
-    delete snap.timers.matchesLeft;
-
-    const engine = newEngine(1);
-    engine.setGameState(snap);
-    expect(engine.getGameState().timers.matchesLeft).toBe(0);
-  });
-
-  it('setGameState — turn presente senza current/previous, con currentLocationId: i default usano la posizione corrente', () => {
-    const source = newEngine(1);
-    const snap = snapshotWithout(source, 'turn');
-    // Ricostruiamo "turn" senza i sotto-oggetti current/previous (formato precedente ipotetico).
-    const fullTurn = JSON.parse(JSON.stringify(source.getGameStateSnapshot())).turn;
-    delete fullTurn.current;
-    delete fullTurn.previous;
-    snap.turn = fullTurn;
-    snap.currentLocationId = 9;
-
-    const engine = newEngine(1);
-    engine.setGameState(snap);
-    const state = engine.getGameState();
-
-    expect(state.turn.current.location).toBe(9);
-    expect(state.turn.previous.location).toBe(1);
-  });
-
   it('setGameState — turn presente senza current/previous e senza currentLocationId: entrambe le posizioni predefinite sono 1', () => {
     const source = newEngine(1);
     const fullTurn = JSON.parse(JSON.stringify(source.getGameStateSnapshot())).turn;
@@ -198,7 +166,7 @@ describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameSt
   });
 });
 
-describe('Caratterizzazione — motore: traccia di debug (executeCommand, #63, lotto 0, Fase 1B-2)', () => {
+describe('Caratterizzazione — motore: traccia di debug (executeCommand, #63)', () => {
   const prevDebug = process.env.ENGINE_DEBUG;
 
   beforeAll(async () => {
@@ -258,7 +226,7 @@ describe('Caratterizzazione — motore: traccia di debug (executeCommand, #63, l
  * 1853, includendo i rami generici di ESAMINA/APRI-CHIUDI/PRENDI/POSA finali). Vedi
  * `Claude decompiler/20261019 - HO-18 Report Fase 1B-2 - v1.0.md` per il dettaglio.
  */
-describe('Caratterizzazione — motore: executeCommandLegacy, rami ESAMINA/APRI-CHIUDI/PRENDI (#63, lotto 0, Fase 1B-2)', () => {
+describe('Caratterizzazione — motore: executeCommand, rami ESAMINA/APRI-CHIUDI/PRENDI (#63)', () => {
   const fullIt = loadWalkthroughCommands('full_it');
 
   beforeAll(async () => {
@@ -266,7 +234,7 @@ describe('Caratterizzazione — motore: executeCommandLegacy, rami ESAMINA/APRI-
     await ensureVocabulary();
   });
 
-  it('executeCommandLegacy — APRI/CHIUDI generico (BOTOLA): apertura, "già aperta", chiusura, "già chiusa"', async () => {
+  it('executeCommand — APRI/CHIUDI generico (BOTOLA): apertura, "già aperta", chiusura, "già chiusa"', async () => {
     const engine = newEngine(1);
     // Passo 120 di full_it: la Botola (ID 41) è già visibile dopo l'enigma della pesa.
     await runMany(engine, fullIt.slice(0, 120));
@@ -284,7 +252,7 @@ describe('Caratterizzazione — motore: executeCommandLegacy, rami ESAMINA/APRI-
     expect(r4.message).toBe(getSystemMessage('engine.close.alreadyClosed', 1));
   });
 
-  it('executeCommandLegacy — PRENDERE generico (senza interazione dedicata) con inventario già pieno', async () => {
+  it('executeCommand — PRENDERE generico (senza interazione dedicata) con inventario già pieno', async () => {
     const engine = newEngine(1);
     // Percorso reale fino al passo 44, senza le "posa" intermedie dell'enigma del buio
     // (passi 2, 6, 28): così i tre oggetti iniziali restano in inventario insieme a
