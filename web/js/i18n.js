@@ -1,4 +1,4 @@
-// Frontend i18n helper - Sprint 2
+// Frontend i18n helper
 // Gestisce messaggi localizzati lato client
 
 let frontendMessages = [];

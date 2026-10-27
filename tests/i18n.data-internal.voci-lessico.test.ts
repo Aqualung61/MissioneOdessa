@@ -10,13 +10,13 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
   });
 
   it('ogni ID_Termine ha almeno una voce IT e una EN, salvo le eccezioni esplicite', () => {
-    // Aggiornato per #109 (lotto L2b): ID_Termine 80 (concetto LUCE) non ha una voce
+    // ID_Termine 80 (concetto LUCE) non ha una voce
     // EN per decisione approvata (TD Lessico L2 risposte e testi, §0 D5: "Nessuno:
     // LIGHT è già il verbo. In inglese light/extinguish da soli coprono
     // accendi luce/spegni luce" — nessun nome EN separato è necessario).
     const EXPECTED_MISSING_EN: ReadonlySet<number> = new Set([80]);
 
-    // Aggiornato per #109 (lotto L3): ID_Termine 35 (TAVOLO) e 36 (BOTTON) non hanno
+    // ID_Termine 35 (TAVOLO) e 36 (BOTTON) non hanno
     // più nessuna voce, in nessuna lingua, per la rimozione delle voci residue
     // BOTTON_LEGACY/TAVOLO_LEGACY/TABLE_LEGACY (E5, TD Lessico L3 nomi luoghi e
     // guardia, §3): "I concetti restano" nei dati, ma senza più alcuna voce che un

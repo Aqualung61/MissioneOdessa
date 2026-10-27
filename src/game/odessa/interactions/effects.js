@@ -1,7 +1,6 @@
-// Registro degli effetti di Odessa (TD Lotto 4b, §3.3): tipo → (effetto, ctx, env) =>
-// info | undefined. Rami trascritti alla lettera da `applicaEffetti` di `engine.js`
-// (ce547fd, righe 1082–1130) con le sole sostituzioni di R1: `gameState` → `ctx.state`,
-// helper → `ctx.helpers.*`, `getSystemMessage(k, lingua)` → `ctx.msg(k)`.
+// Registro degli effetti di Odessa: tipo → (effetto, ctx, env) =>
+// info | undefined. `gameState` è `ctx.state`, gli helper sono in `ctx.helpers.*`,
+// `getSystemMessage(k, lingua)` è `ctx.msg(k)`.
 // `env` = { luogoCorrente, extraMessages }.
 
 export const effectTypes = {
@@ -34,7 +33,7 @@ export const effectTypes = {
     ctx.state.direzioniSbloccate[key] = effetto.destinazione;
   },
 
-  // R3 (TD Lotto 4b): `statoPreToggle` è letto DOPO l'eventuale inizializzazione a `false`
+  // `statoPreToggle` è letto DOPO l'eventuale inizializzazione a `false`
   // e PRIMA dell'inversione; è l'unico effetto che restituisce `info`.
   TOGGLE_DIREZIONE: (effetto, ctx) => {
     const key = `${effetto.luogo}_${effetto.direzione}`;
@@ -54,7 +53,7 @@ export const effectTypes = {
 
   // Voce volutamente VUOTA: non è codice morto. Il tipo è gestito direttamente in
   // `cercaEseguiInterazione` (richiede accesso alla risposta e controllo flusso); rimuovere
-  // questa voce farebbe scattare l'avviso di tipo sconosciuto (TD Lotto 4b, §3.3).
+  // questa voce farebbe scattare l'avviso di tipo sconosciuto.
   SEQUENZA: () => undefined,
 
   SET_FLAG: (effetto, ctx) => {

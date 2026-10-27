@@ -1,5 +1,5 @@
 /**
- * Percorsi di riferimento (HO-08, #99/#95)
+ * Percorsi di riferimento (#99/#95)
  * Esegue con parser e motore reali i percorsi registrati sulla v1.4.0 (minimo e
  * completo, IT ed EN) e verifica ogni passo. Se un test fallisce perché il
  * comportamento del gioco è cambiato di proposito, i valori registrati si

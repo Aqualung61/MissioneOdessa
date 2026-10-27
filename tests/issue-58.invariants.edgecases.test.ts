@@ -1,5 +1,5 @@
 /**
- * Sprint #58.3 — Test invarianti e casi limite (Issue #58)
+ * Test invarianti e casi limite (Issue #58)
  * Riferimento: docs/20260114_issue_58_invarianti.md
  */
 

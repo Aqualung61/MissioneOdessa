@@ -10,14 +10,12 @@
  * 2. Fascicolo (ID=16) con IDLuogo=0 (in inventario)
  * 3. Lista di servizio (ID=6) con IDLuogo=0 (in inventario)
  * 4. Dossier (ID=34) con IDLuogo=0 (in inventario)
- * 
- * Sprint: Sistema Vittoria - Parte 1 (Ferenc + Teleport)
  */
 
 import { getSystemMessage } from '../systemMessages.js';
 import { CONFIG } from '../../game/odessa/config.js';
 
-// Fascicolo, Lista di servizio, Dossier (TD Lotto 3, §3.2: oggetti.vittoria).
+// Fascicolo, Lista di servizio, Dossier (oggetti.vittoria).
 const [FASCICOLO_ID, LISTA_ID, DOSSIER_ID] = CONFIG.oggetti.vittoria;
 
 /**
@@ -106,7 +104,7 @@ function teleportToBarrier(gameState, result, customMessage) {
   gameState.visitedPlaces.add(CONFIG.luoghi.barriera);
   gameState.punteggio.totale += CONFIG.punteggio.luogo;
 
-  // Blocca TUTTI i movimenti (per la fase 2)
+  // Blocca TUTTI i movimenti (seconda fase della sequenza)
   gameState.movementBlocked = true;
 
   // Imposta stato narrativo

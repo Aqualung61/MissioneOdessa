@@ -2,6 +2,10 @@
 // Fonte unica degli insiemi ammessi: importata dal motore (engine.js) e dai test,
 // così motore e test non possono divergere.
 
+/**
+ * Chiavi ammesse al primo livello di un record di `Interazioni.json`.
+ * @type {Set<string>}
+ */
 export const INTERACTION_TOP_LEVEL_KEYS = new Set([
   'id',
   'IDLingua',
@@ -19,6 +23,10 @@ export const INTERACTION_TOP_LEVEL_KEYS = new Set([
   'punteggio',
 ]);
 
+/**
+ * Tipi di prerequisito ammessi.
+ * @type {Set<string>}
+ */
 export const PREREQUISITE_TYPES = new Set([
   'OGGETTO_IN_INVENTARIO',
   'OGGETTO_IN_LUOGO',
@@ -30,9 +38,16 @@ export const PREREQUISITE_TYPES = new Set([
   'DIREZIONE_APERTA',
 ]);
 
+/**
+ * Chiavi ammesse in un prerequisito.
+ * @type {Set<string>}
+ */
 export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'direzione', 'flag', 'risposta']);
 
-// Campi obbligatori per tipo di prerequisito.
+/**
+ * Campi obbligatori per tipo di prerequisito.
+ * @type {Object<string, Array<string>>}
+ */
 export const PREREQUISITE_REQUIRED_FIELDS = {
   OGGETTO_IN_INVENTARIO: ['target'],
   OGGETTO_IN_LUOGO: ['target', 'luogo'],
@@ -44,6 +59,10 @@ export const PREREQUISITE_REQUIRED_FIELDS = {
   DIREZIONE_APERTA: ['luogo', 'direzione'],
 };
 
+/**
+ * Tipi di effetto ammessi.
+ * @type {Set<string>}
+ */
 export const EFFECT_TYPES = new Set([
   'VISIBILITA',
   'SPOSTA_OGGETTO',

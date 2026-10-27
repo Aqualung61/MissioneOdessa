@@ -1,10 +1,9 @@
-// Gestore ACTION di Odessa (TD Lotto 4a, §4, riga 8): blocco 1563–1590 di 4acdd1b
-// trascritto alla lettera (R1). Le due chiamate a `cercaEseguiInterazione('METTERE', …)`
-// e il ramo "già eseguita" restano nello stesso ordine.
+// Gestore ACTION di Odessa: CARICA/LOAD con PESO/PESA. Le due chiamate a
+// `cercaEseguiInterazione('METTERE', …)` e il ramo "già eseguita" restano nello stesso ordine.
 
 // 8 — odessa.action.loadWeight
-// === Verbi e risposte dell'originale (L2b, #109) senza interazione dedicata ===
-// CARICA/LOAD con PESO/PESA (#98, precisazione 1): stesso esito di METTERE PESO,
+// === Verbi e risposte dell'originale senza interazione dedicata ===
+// CARICA/LOAD con PESO/PESA (#98): stesso esito di METTERE PESO,
 // usando l'interazione esistente carica_pesa_57 (stesso id, stesso punteggio una
 // sola volta); senza il peso in inventario, risposta dedicata. Con altri nomi,
 // "carica" resta un'azione senza effetto (nessun intervento qui).

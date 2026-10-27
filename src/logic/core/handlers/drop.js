@@ -1,5 +1,4 @@
-// Gestore generico ACTION per POSA/LASCIA (TD Lotto 4a, §4, riga 26): blocco 1816–1829
-// di 4acdd1b trascritto alla lettera (R1); `normalizeForComparison` locale → `ctx.helpers.normalize` (R5).
+// Gestore generico ACTION per POSA/LASCIA.
 
 // 26 — core.action.drop
 export const drop = {

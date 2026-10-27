@@ -1,4 +1,4 @@
-// Generatore indipendente dell'istantanea completa del parser (v1.4.2, lotto 2).
+// Generatore indipendente dell'istantanea completa del parser.
 // Uso: node gen_parse.mjs <repo> <out-dir>
 // Input: unione degli input (lingua, testo) del corpus del parser e dell'istantanea delle
 // risposte, più un elenco di casi limite. Per ciascuno registra il ParseResult completo

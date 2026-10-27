@@ -1,5 +1,4 @@
-// Gestore generico ACTION di ripiego (TD Lotto 4a, §4, riga 27): blocco 1831–1844 di
-// 4acdd1b trascritto alla lettera (R1); oggetto presente ricalcolato qui (R3).
+// Gestore generico ACTION di ripiego; oggetto presente ricalcolato qui.
 
 // 27 — core.action.fallback
 export const fallback = {

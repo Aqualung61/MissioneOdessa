@@ -9,7 +9,7 @@ function parsePositiveInt(value) {
   return Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
-// Sprint #59.1: guardrails per evitare crescita illimitata in produzione.
+// Guardrails per evitare crescita illimitata in produzione.
 // Ogni sessione ha un proprio motore (createEngine) che viene rilasciato con l'evizione.
 // Questi limiti impediscono un numero illimitato di sessioni (e quindi di engine) nel tempo.
 const MAX_SESSIONS = parsePositiveInt(process.env.SESSION_MAX_SESSIONS) ?? 200;
@@ -136,6 +136,10 @@ export function attachEngineSession(req, res, next) {
   })().catch(next);
 }
 
+/**
+ * Svuota le sessioni in memoria. Solo per i test.
+ * @returns {void}
+ */
 export function _testOnly_clearSessions() {
   sessions.clear();
 }

@@ -1,12 +1,12 @@
 /**
- * Caratterizzazione del caricamento dello stato (#63, lotto 5 v1.4.2, P0).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.0.md`, §5.1 test 2.
+ * Caratterizzazione del caricamento dello stato (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.1 test 2.
  *
  * `setGameState` su 9 gruppi di salvataggi (11 casi) costruiti sul fixture protetto
  * `tests/fixtures/trace/save_v141_full_it_step91.json` e registrati in
- * `tests/fixtures/state/state_load_lotto5.json`, generato sul baseline (`e088e7c`) dal
- * generatore `Claude decompiler/HO-24 gen_state_load.mjs` (fuori dal repository; non si rigenera).
- * Tutti i salvataggi contengono le quattro collezioni di TD §3.3.4: il comportamento per le
+ * `tests/fixtures/state/state_load_lotto5.json`, generato sul comportamento di riferimento;
+ * il fixture non ha un generatore nel repository e non si rigenera.
+ * Tutti i salvataggi contengono le quattro collezioni della specifica (§3.3.4): il comportamento per le
  * collezioni mancanti (D-5-4) è coperto da `tests/state.load-defaults.test.ts`.
  *
  * Per ogni caso si confrontano lo stato (`getGameState()` serializzato, Set → array) e lo

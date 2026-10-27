@@ -1,5 +1,5 @@
-// Gestori ACTION di Odessa per la luce (TD Lotto 4a, §4, righe 7, 15, 16): blocchi di
-// 4acdd1b trascritti alla lettera (R1). `fiammiferiRecord` si ricalcola dove serve (R3).
+// Gestori ACTION di Odessa per la luce. `fiammiferiRecord` si ricalcola dove serve,
+// perché l'oggetto può cambiare tra una chiamata e l'altra.
 
 function findFiammiferi(ctx) {
   return ctx.state.Oggetti.find((o) => o.ID === ctx.game.config.oggetti.fiammiferi);

@@ -1,5 +1,5 @@
-// Definizione del gioco Odessa (TD Lotto 4a, §3.1): configurazione, elenco ordinato dei
-// gestori di verbo (la precedenza è vincolante, TD §4) e regole specifiche.
+// Definizione del gioco Odessa: configurazione, elenco ordinato dei
+// gestori di verbo (la precedenza è vincolante) e regole specifiche.
 import { CONFIG } from './config.js';
 import * as rules from './rules.js';
 import { unknownDirection, move } from '../../logic/core/handlers/navigation.js';
@@ -24,6 +24,36 @@ import { drop } from '../../logic/core/handlers/drop.js';
 import { fallback } from '../../logic/core/handlers/fallback.js';
 import { TURN_EFFECTS } from '../../logic/turnEffects/index.js';
 
+/**
+ * @typedef {Object} VerbHandler
+ * @property {string} id - identificatore del gestore (es. `odessa.action.dig`)
+ * @property {Array<string>} types - tipi di comando gestiti (`ACTION`, `NAVIGATION`, `SYSTEM`)
+ * @property {function(Object, Object): boolean} [match] - `(cmd, ctx) => boolean`; se assente il gestore
+ *   si applica a ogni comando dei suoi tipi
+ * @property {function(Object, Object): (Object|null)} run - `(cmd, ctx) => risultato`; `null` passa al gestore successivo
+ */
+/**
+ * @typedef {Object} OdessaGame
+ * Ciò che un gioco fornisce al motore (`createEngine(game)`).
+ * @property {string} id - identificatore del gioco
+ * @property {Object} config - configurazione del gioco (`CONFIG`, da `Configurazione.json`)
+ * @property {Array<VerbHandler>} verbHandlers - gestori di verbo in ordine di precedenza: vince il primo
+ *   che restituisce un risultato non nullo
+ * @property {Object<string, function(Object, Object): boolean>} prerequisiteTypes - registro dei prerequisiti:
+ *   tipo → `(req, ctx) => boolean`
+ * @property {Object<string, function(Object, Object, Object): *>} effectTypes - registro degli effetti:
+ *   tipo → `(effetto, ctx, env) => info | undefined`
+ * @property {Array<function(Object, Object, Object): void>} turnEffects - effetti di turno
+ *   `(gameState, result, parseResult)`, nell'ordine di esecuzione
+ * @property {Object} rules - regole che il motore chiama: `awardMystery(effetto, info, ctx)`,
+ *   `toggleResponseVerbs` (Set di verbi), `sequence` (`alreadyCompletedMessageKey`, `onCompleted(seqKey, ctx)`),
+ *   `hasActiveLight(gameState)`, `deriveLoadedFlags(newState)`, `rankKey(score)`, `isDangerZone(state)`,
+ *   `initialMatches()`, `initialOpenStates()`, `deriveLoadedGuardTimer(newState)`, `deriveLoadedTimers(newState)`
+ */
+/**
+ * Definizione del gioco Odessa.
+ * @type {OdessaGame}
+ */
 export const odessaGame = {
   id: 'odessa',
   config: CONFIG,
@@ -58,7 +88,7 @@ export const odessaGame = {
   ],
   prerequisiteTypes,
   effectTypes,
-  // Effetti di turno (TD Lotto 5, §3.2): lo stesso array di `TURN_EFFECTS`, non una copia.
+  // Effetti di turno: lo stesso array di `TURN_EFFECTS`, non una copia.
   turnEffects: TURN_EFFECTS,
   rules,
 };

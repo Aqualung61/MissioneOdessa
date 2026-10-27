@@ -1,5 +1,4 @@
-// Costruzione del comando per i gestori (TD Lotto 4a, §3.2). I calcoli sono quelli di
-// vecchio switch dei comandi di `engine.js` (4acdd1b), fatti una volta e allo stesso momento di prima.
+// Costruzione del comando per i gestori: i calcoli si fanno una sola volta, prima del dispatch.
 
 /**
  * @param {Object} parseResult - ParseResult valido
@@ -14,7 +13,7 @@ export function buildCommand(parseResult, state, helpers) {
     const concept = (parseResult.VerbConcept || '').toUpperCase();
     // Usa NounConcept invece di CanonicalNoun per gestire correttamente nomi composti
     const noun = (parseResult.NounConcept || parseResult.CanonicalNoun || '').toUpperCase();
-    // Regola generale dei nomi senza oggetto (#109, L3, TD v1.1 §4.10): se il nome non
+    // Regola generale dei nomi senza oggetto: se il nome non
     // corrisponde a un oggetto nei dati (in nessun luogo), si mostra la parola
     // effettivamente digitata dal giocatore (NounLiteral); se l'oggetto esiste altrove,
     // resta il nome dell'oggetto (NounConcept, già localizzato).

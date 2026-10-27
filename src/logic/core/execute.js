@@ -1,10 +1,10 @@
-// Esecuzione di un comando: pipeline del turno, estratta da `engine.js` (TD Lotto 5, §3.4.3).
-// Sequenza (TD §4): debug "prima" → `parseResult` assente → non valido → `prepareTurnContext` →
+// Esecuzione di un comando: pipeline del turno.
+// Sequenza: debug "prima" → `parseResult` assente → non valido → `prepareTurnContext` →
 // controlli preliminari (se bloccato: effetti di turno solo se consuma turno, evento BLOCKED,
 // ritorno) → `dispatch` con contesto nuovo → se consuma turno: `applyTurnEffects`, evento,
 // ritorno → altrimenti evento e ritorno.
 //
-// R1: `eng.state` si legge a ogni accesso, mai in una variabile locale che attraversi il dispatch
+// `eng.state` si legge a ogni accesso, mai in una variabile locale che attraversi il dispatch
 // (un gestore potrebbe riassegnare lo stato).
 import { getSystemMessage } from '../systemMessages.js';
 import { mapParseErrorToUserMessage } from '../messages.js';
@@ -111,10 +111,10 @@ export function executeCommand(eng, helpers, parseResult) {
   const rejected = rejectInvalidParse(eng, parseResult);
   if (rejected) return rejected;
 
-  // Phase 1: Create turn snapshot (ACTIVE - Sprint 3.3.2)
+  // Phase 1: Create turn snapshot
   prepareTurnContext(eng.state, eng.game, parseResult);
 
-  // Phase 2: Run pre-execution checks (ACTIVE - Sprint 3.3.5.B: awaitingRestart)
+  // Phase 2: Run pre-execution checks (awaitingRestart)
   const preCheck = runPreExecutionChecks(eng.state, parseResult);
   if (preCheck) {
     // Il movimento bloccato alla barriera consuma comunque un turno (R4, #107)
@@ -125,11 +125,11 @@ export function executeCommand(eng, helpers, parseResult) {
     return preCheck;
   }
 
-  // Phase 3: Execute core command logic: gestori di verbo in ordine di precedenza (TD Lotto 4a, §4).
+  // Phase 3: Execute core command logic: gestori di verbo in ordine di precedenza.
   // Il contesto si crea qui, a ogni comando: lo stato può essere stato riassegnato.
   const result = dispatch(eng.game.verbHandlers, buildCommand(parseResult, eng.state, helpers), createContext(eng.state, eng.game, helpers));
 
-  // Phase 4: Apply turn effects (ACTIVE - Sprint 3.3.5.A: torch, 3.3.5.B: darkness)
+  // Phase 4: Apply turn effects (torch, darkness)
   // Gli effetti si applicano a ogni comando che consuma un turno, accettato o no (#107)
   if (shouldConsumeTurn(parseResult)) {
     const finalResult = applyTurnEffects(eng.state, eng.game, result, parseResult);

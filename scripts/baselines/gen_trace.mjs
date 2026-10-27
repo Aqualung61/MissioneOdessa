@@ -1,4 +1,4 @@
-// Generatore indipendente della traccia di stato (v1.4.2, lotto 0).
+// Generatore indipendente della traccia di stato.
 // Uso: node gen_trace.mjs <repo> <out-dir>
 // Scrive <out-dir>/engine_trace.json. Importa dal repository solo l'API pubblica:
 // initOdessa, loadMessaggiSistema, ensureVocabulary, parseCommand, createEngine.

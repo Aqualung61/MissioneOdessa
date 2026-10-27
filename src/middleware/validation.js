@@ -118,6 +118,11 @@ export function validateSaveData(options = {}) {
   };
 }
 
+/**
+ * Valida il parametro di query `suite` (predefinito `full`); risponde 400 `INVALID_SUITE` se non è tra i valori ammessi.
+ * @param {{allowed?: Array<string>}} [options] - `allowed`: suite ammesse (predefinite `full`, `smoke`)
+ * @returns {function(Object, Object, function): void} middleware Express
+ */
 export function validateSuiteParam(options = {}) {
   const mode = 'suite';
   const allowed = options.allowed ?? ['full', 'smoke'];

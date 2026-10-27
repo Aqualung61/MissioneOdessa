@@ -1,14 +1,14 @@
 /**
- * Caratterizzazione dell'ordine delle chiavi dei corpi HTTP (#63, lotto 5 v1.4.2, P0).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.0.md`, §5.1 test 3 e AC-8.
+ * Caratterizzazione dell'ordine delle chiavi dei corpi HTTP (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.1 test 3 e AC-8.
  *
  * La traccia HTTP (`tests/trace.http.test.ts`) ordina le chiavi prima di calcolare lo SHA: non
  * vede un cambio di ordine. Qui si verifica l'ORDINE RICORSIVO delle chiavi (non i valori) dei
  * corpi delle risposte di `/api/engine/*`, resa come stringa:
  *   - oggetto: `{k1,k2:{...},k3:[...]}`; chiave senza valore strutturato: solo il nome;
  *   - array di oggetti: `[` + forma del primo elemento + `]`; array vuoto o di primitivi: `[]`.
- * Gli attesi sono stati ricavati eseguendo il baseline (`e088e7c`) e controllati a mano rispetto
- * a `src/api/engineRoutes.js`. Dopo P0 questo file non si modifica (AC-8).
+ * Gli attesi sono stati ricavati eseguendo il codice di riferimento e controllati a mano rispetto
+ * a `src/api/engineRoutes.js`. Questo file non si modifica (AC-8).
  *
  * Rami di `/execute` caratterizzati: input non valido dal validatore (stringa vuota e valore non
  * stringa), `input` non stringa (ramo a valle del validatore, irraggiungibile via HTTP: esercitato
@@ -51,7 +51,7 @@ function shape(v: Json): string {
 }
 
 // ---------------------------------------------------------------------------
-// Attesi (baseline e088e7c)
+// Attesi (comportamento di riferimento)
 // ---------------------------------------------------------------------------
 
 const STATE = '{openStates:{BOTOLA},awaitingEndConfirm,awaitingRestart,currentLocationId,ended,visitedPlaces:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}],interazioniEseguite:[],direzioniSbloccate:{},direzioniToggle:{},sequenze:{},flags:{},currentLingua,punteggio:{totale,interazioniPunteggio:[],misteriRisolti:[]},timers:{movementCounter,torciaDifettosa,lampadaAccesa,azioniInLuogoPericoloso,ultimoLuogoPericoloso,matchesLeft,matchTimer},narrativeState,narrativePhase,victory,movementBlocked,guardTimer,awaitingContinue,turn:{globalTurnNumber,totalTurnsConsumed,turnsInDarkness,turnsInDangerZone,darknessTimer,openAreaTimer,movedThisTurn,current:{parseResult,consumesTurn,location,hasLight,inDangerZone},previous:{location,hasLight,consumedTurn,inDangerZone}},currentLocationName,timestamp,version}';

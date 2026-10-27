@@ -1,5 +1,5 @@
 /**
- * Test Unit per gameOverEffect.js (Sprint 3.3.5.B)
+ * Test Unit per gameOverEffect.js
  * Test isolato del game over centralizzato
  */
 

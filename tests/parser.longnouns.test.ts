@@ -21,7 +21,7 @@ import TipiLessico from '../src/data-internal/TipiLessico.json';
 
 type Fields = Record<string, unknown>;
 
-// Campi del ParseResult che riflettono la forma digitata (TD §5.2, accertati in Fase 1A)
+// Campi del ParseResult che riflettono la forma digitata (TD §5.2)
 const TYPED_FORM_FIELDS = ['OriginalInput', 'NormalizedInput', 'NounLiteral'];
 
 async function parse(input: string, lingua: number): Promise<Fields> {
@@ -34,7 +34,7 @@ function withoutTypedForm(r: Fields): Fields {
   return copy;
 }
 
-// Oracolo (Fase 1A): [lingua, voce lunga, voce breve, NounConcept, CanonicalNoun]
+// Oracolo: [lingua, voce lunga, voce breve, NounConcept, CanonicalNoun]
 const LONG_NOUNS: Array<[number, string, string, string, string]> = [
   [1, 'bastone di comando', 'bastone', 'BASTONE_DI_COMANDO', 'BASTONE'],
   [1, 'arazzo in pessime condizioni', 'arazzo', 'ARAZZO_IN_PESSIME_CONDIZIONI', 'ARAZZO'],

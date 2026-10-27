@@ -1,15 +1,14 @@
 /**
- * Compatibilità dei salvataggi v1.4.1 (#63, lotto 0 v1.4.2).
+ * Compatibilità dei salvataggi v1.4.1 (#63).
  * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.4.
  *
- * Tre verifiche sul fixture protetto `tests/fixtures/trace/save_v141_full_it_step91.json`
+ * Due verifiche sul fixture protetto `tests/fixtures/trace/save_v141_full_it_step91.json`
  * (salvataggio v1.4.1 al passo 91 del percorso completo IT, formato di
  * `POST /api/engine/save-client-state`):
  * 1. il formato di salvataggio prodotto oggi (`luoghi: []`, dopo gli stessi 91 comandi)
  *    coincide con quello registrato, esclusi `timestamp`/`version` (anche dentro `gameState`);
- * 2. `setGameState(save.gameState)` su un motore nuovo, poi i passi 92-147 di `full_it`:
- *    vittoria, punteggio 138, 147 turni;
- * 3. lo stesso, via `POST /api/engine/load-client-state` e `/execute`.
+ * 2. caricamento via `POST /api/engine/load-client-state` e `/execute`: i passi 92-147
+ *    di `full_it` completano la vittoria con punteggio 138 e 147 turni.
  *
  * Il caricamento del salvataggio v1.4.0 è già coperto da `tests/walkthrough.test.ts`
  * e dallo scenario `S-ripresa-v140` di `tests/trace.engine.test.ts`.

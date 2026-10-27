@@ -1,11 +1,11 @@
 /**
- * Istantanea del vocabolario (#63, lotto 2 v1.4.2).
+ * Istantanea del vocabolario (#63).
  * Specifica: `docs/20261019 - TD Lotto 2 Parser - v1.0.md`, §4.1-§4.2.
  *
  * Verifica che `ensureVocabulary({ currentLingua })` costruisca, per IT (217 token)
  * ed EN (151 token), esattamente la stessa mappa token -> info registrata dal
- * generatore di riferimento (`Claude decompiler/gen_parse.mjs`, fuori dal
- * repository) su `release/v1.4.2` @ `3c1a379`.
+ * generatore di riferimento (`scripts/baselines/gen_parse.mjs`) su
+ * `release/v1.4.2`.
  *
  * Nessuna modalità di aggiornamento: un fallimento qui significa che il refactor
  * di `ensureVocabulary` ha cambiato l'ordine di costruzione o il contenuto della

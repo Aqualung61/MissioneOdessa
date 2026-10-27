@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-// Rimosso @ts-expect-error inutilizzato
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
 import VociLessico from '../src/data-internal/VociLessico.json';
 import Oggetti from '../src/data-internal/Oggetti.json';
@@ -30,8 +29,8 @@ describe('Parser REQ01 - casi base', () => {
     const res = await parseCommand(null, 'DORMI');
     expect(res.IsValid).toBe(true);
     expect(res.CommandType).toBe('ACTION');
-    // Aggiornato per #109 (lotto L2a): la forma canonica è l'infinito (DORMIRE),
-    // ora voce registrata della lingua corrente (TD Lessico L2 risposte e testi, §4.2 c).
+    // La forma canonica è l'infinito (DORMIRE),
+    // voce registrata della lingua corrente (TD Lessico L2 risposte e testi, §4.2 c).
     expect(res.CanonicalVerb).toBe('DORMIRE');
   });
 

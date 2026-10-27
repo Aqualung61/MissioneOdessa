@@ -1,6 +1,6 @@
 /**
- * Test di coerenza dei registri delle interazioni (#63, lotto 4b v1.4.2).
- * Specifica: TD Lotto 4b Interazioni v1.0, §5.1.
+ * Test di coerenza dei registri delle interazioni (#63).
+ * Specifica: `docs/20261020 - TD Lotto 4b Interazioni - v1.0.md`, §5.1.
  *
  * 1. Chiavi di `odessaGame.prerequisiteTypes` = `PREREQUISITE_TYPES` (entrambe le direzioni).
  * 2. Chiavi di `odessaGame.effectTypes` = `EFFECT_TYPES` (entrambe le direzioni).

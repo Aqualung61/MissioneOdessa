@@ -4,7 +4,10 @@ import { getGameData } from './core/gameData.js';
 
 let messaggiSistema = [];
 
-// Carica i messaggi di sistema dai dati di gioco (letti alla chiamata)
+/**
+ * Carica i messaggi di sistema dai dati di gioco (letti alla chiamata).
+ * @returns {void}
+ */
 export function loadMessaggiSistema() {
   const data = getGameData();
   if (data && data.MessaggiSistema) {

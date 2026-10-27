@@ -1,10 +1,9 @@
-// Gestore ACTION di Odessa (TD Lotto 4a, §4, riga 21): blocco 1726–1732 di 4acdd1b
-// trascritto alla lettera (R1). L'oggetto presente si ricalcola qui, dopo le
-// interazioni (R3), con la stessa ricerca di "PRIORITÀ 2".
+// Gestore ACTION di Odessa: MUOVI/SPOSTA. L'oggetto presente si ricalcola qui, dopo le
+// interazioni, con la stessa ricerca di "PRIORITÀ 2".
 
 // 21 — odessa.action.moveObject
 // MUOVI/SPOSTA senza interazione dedicata (D3): solo se l'oggetto è presente,
-// altrimenti il comportamento di oggi (oggetto non qui) resta invariato.
+// altrimenti il comportamento resta invariato (oggetto non qui).
 export const moveObject = {
   id: 'odessa.action.moveObject',
   types: ['ACTION'],

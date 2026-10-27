@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Test Unit per victoryEffect.js (Sprint 3.3.5.D)
+ * Test Unit per victoryEffect.js
  * Test isolato della sequenza Ferenc + Teleport + Vittoria
  */
 

@@ -78,7 +78,7 @@ describe('Lessico L2a: rete dei testi e correzioni IT/EN (#109)', () => {
   });
 
   it('TA-01: EN, nomi senza traduzione nei messaggi generici (destra/sinistra/porta)', async () => {
-    // Aggiornato per #109 (lotto L2b): "turn right" ricade ora nella regola più
+    // "turn right" ricade nella regola più
     // specifica di D4 ("Non vedo niente da ruotare.", TD §5.3), che prevale
     // correttamente su quella generica di L2a; "take right" verifica lo stesso
     // difetto (a) con un verbo non toccato da L2b.

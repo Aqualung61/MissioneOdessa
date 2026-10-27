@@ -300,7 +300,7 @@ function getBasePath() {
 }
 const basePath = getBasePath();
 
-// Sprint #59.1: multi-session per-tab (no cookie)
+// Multi-session per-tab (no cookie)
 // Persistiamo gli id in sessionStorage per isolamento tra tab.
 const SESSION_ID_KEY = 'odessa.sessionId';
 const GAME_ID_KEY = 'odessa.gameId';
@@ -359,7 +359,7 @@ async function apiFetchWithSession(url, options = {}) {
   return res;
 }
 
-// Sprint #57.4: debug mode per riprodurre race/out-of-order in modo deterministico.
+// Debug mode per riprodurre race/out-of-order in modo deterministico.
 // Nota: la pagina carica questo file come ES module (type="module"), quindi le funzioni
 // top-level non sono disponibili in Console a meno di esporle su window.
 const debugRaceParams = new URLSearchParams(window.location.search);
@@ -495,14 +495,14 @@ async function executeCommandOnServer(input) {
   const raw = String(input || '').trim();
   if (!raw) return;
 
-  // Sprint #57.2: lock one-at-a-time per prevenire doppie esecuzioni.
+  // Lock one-at-a-time per prevenire doppie esecuzioni.
   if (!debugRaceMode) {
     if (inFlight) return;
     inFlight = true;
     updateSendButtonDisabledState(true);
   }
 
-  // Sprint #57.3: requestId incrementale per scartare risposte fuori ordine.
+  // requestId incrementale per scartare risposte fuori ordine.
   const requestId = ++executeRequestId;
 
   if (debugRaceMode) {
@@ -542,14 +542,14 @@ async function executeCommandOnServer(input) {
       }
     }
 
-    // Sprint #57.3: se nel frattempo è partita una richiesta più recente, ignora questa risposta.
+    // Se nel frattempo è partita una richiesta più recente, ignora questa risposta.
     if (requestId !== executeRequestId) {
       if (debugRaceMode) {
         console.log('[debugRace] Ignorata risposta fuori ordine', { requestId, latest: executeRequestId });
       }
       return;
     }
-    // Sprint 4.1.3: usa sempre i campi arricchiti per aggiornare UI e contatori.
+    // Usa sempre i campi arricchiti per aggiornare UI e contatori.
     if (executeResult && executeResult.stats) applyStats(executeResult.stats);
     if (executeResult && executeResult.ui) applyUiFromExecute(executeResult.ui);
     if (executeResult && executeResult.state) syncFlagsFromState(executeResult.state);
@@ -714,7 +714,7 @@ async function executeCommandOnServer(input) {
       showCurrent();
     }
   } finally {
-    // Sprint #57.3: evita che una risposta tardiva sblocchi l'UI se esiste una richiesta più recente.
+    // Evita che una risposta tardiva sblocchi l'UI se esiste una richiesta più recente.
     if (!debugRaceMode && requestId === executeRequestId) {
       inFlight = false;
       updateSendButtonDisabledState(false);
@@ -829,15 +829,14 @@ function showCurrent() {
       })
       .catch(err => console.error('Errore nel caricamento oggetti:', err));
 
-    // RIMOSSO: Check Terminale === -1 lato client
-    // Ora gestito uniformemente da gameOverEffect.js lato server
+    // Il check Terminale === -1 non è lato client: lo gestisce gameOverEffect.js lato server.
     // Il client reagisce solo a result.gameOver dalla risposta API
   }
 }
 inputForm.addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  // Sprint #57.2: se c'è una richiesta in corso, ignora l'invio (senza cancellare l'input).
+  // Se c'è una richiesta in corso, ignora l'invio (senza cancellare l'input).
   if (inFlight && !debugRaceMode) return;
   
   // Blocca input se gioco terminato
@@ -860,7 +859,7 @@ inputForm.addEventListener('submit', async function(e) {
   // Se in attesa di conferma riavvio
   if (awaitingRestart) {
     const risposta = userInput.value.trim().toUpperCase();
-    // Accetta S, SI, SÌ, Sì, s, sì, Y, YES, etc. (fix L2a #109, TD §4.2 e)
+    // Accetta S, SI, SÌ, Sì, s, sì, Y, YES, etc.
     if (/^(S(I|Ì)?|Y(ES)?)$/.test(risposta)) {
       const feed = document.getElementById('placeFeed');
       if (feed) feed.innerHTML = '';

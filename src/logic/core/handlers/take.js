@@ -1,6 +1,4 @@
-// Gestore generico ACTION per PRENDI (TD Lotto 4a, §4, riga 25): blocco 1792–1815 di
-// 4acdd1b trascritto alla lettera (R1). La ridefinizione locale di
-// `normalizeForComparison` era identica a quella del motore: si usa `ctx.helpers.normalize` (R5).
+// Gestore generico ACTION per PRENDI.
 
 // 25 — core.action.take
 export const take = {

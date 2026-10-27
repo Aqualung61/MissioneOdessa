@@ -1,9 +1,9 @@
 /**
- * Caratterizzazione di `validateInterazioni` (#63, lotto 5 v1.4.2, P0).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.0.md`, §5.1 test 5.
+ * Caratterizzazione di `validateInterazioni` (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §5.1 test 5.
  *
  * Un insieme di record malformati produce OGNI messaggio dell'elaboratore almeno una volta;
- * si verifica l'elenco completo, nell'ordine. Messaggi coperti (baseline `e088e7c`):
+ * si verifica l'elenco completo, nell'ordine. Messaggi coperti:
  *   1  Interazioni: atteso un array di record             (ingresso non array)
  *   2  chiave non ammessa                                  (record a)
  *   3  prerequisito #n tipo non ammesso                    (record a: #1, #5 null, #6 vuoto)

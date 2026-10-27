@@ -1,8 +1,8 @@
 /**
- * Toggle di direzione in `getDirezioniLuogo` (#63, lotto 5 v1.4.2, emendamento E-7).
- * Specifica: `Claude decompiler/20261021 - TD Lotto 5 Effetti di turno route e ESLint - v1.2.md`, §11.2.
+ * Toggle di direzione in `getDirezioniLuogo` (#63, emendamento E-7).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §11.2.
  *
- * Fedeltà al comportamento di `e088e7c`: con il toggle aperto e l'interazione `TOGGLE_DIREZIONE`
+ * Fedeltà al comportamento di riferimento: con il toggle aperto e l'interazione `TOGGLE_DIREZIONE`
  * trovata, la direzione riceve `effetto.destinazione` **anche se assente** (`undefined`); con
  * l'interazione assente la direzione resta quella del luogo; con il toggle chiuso vale 0.
  * `toggleDestination` restituisce l'effetto trovato o `null`.

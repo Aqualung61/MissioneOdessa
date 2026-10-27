@@ -1,10 +1,10 @@
 // Mappatura ParseErrorType -> messaggio utente localizzato
 // Fonte: docs/20251103 - REQ01.md, Sezione 2.4.2
-// Sprint 1: i18n - usa MessaggiSistema.json
+// i18n: usa MessaggiSistema.json
 
 import { getSystemMessage } from './systemMessages.js';
 
-// Dettaglio di INVALID_INPUT -> chiave del messaggio (unica tabella: usata anche dalle route, TD Lotto 5 D-5-7).
+// Dettaglio di INVALID_INPUT -> chiave del messaggio (unica tabella: usata anche dalle route).
 const INVALID_INPUT_KEYS = new Map([
   ['EMPTY_INPUT', 'parse.error.emptyInput'],
   ['CONTROL_CHARS', 'parse.error.controlChars'],
@@ -36,6 +36,12 @@ function unknownNounMessage(parseResult, idLingua) {
   return getSystemMessage('parse.error.syntaxNounUnknownGeneric', idLingua);
 }
 
+/**
+ * Messaggio utente localizzato per l'errore di un ParseResult.
+ * @param {Object} parseResult - ParseResult con `Error` (e, se utile, `Details` o `UnknownNounToken`)
+ * @param {number} [idLingua=1] - ID della lingua (1 = IT, 2 = EN)
+ * @returns {string} messaggio; stringa vuota se non c'è errore
+ */
 export function mapParseErrorToUserMessage(parseResult, idLingua = 1) {
   const code = parseResult?.Error || 'NONE';
   if (code === 'INVALID_INPUT') {

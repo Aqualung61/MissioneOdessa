@@ -1,8 +1,6 @@
 /**
- * Test di caratterizzazione — parser (#63, lotto 0 v1.4.2, Fase 1B-2).
- * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5;
- * handoff: `Claude decompiler/20261019 - HO-18 Lotto 0 Rete di caratterizzazione -
- * v1.2.md`, Fase 1B-2.
+ * Test di caratterizzazione — parser (#63).
+ * Specifica: `docs/20261019 - TD Lotto 0 Rete di caratterizzazione - v1.0.md`, §3.5.
  *
  * Ambito: rami non coperti di `src/logic/parser.js` (`parseCommand`), raggiungibili
  * con input realistici che un giocatore potrebbe digitare. Solo API pubblica

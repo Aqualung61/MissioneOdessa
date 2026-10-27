@@ -1,5 +1,4 @@
-// Gestore generico ACTION per APRI/CHIUDI (TD Lotto 4a, §4, riga 24): blocco 1775–1791
-// di 4acdd1b trascritto alla lettera (R1); oggetto presente ricalcolato qui (R3).
+// Gestore generico ACTION per APRI/CHIUDI; oggetto presente ricalcolato qui.
 
 // 24 — core.action.openClose
 // APRI / CHIUDI (elementi apribili)

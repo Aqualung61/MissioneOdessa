@@ -1,5 +1,5 @@
 /**
- * Test Unit per interceptEffect.js (Sprint 3.3.5.C)
+ * Test Unit per interceptEffect.js
  * 
  * Sistema intercettazione pattuglie sovietiche in danger zones.
  * Testa incremento/reset contatore turnsInDangerZone.

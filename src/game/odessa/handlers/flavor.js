@@ -1,5 +1,4 @@
-// Gestori ACTION di Odessa "di colore" (TD Lotto 4a, §4, righe 9–13): blocchi
-// 1592–1612 di 4acdd1b trascritti alla lettera (R1).
+// Gestori ACTION di Odessa "di colore": risposte fisse dell'originale.
 
 // 9 — odessa.action.spegni
 // SPEGNI (con o senza nome): risposta fissa decisa (R9, inventario §1.2).
@@ -30,7 +29,7 @@ export const sorridi = {
 
 // 12 — odessa.action.dormi
 // DORMI, SIEDITI (D7): stessa risposta con o senza nome; sostituisce la risposta
-// generica "Cosa vuoi dormire?" ereditata dal lotto L2a.
+// generica "Cosa vuoi dormire?".
 export const dormi = {
   id: 'odessa.action.dormi',
   types: ['ACTION'],

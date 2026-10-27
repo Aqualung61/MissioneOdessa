@@ -1,5 +1,5 @@
 /**
- * Sprint #58.1 — Invarianti (Issue #58)
+ * Invarianti (Issue #58)
  * Riferimento: docs/20260114_issue_58_invarianti.md
  */
 

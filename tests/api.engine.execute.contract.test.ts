@@ -80,7 +80,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(body.parseResult).toBeDefined();
     expect(body.parseResult.IsValid).toBe(true);
 
-    // Sprint 4.1.3: response arricchita
+    // Response arricchita
     expect(body.state).toBeDefined();
     expect(typeof body.state.currentLocationId).toBe('number');
     expect(body.ui).toBeDefined();
@@ -118,7 +118,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(body.engine).toBe(null);
     expect(body.command).toBe(null);
 
-    // Sprint 4.1.3: anche su parse error torna snapshot + ui + stats
+    // Anche su parse error torna snapshot + ui + stats
     expect(body.state).toBeDefined();
     expect(typeof body.state.currentLocationId).toBe('number');
     expect(body.ui).toBeDefined();
@@ -248,7 +248,7 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(typeof body.engine.message).toBe('string');
     expect(Array.isArray(body.engine.turnMessages)).toBe(true);
 
-    // Sprint 4.1.3: response arricchita
+    // Response arricchita
     expect(body.state).toBeDefined();
     expect(typeof body.state.currentLocationId).toBe('number');
     expect(body.ui).toBeDefined();

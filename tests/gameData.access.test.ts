@@ -1,6 +1,6 @@
 /**
- * Accesso ai dati statici di gioco (#63, lotto 5 v1.4.2).
- * Specifica: `Claude decompiler/20261021 - TD Lotto 5 Effetti di turno route e ESLint - v1.2.md`,
+ * Accesso ai dati statici di gioco (#63).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`,
  * §3.6 e §5.2 (AC-5), con l'emendamento E-1 (forma `?.`); TD 0 Architettura motore e regole, §4.8.
  *
  * Nessun file di `src/` fuori da `src/logic/core/gameData.js` e `src/initOdessa.js` legge o

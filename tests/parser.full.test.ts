@@ -1,17 +1,17 @@
 /**
- * Istantanea completa del parser (#63, lotto 2 v1.4.2).
+ * Istantanea completa del parser (#63).
  * Specifica: `docs/20261019 - TD Lotto 2 Parser - v1.0.md`, §4.1-§4.2.
  *
- * Verifica che `parseCommand` (e, dopo il refactor, anche `parseInput`) produca,
+ * Verifica che `parseCommand` (e `parseInput`) produca,
  * per ciascuna delle 12.966 coppie (lingua, input) e dei 10 input non stringa,
  * esattamente lo stesso `ParseResult` registrato dal generatore di riferimento
- * (`Claude decompiler/gen_parse.mjs`, fuori dal repository) su `release/v1.4.2`
- * @ `3c1a379`. Stessa normalizzazione: campi `null`/`undefined` rimossi, chiavi
+ * (`scripts/baselines/gen_parse.mjs`) su `release/v1.4.2`.
+ * Stessa normalizzazione: campi `null`/`undefined` rimossi, chiavi
  * ordinate, `OriginalInput` rimosso per gli input stringa (uguale all'input).
  *
  * Nessuna modalità di aggiornamento: un fallimento qui significa che il refactor
  * ha cambiato il comportamento, da correggere nel codice nuovo, mai nel test o
- * nel fixture (regola 8 dell'handoff).
+ * nel fixture.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';

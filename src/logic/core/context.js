@@ -1,4 +1,4 @@
-// Contesto di esecuzione di un comando (TD Lotto 4a, §3.2). Si crea a ogni chiamata di
+// Contesto di esecuzione di un comando. Si crea a ogni chiamata di
 // `executeCommand`, mai in cache: `gameState` viene riassegnato da `resetGameState` e
 // `setGameState`, e il contesto deve leggere lo stato corrente.
 import { getSystemMessage } from '../systemMessages.js';

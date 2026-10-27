@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
-// DEPRECATED 2025-12-31: 'Azioni' rimosso da tableNames (sistema sostituito da SBLOCCA_DIREZIONE)
+// 'Azioni' non è più in tableNames (sistema sostituito da SBLOCCA_DIREZIONE)
 const tableNames = ['Introduzione', 'Storia', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiFrontend', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
 const odessaData = {};

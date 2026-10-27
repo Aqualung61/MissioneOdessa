@@ -1,12 +1,12 @@
 /**
- * Default dei salvataggi incompleti (#63, lotto 5 v1.4.2, D-5-4).
- * Specifica: `Claude decompiler/20261020 - TD Lotto 5 Effetti di turno, route e ESLint - v1.1.md`, §3.3.4 e §5.2.
+ * Default dei salvataggi incompleti (#63, D-5-4).
+ * Specifica: `docs/20261021 - TD Lotto 5 Effetti di turno, route e ESLint - v1.2.md`, §3.3.4 e §5.2.
  *
  * Un salvataggio senza una delle quattro collezioni (`interazioniEseguite`, `direzioniToggle`,
  * `sequenze`, `direzioniSbloccate`; `undefined` o `null`) si carica con il valore vuoto (`[]` o `{}`)
  * e il comando che prima finiva in `TypeError` (errore 500 via HTTP) risponde senza eccezioni.
  * Un valore presente, anche di tipo errato, non si tocca. Lo snapshot è quello di sempre
- * (già oggi restituiva `[]`/`{}` per i campi assenti). Eccezione dichiarata al vincolo "comportamento
+ * (restituisce `[]`/`{}` per i campi assenti). Eccezione dichiarata al vincolo "comportamento
  * invariato": riguarda solo i casi che prima davano errore.
  *
  * Base: il salvataggio v1.4.1 protetto `save_v141_full_it_step91.json`.

@@ -1,4 +1,4 @@
-// Fiammiferi di Odessa (R8), estratti da `engine.js` (TD Lotto 5, §3.4.4): la scorta, il
+// Fiammiferi di Odessa (R8): la scorta, il
 // consumo e il comando `accendi fiammifero` sono regole del gioco, non del motore.
 // Ricevono lo stato corrente e la configurazione del gioco; non conservano nulla tra due chiamate.
 import { getSystemMessage } from '../../logic/systemMessages.js';

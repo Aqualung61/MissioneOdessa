@@ -9,9 +9,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
-// DEPRECATED 2025-12-31: 'Azioni' rimosso (sostituito da SBLOCCA_DIREZIONE in Interazioni)
+// 'Azioni' non è più una tabella (sostituita da SBLOCCA_DIREZIONE in Interazioni)
 const tableNames = ['Interazioni', 'Introduzione', 'Storia', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiFrontend', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
 
+/**
+ * Legge tutte le tabelle JSON di `src/data-internal/` e le pubblica in `global.odessaData`.
+ * Tutto o niente: se una tabella manca o non è leggibile lancia un errore e non pubblica nulla.
+ * @returns {Promise<Object>} le tabelle, per nome
+ */
 export async function initOdessa() {
   const odessaData = {};
   const failures = [];

@@ -1,5 +1,5 @@
-// Aiuto: messaggio dei comandi disponibili, estratto da `engine.js` (TD Lotto 5, §3.4.4).
-// Testi fissi e mappa `capitalizeCommand` alla lettera (fuori perimetro, TD §2.2).
+// Aiuto: messaggio dei comandi disponibili.
+// Testi fissi e mappa `capitalizeCommand`.
 import { getGameData } from './gameData.js';
 
 // Mapping speciale per alcuni comandi
@@ -44,7 +44,11 @@ const COMMAND_MAPPINGS = {
   'GIU': 'Giù'
 };
 
-// Funzione helper per capitalizzare comandi
+/**
+ * Forma di presentazione di un comando: la mappatura speciale se esiste, altrimenti iniziale maiuscola e resto minuscolo.
+ * @param {string} str - comando
+ * @returns {string}
+ */
 export function capitalizeCommand(str) {
   if (COMMAND_MAPPINGS[str]) return COMMAND_MAPPINGS[str];
 
@@ -140,7 +144,12 @@ function helpMessageEn(termini) {
   return msg;
 }
 
-// Funzione isolata per generare messaggio di aiuto. La lingua predefinita è quella corrente di `eng.state`.
+/**
+ * Messaggio di aiuto con i comandi disponibili nella lingua indicata.
+ * @param {Object} eng - contenitore del motore
+ * @param {number} [idLingua] - ID della lingua (1 = IT, 2 = EN); se omesso, la lingua corrente di `eng.state`
+ * @returns {string}
+ */
 export function generateHelpMessage(eng, idLingua = eng.state?.currentLingua ?? 1) {
   const lingua = Number(idLingua) === 2 ? 2 : 1;
   const termini = getGameData().TerminiLessico || [];
