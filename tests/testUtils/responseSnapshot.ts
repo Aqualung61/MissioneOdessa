@@ -42,7 +42,13 @@ const loadJson = (...parts: string[]) => JSON.parse(readFileSync(resolve(root, .
 
 // Stessi 7 punti della partita del generatore di riferimento (passi del percorso completo).
 export const STEPS = [0, 6, 37, 49, 94, 119, 146];
-export const RESPONSES_FIXTURE_PATH = resolve(root, 'tests', 'fixtures', 'responses', 'responses_baseline.json');
+export const RESPONSES_FIXTURE_PATH = resolve(
+  root,
+  'tests',
+  'fixtures',
+  'responses',
+  'responses_baseline.json'
+);
 
 function typeOf(terminiLessico: TermineLessico[], idTermine: number): number {
   const t = terminiLessico.find((x) => x.ID_Termine === idTermine);
@@ -57,8 +63,20 @@ function buildInputs(lingua: number): string[] {
 
   const vociLingua = vociLessico.filter((v) => v.ID_Lingua === lingua);
   const tutte = [...new Set(vociLingua.map((v) => v.Voce.toLowerCase()))];
-  const verbi = [...new Set(vociLingua.filter((v) => [1, 2, 3].includes(typeOf(terminiLessico, v.ID_Termine))).map((v) => v.Voce.toLowerCase()))];
-  const nomi = [...new Set(vociLingua.filter((v) => typeOf(terminiLessico, v.ID_Termine) === 4).map((v) => v.Voce.toLowerCase()))];
+  const verbi = [
+    ...new Set(
+      vociLingua
+        .filter((v) => [1, 2, 3].includes(typeOf(terminiLessico, v.ID_Termine)))
+        .map((v) => v.Voce.toLowerCase())
+    ),
+  ];
+  const nomi = [
+    ...new Set(
+      vociLingua
+        .filter((v) => typeOf(terminiLessico, v.ID_Termine) === 4)
+        .map((v) => v.Voce.toLowerCase())
+    ),
+  ];
 
   const comandi = new Set(tutte);
   for (const verbo of verbi) {
@@ -70,7 +88,12 @@ function buildInputs(lingua: number): string[] {
 }
 
 function walkthrough(lingua: number): Step[] {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 function newEngine(lingua: number): Engine {
@@ -118,5 +141,8 @@ export function loadResponsesBaseline(): ResponseEntry[] {
 }
 
 export function writeResponsesSnapshot(entries: ResponseEntry[]): void {
-  writeFileSync(RESPONSES_FIXTURE_PATH, '[\n' + entries.map((e) => JSON.stringify(e)).join(',\n') + '\n]\n');
+  writeFileSync(
+    RESPONSES_FIXTURE_PATH,
+    '[\n' + entries.map((e) => JSON.stringify(e)).join(',\n') + '\n]\n'
+  );
 }

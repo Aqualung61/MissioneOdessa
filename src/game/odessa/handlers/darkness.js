@@ -13,7 +13,15 @@ export const darkness = {
   types: ['ACTION'],
   match: (cmd, ctx) => {
     const DARK_BLOCKED_VERBS = new Set(ctx.game.config.regole.verbiBloccatiAlBuio);
-    return (DARK_BLOCKED_VERBS.has(cmd.concept) || cmd.concept === 'CARICARE') && !ctx.game.rules.hasActiveLight(ctx.state);
+    return (
+      (DARK_BLOCKED_VERBS.has(cmd.concept) || cmd.concept === 'CARICARE') &&
+      !ctx.game.rules.hasActiveLight(ctx.state)
+    );
   },
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.dark.tooDark'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.dark.tooDark'),
+    effects: [],
+  }),
 };

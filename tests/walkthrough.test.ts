@@ -72,9 +72,10 @@ function verifyFinal(engine: Engine, label: string, w: Walkthrough, turnsAtFeren
   expect(turnsAtFerenc, `${label}: turnsAtFerenc`).toBe(e.turnsAtFerenc);
   expect(state.turn.totalTurnsConsumed, `${label}: finalTurns`).toBe(e.finalTurns);
   expect(state.punteggio.totale, `${label}: score`).toBe(e.score);
-  expect([...state.visitedPlaces].sort((a: number, b: number) => a - b), `${label}: luoghi`).toEqual(
-    [...e.visitedPlaces].sort((a, b) => a - b)
-  );
+  expect(
+    [...state.visitedPlaces].sort((a: number, b: number) => a - b),
+    `${label}: luoghi`
+  ).toEqual([...e.visitedPlaces].sort((a, b) => a - b));
   expect([...state.punteggio.interazioniPunteggio].sort(), `${label}: interazioni`).toEqual(
     [...e.interactions].sort()
   );
@@ -104,7 +105,10 @@ describe('percorsi di riferimento v1.4.0', () => {
       verifyFinal(engine, w.name, w, turnsAtFerenc);
       if (w.name.startsWith('min_')) {
         // Invariante della decisione R3, indipendente dal valore registrato
-        expect(turnsAtFerenc as number, `${w.name}: turni all'incontro con Ferenc`).toBeLessThanOrEqual(100);
+        expect(
+          turnsAtFerenc as number,
+          `${w.name}: turni all'incontro con Ferenc`
+        ).toBeLessThanOrEqual(100);
       }
     });
   }
@@ -114,7 +118,11 @@ describe('percorsi di riferimento v1.4.0', () => {
     const save = load<{ gameState: Record<string, unknown> }>('save_v140_full_it_step91.json');
     const engine = newEngine(1);
     engine.setGameState(save.gameState);
-    const turnsAtFerenc = await runSteps(engine, 'save_v140_step91', w.steps.filter(s => s.step >= 92));
+    const turnsAtFerenc = await runSteps(
+      engine,
+      'save_v140_step91',
+      w.steps.filter((s) => s.step >= 92)
+    );
     verifyFinal(engine, 'save_v140_step91', w, turnsAtFerenc);
   });
 });

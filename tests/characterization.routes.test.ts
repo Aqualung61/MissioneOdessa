@@ -55,7 +55,7 @@ describe('Route di servizio', () => {
       const s = app.listen(0, '127.0.0.1', () => resolveServer(s));
     });
     const address = server.address();
-    base = `http://127.0.0.1:${typeof address === 'string' ? 0 : address?.port ?? 0}`;
+    base = `http://127.0.0.1:${typeof address === 'string' ? 0 : (address?.port ?? 0)}`;
   });
 
   afterAll(async () => {
@@ -95,7 +95,15 @@ describe('Route di servizio', () => {
     expect(r.body).toEqual({ ok: true });
   });
 
-  const STORIA_KEYS = ['testo1', 'testo2', 'labelLinks', 'labelDocumenti', 'autoreLine', 'genereLine', 'piattaformaLine'];
+  const STORIA_KEYS = [
+    'testo1',
+    'testo2',
+    'labelLinks',
+    'labelDocumenti',
+    'autoreLine',
+    'genereLine',
+    'piattaformaLine',
+  ];
 
   it('GET /api/storia?id=1&lingua=2', async () => {
     const row = (Storia as Json[]).find((s) => s.ID === 1 && s.IDLingua === 2);
@@ -118,7 +126,15 @@ describe('Route di servizio', () => {
     const r = await call('GET', '/api/storia?id=999');
     expect(r.status).toBe(200);
     expect(Object.keys(r.body)).toEqual(STORIA_KEYS);
-    expect(r.body).toEqual({ testo1: '', testo2: '', labelLinks: '', labelDocumenti: '', autoreLine: '', genereLine: '', piattaformaLine: '' });
+    expect(r.body).toEqual({
+      testo1: '',
+      testo2: '',
+      labelLinks: '',
+      labelDocumenti: '',
+      autoreLine: '',
+      genereLine: '',
+      piattaformaLine: '',
+    });
   });
 
   it('GET /api/storia?id=1&lingua=999 (lingua inesistente)', async () => {

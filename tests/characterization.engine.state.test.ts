@@ -42,7 +42,9 @@ interface WalkthroughStep {
 }
 
 function loadWalkthroughCommands(name: string): string[] {
-  const data = JSON.parse(readFileSync(resolve(root, 'tests', 'fixtures', 'walkthrough', `${name}.json`), 'utf8'));
+  const data = JSON.parse(
+    readFileSync(resolve(root, 'tests', 'fixtures', 'walkthrough', `${name}.json`), 'utf8')
+  );
   return (data.steps as WalkthroughStep[]).map((s) => s.command);
 }
 
@@ -77,7 +79,16 @@ describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameSt
 
   it('setGameState — struttura minima (turn, punteggio, timers, flags, visitedPlaces, Oggetti, interazioniEseguite assenti): tutti i default si applicano', () => {
     const source = newEngine(1);
-    const partial = snapshotWithout(source, 'turn', 'punteggio', 'timers', 'flags', 'visitedPlaces', 'Oggetti', 'interazioniEseguite');
+    const partial = snapshotWithout(
+      source,
+      'turn',
+      'punteggio',
+      'timers',
+      'flags',
+      'visitedPlaces',
+      'Oggetti',
+      'interazioniEseguite'
+    );
     partial.currentLocationId = 7;
 
     const engine = newEngine(1);
@@ -89,7 +100,11 @@ describe('Caratterizzazione — motore: compatibilità dei salvataggi (setGameSt
     expect(state.flags.cassaforteScoperta).toBe(false);
     expect(state.flags.bastoneLiberato).toBe(false);
     expect(state.flags.passaggioCrollato).toBe(false);
-    expect(state.punteggio).toEqual({ totale: 0, interazioniPunteggio: new Set(), misteriRisolti: new Set() });
+    expect(state.punteggio).toEqual({
+      totale: 0,
+      interazioniPunteggio: new Set(),
+      misteriRisolti: new Set(),
+    });
     expect(state.timers.matchesLeft).toBe(0);
     expect(state.timers.matchTimer).toBe(0);
     expect(state.turn.globalTurnNumber).toBe(0);
@@ -259,7 +274,9 @@ describe('Caratterizzazione — motore: executeCommand, rami ESAMINA/APRI-CHIUDI
     const data = JSON.parse(
       readFileSync(resolve(root, 'tests', 'fixtures', 'walkthrough', 'full_it.json'), 'utf8')
     ) as { steps: WalkthroughStep[] };
-    const commands = data.steps.filter((s) => s.step <= 44 && !dropSteps.has(s.step)).map((s) => s.command);
+    const commands = data.steps
+      .filter((s) => s.step <= 44 && !dropSteps.has(s.step))
+      .map((s) => s.command);
     await runMany(engine, commands.slice(0, -1));
 
     const inventoryCount = engine

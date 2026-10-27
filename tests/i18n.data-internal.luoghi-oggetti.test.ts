@@ -4,7 +4,7 @@ import Oggetti from '../src/data-internal/Oggetti.json';
 
 function assertCompleteI18nById<T extends { ID: number; IDLingua: number }>(
   datasetName: string,
-  rows: T[],
+  rows: T[]
 ) {
   const byId = new Map<number, Set<number>>();
 
@@ -16,7 +16,7 @@ function assertCompleteI18nById<T extends { ID: number; IDLingua: number }>(
   for (const [id, langs] of byId.entries()) {
     expect(
       [datasetName, id, Array.from(langs).sort((a, b) => a - b)],
-      `${datasetName}: copertura i18n incompleta per ID=${id}`,
+      `${datasetName}: copertura i18n incompleta per ID=${id}`
     ).toEqual([datasetName, id, [1, 2]]);
   }
 

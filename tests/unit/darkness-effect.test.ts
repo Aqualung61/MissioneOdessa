@@ -8,7 +8,6 @@ import { resetGameState, getGameState, initializeOriginalData } from '../../src/
 import { darknessEffect } from '../../src/logic/turnEffects/darknessEffect.js';
 
 describe('darknessEffect - Sprint 3.3.5.B', () => {
-  
   beforeEach(() => {
     initializeOriginalData();
     resetGameState(1);
@@ -17,15 +16,15 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
   describe('Incremento turnsInDarkness', () => {
     it('NON dovrebbe incrementare al primo turno senza luce (hadLightBefore=true)', () => {
       const state = getGameState();
-      
+
       // Setup: aveva luce prima, ora no
       state.turn.previous.hasLight = true;
       state.turn.current.hasLight = false;
       state.turn.turnsInDarkness = 0;
-      
+
       const result = { message: '' };
       darknessEffect(state, result, null);
-      
+
       // Non incrementa al primo turno buio
       expect(state.turn.turnsInDarkness).toBe(0);
     });
@@ -109,7 +108,7 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
 
   describe('Pass-through behavior', () => {
     // Aggiornato per decisione R1 (#107)
-    it('dovrebbe accodare l\'avviso di pericolo a result.message senza luce', () => {
+    it("dovrebbe accodare l'avviso di pericolo a result.message senza luce", () => {
       const state = getGameState();
       state.turn.current.hasLight = false;
       state.turn.darknessTimer = 2;
@@ -124,9 +123,9 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.turn.previous.hasLight = true;
       state.turn.current.hasLight = false;
-      
+
       const result = { message: '' };
-      
+
       // Non dovrebbe crashare con parseResult null
       expect(() => darknessEffect(state, result, null)).not.toThrow();
     });
@@ -135,15 +134,15 @@ describe('darknessEffect - Sprint 3.3.5.B', () => {
   describe('Edge cases', () => {
     it('dovrebbe gestire hasLight=true senza reset se turnsInDarkness già 0', () => {
       const state = getGameState();
-      
+
       // Setup: sempre avuto luce
       state.turn.previous.hasLight = true;
       state.turn.current.hasLight = true;
       state.turn.turnsInDarkness = 0;
-      
+
       const result = { message: '' };
       darknessEffect(state, result, null);
-      
+
       // Rimane 0 (idempotente)
       expect(state.turn.turnsInDarkness).toBe(0);
     });

@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ensureVocabulary, parseCommand, resetVocabularyCache } from '../src/logic/parser.js';
-import { executeCommand, generateHelpMessage, initializeOriginalData, resetGameState } from '../src/logic/engine.js';
+import {
+  executeCommand,
+  generateHelpMessage,
+  initializeOriginalData,
+  resetGameState,
+} from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -34,7 +39,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
 
   it('generateHelpMessage genera messaggio con tutte le sezioni', () => {
     const message = generateHelpMessage(1);
-    
+
     expect(message).toContain('<b>Comandi disponibili:</b>');
     expect(message).toContain('<i>Direzioni:');
     expect(message).toContain('<i>Sistema:');
@@ -44,7 +49,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
 
   it('generateHelpMessage include comandi di direzione', () => {
     const message = generateHelpMessage(1);
-    
+
     expect(message).toContain('Nord');
     expect(message).toContain('Sud');
     expect(message).toContain('Est');
@@ -53,7 +58,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
 
   it('generateHelpMessage include comandi di sistema', () => {
     const message = generateHelpMessage(1);
-    
+
     expect(message).toContain('Inventario');
     expect(message).toContain('Aiuto');
     expect(message).toContain('Salva');
@@ -62,7 +67,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
 
   it('generateHelpMessage include verbi azione', () => {
     const message = generateHelpMessage(1);
-    
+
     expect(message).toContain('Prendi');
     expect(message).toContain('Esamina');
   });
@@ -91,7 +96,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
     const parsed = await parseCommand(null, 'AIUTO');
     expect(parsed.IsValid).toBe(true);
     expect(parsed.CommandType).toBe('SYSTEM');
-    
+
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('OK');
@@ -104,7 +109,7 @@ describe('Engine: Comando HELP/AIUTO', () => {
     expect(parsed.IsValid).toBe(true);
     expect(parsed.CommandType).toBe('SYSTEM');
     expect(parsed.CanonicalVerb).toBe('AIUTO');
-    
+
     const res = executeCommand(parsed);
     expect(res.accepted).toBe(true);
     expect(res.resultType).toBe('OK');

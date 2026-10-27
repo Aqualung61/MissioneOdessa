@@ -38,7 +38,7 @@ export function prepareTurnContext(gameState, game, parseResult) {
     location: prev.location || gameState.currentLocationId,
     hasLight: prev.hasLight || false,
     consumedTurn: prev.consumesTurn || false,
-    inDangerZone: prev.inDangerZone || false
+    inDangerZone: prev.inDangerZone || false,
   };
 
   // Determina proprietà turno corrente
@@ -52,7 +52,7 @@ export function prepareTurnContext(gameState, game, parseResult) {
     consumesTurn: consumesTurn,
     location: gameState.currentLocationId,
     hasLight: hasLight,
-    inDangerZone: inDangerZone
+    inDangerZone: inDangerZone,
   };
 
   // Incrementa contatore globale (sempre, anche per comandi non-consuming)
@@ -85,7 +85,7 @@ export function runPreExecutionChecks(gameState, parseResult) {
       accepted: false,
       resultType: 'ERROR',
       message: getSystemMessage('narrative.movement.blocked', gameState.currentLingua),
-      effects: []
+      effects: [],
     };
   }
 

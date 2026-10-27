@@ -34,10 +34,33 @@
     "timerZonaAperta": 2,
     "turniTorciaFunzionante": 6,
     "timerGuardia": 5,
-    "avvisiGuardia": { "3": "timer.guard.warning1", "2": "timer.guard.warning2", "1": "timer.guard.warning3" },
+    "avvisiGuardia": {
+      "3": "timer.guard.warning1",
+      "2": "timer.guard.warning2",
+      "1": "timer.guard.warning3"
+    },
     "limiteAlba": 200,
-    "avvisiAlba": { "30": "timer.dawn.warning30", "15": "timer.dawn.warning15", "5": "timer.dawn.warning5" },
-    "verbiBloccatiAlBuio": ["PRENDERE", "ESAMINARE", "GUARDARE", "LEGGERE", "SPOSTARE", "RUOTARE", "INFILARE", "METTERE", "SCAVARE", "PREMERE", "PORGERE", "APRIRE", "CHIUDERE", "SCARICARE"],
+    "avvisiAlba": {
+      "30": "timer.dawn.warning30",
+      "15": "timer.dawn.warning15",
+      "5": "timer.dawn.warning5"
+    },
+    "verbiBloccatiAlBuio": [
+      "PRENDERE",
+      "ESAMINARE",
+      "GUARDARE",
+      "LEGGERE",
+      "SPOSTARE",
+      "RUOTARE",
+      "INFILARE",
+      "METTERE",
+      "SCAVARE",
+      "PREMERE",
+      "PORGERE",
+      "APRIRE",
+      "CHIUDERE",
+      "SCARICARE"
+    ],
     "oggettiSceniciSenzaPresenza": ["FILO_SPINATO", "ARREDAMENTO", "ELEVATORE", "PARETE"]
   },
   "punteggio": {
@@ -54,6 +77,18 @@
     ]
   },
   "lessico": {
-    "verbiSenzaOggetto": ["DORMIRE", "ESAMINARE", "GUARDARE", "SCAVARE", "ACCENDERE", "SPEGNERE", "SCAPPARE", "SORRIDERE", "SEDERSI", "PARLARE", "ATTACCARE"]
+    "verbiSenzaOggetto": [
+      "DORMIRE",
+      "ESAMINARE",
+      "GUARDARE",
+      "SCAVARE",
+      "ACCENDERE",
+      "SPEGNERE",
+      "SCAPPARE",
+      "SORRIDERE",
+      "SEDERSI",
+      "PARLARE",
+      "ATTACCARE"
+    ]
   }
 }

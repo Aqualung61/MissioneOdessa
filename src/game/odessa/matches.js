@@ -35,13 +35,19 @@ export function consumaFiammifero(gameState, config) {
  * @param {Object} config - configurazione del gioco (`game.config`)
  */
 export function accendiFiammifero(gameState, config) {
-  const fiammiferi = gameState.Oggetti.find((o) =>
-    o.ID === config.oggetti.fiammiferi &&
-    (o.IDLuogo === 0 || o.IDLuogo === gameState.currentLocationId) &&
-    o.Attivo >= 1
+  const fiammiferi = gameState.Oggetti.find(
+    (o) =>
+      o.ID === config.oggetti.fiammiferi &&
+      (o.IDLuogo === 0 || o.IDLuogo === gameState.currentLocationId) &&
+      o.Attivo >= 1
   );
   if (!fiammiferi || !(gameState.timers.matchesLeft > 0)) {
-    return { accepted: true, resultType: 'OK', message: getSystemMessage('engine.matches.none', gameState.currentLingua), effects: [] };
+    return {
+      accepted: true,
+      resultType: 'OK',
+      message: getSystemMessage('engine.matches.none', gameState.currentLingua),
+      effects: [],
+    };
   }
 
   const finished = consumaFiammifero(gameState, config);

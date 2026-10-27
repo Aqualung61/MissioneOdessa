@@ -13,19 +13,19 @@ import { debugStateSnapshot } from './state.js';
  */
 export function generaDescrizioneLuogoConOggetti(eng, idLuogo) {
   const gameState = eng.state;
-  const luogo = getGameData().Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
+  const luogo = getGameData().Luoghi.find(
+    (l) => l.ID === idLuogo && l.IDLingua === gameState.currentLingua
+  );
   if (!luogo) return '';
 
   let messaggio = `<span style="color: black;">${luogo.Descrizione}</span>\n`;
 
   // Aggiungi lista oggetti presenti (include scenici spostabili: Attivo=2)
-  const oggettiPresenti = gameState.Oggetti.filter(o =>
-    o.IDLuogo === idLuogo && o.Attivo >= 1
-  );
+  const oggettiPresenti = gameState.Oggetti.filter((o) => o.IDLuogo === idLuogo && o.Attivo >= 1);
 
   if (oggettiPresenti.length > 0) {
     messaggio += `\n<b><i>${getSystemMessage('engine.location.objectsPresent', gameState.currentLingua)}</i></b>\n`;
-    oggettiPresenti.forEach(obj => {
+    oggettiPresenti.forEach((obj) => {
       messaggio += `<i>  - ${obj.Oggetto}</i>\n`;
     });
   }
@@ -44,10 +44,11 @@ export function generaDescrizioneLuogoConOggetti(eng, idLuogo) {
  *   (il chiamante assegna `effetto.destinazione`, anche se assente)
  */
 export function toggleDestination(data, lingua, idLuogo, direzione) {
-  const isToggle = (e) => e.tipo === 'TOGGLE_DIREZIONE' && e.luogo === idLuogo && e.direzione === direzione;
+  const isToggle = (e) =>
+    e.tipo === 'TOGGLE_DIREZIONE' && e.luogo === idLuogo && e.direzione === direzione;
   const interazione = (data.Interazioni || [])
-    .filter(i => i.IDLingua === lingua)
-    .find(i => i.effetti && i.effetti.some(isToggle));
+    .filter((i) => i.IDLingua === lingua)
+    .find((i) => i.effetti && i.effetti.some(isToggle));
   if (!interazione) return null;
   return interazione.effetti.find(isToggle);
 }
@@ -88,7 +89,9 @@ function applyToggledDirections(direzioni, gameState, idLuogo) {
  */
 export function getDirezioniLuogo(eng, idLuogo) {
   const gameState = eng.state;
-  const luogo = getGameData().Luoghi.find(l => l.ID === idLuogo && l.IDLingua === gameState.currentLingua);
+  const luogo = getGameData().Luoghi.find(
+    (l) => l.ID === idLuogo && l.IDLingua === gameState.currentLingua
+  );
   if (!luogo) return {};
 
   const direzioni = {
@@ -97,7 +100,7 @@ export function getDirezioniLuogo(eng, idLuogo) {
     Sud: luogo.Sud,
     Ovest: luogo.Ovest,
     Su: luogo.Su,
-    Giu: luogo.Giu
+    Giu: luogo.Giu,
   };
 
   applyUnlockedDirections(direzioni, gameState, idLuogo);
@@ -141,7 +144,9 @@ export function setCurrentLocation(eng, locationId) {
     gameState.visitedPlaces.add(locationId);
 
     // Assegna +1 punto SOLO se NON è luogo terminale
-    const luogo = getGameData()?.Luoghi?.find(l => l.ID === locationId && l.IDLingua === gameState.currentLingua);
+    const luogo = getGameData()?.Luoghi?.find(
+      (l) => l.ID === locationId && l.IDLingua === gameState.currentLingua
+    );
     const isTerminal = luogo ? luogo.Terminale === -1 : null;
     if (luogo && !isTerminal) {
       gameState.punteggio.totale += eng.game.config.punteggio.luogo;

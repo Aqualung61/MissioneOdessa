@@ -5,7 +5,7 @@ import VociLessico from '../src/data-internal/VociLessico.json';
 
 describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
   it('usa solo ID_Lingua whitelist (1=IT, 2=EN)', () => {
-    const invalid = VociLessico.filter(v => v.ID_Lingua !== 1 && v.ID_Lingua !== 2);
+    const invalid = VociLessico.filter((v) => v.ID_Lingua !== 1 && v.ID_Lingua !== 2);
     expect(invalid).toEqual([]);
   });
 
@@ -36,8 +36,10 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
     for (const t of TerminiLessico) {
       if (EXPECTED_MISSING_BOTH.has(t.ID_Termine)) continue;
       const langs = byTerm.get(t.ID_Termine) ?? new Set<number>();
-      const needed = [1, 2].filter(l => !langs.has(l));
-      const unexpected = EXPECTED_MISSING_EN.has(t.ID_Termine) ? needed.filter((l) => l !== 2) : needed;
+      const needed = [1, 2].filter((l) => !langs.has(l));
+      const unexpected = EXPECTED_MISSING_EN.has(t.ID_Termine)
+        ? needed.filter((l) => l !== 2)
+        : needed;
       if (unexpected.length) missing.push({ termId: t.ID_Termine, missing: unexpected });
     }
 
@@ -48,7 +50,10 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
     for (const termId of EXPECTED_MISSING_EN) {
       const langs = byTerm.get(termId) ?? new Set<number>();
       expect(langs.has(1), `ID_Termine ${termId}: manca la voce IT`).toBe(true);
-      expect(langs.has(2), `ID_Termine ${termId}: ha guadagnato una voce EN, l'eccezione non è più necessaria`).toBe(false);
+      expect(
+        langs.has(2),
+        `ID_Termine ${termId}: ha guadagnato una voce EN, l'eccezione non è più necessaria`
+      ).toBe(false);
     }
 
     // L'eccezione di E5 deve restare esattamente TAVOLO (35) e BOTTON (36), entrambi
@@ -56,7 +61,10 @@ describe('Sprint 59.4 — data-internal: VociLessico i18n', () => {
     // altro ID_Termine perdesse entrambe, questo fallisce.
     for (const termId of EXPECTED_MISSING_BOTH) {
       const langs = byTerm.get(termId) ?? new Set<number>();
-      expect(langs.size, `ID_Termine ${termId}: ha guadagnato una voce, l'eccezione non è più necessaria`).toBe(0);
+      expect(
+        langs.size,
+        `ID_Termine ${termId}: ha guadagnato una voce, l'eccezione non è più necessaria`
+      ).toBe(0);
     }
   });
 });

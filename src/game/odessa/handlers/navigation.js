@@ -8,8 +8,8 @@ export const collapsedPassage = {
   id: 'odessa.nav.collapsedPassage',
   types: ['NAVIGATION'],
   match: (cmd, ctx) =>
-    ctx.state.currentLocationId === ctx.game.config.luoghi.passaggioCrollato.luogo
-    && directionFieldFor(cmd.concept) === ctx.game.config.luoghi.passaggioCrollato.direzione,
+    ctx.state.currentLocationId === ctx.game.config.luoghi.passaggioCrollato.luogo &&
+    directionFieldFor(cmd.concept) === ctx.game.config.luoghi.passaggioCrollato.direzione,
   run: (cmd, ctx) => {
     if (ctx.state.flags.passaggioCrollato) {
       return {
@@ -56,6 +56,11 @@ export const blockedWithText = {
   match: (cmd, ctx) => !!findBlockedWithText(cmd, ctx),
   run: (cmd, ctx) => {
     const movimentoBloccatoConTesto = findBlockedWithText(cmd, ctx);
-    return { accepted: true, resultType: 'ERROR', message: ctx.msg(movimentoBloccatoConTesto.messaggio), effects: [] };
+    return {
+      accepted: true,
+      resultType: 'ERROR',
+      message: ctx.msg(movimentoBloccatoConTesto.messaggio),
+      effects: [],
+    };
   },
 };

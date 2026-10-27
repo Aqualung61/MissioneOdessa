@@ -41,7 +41,9 @@ describe('Interazioni.json — schema (#93)', () => {
 
     const errors = validateInterazioni(copy);
     expect(
-      errors.some((e) => e.includes('accendi_lampada') && e.includes('risposta presente solo in una lingua'))
+      errors.some(
+        (e) => e.includes('accendi_lampada') && e.includes('risposta presente solo in una lingua')
+      )
     ).toBe(true);
   });
 

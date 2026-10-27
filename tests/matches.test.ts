@@ -39,7 +39,7 @@ async function runAll(engine: Engine, commands: string[]) {
   return results;
 }
 
-describe('fiammiferi dell\'originale (#108)', () => {
+describe("fiammiferi dell'originale (#108)", () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();
@@ -75,7 +75,13 @@ describe('fiammiferi dell\'originale (#108)', () => {
 
   it('TB-03: il fiammifero salva dal buio', async () => {
     const engine = newEngine();
-    const results = await runAll(engine, ['posa torcia', 'esamina documenti', 'accendi fiammifero', 'e', 'o']);
+    const results = await runAll(engine, [
+      'posa torcia',
+      'esamina documenti',
+      'accendi fiammifero',
+      'e',
+      'o',
+    ]);
     expect(results.every((r) => r.resultType !== 'GAME_OVER')).toBe(true);
   });
 
@@ -85,7 +91,9 @@ describe('fiammiferi dell\'originale (#108)', () => {
     const state = engine.getGameState();
 
     for (let i = 0; i < 5; i++) {
-      expect(results[i].message, `accensione ${i + 1}`).not.toContain(msg('engine.matches.finished'));
+      expect(results[i].message, `accensione ${i + 1}`).not.toContain(
+        msg('engine.matches.finished')
+      );
     }
     expect(results[5].message).toContain(msg('engine.matches.lit'));
     expect(results[5].message).toContain(msg('engine.matches.finished'));
@@ -101,9 +109,15 @@ describe('fiammiferi dell\'originale (#108)', () => {
     expect(results[6].resultType).not.toBe('GAME_OVER');
   });
 
-  it('TB-05: la lampada con l\'ultimo fiammifero lo consuma e lo esaurisce', async () => {
+  it("TB-05: la lampada con l'ultimo fiammifero lo consuma e lo esaurisce", async () => {
     const engine = newEngine();
-    const commands = ['e', 'n', 'prendi lampada', ...Array(5).fill('accendi fiammifero'), 'accendi lampada'];
+    const commands = [
+      'e',
+      'n',
+      'prendi lampada',
+      ...Array(5).fill('accendi fiammifero'),
+      'accendi lampada',
+    ];
     const results = await runAll(engine, commands);
     const state = engine.getGameState();
 
@@ -115,7 +129,13 @@ describe('fiammiferi dell\'originale (#108)', () => {
 
   it('TB-06: la lampada senza fiammiferi risponde con il testo dedicato', async () => {
     const engine = newEngine();
-    const commands = ['e', 'n', 'prendi lampada', ...Array(6).fill('accendi fiammifero'), 'accendi lampada'];
+    const commands = [
+      'e',
+      'n',
+      'prendi lampada',
+      ...Array(6).fill('accendi fiammifero'),
+      'accendi lampada',
+    ];
     const results = await runAll(engine, commands);
 
     // Il fiammifero acceso dalla 6ª accensione può ancora spegnersi in questo turno (indipendente)
@@ -127,7 +147,15 @@ describe('fiammiferi dell\'originale (#108)', () => {
     const engine = newEngine();
     // Si prende e si accende la lampada PRIMA di posare la torcia, altrimenti il buio
     // bloccherebbe PRENDERE.
-    await runAll(engine, ['e', 'n', 'prendi lampada', 'accendi lampada', 'posa torcia', 'posa lampada', 'accendi fiammifero']);
+    await runAll(engine, [
+      'e',
+      'n',
+      'prendi lampada',
+      'accendi lampada',
+      'posa torcia',
+      'posa lampada',
+      'accendi fiammifero',
+    ]);
 
     const sMove = await run(engine, 's'); // 6 -> 2: il fiammifero si spegne in questo turno
     expect(sMove.resultType).not.toBe('GAME_OVER'); // matchLitAtStart evita LAMP_ABANDONED
@@ -144,7 +172,14 @@ describe('fiammiferi dell\'originale (#108)', () => {
 
   it('TB-07: senza fiammifero acceso, lasciare la lampada accesa è morte immediata (invariato)', async () => {
     const engine = newEngine();
-    const results = await runAll(engine, ['e', 'n', 'prendi lampada', 'accendi lampada', 'posa torcia', 'posa lampada']);
+    const results = await runAll(engine, [
+      'e',
+      'n',
+      'prendi lampada',
+      'accendi lampada',
+      'posa torcia',
+      'posa lampada',
+    ]);
     expect(results.every((r) => r.resultType !== 'GAME_OVER')).toBe(true);
 
     const sMove = await run(engine, 's'); // 6 -> 2, senza fiammifero: nessuna fonte di luce resta
@@ -157,14 +192,18 @@ describe('fiammiferi dell\'originale (#108)', () => {
     for (const command of ['accendi fiammifero', 'accendi fiammiferi']) {
       const r = await run(it1, command);
       expect(r.resultType, command).not.toBe('ERROR');
-      expect([msg('engine.matches.lit'), msg('engine.matches.none')]).toContain(r.message.split('\n')[0]);
+      expect([msg('engine.matches.lit'), msg('engine.matches.none')]).toContain(
+        r.message.split('\n')[0]
+      );
     }
 
     const en = newEngine(2);
     for (const command of ['light match', 'light matches']) {
       const r = await run(en, command);
       expect(r.resultType, command).not.toBe('ERROR');
-      expect([msg('engine.matches.lit', 2), msg('engine.matches.none', 2)]).toContain(r.message.split('\n')[0]);
+      expect([msg('engine.matches.lit', 2), msg('engine.matches.none', 2)]).toContain(
+        r.message.split('\n')[0]
+      );
     }
   });
 
@@ -179,7 +218,9 @@ describe('fiammiferi dell\'originale (#108)', () => {
     expect(state.timers.matchesLeft).toBe(6);
     expect(state.timers.matchTimer).toBe(0);
 
-    const next = loadJson('tests', 'fixtures', 'walkthrough', 'full_it.json').steps.find((s: { step: number }) => s.step === 92);
+    const next = loadJson('tests', 'fixtures', 'walkthrough', 'full_it.json').steps.find(
+      (s: { step: number }) => s.step === 92
+    );
     const r = await run(engine, next.command);
     expect(r.resultType).toBe(next.resultType);
     expect(engine.getGameState().currentLocationId).toBe(next.location);
@@ -206,8 +247,17 @@ describe('fiammiferi dell\'originale (#108)', () => {
   });
 
   it('TB-12: testi e schema', () => {
-    const messaggi = loadJson('src', 'data-internal', 'MessaggiSistema.json') as Array<{ Chiave: string; IDLingua: number; Messaggio: string }>;
-    for (const key of ['engine.matches.lit', 'engine.matches.finished', 'engine.matches.out', 'engine.matches.none']) {
+    const messaggi = loadJson('src', 'data-internal', 'MessaggiSistema.json') as Array<{
+      Chiave: string;
+      IDLingua: number;
+      Messaggio: string;
+    }>;
+    for (const key of [
+      'engine.matches.lit',
+      'engine.matches.finished',
+      'engine.matches.out',
+      'engine.matches.none',
+    ]) {
       for (const lingua of [1, 2]) {
         const found = messaggi.filter((m) => m.Chiave === key && m.IDLingua === lingua);
         expect(found, `${key} / ${lingua}`).toHaveLength(1);
@@ -218,7 +268,10 @@ describe('fiammiferi dell\'originale (#108)', () => {
     expect(EFFECT_TYPES.has('CONSUMA_FIAMMIFERO')).toBe(true);
     expect(INTERACTION_TOP_LEVEL_KEYS.has('effetti')).toBe(true);
 
-    const interazioni = loadJson('src', 'data-internal', 'Interazioni.json') as Array<{ id: string; effetti: Array<{ tipo: string }> }>;
+    const interazioni = loadJson('src', 'data-internal', 'Interazioni.json') as Array<{
+      id: string;
+      effetti: Array<{ tipo: string }>;
+    }>;
     const accendiLampada = interazioni.filter((i) => i.id === 'accendi_lampada');
     expect(accendiLampada).toHaveLength(2);
     for (const i of accendiLampada) {

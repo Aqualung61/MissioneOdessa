@@ -59,7 +59,11 @@ const MALFORMED: Json[] = [
   { id: 'r', IDLingua: 1, punteggio: 'a' },
   { id: 'r', IDLingua: 2, punteggio: false },
   // t: risposta del prerequisito presente solo in una lingua
-  { id: 't', IDLingua: 1, condizioni: { prerequisiti: [{ tipo: 'INVENTARIO_NON_PIENO', risposta: 'x' }] } },
+  {
+    id: 't',
+    IDLingua: 1,
+    condizioni: { prerequisiti: [{ tipo: 'INVENTARIO_NON_PIENO', risposta: 'x' }] },
+  },
   { id: 't', IDLingua: 2, condizioni: { prerequisiti: [{ tipo: 'INVENTARIO_NON_PIENO' }] } },
   // h: solo in IT; i: solo in EN
   { id: 'h', IDLingua: 1 },
@@ -88,7 +92,7 @@ const EXPECTED_ERRORS = [
 ];
 
 describe('validateInterazioni — caratterizzazione', () => {
-  it('record malformati: elenco completo dei messaggi, nell\'ordine', () => {
+  it("record malformati: elenco completo dei messaggi, nell'ordine", () => {
     expect(validateInterazioni(MALFORMED)).toEqual(EXPECTED_ERRORS);
   });
 
@@ -98,9 +102,14 @@ describe('validateInterazioni — caratterizzazione', () => {
     expect(JSON.parse(JSON.stringify(MALFORMED))).toEqual(copy);
   });
 
-  it.each([[undefined], [{}], ['x'], [null], [42]])('ingresso non array (%j) → messaggio unico', (input) => {
-    expect(validateInterazioni(input as Json)).toEqual(['Interazioni: atteso un array di record']);
-  });
+  it.each([[undefined], [{}], ['x'], [null], [42]])(
+    'ingresso non array (%j) → messaggio unico',
+    (input) => {
+      expect(validateInterazioni(input as Json)).toEqual([
+        'Interazioni: atteso un array di record',
+      ]);
+    }
+  );
 
   it('array vuoto e record nullo: nessun errore', () => {
     expect(validateInterazioni([])).toEqual([]);

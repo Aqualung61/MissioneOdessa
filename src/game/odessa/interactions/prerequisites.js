@@ -6,20 +6,22 @@
 export const prerequisiteTypes = {
   // originale: if (!oggetto) fallisce
   OGGETTO_IN_INVENTARIO: (req, ctx) => {
-    const oggetto = ctx.state.Oggetti.find(o =>
-      ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
-      o.IDLuogo === 0 &&
-      o.Attivo >= 3
+    const oggetto = ctx.state.Oggetti.find(
+      (o) =>
+        ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
+        o.IDLuogo === 0 &&
+        o.Attivo >= 3
     );
     return !!oggetto;
   },
 
   // originale: if (!oggetto) fallisce
   OGGETTO_IN_LUOGO: (req, ctx) => {
-    const oggetto = ctx.state.Oggetti.find(o =>
-      ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
-      o.IDLuogo === req.luogo &&
-      o.Attivo >= 1
+    const oggetto = ctx.state.Oggetti.find(
+      (o) =>
+        ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
+        o.IDLuogo === req.luogo &&
+        o.Attivo >= 1
     );
     return !!oggetto;
   },
@@ -27,10 +29,11 @@ export const prerequisiteTypes = {
   // Stessa condizione di OGGETTO_IN_LUOGO: due voci distinte, identiche.
   // originale: if (!oggetto) fallisce
   OGGETTO_VISIBILE: (req, ctx) => {
-    const oggetto = ctx.state.Oggetti.find(o =>
-      ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
-      o.IDLuogo === req.luogo &&
-      o.Attivo >= 1
+    const oggetto = ctx.state.Oggetti.find(
+      (o) =>
+        ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(req.target) &&
+        o.IDLuogo === req.luogo &&
+        o.Attivo >= 1
     );
     return !!oggetto;
   },
@@ -54,7 +57,9 @@ export const prerequisiteTypes = {
   // originale: if (length >= limite) fallisce
   INVENTARIO_NON_PIENO: (req, ctx) => {
     // Stesso conteggio del comando PRENDERE generico (limite di 5 oggetti)
-    const oggettiInInventario = (ctx.state.Oggetti || []).filter(o => o.IDLuogo === 0 && o.Attivo >= 3);
+    const oggettiInInventario = (ctx.state.Oggetti || []).filter(
+      (o) => o.IDLuogo === 0 && o.Attivo >= 3
+    );
     return !(oggettiInInventario.length >= ctx.game.config.regole.limiteInventario);
   },
 

@@ -47,9 +47,7 @@ function movedAwayFromLampRoom(gameState, lampada) {
 function lampWasOnlyLight(gameState) {
   const torcia = (gameState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.torcia);
   const hasWorkingTorchInInventory =
-    !!torcia &&
-    torcia.IDLuogo === 0 &&
-    gameState.timers.torciaDifettosa !== true;
+    !!torcia && torcia.IDLuogo === 0 && gameState.timers.torciaDifettosa !== true;
 
   // Un fiammifero acceso all'inizio del turno copre lo spostamento (R8, §4.5):
   // il giocatore resta illuminato per il comando in corso, non muore subito.
@@ -62,7 +60,8 @@ function lampWasOnlyLight(gameState) {
 // Se il giocatore lascia la lampada accesa a terra e si sposta in un altro luogo,
 // e non ha altre fonti di luce (torcia in inventario e funzionante), game over immediato.
 function lampAbandoned(gameState, parseResult) {
-  if (parseResult?.CommandType !== 'NAVIGATION' || gameState.timers.lampadaAccesa !== true) return null;
+  if (parseResult?.CommandType !== 'NAVIGATION' || gameState.timers.lampadaAccesa !== true)
+    return null;
 
   const lampada = (gameState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.lampada);
 
@@ -86,7 +85,7 @@ function darkness(gameState) {
 // Messaggio i18n (senza domanda riavvio, la aggiunge il client)
 function terminalLocation(gameState) {
   const currentLuogo = getGameData().Luoghi.find(
-    l => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua
+    (l) => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua
   );
   if (!currentLuogo || currentLuogo.Terminale !== -1) return null;
   return { messageKey: 'game.terminal.location', reason: 'TERMINAL_LOCATION' };
@@ -113,7 +112,8 @@ function guardArrest(gameState) {
 // === CHECK 5: ALBA (R3) ===
 // Limite di turni consumati (comandi SYSTEM esclusi); fermo dopo l'incontro con Ferenc.
 function dawn(gameState) {
-  if (gameState.narrativeState || !(gameState.turn.totalTurnsConsumed >= getDawnTurnLimit())) return null;
+  if (gameState.narrativeState || !(gameState.turn.totalTurnsConsumed >= getDawnTurnLimit()))
+    return null;
   const messageKey = OPEN_AREA_LOCATIONS.includes(gameState.currentLocationId)
     ? 'timer.dawn.death.outdoor'
     : 'timer.dawn.death.house';
@@ -121,7 +121,14 @@ function dawn(gameState) {
 }
 
 // Ordine vincolante: il primo controllo che scatta ferma gli altri.
-export const GAME_OVER_CHECKS = [lampAbandoned, darkness, terminalLocation, openArea, guardArrest, dawn];
+export const GAME_OVER_CHECKS = [
+  lampAbandoned,
+  darkness,
+  terminalLocation,
+  openArea,
+  guardArrest,
+  dawn,
+];
 
 /**
  * Verifica tutte le condizioni di game over post-turno.

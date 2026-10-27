@@ -13,8 +13,9 @@ function parsePositiveInt(value) {
 // Ogni sessione ha un proprio motore (createEngine) che viene rilasciato con l'evizione.
 // Questi limiti impediscono un numero illimitato di sessioni (e quindi di engine) nel tempo.
 const MAX_SESSIONS = parsePositiveInt(process.env.SESSION_MAX_SESSIONS) ?? 200;
-const SESSION_IDLE_TTL_MS = parsePositiveInt(process.env.SESSION_IDLE_TTL_MS) ?? (6 * 60 * 60 * 1000); // 6h
-const SESSION_ABSOLUTE_TTL_MS = parsePositiveInt(process.env.SESSION_ABSOLUTE_TTL_MS) ?? (24 * 60 * 60 * 1000); // 24h
+const SESSION_IDLE_TTL_MS = parsePositiveInt(process.env.SESSION_IDLE_TTL_MS) ?? 6 * 60 * 60 * 1000; // 6h
+const SESSION_ABSOLUTE_TTL_MS =
+  parsePositiveInt(process.env.SESSION_ABSOLUTE_TTL_MS) ?? 24 * 60 * 60 * 1000; // 24h
 
 /**
  * In-memory session store.

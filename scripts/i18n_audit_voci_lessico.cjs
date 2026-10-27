@@ -6,8 +6,8 @@ const termini = require('../src/data-internal/TerminiLessico.json');
 const tipi = require('../src/data-internal/TipiLessico.json');
 const oggetti = require('../src/data-internal/Oggetti.json');
 
-const tipoById = new Map(tipi.map(t => [t.ID_TipoLessico, t.NomeTipo]));
-const termById = new Map(termini.map(t => [t.ID_Termine, t]));
+const tipoById = new Map(tipi.map((t) => [t.ID_TipoLessico, t.NomeTipo]));
+const termById = new Map(termini.map((t) => [t.ID_Termine, t]));
 
 function norm(s) {
   return String(s || '')
@@ -21,9 +21,9 @@ function norm(s) {
 
 function resolveOggettoEnByConcetto(concetto) {
   const needle = norm(concetto);
-  const it = oggetti.find(o => o.IDLingua === 1 && norm(o.Oggetto) === needle);
+  const it = oggetti.find((o) => o.IDLingua === 1 && norm(o.Oggetto) === needle);
   if (!it) return null;
-  const en = oggetti.find(o => o.ID === it.ID && o.IDLingua === 2);
+  const en = oggetti.find((o) => o.ID === it.ID && o.IDLingua === 2);
   return en?.Oggetto ?? null;
 }
 
@@ -40,22 +40,29 @@ for (const [termId, langs] of hasByTerm) {
 }
 missingEn.sort((a, b) => a - b);
 
-const report = missingEn.map(termId => {
+const report = missingEn.map((termId) => {
   const term = termById.get(termId);
   const tipo = tipoById.get(term?.ID_TipoLessico);
   const concetto = term?.Concetto;
-  const itVoices = voci.filter(v => v.ID_Termine === termId && v.ID_Lingua === 1).map(v => v.Voce);
+  const itVoices = voci
+    .filter((v) => v.ID_Termine === termId && v.ID_Lingua === 1)
+    .map((v) => v.Voce);
   const enSuggestion = tipo === 'NOUN' ? resolveOggettoEnByConcetto(concetto) : null;
   return { termId, tipo, concetto, itVoices, enSuggestion };
 });
 
 console.log('VociLessico rows:', voci.length);
 console.log('Missing EN terms:', report.length);
-console.log('Missing EN by tipo:', report.reduce((acc, r) => {
-  acc[r.tipo || 'UNKNOWN'] = (acc[r.tipo || 'UNKNOWN'] || 0) + 1;
-  return acc;
-}, {}));
+console.log(
+  'Missing EN by tipo:',
+  report.reduce((acc, r) => {
+    acc[r.tipo || 'UNKNOWN'] = (acc[r.tipo || 'UNKNOWN'] || 0) + 1;
+    return acc;
+  }, {})
+);
 
 for (const r of report) {
-  console.log(`term ${r.termId} [${r.tipo}] concetto=${r.concetto} IT=${JSON.stringify(r.itVoices)} EN_suggest=${r.enSuggestion}`);
+  console.log(
+    `term ${r.termId} [${r.tipo}] concetto=${r.concetto} IT=${JSON.stringify(r.itVoices)} EN_suggest=${r.enSuggestion}`
+  );
 }

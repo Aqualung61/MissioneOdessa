@@ -15,7 +15,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOdessa } from '../src/initOdessa.js';
 import { ensureVocabulary } from '../src/logic/parser.js';
-import { generateResponses, loadResponsesBaseline, writeResponsesSnapshot } from './testUtils/responseSnapshot.js';
+import {
+  generateResponses,
+  loadResponsesBaseline,
+  writeResponsesSnapshot,
+} from './testUtils/responseSnapshot.js';
 
 describe('Istantanea delle risposte (#109)', () => {
   beforeAll(async () => {
@@ -28,36 +32,39 @@ describe('Istantanea delle risposte (#109)', () => {
     expect(baseline.length).toBe(88151);
   });
 
-  it(
-    'rigenera esattamente le stesse risposte della baseline',
-    async () => {
-      const generated = await generateResponses();
+  // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
+  // reali (vedi generateResponses), più lento del
+  // default di Vitest sotto carico nella suite completa.
+  it('rigenera esattamente le stesse risposte della baseline', async () => {
+    const generated = await generateResponses();
 
-      if (process.env.UPDATE_RESPONSES === '1') {
-        writeResponsesSnapshot(generated);
-        return;
+    if (process.env.UPDATE_RESPONSES === '1') {
+      writeResponsesSnapshot(generated);
+      return;
+    }
+
+    const baseline = loadResponsesBaseline();
+    expect(generated.length).toBe(baseline.length);
+
+    const diffs: string[] = [];
+    const count = Math.max(baseline.length, generated.length);
+    for (let i = 0; i < count; i++) {
+      const a = baseline[i];
+      const b = generated[i];
+      if (
+        !a ||
+        !b ||
+        a.lang !== b.lang ||
+        a.step !== b.step ||
+        a.input !== b.input ||
+        a.message !== b.message
+      ) {
+        diffs.push(
+          `lang=${a?.lang ?? b?.lang} step=${a?.step ?? b?.step} input="${a?.input ?? b?.input}": prima="${a?.message}" dopo="${b?.message}"`
+        );
       }
+    }
 
-      const baseline = loadResponsesBaseline();
-      expect(generated.length).toBe(baseline.length);
-
-      const diffs: string[] = [];
-      const count = Math.max(baseline.length, generated.length);
-      for (let i = 0; i < count; i++) {
-        const a = baseline[i];
-        const b = generated[i];
-        if (!a || !b || a.lang !== b.lang || a.step !== b.step || a.input !== b.input || a.message !== b.message) {
-          diffs.push(
-            `lang=${a?.lang ?? b?.lang} step=${a?.step ?? b?.step} input="${a?.input ?? b?.input}": prima="${a?.message}" dopo="${b?.message}"`
-          );
-        }
-      }
-
-      expect(diffs.length, diffs.join('\n')).toBe(0);
-    },
-    // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
-    // reali (vedi generateResponses), più lento del
-    // default di Vitest sotto carico nella suite completa.
-    60000
-  );
+    expect(diffs.length, diffs.join('\n')).toBe(0);
+  }, 60000);
 });

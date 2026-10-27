@@ -52,8 +52,12 @@ describe('Sprint 59.5 — runtime: Interazioni filtrate per lingua', () => {
   it('Esegue un’interazione in EN e ritorna la risposta EN', () => {
     setCurrentLocation(24);
 
-    const expectedEn = Interazioni.find(i => i.id === 'sposta_quadro_24' && i.IDLingua === 2)?.risposta;
-    const expectedIt = Interazioni.find(i => i.id === 'sposta_quadro_24' && i.IDLingua === 1)?.risposta;
+    const expectedEn = Interazioni.find(
+      (i) => i.id === 'sposta_quadro_24' && i.IDLingua === 2
+    )?.risposta;
+    const expectedIt = Interazioni.find(
+      (i) => i.id === 'sposta_quadro_24' && i.IDLingua === 1
+    )?.risposta;
     expect(typeof expectedEn).toBe('string');
     expect(typeof expectedIt).toBe('string');
 

@@ -42,10 +42,7 @@ export function oggettiPerLingua(originalOggetti, idLingua) {
     : originalOggetti;
 
   const perLingua = baseOggetti.filter(
-    (o) =>
-      o?.IDLingua === idLingua ||
-      o?.IDLingua === null ||
-      o?.IDLingua === undefined
+    (o) => o?.IDLingua === idLingua || o?.IDLingua === null || o?.IDLingua === undefined
   );
   if (perLingua.length > 0) {
     return JSON.parse(JSON.stringify(perLingua)); // Deep copy dai dati originali
@@ -80,53 +77,53 @@ export function createInitialState(game, idLingua) {
     punteggio: {
       totale: game.config.punteggio.luogo, // Luogo iniziale (ID=1) già visitato
       interazioniPunteggio: new Set(), // ID interazioni completate
-      misteriRisolti: new Set()        // ID misteri completati
+      misteriRisolti: new Set(), // ID misteri completati
       // NOTA: usa visitedPlaces esistente per punteggio luoghi (no duplicazione)
     },
 
     // === SISTEMA TEMPORIZZAZIONE ===
     timers: {
-      movementCounter: 0,              // Contatore globale mosse (per Torcia)
-      torciaDifettosa: false,          // False all'inizio (funzionante), True dopo 6 turni
-      lampadaAccesa: false,            // Stato della lampada
-      azioniInLuogoPericoloso: 0,      // Counter per Intercettazione
-      ultimoLuogoPericoloso: null,     // ID per reset al cambio stanza
+      movementCounter: 0, // Contatore globale mosse (per Torcia)
+      torciaDifettosa: false, // False all'inizio (funzionante), True dopo 6 turni
+      lampadaAccesa: false, // Stato della lampada
+      azioniInLuogoPericoloso: 0, // Counter per Intercettazione
+      ultimoLuogoPericoloso: null, // ID per reset al cambio stanza
       matchesLeft: game.rules.initialMatches(), // Fiammiferi rimasti (R8)
-      matchTimer: 0                    // Turni di luce residui del fiammifero acceso (R8)
+      matchTimer: 0, // Turni di luce residui del fiammifero acceso (R8)
     },
 
     // === SISTEMA TURN (v3.0) ===
     turn: {
-      globalTurnNumber: 0,        // Contatore globale di tutti i turni (consumati o no)
-      totalTurnsConsumed: 0,       // Contatore turni che consumano tempo
-      turnsInDarkness: 0,          // Solo compatibilità salvataggi (non decide più la morte)
-      turnsInDangerZone: 0,        // Solo compatibilità salvataggi (non decide più la morte)
-      darknessTimer: 0,            // Timer del buio (R1), 0 = non attivo
-      openAreaTimer: 0,            // Timer della zona aperta (R2), 0 = non attivo
-      movedThisTurn: false,        // Se l'ultimo comando ha cambiato luogo
+      globalTurnNumber: 0, // Contatore globale di tutti i turni (consumati o no)
+      totalTurnsConsumed: 0, // Contatore turni che consumano tempo
+      turnsInDarkness: 0, // Solo compatibilità salvataggi (non decide più la morte)
+      turnsInDangerZone: 0, // Solo compatibilità salvataggi (non decide più la morte)
+      darknessTimer: 0, // Timer del buio (R1), 0 = non attivo
+      openAreaTimer: 0, // Timer della zona aperta (R2), 0 = non attivo
+      movedThisTurn: false, // Se l'ultimo comando ha cambiato luogo
       current: {
-        parseResult: null,         // Comando corrente
-        consumesTurn: false,       // Se questo comando consuma turno
+        parseResult: null, // Comando corrente
+        consumesTurn: false, // Se questo comando consuma turno
         location: game.config.luoghi.iniziale, // Luogo attuale
-        hasLight: false,           // Se ha fonte di luce attiva
-        inDangerZone: false        // Se in zona pericolosa
+        hasLight: false, // Se ha fonte di luce attiva
+        inDangerZone: false, // Se in zona pericolosa
       },
       previous: {
         location: game.config.luoghi.iniziale, // Luogo precedente
-        hasLight: false,           // Se aveva luce
-        consumedTurn: false,       // Se turno precedente fu consumato
-        inDangerZone: false        // Se era in zona pericolosa
-      }
+        hasLight: false, // Se aveva luce
+        consumedTurn: false, // Se turno precedente fu consumato
+        inDangerZone: false, // Se era in zona pericolosa
+      },
     },
 
     // === SISTEMA VITTORIA ===
-    narrativeState: null,              // Enum: fasi della sequenza finale
-    narrativePhase: 0,                 // Progressivo numerico (opzionale)
-    victory: false,                    // Flag vittoria finale
-    movementBlocked: false,            // Blocca NAVIGATION (per luogo 59)
-    guardTimer: 0,                     // Timer della guardia al luogo 59 (R4)
-    awaitingContinue: false,           // Se true, engine aspetta solo BARRA SPAZIO
-    continueCallback: null             // Funzione da eseguire alla pressione di BARRA
+    narrativeState: null, // Enum: fasi della sequenza finale
+    narrativePhase: 0, // Progressivo numerico (opzionale)
+    victory: false, // Flag vittoria finale
+    movementBlocked: false, // Blocca NAVIGATION (per luogo 59)
+    guardTimer: 0, // Timer della guardia al luogo 59 (R4)
+    awaitingContinue: false, // Se true, engine aspetta solo BARRA SPAZIO
+    continueCallback: null, // Funzione da eseguire alla pressione di BARRA
   };
 }
 
@@ -135,15 +132,17 @@ export function createInitialState(game, idLingua) {
 
 // Deserializzazione Set del punteggio
 function loadPunteggio(punteggio) {
-  return punteggio ? {
-    totale: punteggio.totale || 0,
-    interazioniPunteggio: new Set(punteggio.interazioniPunteggio || []),
-    misteriRisolti: new Set(punteggio.misteriRisolti || [])
-  } : {
-    totale: 0,
-    interazioniPunteggio: new Set(),
-    misteriRisolti: new Set()
-  };
+  return punteggio
+    ? {
+        totale: punteggio.totale || 0,
+        interazioniPunteggio: new Set(punteggio.interazioniPunteggio || []),
+        misteriRisolti: new Set(punteggio.misteriRisolti || []),
+      }
+    : {
+        totale: 0,
+        interazioniPunteggio: new Set(),
+        misteriRisolti: new Set(),
+      };
 }
 
 function loadTurnCounters(turn) {
@@ -159,33 +158,37 @@ function loadTurnCounters(turn) {
 }
 
 function loadTurnCurrent(current, newState, game) {
-  return current ? {
-    parseResult: current.parseResult || null,
-    consumesTurn: current.consumesTurn || false,
-    location: current.location || newState.currentLocationId || game.config.luoghi.iniziale,
-    hasLight: current.hasLight || false,
-    inDangerZone: current.inDangerZone || false
-  } : {
-    parseResult: null,
-    consumesTurn: false,
-    location: newState.currentLocationId || game.config.luoghi.iniziale,
-    hasLight: false,
-    inDangerZone: false
-  };
+  return current
+    ? {
+        parseResult: current.parseResult || null,
+        consumesTurn: current.consumesTurn || false,
+        location: current.location || newState.currentLocationId || game.config.luoghi.iniziale,
+        hasLight: current.hasLight || false,
+        inDangerZone: current.inDangerZone || false,
+      }
+    : {
+        parseResult: null,
+        consumesTurn: false,
+        location: newState.currentLocationId || game.config.luoghi.iniziale,
+        hasLight: false,
+        inDangerZone: false,
+      };
 }
 
 function loadTurnPrevious(previous, game) {
-  return previous ? {
-    location: previous.location || game.config.luoghi.iniziale,
-    hasLight: previous.hasLight || false,
-    consumedTurn: previous.consumedTurn || false,
-    inDangerZone: previous.inDangerZone || false
-  } : {
-    location: game.config.luoghi.iniziale,
-    hasLight: false,
-    consumedTurn: false,
-    inDangerZone: false
-  };
+  return previous
+    ? {
+        location: previous.location || game.config.luoghi.iniziale,
+        hasLight: previous.hasLight || false,
+        consumedTurn: previous.consumedTurn || false,
+        inDangerZone: previous.inDangerZone || false,
+      }
+    : {
+        location: game.config.luoghi.iniziale,
+        hasLight: false,
+        consumedTurn: false,
+        inDangerZone: false,
+      };
 }
 
 // Salvataggio senza `turn`: `previous` SENZA `inDangerZone`. Non va uniformato.
@@ -203,13 +206,13 @@ function loadMissingTurn(newState, game) {
       consumesTurn: false,
       location: newState.currentLocationId || game.config.luoghi.iniziale,
       hasLight: false,
-      inDangerZone: false
+      inDangerZone: false,
     },
     previous: {
       location: game.config.luoghi.iniziale,
       hasLight: false,
-      consumedTurn: false
-    }
+      consumedTurn: false,
+    },
   };
 }
 
@@ -219,7 +222,7 @@ function loadTurn(newState, game) {
   return {
     ...loadTurnCounters(newState.turn),
     current: loadTurnCurrent(newState.turn.current, newState, game),
-    previous: loadTurnPrevious(newState.turn.previous, game)
+    previous: loadTurnPrevious(newState.turn.previous, game),
   };
 }
 
@@ -255,7 +258,7 @@ export function loadState(newState, game) {
     guardTimer: game.rules.deriveLoadedGuardTimer(newState),
     // Fiammiferi (R8): default per i salvataggi che non li contengono (§4.1)
     timers: game.rules.deriveLoadedTimers(newState),
-    turn: loadTurn(newState, game)
+    turn: loadTurn(newState, game),
   };
   // Campo della v1.4.0 non più usato (R4): ignorato se presente nel salvataggio
   delete state.unusefulCommandsCounter;
@@ -269,7 +272,7 @@ function snapshotPunteggio(punteggio) {
   return {
     totale: punteggio.totale,
     interazioniPunteggio: Array.from(punteggio.interazioniPunteggio),
-    misteriRisolti: Array.from(punteggio.misteriRisolti)
+    misteriRisolti: Array.from(punteggio.misteriRisolti),
   };
 }
 
@@ -288,14 +291,14 @@ function snapshotTurn(turn) {
       consumesTurn: turn.current.consumesTurn,
       location: turn.current.location,
       hasLight: turn.current.hasLight,
-      inDangerZone: turn.current.inDangerZone
+      inDangerZone: turn.current.inDangerZone,
     },
     previous: {
       location: turn.previous.location,
       hasLight: turn.previous.hasLight,
       consumedTurn: turn.previous.consumedTurn,
-      inDangerZone: turn.previous.inDangerZone
-    }
+      inDangerZone: turn.previous.inDangerZone,
+    },
   };
 }
 
@@ -307,7 +310,9 @@ function snapshotTurn(turn) {
  * @returns {Object}
  */
 export function snapshotState(gameState, data, version) {
-  const currentLocation = data.Luoghi.find(l => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua);
+  const currentLocation = data.Luoghi.find(
+    (l) => l.ID === gameState.currentLocationId && l.IDLingua === gameState.currentLingua
+  );
   return {
     openStates: { ...gameState.openStates },
     awaitingEndConfirm: gameState.awaitingEndConfirm,

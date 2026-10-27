@@ -12,7 +12,13 @@ import {
 } from './core/turn.js';
 
 // Stato di gioco: iniziale, caricamento, snapshot, dati originali
-import { createInitialState, loadState, snapshotState, loadOriginalOggetti, oggettiPerLingua } from './core/state.js';
+import {
+  createInitialState,
+  loadState,
+  snapshotState,
+  loadOriginalOggetti,
+  oggettiPerLingua,
+} from './core/state.js';
 
 import { resetEngineDebugTrace } from './engineDebug.js';
 
@@ -102,7 +108,9 @@ function resetState(eng, idLingua = 1) {
   // Aggiungi Oggetti a gameState dai dati originali
   eng.state.Oggetti = oggettiPerLingua(eng.originalOggetti, idLingua);
   if (eng.state.Oggetti.length > 0) {
-    console.log('Caricamento Oggetti in gameState: Sì, numero di record: ' + eng.state.Oggetti.length);
+    console.log(
+      'Caricamento Oggetti in gameState: Sì, numero di record: ' + eng.state.Oggetti.length
+    );
   }
 }
 
@@ -137,16 +145,19 @@ function buildHelpers(eng) {
   const helpers = {
     normalize: normalizeForComparison,
     // Ricerca di "PRIORITÀ 2": oggetto nel luogo corrente o in inventario (stessa condizione)
-    findObjectHereOrInventory: (noun) => (eng.state.Oggetti || []).find(obj =>
-      normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) &&
-      (obj.IDLuogo === eng.state.currentLocationId || obj.IDLuogo === 0) &&
-      obj.Attivo >= 1
-    ),
+    findObjectHereOrInventory: (noun) =>
+      (eng.state.Oggetti || []).find(
+        (obj) =>
+          normalizeForComparison(obj.Oggetto) === normalizeForComparison(noun) &&
+          (obj.IDLuogo === eng.state.currentLocationId || obj.IDLuogo === 0) &&
+          obj.Attivo >= 1
+      ),
     getNestedProperty,
     setNestedProperty,
     consumaFiammifero: () => consumaFiammifero(eng.state, eng.game.config),
     // Interazioni: il contesto si crea a ogni chiamata sullo stato corrente.
-    cercaEseguiInterazione: (verb, noun) => cercaEseguiInterazione(verb, noun, createContext(eng.state, eng.game, helpers)),
+    cercaEseguiInterazione: (verb, noun) =>
+      cercaEseguiInterazione(verb, noun, createContext(eng.state, eng.game, helpers)),
     accendiFiammifero: () => accendiFiammifero(eng.state, eng.game.config),
     setCurrentLocation: (locationId) => setLocation(eng, locationId),
     getDirezioniLuogo: (idLuogo) => directionsOf(eng, idLuogo),
@@ -175,7 +186,8 @@ function buildEngineApi(eng, helpers) {
     hasFonteLuceAttiva: () => eng.game.rules.hasActiveLight(eng.state),
     prepareTurnContext: (parseResult) => prepareTurn(eng.state, eng.game, parseResult),
     runPreExecutionChecks: (parseResult) => runPreChecks(eng.state, parseResult),
-    applyTurnEffects: (result, parseResult) => applyEffects(eng.state, eng.game, result, parseResult),
+    applyTurnEffects: (result, parseResult) =>
+      applyEffects(eng.state, eng.game, result, parseResult),
     generateHelpMessage: helpers.generateHelpMessage,
     generaDescrizioneLuogoConOggetti: helpers.generaDescrizioneLuogoConOggetti,
     getOggetti: () => eng.state.Oggetti || [],
@@ -297,7 +309,8 @@ export const generateHelpMessage = (...args) => defaultEngine.generateHelpMessag
  * @param {number} idLuogo - ID del luogo
  * @returns {string} testo, vuoto se il luogo non esiste nella lingua corrente
  */
-export const generaDescrizioneLuogoConOggetti = (...args) => defaultEngine.generaDescrizioneLuogoConOggetti(...args);
+export const generaDescrizioneLuogoConOggetti = (...args) =>
+  defaultEngine.generaDescrizioneLuogoConOggetti(...args);
 /**
  * Oggetti dello stato di gioco corrente. Come l'omonima funzione di `createEngine()`, sul motore di default del modulo.
  * @returns {Array<Object>}

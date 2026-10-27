@@ -7,7 +7,12 @@ export const rotateDirection = {
   id: 'odessa.action.rotateDirection',
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'RUOTARE' && (cmd.noun === 'DESTRA' || cmd.noun === 'SINISTRA'),
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.rotate.nothingToTurn'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.rotate.nothingToTurn'),
+    effects: [],
+  }),
 };
 
 // 20 — odessa.action.rotateKnob
@@ -18,6 +23,15 @@ export const rotateDirection = {
 export const rotateKnob = {
   id: 'odessa.action.rotateKnob',
   types: ['ACTION'],
-  match: (cmd, ctx) => cmd.concept === 'RUOTARE' && cmd.noun === 'MANOPOLA' && ctx.state.currentLocationId === ctx.game.config.luoghi.cassaforte && ctx.state.flags.cassaforteScoperta,
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.rotate.knobPoints'), effects: [] }),
+  match: (cmd, ctx) =>
+    cmd.concept === 'RUOTARE' &&
+    cmd.noun === 'MANOPOLA' &&
+    ctx.state.currentLocationId === ctx.game.config.luoghi.cassaforte &&
+    ctx.state.flags.cassaforteScoperta,
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.rotate.knobPoints'),
+    effects: [],
+  }),
 };

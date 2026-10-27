@@ -16,7 +16,10 @@ describe('initOdessa — caricamento dati tutto o niente (#94)', () => {
   it('TB-02: un file illeggibile fa lanciare un errore che lo nomina', async () => {
     const realRead = fs.readFileSync;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(fs, 'readFileSync').mockImplementation(((p: fs.PathOrFileDescriptor, ...rest: unknown[]) => {
+    vi.spyOn(fs, 'readFileSync').mockImplementation(((
+      p: fs.PathOrFileDescriptor,
+      ...rest: unknown[]
+    ) => {
       if (String(p).endsWith('Luoghi.json')) throw new Error('ENOENT simulato');
       return (realRead as (...args: unknown[]) => unknown)(p, ...rest);
     }) as typeof fs.readFileSync);
@@ -24,11 +27,15 @@ describe('initOdessa — caricamento dati tutto o niente (#94)', () => {
     await expect(initOdessa()).rejects.toThrow(/Luoghi\.json/);
   });
 
-  it('TB-02: l\'errore elenca tutti i file non caricati', async () => {
+  it("TB-02: l'errore elenca tutti i file non caricati", async () => {
     const realRead = fs.readFileSync;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(fs, 'readFileSync').mockImplementation(((p: fs.PathOrFileDescriptor, ...rest: unknown[]) => {
-      if (String(p).endsWith('Luoghi.json') || String(p).endsWith('Oggetti.json')) throw new Error('ENOENT simulato');
+    vi.spyOn(fs, 'readFileSync').mockImplementation(((
+      p: fs.PathOrFileDescriptor,
+      ...rest: unknown[]
+    ) => {
+      if (String(p).endsWith('Luoghi.json') || String(p).endsWith('Oggetti.json'))
+        throw new Error('ENOENT simulato');
       return (realRead as (...args: unknown[]) => unknown)(p, ...rest);
     }) as typeof fs.readFileSync);
 

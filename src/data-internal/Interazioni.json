@@ -567,13 +567,7 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "DESTRA",
-        "pattern": [
-          "DESTRA",
-          "SINISTRA",
-          "SINISTRA",
-          "DESTRA",
-          "SINISTRA"
-        ],
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
         "effetti_completamento": []
       }
     ],
@@ -604,13 +598,7 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "SINISTRA",
-        "pattern": [
-          "DESTRA",
-          "SINISTRA",
-          "SINISTRA",
-          "DESTRA",
-          "SINISTRA"
-        ],
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
         "effetti_completamento": []
       }
     ],
@@ -1280,13 +1268,7 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "DESTRA",
-        "pattern": [
-          "DESTRA",
-          "SINISTRA",
-          "SINISTRA",
-          "DESTRA",
-          "SINISTRA"
-        ],
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
         "effetti_completamento": []
       }
     ],
@@ -1317,13 +1299,7 @@
         "tipo": "SEQUENZA",
         "target": "cassaforte_24",
         "direzione": "SINISTRA",
-        "pattern": [
-          "DESTRA",
-          "SINISTRA",
-          "SINISTRA",
-          "DESTRA",
-          "SINISTRA"
-        ],
+        "pattern": ["DESTRA", "SINISTRA", "SINISTRA", "DESTRA", "SINISTRA"],
         "effetti_completamento": []
       }
     ],

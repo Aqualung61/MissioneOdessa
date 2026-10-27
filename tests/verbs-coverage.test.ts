@@ -12,8 +12,16 @@ import TipiLessico from '../src/data-internal/TipiLessico.json';
 // Aggiunto ATTACCARE, ammesso senza oggetto
 // (TD Lessico L3 nomi luoghi e guardia, §5).
 const NO_OBJECT_CONCEPTS = new Set([
-  'DORMIRE', 'ESAMINARE', 'GUARDARE', 'SCAVARE', 'ACCENDERE',
-  'SPEGNERE', 'SCAPPARE', 'SORRIDERE', 'SEDERSI', 'PARLARE',
+  'DORMIRE',
+  'ESAMINARE',
+  'GUARDARE',
+  'SCAVARE',
+  'ACCENDERE',
+  'SPEGNERE',
+  'SCAPPARE',
+  'SORRIDERE',
+  'SEDERSI',
+  'PARLARE',
   'ATTACCARE',
 ]);
 

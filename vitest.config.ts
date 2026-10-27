@@ -5,9 +5,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: [
-      'tests/**/*.test.ts',
-    ],
+    include: ['tests/**/*.test.ts'],
     // Escludi test E2E Playwright dalla run di Vitest e altre cartelle di build
     exclude: [
       'node_modules',
@@ -17,7 +15,7 @@ export default defineConfig({
       // Escludi in modo esplicito eventuali e2e sotto src/tests
       'src/tests/e2e/**',
       '**/e2e/**',
-      '**/*.e2e.*'
+      '**/*.e2e.*',
     ],
     setupFiles: ['tests/setup.ts'],
     // Copertura attiva solo con --coverage (#63, lotto 0 v1.4.2); npm test non cambia.

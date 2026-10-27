@@ -57,21 +57,33 @@ async function run(engine: Engine, command: string) {
 }
 
 function walkthrough(lingua: number): Step[] {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 async function playUpTo(lingua: number, uptoStep: number): Promise<Engine> {
   const engine = newEngine(lingua);
-  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep)) await run(engine, s.command);
+  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep))
+    await run(engine, s.command);
   return engine;
 }
 
 async function pickFields(command: string, lingua: number): Promise<ParsedFields> {
   const r = await parseCommand(null, command, { currentLingua: lingua });
-  return { IsValid: r.IsValid, CommandType: r.CommandType, VerbConcept: r.VerbConcept, NounConcept: r.NounConcept, Error: r.Error };
+  return {
+    IsValid: r.IsValid,
+    CommandType: r.CommandType,
+    VerbConcept: r.VerbConcept,
+    NounConcept: r.NounConcept,
+    Error: r.Error,
+  };
 }
 
-describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", () => {
+describe('Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)', () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();
@@ -118,45 +130,62 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
 
       // Prima di "sposta quadro"/"move painting" (passo 37): cassaforte non visibile.
       const senzaCassaforte = await run(await playUpTo(lingua, 36), giraManopola);
-      expect(senzaCassaforte.message, `${giraManopola}, senza cassaforte visibile`).toBe(msg('engine.examine.objectNotHere', lingua, [lingua === 1 ? 'manopola' : 'knob']));
+      expect(senzaCassaforte.message, `${giraManopola}, senza cassaforte visibile`).toBe(
+        msg('engine.examine.objectNotHere', lingua, [lingua === 1 ? 'manopola' : 'knob'])
+      );
 
       // Dopo (passo 37): cassaforte visibile.
       const conCassaforte = await run(await playUpTo(lingua, 37), giraManopola);
-      expect(conCassaforte.message, `${giraManopola}, con cassaforte visibile`).toBe(msg('engine.rotate.knobPoints', lingua));
+      expect(conCassaforte.message, `${giraManopola}, con cassaforte visibile`).toBe(
+        msg('engine.rotate.knobPoints', lingua)
+      );
     }
   });
 
   it('4.4 / E2: esamina oggetti scenici, ovunque, senza controllo di presenza', async () => {
     for (const lingua of [1, 2]) {
-      const comandi = lingua === 1
-        ? ['esamina filo spinato', 'esamina arredamento', 'esamina elevatore', 'esamina parete']
-        : ['examine barbed wire', 'examine furniture', 'examine elevator', 'examine wall'];
+      const comandi =
+        lingua === 1
+          ? ['esamina filo spinato', 'esamina arredamento', 'esamina elevatore', 'esamina parete']
+          : ['examine barbed wire', 'examine furniture', 'examine elevator', 'examine wall'];
       for (const comando of comandi) {
         const altrove = await run(newEngine(lingua), comando);
-        expect(altrove.message, `${comando}, altrove`).toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+        expect(altrove.message, `${comando}, altrove`).toBe(
+          msg('engine.examine.nothingSpecialOriginal', lingua)
+        );
         // Alla barriera (59): stessa risposta, nessun controllo di presenza.
         const allaBarriera = await run(await playUpTo(lingua, 146), comando);
-        expect(allaBarriera.message, `${comando}, alla barriera`).toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+        expect(allaBarriera.message, `${comando}, alla barriera`).toBe(
+          msg('engine.examine.nothingSpecialOriginal', lingua)
+        );
       }
     }
   });
 
-  it('4.5: esamina macerie, ai luoghi 11, 32, 36 (al 49 resta la descrizione dell\'oggetto)', async () => {
+  it("4.5: esamina macerie, ai luoghi 11, 32, 36 (al 49 resta la descrizione dell'oggetto)", async () => {
     for (const lingua of [1, 2]) {
       const esaminaMacerie = lingua === 1 ? 'esamina macerie' : 'examine rubble';
 
       const al11 = await run(await playUpTo(lingua, 14), esaminaMacerie);
-      expect(al11.message, `${esaminaMacerie} al luogo 11`).toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+      expect(al11.message, `${esaminaMacerie} al luogo 11`).toBe(
+        msg('engine.examine.nothingSpecialOriginal', lingua)
+      );
 
       const al32 = await run(await playUpTo(lingua, 80), esaminaMacerie);
-      expect(al32.message, `${esaminaMacerie} al luogo 32`).toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+      expect(al32.message, `${esaminaMacerie} al luogo 32`).toBe(
+        msg('engine.examine.nothingSpecialOriginal', lingua)
+      );
 
       const al36 = await run(await playUpTo(lingua, 81), esaminaMacerie);
-      expect(al36.message, `${esaminaMacerie} al luogo 36`).toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+      expect(al36.message, `${esaminaMacerie} al luogo 36`).toBe(
+        msg('engine.examine.nothingSpecialOriginal', lingua)
+      );
 
       // Al 49 (prima dello scavo, passo 101): resta la descrizione esistente dell'oggetto, invariata.
       const al49 = await run(await playUpTo(lingua, 101), esaminaMacerie);
-      expect(al49.message, `${esaminaMacerie} al luogo 49`).not.toBe(msg('engine.examine.nothingSpecialOriginal', lingua));
+      expect(al49.message, `${esaminaMacerie} al luogo 49`).not.toBe(
+        msg('engine.examine.nothingSpecialOriginal', lingua)
+      );
     }
   });
 
@@ -167,13 +196,18 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
       const guardaBareComando = lingua === 1 ? 'guarda' : 'look';
 
       const engine1 = newEngine(lingua);
-      const [guardaSolo, guardaConLuogo] = [await run(engine1, guardaBareComando), await run(newEngine(lingua), guardaCucina)];
+      const [guardaSolo, guardaConLuogo] = [
+        await run(engine1, guardaBareComando),
+        await run(newEngine(lingua), guardaCucina),
+      ];
       expect(guardaConLuogo.message, guardaCucina).toBe(guardaSolo.message);
 
       const engine2 = await playUpTo(lingua, 37); // in biblioteca (24)
       const guardaSoloInBiblioteca = await run(await playUpTo(lingua, 37), guardaBareComando);
       const esaminaBibliotecaResult = await run(engine2, esaminaBiblioteca);
-      expect(esaminaBibliotecaResult.message, esaminaBiblioteca).toBe(guardaSoloInBiblioteca.message);
+      expect(esaminaBibliotecaResult.message, esaminaBiblioteca).toBe(
+        guardaSoloInBiblioteca.message
+      );
     }
   });
 
@@ -190,11 +224,15 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
       const est = lingua === 1 ? 'e' : 'e';
 
       const chiusa = await run(await playUpTo(lingua, 94), est);
-      expect(chiusa.message, `${est}, porta chiusa`).toBe(msg('engine.move.doorClosedPassage', lingua));
+      expect(chiusa.message, `${est}, porta chiusa`).toBe(
+        msg('engine.move.doorClosedPassage', lingua)
+      );
 
       const aperta = await run(await playUpTo(lingua, 95), est);
       expect(aperta.resultType, `${est}, porta aperta`).toBe('OK');
-      expect(aperta.message, `${est}, porta aperta`).not.toBe(msg('engine.move.doorClosedPassage', lingua));
+      expect(aperta.message, `${est}, porta aperta`).not.toBe(
+        msg('engine.move.doorClosedPassage', lingua)
+      );
     }
   });
 
@@ -203,11 +241,15 @@ describe("Lessico L3: guardia, nomi, luoghi, movimento e preposizioni (#109)", (
       const ovest = lingua === 1 ? 'o' : 'w';
 
       const primaDiScavare = await run(await playUpTo(lingua, 101), ovest);
-      expect(primaDiScavare.message, `${ovest}, prima di scavare`).toBe(msg('engine.move.rubbleBlocksWest', lingua));
+      expect(primaDiScavare.message, `${ovest}, prima di scavare`).toBe(
+        msg('engine.move.rubbleBlocksWest', lingua)
+      );
 
       const dopoScavare = await run(await playUpTo(lingua, 102), ovest);
       expect(dopoScavare.resultType, `${ovest}, dopo aver scavato`).toBe('OK');
-      expect(dopoScavare.message, `${ovest}, dopo aver scavato`).not.toBe(msg('engine.move.rubbleBlocksWest', lingua));
+      expect(dopoScavare.message, `${ovest}, dopo aver scavato`).not.toBe(
+        msg('engine.move.rubbleBlocksWest', lingua)
+      );
     }
   });
 

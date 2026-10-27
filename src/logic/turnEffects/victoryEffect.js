@@ -1,10 +1,10 @@
 /**
  * Victory Effect - Sistema sequenza finale Ferenc e teleport
- * 
+ *
  * Verifica condizioni vittoria e avvia sequenza narrativa immediata:
  * - Incontro Ferenc all'atrio (mostra dialogo + viaggio)
  * - Teleport automatico istantaneo a luogo 59 (Barriera americana)
- * 
+ *
  * Prerequisiti per trigger (al luogo ID=1):
  * 1. hasLight = true (fonte di luce attiva)
  * 2. Fascicolo (ID=16) con IDLuogo=0 (in inventario)
@@ -35,19 +35,19 @@ function checkVictoryPrerequisites(gameState) {
   }
 
   // Prerequisito 3: Fascicolo in inventario
-  const fascicolo = gameState.Oggetti.find(o => o.ID === FASCICOLO_ID);
+  const fascicolo = gameState.Oggetti.find((o) => o.ID === FASCICOLO_ID);
   if (!fascicolo || fascicolo.IDLuogo !== 0) {
     return false;
   }
 
   // Prerequisito 4: Lista di servizio in inventario
-  const lista = gameState.Oggetti.find(o => o.ID === LISTA_ID);
+  const lista = gameState.Oggetti.find((o) => o.ID === LISTA_ID);
   if (!lista || lista.IDLuogo !== 0) {
     return false;
   }
 
   // Prerequisito 5: Dossier in inventario
-  const dossier = gameState.Oggetti.find(o => o.ID === DOSSIER_ID);
+  const dossier = gameState.Oggetti.find((o) => o.ID === DOSSIER_ID);
   if (!dossier || dossier.IDLuogo !== 0) {
     return false;
   }
@@ -81,8 +81,8 @@ function startEndingSequence(gameState, result) {
 function teleportToBarrier(gameState, result, customMessage) {
   for (const oggetto of gameState.Oggetti) {
     if (oggetto.ID === CONFIG.oggetti.documenti && oggetto.IDLuogo === 0) continue;
-    oggetto.Attivo = 0;        // Invisibile e non interagibile
-    oggetto.IDLuogo = -1;      // Rimosso dal gioco
+    oggetto.Attivo = 0; // Invisibile e non interagibile
+    oggetto.IDLuogo = -1; // Rimosso dal gioco
     oggetto.Inventario = false; // Non in inventario
   }
 
@@ -117,22 +117,22 @@ function teleportToBarrier(gameState, result, customMessage) {
   result.resultType = 'TELEPORT';
   result.message = customMessage || '💡 SUGGERIMENTO: Devi porgere i documenti alla guardia.';
   result.locationId = CONFIG.luoghi.barriera; // Client deve aggiornare location
-  result.teleport = true;           // Flag per client
+  result.teleport = true; // Flag per client
   result.narrativePhase = 'ENDING_PHASE_2_WAIT';
 }
 
 /**
  * Victory Effect - Middleware per sequenza finale Ferenc
- * 
+ *
  * Pattern middleware puro (come gameOverEffect):
  * - Controlla narrativeState per determinare fase corrente
  * - Sovrascrive result per comunicare con client
  * - Gestisce sequenza immediata: trigger → teleport diretto (senza input intermedio)
- * 
+ *
  * Ordine esecuzione:
  * 1. Verifica prerequisiti vittoria per primo trigger
  * 2. Se soddisfatti: +4 punti Ferenc, teleport immediato a luogo 59 (+1 punto)
- * 
+ *
  * @param {Object} gameState - Stato del gioco
  * @param {Object} result - Risultato del comando da modificare
  */
@@ -144,7 +144,7 @@ export function victoryEffect(gameState, result) {
 
   // === CHECK PREREQUISITI VITTORIA ===
   // Verifica condizioni ad ogni turno normale per trigger
-  
+
   if (!gameState.narrativeState) {
     if (checkVictoryPrerequisites(gameState)) {
       startEndingSequence(gameState, result);

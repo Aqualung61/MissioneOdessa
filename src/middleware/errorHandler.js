@@ -69,7 +69,7 @@ function sendParserApiError(err, res, httpStatus, isProd) {
 
 // Default API envelope.
 function sendStandardApiError(err, res, httpStatus, isProd) {
-  const errorValue = isProd ? 'INTERNAL_ERROR' : (err?.message || 'INTERNAL_ERROR');
+  const errorValue = isProd ? 'INTERNAL_ERROR' : err?.message || 'INTERNAL_ERROR';
   return res.status(httpStatus).json({ ok: false, error: errorValue });
 }
 

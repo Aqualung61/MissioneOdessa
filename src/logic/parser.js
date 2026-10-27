@@ -54,8 +54,7 @@ function lexiconSource() {
 // Simula la query JOIN voce -> termine -> tipo, nello stesso ordine di VociLessico,
 // scartando le righe senza termine o senza tipo corrispondente.
 function loadLexiconRows(source, lingua) {
-  return source.VociLessico
-    .filter((vl) => vl.ID_Lingua === lingua)
+  return source.VociLessico.filter((vl) => vl.ID_Lingua === lingua)
     .map((vl) => {
       const tl = source.TerminiLessico.find((t) => t.ID_Termine === vl.ID_Termine);
       if (!tl) return null; // Skip se termine non trovato
@@ -141,7 +140,9 @@ function buildActionCanonicalConcepts(rows) {
     if (mapTipoToCommandType(r.Tipo) !== CommandType.ACTION) continue;
     if (actionCanonicalConceptByTerm.has(r.TermineID)) continue;
     const concetto = String(r.Concetto || '').toUpperCase();
-    const esisteComeVoce = rows.some((x) => x.TermineID === r.TermineID && x.Voce.toUpperCase() === concetto);
+    const esisteComeVoce = rows.some(
+      (x) => x.TermineID === r.TermineID && x.Voce.toUpperCase() === concetto
+    );
     actionCanonicalConceptByTerm.set(r.TermineID, esisteComeVoce ? concetto : null);
   }
   return actionCanonicalConceptByTerm;
@@ -171,7 +172,8 @@ function buildTokenMap(rows, lingua, localizedNounConceptByTerm, actionCanonical
     //   minimo lessicografico (vedi actionCanonicalConceptByTerm)
     // - altri tipi: prendi il minimo lessicografico tra le voci della lingua corrente
     const prev = canonicalByTerm.get(r.TermineID);
-    const infinitoCanonico = type === CommandType.ACTION ? actionCanonicalConceptByTerm.get(r.TermineID) : null;
+    const infinitoCanonico =
+      type === CommandType.ACTION ? actionCanonicalConceptByTerm.get(r.TermineID) : null;
     if (type === CommandType.NAVIGATION || type === CommandType.SYSTEM) {
       canonicalByTerm.set(r.TermineID, String(r.Concetto || token).toUpperCase());
     } else if (infinitoCanonico) {
@@ -179,9 +181,10 @@ function buildTokenMap(rows, lingua, localizedNounConceptByTerm, actionCanonical
     } else if (!prev || token < prev) {
       canonicalByTerm.set(r.TermineID, token);
     }
-    const concept = (type === CommandType.NOUN && lingua !== 1)
-      ? (localizedNounConceptByTerm.get(r.TermineID) || r.Concetto)
-      : r.Concetto;
+    const concept =
+      type === CommandType.NOUN && lingua !== 1
+        ? localizedNounConceptByTerm.get(r.TermineID) || r.Concetto
+        : r.Concetto;
     const info = { type, canonical: null, termId: r.TermineID, concept };
     tokenMap.set(token, info);
     const noAcc = removeDiacritics(token);
@@ -237,7 +240,12 @@ export async function ensureVocabulary(gameState = null) {
   const rows = loadLexiconRows(source, currentLingua);
   const localizedNounConceptByTerm = buildLocalizedNounConcepts(rows, source, currentLingua);
   const actionCanonicalConceptByTerm = buildActionCanonicalConcepts(rows);
-  const { tokenMap, canonicalByTerm } = buildTokenMap(rows, currentLingua, localizedNounConceptByTerm, actionCanonicalConceptByTerm);
+  const { tokenMap, canonicalByTerm } = buildTokenMap(
+    rows,
+    currentLingua,
+    localizedNounConceptByTerm,
+    actionCanonicalConceptByTerm
+  );
   applyCanonicalForms(tokenMap, canonicalByTerm);
 
   const built = { tokenMap, longNounIndex: buildLongNounIndex(tokenMap) };
@@ -266,7 +274,12 @@ function isDigits(str) {
 function hasControlChars(s) {
   for (let i = 0; i < s.length; i++) {
     const code = s.charCodeAt(i);
-    const isControl = (code >= 0 && code <= 8) || code === 11 || code === 12 || (code >= 14 && code <= 31) || code === 127;
+    const isControl =
+      (code >= 0 && code <= 8) ||
+      code === 11 ||
+      code === 12 ||
+      (code >= 14 && code <= 31) ||
+      code === 127;
     if (isControl) return true;
   }
   return false;
@@ -457,7 +470,12 @@ function parseTwoTokens(t1, t2, idx, filteredOriginalTokens, base, currentLingua
   if (t1.info.type === CommandType.NAVIGATION || t1.info.type === CommandType.SYSTEM) {
     // CARICA/LOAD seguito da un nome diventa un'azione (#98):
     // da sola (un token) resta il caricamento della partita, gestito sopra.
-    if (t1.info.type === CommandType.SYSTEM && t1.info.concept === 'CARICARE' && t2.info && t2.info.type === CommandType.NOUN) {
+    if (
+      t1.info.type === CommandType.SYSTEM &&
+      t1.info.concept === 'CARICARE' &&
+      t2.info &&
+      t2.info.type === CommandType.NOUN
+    ) {
       const nounLiteral = (filteredOriginalTokens[1] || t2.token).toLowerCase();
       return buildCaricaResult(t1.info, t2.info, nounLiteral, idx, base, currentLingua);
     }
@@ -466,8 +484,14 @@ function parseTwoTokens(t1, t2, idx, filteredOriginalTokens, base, currentLingua
   }
 
   if (t1.info.type === CommandType.ACTION) {
-    if (!t2.info) return { ...base, Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN, UnknownNounToken: filteredOriginalTokens[1] || t2.token };
-    if (t2.info.type !== CommandType.NOUN) return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
+    if (!t2.info)
+      return {
+        ...base,
+        Error: ParseErrorType.SYNTAX_NOUN_UNKNOWN,
+        UnknownNounToken: filteredOriginalTokens[1] || t2.token,
+      };
+    if (t2.info.type !== CommandType.NOUN)
+      return { ...base, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
     const nounLiteral = (filteredOriginalTokens[1] || t2.token).toLowerCase();
     return buildActionNounResult(t1.info, t2.info, nounLiteral, idx, base);
   }
@@ -512,7 +536,14 @@ export async function parseInput(input, gameState = null) {
     const extra = filteredTokens.length === 3 && idx === null;
 
     if (extra) {
-      return parseCompoundNoun(t1, [t2, t3], filteredOriginalTokens, vocab, baseWithNormalized, currentLingua);
+      return parseCompoundNoun(
+        t1,
+        [t2, t3],
+        filteredOriginalTokens,
+        vocab,
+        baseWithNormalized,
+        currentLingua
+      );
     }
     return parseTwoTokens(t1, t2, idx, filteredOriginalTokens, baseWithNormalized, currentLingua);
   }
@@ -520,7 +551,14 @@ export async function parseInput(input, gameState = null) {
   // Più di 3 token: valido solo con verbo noto e nome di 3+ parole (#21a); altrimenti
   // troppi token, anche con primo token sconosciuto (tabella di decisione #21)
   if (filteredTokens[0].info) {
-    return parseCompoundNoun(filteredTokens[0], filteredTokens.slice(1), filteredOriginalTokens, vocab, baseWithNormalized, currentLingua);
+    return parseCompoundNoun(
+      filteredTokens[0],
+      filteredTokens.slice(1),
+      filteredOriginalTokens,
+      vocab,
+      baseWithNormalized,
+      currentLingua
+    );
   }
   return { ...baseWithNormalized, Error: ParseErrorType.SYNTAX_INVALID_STRUCTURE };
 }

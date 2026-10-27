@@ -13,7 +13,11 @@ import { resolve } from 'node:path';
 import { initOdessa } from '../src/initOdessa.js';
 import { createEngine } from '../src/logic/engine.js';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
-import { INTERACTION_TOP_LEVEL_KEYS, PREREQUISITE_TYPES, validateInterazioni } from '../src/logic/interactionSchema.js';
+import {
+  INTERACTION_TOP_LEVEL_KEYS,
+  PREREQUISITE_TYPES,
+  validateInterazioni,
+} from '../src/logic/interactionSchema.js';
 
 type Engine = ReturnType<typeof createEngine>;
 
@@ -38,7 +42,12 @@ async function run(engine: Engine, command: string) {
 }
 
 function walkthrough(lingua: number) {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 // Ritorno dal garage (18, dopo il badile) all'ufficio (11): percorso reale, non nei fixture.
@@ -70,9 +79,10 @@ async function toBibliotecaInventarioLibero(lingua = 1): Promise<Engine> {
 /** Biblioteca (24), prima della scoperta della cassaforte, con 5 oggetti in inventario (limite). */
 async function toBibliotecaInventarioPieno(lingua = 1): Promise<Engine> {
   const engine = newEngine(lingua);
-  const skip = lingua === 1
-    ? new Set(['posa documenti', 'posa fiammiferi', 'posa torcia'])
-    : new Set(['drop documents', 'drop matches', 'drop torch']);
+  const skip =
+    lingua === 1
+      ? new Set(['posa documenti', 'posa fiammiferi', 'posa torcia'])
+      : new Set(['drop documents', 'drop matches', 'drop torch']);
   for (const s of walkthrough(lingua).filter((x) => x.step <= 36)) {
     if (skip.has(s.command)) continue;
     await run(engine, s.command);
@@ -109,7 +119,9 @@ describe('enigmi e punteggio (#96)', () => {
       const punteggioBefore = engine.getGameState().punteggio.totale;
 
       const rScava = await run(engine, 'scava macerie');
-      expect(rScava.message).toContain('Rimuovi le macerie che impediscono di prendere il bastone.');
+      expect(rScava.message).toContain(
+        'Rimuovi le macerie che impediscono di prendere il bastone.'
+      );
 
       const rPrendi = await run(engine, 'prendi bastone');
       expect(rPrendi.message).toMatch(/Hai preso/i);
@@ -144,7 +156,9 @@ describe('enigmi e punteggio (#96)', () => {
       const punteggioBefore = engine.getGameState().punteggio.totale;
 
       const r = await run(engine, 'prendi quadro');
-      expect(r.message).toContain('Prendi il quadro. Scopri che il quadro copre una cassaforte a muro.');
+      expect(r.message).toContain(
+        'Prendi il quadro. Scopri che il quadro copre una cassaforte a muro.'
+      );
 
       const state = engine.getGameState();
       const quadro = state.Oggetti.find((o: { ID: number }) => o.ID === 33);
@@ -160,7 +174,7 @@ describe('enigmi e punteggio (#96)', () => {
       const punteggioBefore = engine.getGameState().punteggio.totale;
 
       const r = await run(engine, 'prendi quadro');
-      expect(r.message).toBe("Non puoi trasportare più di 5 oggetti.");
+      expect(r.message).toBe('Non puoi trasportare più di 5 oggetti.');
 
       const state = engine.getGameState();
       const quadro = state.Oggetti.find((o: { ID: number }) => o.ID === 33);
@@ -193,11 +207,15 @@ describe('enigmi e punteggio (#96)', () => {
 
       const rPosa = await run(engine, 'posa quadro');
       expect(rPosa.message).toMatch(/Hai posato/i);
-      expect(engine.getGameState().Oggetti.find((o: { ID: number }) => o.ID === 33).IDLuogo).toBe(24);
+      expect(engine.getGameState().Oggetti.find((o: { ID: number }) => o.ID === 33).IDLuogo).toBe(
+        24
+      );
 
       const rPrendi2 = await run(engine, 'prendi quadro');
       expect(rPrendi2.message).toMatch(/Hai preso/i);
-      expect(engine.getGameState().Oggetti.find((o: { ID: number }) => o.ID === 33).IDLuogo).toBe(0);
+      expect(engine.getGameState().Oggetti.find((o: { ID: number }) => o.ID === 33).IDLuogo).toBe(
+        0
+      );
       expect(engine.getGameState().punteggio.totale).toBe(punteggioDopoPrimaPresa);
     });
   });
@@ -229,7 +247,10 @@ describe('enigmi e punteggio (#96)', () => {
   describe('Compatibilità dei salvataggi', () => {
     it('default dei flag: cassaforteScoperta = true se interazioniEseguite contiene sposta_quadro_24', () => {
       const source = newEngine();
-      const snapshot = JSON.parse(JSON.stringify(source.getGameStateSnapshot())) as Record<string, unknown> & {
+      const snapshot = JSON.parse(JSON.stringify(source.getGameStateSnapshot())) as Record<
+        string,
+        unknown
+      > & {
         interazioniEseguite: string[];
       };
       delete (snapshot as { flags?: unknown }).flags;
@@ -244,7 +265,10 @@ describe('enigmi e punteggio (#96)', () => {
 
     it('default dei flag: bastoneLiberato = true se il Bastone di comando ha Attivo >= 3 (salvataggi v1.4.0)', () => {
       const source = newEngine();
-      const snapshot = JSON.parse(JSON.stringify(source.getGameStateSnapshot())) as Record<string, unknown> & {
+      const snapshot = JSON.parse(JSON.stringify(source.getGameStateSnapshot())) as Record<
+        string,
+        unknown
+      > & {
         Oggetti: Array<{ ID: number; Attivo: number }>;
       };
       delete (snapshot as { flags?: unknown }).flags;
@@ -277,7 +301,9 @@ describe('enigmi e punteggio (#96)', () => {
       const punteggioBefore = engine.getGameState().punteggio.totale;
 
       const r = await run(engine, 'take painting');
-      expect(r.message).toContain('You take the painting. You discover that it was hiding a wall safe.');
+      expect(r.message).toContain(
+        'You take the painting. You discover that it was hiding a wall safe.'
+      );
 
       const state = engine.getGameState();
       const painting = state.Oggetti.find((o: { ID: number }) => o.ID === 33);

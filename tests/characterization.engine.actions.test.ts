@@ -30,7 +30,9 @@ interface WalkthroughStep {
 const root = resolve(__dirname, '..');
 
 function loadWalkthroughCommands(name: string): string[] {
-  const data = JSON.parse(readFileSync(resolve(root, 'tests', 'fixtures', 'walkthrough', `${name}.json`), 'utf8'));
+  const data = JSON.parse(
+    readFileSync(resolve(root, 'tests', 'fixtures', 'walkthrough', `${name}.json`), 'utf8')
+  );
   return (data.steps as WalkthroughStep[]).map((s) => s.command);
 }
 

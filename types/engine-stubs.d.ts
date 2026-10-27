@@ -1,4 +1,4 @@
-declare module "../src/logic/engine.js" {
+declare module '../src/logic/engine.js' {
   export interface EngineVerbInfo {
     canonical: string;
     termId: number | null;
@@ -19,7 +19,7 @@ declare module "../src/logic/engine.js" {
   }
   export interface EngineResult {
     accepted: boolean;
-    resultType: "OK" | "ERROR";
+    resultType: 'OK' | 'ERROR';
     message: string;
     effects?: any[];
   }
@@ -28,6 +28,6 @@ declare module "../src/logic/engine.js" {
   export function resetGameState(): void;
   export function getGameStateSnapshot(): { Oggetti: any[]; currentLocation: number };
 }
-declare module "../src/logic/messages.js" {
+declare module '../src/logic/messages.js' {
   export function mapParseErrorToUserMessage(parseResult: any): string;
 }

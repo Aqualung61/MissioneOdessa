@@ -38,16 +38,28 @@ describe('Registri delle interazioni (#63)', () => {
   it('1. i tipi di prerequisito del registro coincidono con quelli dello schema, in entrambe le direzioni', () => {
     const registro = Object.keys(odessaGame.prerequisiteTypes);
     const schema = [...PREREQUISITE_TYPES];
-    expect(registro.filter((t) => !PREREQUISITE_TYPES.has(t)), 'nel registro ma non nello schema').toEqual([]);
-    expect(schema.filter((t) => !Object.hasOwn(odessaGame.prerequisiteTypes, t)), 'nello schema ma non nel registro').toEqual([]);
+    expect(
+      registro.filter((t) => !PREREQUISITE_TYPES.has(t)),
+      'nel registro ma non nello schema'
+    ).toEqual([]);
+    expect(
+      schema.filter((t) => !Object.hasOwn(odessaGame.prerequisiteTypes, t)),
+      'nello schema ma non nel registro'
+    ).toEqual([]);
     expect([...registro].sort()).toEqual([...schema].sort());
   });
 
   it('2. i tipi di effetto del registro coincidono con quelli dello schema, in entrambe le direzioni', () => {
     const registro = Object.keys(odessaGame.effectTypes);
     const schema = [...EFFECT_TYPES];
-    expect(registro.filter((t) => !EFFECT_TYPES.has(t)), 'nel registro ma non nello schema').toEqual([]);
-    expect(schema.filter((t) => !Object.hasOwn(odessaGame.effectTypes, t)), 'nello schema ma non nel registro').toEqual([]);
+    expect(
+      registro.filter((t) => !EFFECT_TYPES.has(t)),
+      'nel registro ma non nello schema'
+    ).toEqual([]);
+    expect(
+      schema.filter((t) => !Object.hasOwn(odessaGame.effectTypes, t)),
+      'nello schema ma non nel registro'
+    ).toEqual([]);
     expect([...registro].sort()).toEqual([...schema].sort());
   });
 
@@ -66,7 +78,10 @@ describe('Registri delle interazioni (#63)', () => {
     );
     expect(conToggle.length).toBeGreaterThan(0);
     for (const i of conToggle) {
-      expect(odessaGame.rules.toggleResponseVerbs.has(i.trigger.verbo), `${i.id}: verbo ${i.trigger.verbo}`).toBe(true);
+      expect(
+        odessaGame.rules.toggleResponseVerbs.has(i.trigger.verbo),
+        `${i.id}: verbo ${i.trigger.verbo}`
+      ).toBe(true);
     }
   });
 
@@ -77,7 +92,9 @@ describe('Registri delle interazioni (#63)', () => {
         const req = { tipo };
         const esito = verificaPrerequisiti([req], minimalCtx());
         expect(esito).toEqual({ ok: false, prerequisito: req });
-        expect(warn).toHaveBeenCalledWith(`[engine] prerequisito di tipo sconosciuto in Interazioni.json: ${tipo}`);
+        expect(warn).toHaveBeenCalledWith(
+          `[engine] prerequisito di tipo sconosciuto in Interazioni.json: ${tipo}`
+        );
       });
 
       it(`effetto "${tipo}": ignorato, con l'avviso e senza punti`, () => {
@@ -86,7 +103,9 @@ describe('Registri delle interazioni (#63)', () => {
         const extra = applicaEffetti([{ tipo }], undefined, {}, ctx);
         expect(extra).toEqual([]);
         expect(ctx.state.punteggio.totale).toBe(0);
-        expect(warn).toHaveBeenCalledWith(`[engine] effetto di tipo sconosciuto in Interazioni.json: ${tipo}`);
+        expect(warn).toHaveBeenCalledWith(
+          `[engine] effetto di tipo sconosciuto in Interazioni.json: ${tipo}`
+        );
       });
     }
   });

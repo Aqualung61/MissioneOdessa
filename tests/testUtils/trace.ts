@@ -32,15 +32,18 @@ type Engine = ReturnType<typeof createEngine>;
 type Json = any;
 
 const root = resolve(__dirname, '..', '..');
-const fixture = (...parts: string[]): Json => JSON.parse(readFileSync(resolve(root, 'tests', 'fixtures', ...parts), 'utf8'));
-const walk = (name: string): string[] => fixture('walkthrough', `${name}.json`).steps.map((s: { command: string }) => s.command);
+const fixture = (...parts: string[]): Json =>
+  JSON.parse(readFileSync(resolve(root, 'tests', 'fixtures', ...parts), 'utf8'));
+const walk = (name: string): string[] =>
+  fixture('walkthrough', `${name}.json`).steps.map((s: { command: string }) => s.command);
 
 // JSON canonico: chiavi ordinate, Set/Map come array, funzioni e undefined omessi.
 function canon(v: Json): Json {
   if (v === null || typeof v !== 'object') return v;
   if (v instanceof Set) return [...v].map(canon);
   if (v instanceof Map) return canon(Object.fromEntries(v));
-  if (Array.isArray(v)) return v.map((x) => (typeof x === 'function' || x === undefined ? null : canon(x)));
+  if (Array.isArray(v))
+    return v.map((x) => (typeof x === 'function' || x === undefined ? null : canon(x)));
   const o: Record<string, Json> = {};
   for (const k of Object.keys(v).sort()) {
     if (typeof v[k] === 'function' || v[k] === undefined) continue;
@@ -48,7 +51,10 @@ function canon(v: Json): Json {
   }
   return o;
 }
-const sha = (v: Json): string => createHash('sha256').update(JSON.stringify(canon(v))).digest('hex');
+const sha = (v: Json): string =>
+  createHash('sha256')
+    .update(JSON.stringify(canon(v)))
+    .digest('hex');
 
 async function ensureReady(): Promise<void> {
   const quiet = console.log;
@@ -62,7 +68,10 @@ async function ensureReady(): Promise<void> {
   }
 }
 
-async function withEnv<T>(env: Record<string, string> | undefined, fn: () => Promise<T>): Promise<T> {
+async function withEnv<T>(
+  env: Record<string, string> | undefined,
+  fn: () => Promise<T>
+): Promise<T> {
   const saved: Record<string, string | undefined> = {};
   for (const k of Object.keys(env || {})) {
     saved[k] = process.env[k];
@@ -151,11 +160,24 @@ async function step(engine: Engine, input: string): Promise<{ parsed: Json; resu
   return { parsed, result };
 }
 
-function record(i: number, input: string, parsed: Json, result: Json, s: Json, initialPos: InitialPositions): Json {
+function record(
+  i: number,
+  input: string,
+  parsed: Json,
+  result: Json,
+  s: Json,
+  initialPos: InitialPositions
+): Json {
   return {
     i,
     input,
-    parse: { valid: parsed.IsValid, type: parsed.CommandType, verb: parsed.VerbConcept, noun: parsed.NounConcept, error: parsed.Error },
+    parse: {
+      valid: parsed.IsValid,
+      type: parsed.CommandType,
+      verb: parsed.VerbConcept,
+      noun: parsed.NounConcept,
+      error: parsed.Error,
+    },
     result: canon(result),
     state: compact(s, initialPos),
     sha: sha({ parsed, result, state: s }),
@@ -175,7 +197,8 @@ export async function generateEngineTrace(): Promise<Trace> {
   const out: Trace = {
     format: 1,
     generator: 'tests/testUtils/trace.ts',
-    normalization: 'snapshot senza timestamp e version; JSON canonico a chiavi ordinate; sha = SHA-256 di {parsed, result, state}',
+    normalization:
+      'snapshot senza timestamp e version; JSON canonico a chiavi ordinate; sha = SHA-256 di {parsed, result, state}',
     scenarios: [],
   };
 
@@ -186,13 +209,22 @@ export async function generateEngineTrace(): Promise<Trace> {
       for (const c of walk(sc.prefix.walkthrough).slice(0, sc.prefix.upTo)) await step(engine, c);
     }
     const env: Record<string, string> = { ...(sc.env || {}) };
-    if (sc.envFromTurns) env.GAME_MAX_TURNS_CONSUMED = String(engine.getGameState().turn.totalTurnsConsumed + sc.envFromTurns);
+    if (sc.envFromTurns)
+      env.GAME_MAX_TURNS_CONSUMED = String(
+        engine.getGameState().turn.totalTurnsConsumed + sc.envFromTurns
+      );
     const commands: string[] = sc.walkthrough ? walk(sc.walkthrough) : sc.commands;
     const steps: Json[] = [];
     const start = sc.prefix ? sc.prefix.upTo : 0;
 
     await withEnv(env, async () => {
-      if (sc.prefix) steps.push({ i: start, input: null, state: compact(snap(engine), initialPos), sha: sha({ state: snap(engine) }) });
+      if (sc.prefix)
+        steps.push({
+          i: start,
+          input: null,
+          state: compact(snap(engine), initialPos),
+          sha: sha({ state: snap(engine) }),
+        });
       let i = start;
       for (const c of commands) {
         const { parsed, result } = await step(engine, c);
@@ -216,13 +248,25 @@ export async function generateEngineTrace(): Promise<Trace> {
     const engine = newEngine(sc.lingua);
     const initialPos = initialPositions(engine);
     engine.setGameState(JSON.parse(JSON.stringify(saved)));
-    const steps: Json[] = [{ i: sc.saveAt, input: null, state: compact(snap(engine), initialPos), sha: sha({ state: snap(engine) }) }];
+    const steps: Json[] = [
+      {
+        i: sc.saveAt,
+        input: null,
+        state: compact(snap(engine), initialPos),
+        sha: sha({ state: snap(engine) }),
+      },
+    ];
     let i = sc.saveAt;
     for (const c of commands.slice(sc.saveAt)) {
       const { parsed, result } = await step(engine, c);
       steps.push(record(++i, c, parsed, result, snap(engine), initialPos));
     }
-    out.scenarios.push({ id: sc.id, lingua: sc.lingua, resume: { walkthrough: sc.walkthrough, saveAt: sc.saveAt, saveFile: sc.saveFile || null }, steps });
+    out.scenarios.push({
+      id: sc.id,
+      lingua: sc.lingua,
+      resume: { walkthrough: sc.walkthrough, saveAt: sc.saveAt, saveFile: sc.saveFile || null },
+      steps,
+    });
   }
 
   return out;
@@ -271,7 +315,12 @@ function summary(body: Json): Json {
         victory: (v as Json).victory,
       };
     } else if (k === 'parseResult') {
-      out[k] = v && { valid: (v as Json).IsValid, verb: (v as Json).VerbConcept, noun: (v as Json).NounConcept, error: (v as Json).Error };
+      out[k] = v && {
+        valid: (v as Json).IsValid,
+        verb: (v as Json).VerbConcept,
+        noun: (v as Json).NounConcept,
+        error: (v as Json).Error,
+      };
     } else if (k === 'odessaData') {
       out[k] = '(omesso)';
     } else {
@@ -294,11 +343,20 @@ export async function generateHttpTrace(): Promise<Trace> {
     const s = app.listen(0, '127.0.0.1', () => resolveServer(s));
   });
   const address = server.address();
-  const port = typeof address === 'string' ? 0 : address?.port ?? 0;
+  const port = typeof address === 'string' ? 0 : (address?.port ?? 0);
   const base = `http://127.0.0.1:${port}`;
 
-  async function call(session: HttpSession, method: string, path: string, body?: Json, raw?: boolean): Promise<{ status: number; body: Json }> {
-    const headers: Record<string, string> = { 'X-Session-Id': session.sessionId, 'X-Game-Id': session.gameId };
+  async function call(
+    session: HttpSession,
+    method: string,
+    path: string,
+    body?: Json,
+    raw?: boolean
+  ): Promise<{ status: number; body: Json }> {
+    const headers: Record<string, string> = {
+      'X-Session-Id': session.sessionId,
+      'X-Game-Id': session.gameId,
+    };
     const init: Json = { method, headers };
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -322,7 +380,10 @@ export async function generateHttpTrace(): Promise<Trace> {
   const scenarios: Json[] = [];
 
   type ReqOpts = { session?: HttpSession; raw?: boolean; label?: string };
-  async function scenario(id: string, fn: (req: Json, session: HttpSession) => Promise<void>): Promise<void> {
+  async function scenario(
+    id: string,
+    fn: (req: Json, session: HttpSession) => Promise<void>
+  ): Promise<void> {
     const steps: Json[] = [];
     const session = newSession();
     let i = 0;
@@ -332,7 +393,9 @@ export async function generateHttpTrace(): Promise<Trace> {
       steps.push({
         i: ++i,
         req: `${method} ${path}`,
-        input: opts.label ?? (body && typeof body === 'object' && 'input' in body ? body.input : undefined),
+        input:
+          opts.label ??
+          (body && typeof body === 'object' && 'input' in body ? body.input : undefined),
         status: r.status,
         body: summary(n),
         sha: sha({ status: r.status, body: n }),
@@ -342,7 +405,8 @@ export async function generateHttpTrace(): Promise<Trace> {
     await fn(req, session);
     scenarios.push({ id, steps });
   }
-  const exec = (req: Json, input: string, opts?: ReqOpts) => req('POST', '/api/engine/execute', { input }, opts);
+  const exec = (req: Json, input: string, opts?: ReqOpts) =>
+    req('POST', '/api/engine/execute', { input }, opts);
 
   try {
     await scenario('H-min-it', async (req) => {
@@ -360,7 +424,8 @@ export async function generateHttpTrace(): Promise<Trace> {
 
     await scenario('H-fine-e-riavvio', async (req) => {
       await req('POST', '/api/engine/reset', { idLingua: 1 });
-      for (const c of ['e', 'fine', 'forse', 'no', 'guarda', 'fine', 'si', 'guarda', 'si', 'e']) await exec(req, c);
+      for (const c of ['e', 'fine', 'forse', 'no', 'guarda', 'fine', 'si', 'guarda', 'si', 'e'])
+        await exec(req, c);
     });
 
     await scenario('H-fine-e-termina', async (req) => {
@@ -370,7 +435,16 @@ export async function generateHttpTrace(): Promise<Trace> {
 
     await scenario('H-morte-e-riavvio', async (req) => {
       await req('POST', '/api/engine/reset', { idLingua: 1 });
-      for (const c of ['posa torcia', 'esamina documenti', 'posa fiammiferi', 'e', 'guarda', 'no', 'guarda']) await exec(req, c);
+      for (const c of [
+        'posa torcia',
+        'esamina documenti',
+        'posa fiammiferi',
+        'e',
+        'guarda',
+        'no',
+        'guarda',
+      ])
+        await exec(req, c);
     });
 
     await scenario('H-input-non-valido', async (req) => {
@@ -378,9 +452,22 @@ export async function generateHttpTrace(): Promise<Trace> {
       await req('POST', '/api/engine/execute', {}, { label: '(corpo vuoto)' });
       await req('POST', '/api/engine/execute', { input: 5 }, { label: '(numero)' });
       await req('POST', '/api/engine/execute', { input: '' }, { label: '(stringa vuota)' });
-      await req('POST', '/api/engine/execute', { input: 'prendi\u0007' }, { label: '(carattere di controllo)' });
-      await req('POST', '/api/engine/execute', { input: 'a'.repeat(600) }, { label: '(600 caratteri)' });
-      await req('POST', '/api/engine/execute', '{"input":', { raw: true, label: '(JSON malformato)' });
+      await req(
+        'POST',
+        '/api/engine/execute',
+        { input: 'prendi\u0007' },
+        { label: '(carattere di controllo)' }
+      );
+      await req(
+        'POST',
+        '/api/engine/execute',
+        { input: 'a'.repeat(600) },
+        { label: '(600 caratteri)' }
+      );
+      await req('POST', '/api/engine/execute', '{"input":', {
+        raw: true,
+        label: '(JSON malformato)',
+      });
       for (const c of ['xyzzy', 'prendi xyzzy', 'prendi', 'nord sud']) await exec(req, c);
     });
 
@@ -389,16 +476,42 @@ export async function generateHttpTrace(): Promise<Trace> {
       const cmds = walk('full_it');
       for (const c of cmds.slice(0, 50)) await exec(req, c);
       const saved = await req('POST', '/api/engine/save-client-state', { luoghi: [] });
-      await req('POST', '/api/engine/save-client-state', { luoghi: 'x' }, { label: '(luoghi non valido)' });
+      await req(
+        'POST',
+        '/api/engine/save-client-state',
+        { luoghi: 'x' },
+        { label: '(luoghi non valido)' }
+      );
       const other = newSession();
-      await req('POST', '/api/engine/reset', { idLingua: 2 }, { session: other, label: '(sessione EN)' });
-      await req('POST', '/api/engine/load-client-state', saved.body, { session: other, label: '(salvataggio IT in sessione EN)' });
+      await req(
+        'POST',
+        '/api/engine/reset',
+        { idLingua: 2 },
+        { session: other, label: '(sessione EN)' }
+      );
+      await req('POST', '/api/engine/load-client-state', saved.body, {
+        session: other,
+        label: '(salvataggio IT in sessione EN)',
+      });
       const third = newSession();
-      await req('POST', '/api/engine/reset', { idLingua: 1 }, { session: third, label: '(sessione IT)' });
-      await req('POST', '/api/engine/load-client-state', saved.body, { session: third, label: '(salvataggio IT)' });
+      await req(
+        'POST',
+        '/api/engine/reset',
+        { idLingua: 1 },
+        { session: third, label: '(sessione IT)' }
+      );
+      await req('POST', '/api/engine/load-client-state', saved.body, {
+        session: third,
+        label: '(salvataggio IT)',
+      });
       for (const c of cmds.slice(50, 60)) await exec(req, c, { session: third });
       await req('GET', '/api/engine/stats', undefined, { session: third });
-      await req('POST', '/api/engine/load-client-state', { gameState: null }, { session: third, label: '(salvataggio non valido)' });
+      await req(
+        'POST',
+        '/api/engine/load-client-state',
+        { gameState: null },
+        { session: third, label: '(salvataggio non valido)' }
+      );
       await exec(req, 'guarda', { session });
     });
 
@@ -423,7 +536,8 @@ export async function generateHttpTrace(): Promise<Trace> {
   return {
     format: 1,
     generator: 'tests/testUtils/trace.ts',
-    normalization: 'timestamp e version rimossi da corpo, state e gameState; sha = SHA-256 di {status, body} canonico',
+    normalization:
+      'timestamp e version rimossi da corpo, state e gameState; sha = SHA-256 di {status, body} canonico',
     scenarios,
   };
 }

@@ -12,7 +12,7 @@ router.get('/frontend-messages/:lingua', async (req, res, next) => {
       return res.status(400).json({ ok: false, error: 'Lingua non valida (1=IT, 2=EN)' });
     }
     const messaggiFrontend = getGameData().MessaggiFrontend || [];
-    const filtered = messaggiFrontend.filter(m => m.IDLingua === lingua);
+    const filtered = messaggiFrontend.filter((m) => m.IDLingua === lingua);
     res.json({ ok: true, messages: filtered, count: filtered.length });
   } catch (err) {
     // Delegare al middleware globale per evitare leak in produzione
@@ -25,7 +25,7 @@ router.get('/introduzione', async (req, res) => {
   const id = parseInt(req.query.id, 10) || 1;
   const lingua = parseInt(req.query.lingua, 10) || 1;
   const introduzioni = getGameData().Introduzione || [];
-  const row = introduzioni.find(intro => intro.ID == id && intro.IDLingua == lingua);
+  const row = introduzioni.find((intro) => intro.ID == id && intro.IDLingua == lingua);
   res.json({ testo: row?.Testo || '' });
 });
 
@@ -45,20 +45,24 @@ router.get('/storia', async (req, res) => {
   const id = parseInt(req.query.id, 10) || 1;
   const lingua = parseInt(req.query.lingua, 10) || 1;
   const storie = getGameData().Storia || [];
-  const row = storie.find(storia => storia.ID == id && storia.IDLingua == lingua);
-  res.json(Object.fromEntries(STORIA_FIELDS.map(([campoRisposta, campoDati]) => [campoRisposta, row?.[campoDati] || ''])));
+  const row = storie.find((storia) => storia.ID == id && storia.IDLingua == lingua);
+  res.json(
+    Object.fromEntries(
+      STORIA_FIELDS.map(([campoRisposta, campoDati]) => [campoRisposta, row?.[campoDati] || ''])
+    )
+  );
 });
 
 // GET /api/luoghi - restituisce tutti i luoghi
 router.get('/luoghi', async (req, res) => {
   const luoghi = getGameData().Luoghi || [];
   const luoghiLogici = getGameData().LuoghiLogici || [];
-  const luoghiConImmagini = luoghi.map(luogo => {
-    const luogoLogico = luoghiLogici.find(ll => ll.ID_LuogoLogico == luogo.ID_LuogoLogico);
-    return { 
-      ...luogo, 
+  const luoghiConImmagini = luoghi.map((luogo) => {
+    const luogoLogico = luoghiLogici.find((ll) => ll.ID_LuogoLogico == luogo.ID_LuogoLogico);
+    return {
+      ...luogo,
       Immagine: luogoLogico?.Immagine || null,
-      Buio: luogoLogico?.Buio || 0
+      Buio: luogoLogico?.Buio || 0,
     };
   });
   res.json(luoghiConImmagini);
@@ -72,12 +76,12 @@ router.get('/luogo-oggetti', attachEngineSession, async (req, res) => {
   }
   const engine = req.odessaSession?.engine;
   const data = engine.getOggetti();
-  const filtered = data
-    .filter(item => item.IDLuogo == idLuogo && item.IDLingua == idLingua && item.Attivo >= 1);
-  const oggetti = filtered
-    .map(item => {
-      return { descrizione: item.Oggetto || '' };
-    });
+  const filtered = data.filter(
+    (item) => item.IDLuogo == idLuogo && item.IDLingua == idLingua && item.Attivo >= 1
+  );
+  const oggetti = filtered.map((item) => {
+    return { descrizione: item.Oggetto || '' };
+  });
   res.json(oggetti);
 });
 

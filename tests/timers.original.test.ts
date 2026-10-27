@@ -26,7 +26,8 @@ interface Step {
 
 const root = resolve(__dirname, '..');
 const loadJson = (...parts: string[]) => JSON.parse(readFileSync(resolve(root, ...parts), 'utf8'));
-const walkthrough = (name: string): { steps: Step[] } => loadJson('tests', 'fixtures', 'walkthrough', `${name}.json`);
+const walkthrough = (name: string): { steps: Step[] } =>
+  loadJson('tests', 'fixtures', 'walkthrough', `${name}.json`);
 
 const ENV_KEY = 'GAME_MAX_TURNS_CONSUMED';
 const OPEN_AREA = [51, 52, 53, 55, 56, 58];
@@ -60,12 +61,12 @@ async function upTo(step: number, lingua = 1): Promise<Engine> {
 }
 
 // Passi del percorso completo usati come punti di partenza
-const AT_OPEN_AREA = 109;   // primo arrivo nella zona (luogo 51)
-const AT_52 = 110;          // arrivo al luogo 52 (filo spinato, uscita Est assente)
-const BEFORE_DOCS = 144;    // reception, Documenti non ancora ripresi
-const AT_BARRIER = 146;     // incontro con Ferenc e arrivo alla barriera (TELEPORT)
+const AT_OPEN_AREA = 109; // primo arrivo nella zona (luogo 51)
+const AT_52 = 110; // arrivo al luogo 52 (filo spinato, uscita Est assente)
+const BEFORE_DOCS = 144; // reception, Documenti non ancora ripresi
+const AT_BARRIER = 146; // incontro con Ferenc e arrivo alla barriera (TELEPORT)
 
-describe('timer e sequenza finale dell\'originale (#107)', () => {
+describe("timer e sequenza finale dell'originale (#107)", () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();
@@ -87,7 +88,12 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
   describe('R1 — buio', () => {
     it('TB-01: torcia posata, azione al buio, posa consentita, movimento fatale', async () => {
       const engine = newEngine();
-      const [r1, r2, r3, r4] = await runAll(engine, ['posa torcia', 'esamina documenti', 'posa fiammiferi', 'e']);
+      const [r1, r2, r3, r4] = await runAll(engine, [
+        'posa torcia',
+        'esamina documenti',
+        'posa fiammiferi',
+        'e',
+      ]);
 
       expect(r1.message).toContain(msg('timer.torch.defective.warning'));
       expect(r1.message).not.toContain(msg('timer.darkness.warning'));
@@ -115,7 +121,15 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
       const engine = newEngine();
       const results = [];
       const timers: number[] = [];
-      for (const c of ['posa torcia', 'esamina documenti', 'esamina documenti', 'esamina documenti', 'e', 'n', 's']) {
+      for (const c of [
+        'posa torcia',
+        'esamina documenti',
+        'esamina documenti',
+        'esamina documenti',
+        'e',
+        'n',
+        's',
+      ]) {
         results.push(await run(engine, c));
         timers.push(engine.getGameState().turn.darknessTimer);
       }
@@ -248,19 +262,31 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
       expect(r.message).toBe(msg('timer.dawn.death.outdoor'));
     });
 
-    it('TB-12: dopo l\'incontro con Ferenc l\'alba è ferma', async () => {
+    it("TB-12: dopo l'incontro con Ferenc l'alba è ferma", async () => {
       const engine = await upTo(AT_BARRIER);
       process.env[ENV_KEY] = '10'; // Limite già superato
       const results = await runAll(engine, ['guarda', 'guarda', 'guarda']);
-      expect(results.every((r) => r.gameOverReason !== 'TOO_LATE' && r.resultType !== 'GAME_OVER')).toBe(true);
+      expect(
+        results.every((r) => r.gameOverReason !== 'TOO_LATE' && r.resultType !== 'GAME_OVER')
+      ).toBe(true);
     });
   });
 
   describe('R4 e R11 — Ferenc e barriera', () => {
     it('TB-13: cinque comandi senza porgere i documenti, avvisi al 2°, 3°, 4° e arresto al 5°', async () => {
       const engine = await upTo(AT_BARRIER);
-      const results = await runAll(engine, ['esamina documenti', 'guarda', 'esamina documenti', 'guarda', 'esamina documenti']);
-      const w = [msg('timer.guard.warning1'), msg('timer.guard.warning2'), msg('timer.guard.warning3')];
+      const results = await runAll(engine, [
+        'esamina documenti',
+        'guarda',
+        'esamina documenti',
+        'guarda',
+        'esamina documenti',
+      ]);
+      const w = [
+        msg('timer.guard.warning1'),
+        msg('timer.guard.warning2'),
+        msg('timer.guard.warning3'),
+      ];
 
       for (const text of w) expect(results[0].message).not.toContain(text);
       expect(results[1].message).toContain(w[0]);
@@ -310,7 +336,13 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
       const state = engine.getGameState();
       expect(state.Oggetti.filter((o: { IDLuogo: number }) => o.IDLuogo === 0)).toHaveLength(0);
 
-      const results = await runAll(engine, ['porgi documenti', 'guarda', 'guarda', 'guarda', 'guarda']);
+      const results = await runAll(engine, [
+        'porgi documenti',
+        'guarda',
+        'guarda',
+        'guarda',
+        'guarda',
+      ]);
       expect(state.victory).toBe(false);
       expect(results.slice(0, 4).every((r) => r.resultType !== 'GAME_OVER')).toBe(true);
       expect(results[4].gameOverReason).toBe('GUARD_ARREST');
@@ -324,13 +356,15 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
       expect(state.currentLocationId).toBe(59);
       expect(oggetti.filter((o) => o.IDLuogo === 0).map((o) => o.ID)).toEqual([35]);
       for (const id of [27, 37]) expect(oggetti.find((o) => o.ID === id)?.IDLuogo).toBe(-1); // lampada, torcia
-      expect(oggetti.filter((o) => o.ID !== 35).every((o) => o.IDLuogo === -1 && o.Attivo === 0)).toBe(true);
+      expect(
+        oggetti.filter((o) => o.ID !== 35).every((o) => o.IDLuogo === -1 && o.Attivo === 0)
+      ).toBe(true);
       expect(state.timers.lampadaAccesa).toBe(false);
       expect(state.guardTimer).toBe(5);
       expect(engine.hasFonteLuceAttiva()).toBe(true);
     });
 
-    it('TB-17 (testo): il testo dell\'incontro con Ferenc è quello originale', async () => {
+    it("TB-17 (testo): il testo dell'incontro con Ferenc è quello originale", async () => {
       const engine = await upTo(AT_BARRIER - 1);
       const r = await run(engine, 'o');
       expect(r.resultType).toBe('TELEPORT');
@@ -341,15 +375,34 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
 
   describe('R12 — testi', () => {
     const NEW_KEYS = [
-      'engine.dark.tooDark', 'timer.darkness.warning', 'timer.darkness.death', 'timer.openArea.warning',
-      'game.intercept.death', 'timer.dawn.warning30', 'timer.dawn.warning15', 'timer.dawn.warning5',
-      'timer.dawn.death.house', 'timer.dawn.death.outdoor', 'timer.guard.warning1', 'timer.guard.warning2',
-      'timer.guard.warning3', 'timer.guard.arrest', 'victory.phase1a',
+      'engine.dark.tooDark',
+      'timer.darkness.warning',
+      'timer.darkness.death',
+      'timer.openArea.warning',
+      'game.intercept.death',
+      'timer.dawn.warning30',
+      'timer.dawn.warning15',
+      'timer.dawn.warning5',
+      'timer.dawn.death.house',
+      'timer.dawn.death.outdoor',
+      'timer.guard.warning1',
+      'timer.guard.warning2',
+      'timer.guard.warning3',
+      'timer.guard.arrest',
+      'victory.phase1a',
     ];
-    const REMOVED_KEYS = ['game.over.guardia_sospetta', 'game.over.tooLate', 'narrative.command.useless'];
+    const REMOVED_KEYS = [
+      'game.over.guardia_sospetta',
+      'game.over.tooLate',
+      'narrative.command.useless',
+    ];
 
     it('TB-18: chiavi del §5 presenti in IT ed EN, chiavi rimosse assenti, descrizioni della zona senza la frase', () => {
-      const messaggi = loadJson('src', 'data-internal', 'MessaggiSistema.json') as Array<{ Chiave: string; IDLingua: number; Messaggio: string }>;
+      const messaggi = loadJson('src', 'data-internal', 'MessaggiSistema.json') as Array<{
+        Chiave: string;
+        IDLingua: number;
+        Messaggio: string;
+      }>;
       for (const key of NEW_KEYS) {
         for (const lingua of [1, 2]) {
           const found = messaggi.filter((m) => m.Chiave === key && m.IDLingua === lingua);
@@ -358,10 +411,16 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
         }
       }
       for (const key of REMOVED_KEYS) {
-        expect(messaggi.some((m) => m.Chiave === key), key).toBe(false);
+        expect(
+          messaggi.some((m) => m.Chiave === key),
+          key
+        ).toBe(false);
       }
 
-      const luoghi = loadJson('src', 'data-internal', 'Luoghi.json') as Array<{ ID: number; Descrizione: string }>;
+      const luoghi = loadJson('src', 'data-internal', 'Luoghi.json') as Array<{
+        ID: number;
+        Descrizione: string;
+      }>;
       for (const l of luoghi.filter((x) => OPEN_AREA.includes(x.ID))) {
         expect(l.Descrizione).not.toContain("Restare a lungo fermi in un posto all'aperto");
         expect(l.Descrizione).not.toContain('Standing still for too long in an open area');
@@ -392,7 +451,9 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
 
     it('TB-19 (barriera): un salvataggio alla barriera senza guardTimer riparte da 5', async () => {
       const original = await upTo(AT_BARRIER);
-      const snapshot = original.getGameStateSnapshot() as Record<string, unknown> & { turn: Record<string, unknown> };
+      const snapshot = original.getGameStateSnapshot() as Record<string, unknown> & {
+        turn: Record<string, unknown>;
+      };
       delete snapshot.guardTimer;
       delete snapshot.turn.darknessTimer;
       delete snapshot.turn.openAreaTimer;
@@ -424,7 +485,13 @@ describe('timer e sequenza finale dell\'originale (#107)', () => {
 
     it('TB-20: TB-13 in inglese', async () => {
       const engine = await upTo(AT_BARRIER, 2);
-      const results = await runAll(engine, ['examine documents', 'examine documents', 'examine documents', 'examine documents', 'examine documents']);
+      const results = await runAll(engine, [
+        'examine documents',
+        'examine documents',
+        'examine documents',
+        'examine documents',
+        'examine documents',
+      ]);
 
       expect(results[1].message).toContain(msg('timer.guard.warning1', 2));
       expect(results[2].message).toContain(msg('timer.guard.warning2', 2));

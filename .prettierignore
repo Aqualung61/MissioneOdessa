@@ -7,3 +7,9 @@ docs/ddl*/
 coverage/
 test-results/
 *.min.js
+tests/fixtures/
+docs/
+web/
+.github/
+.vscode/
+*.md

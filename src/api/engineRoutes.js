@@ -53,9 +53,10 @@ function computeStatsFromState(state) {
 
 function buildUiFromState(state, engine) {
   const locationId = state?.currentLocationId;
-  const direzioni = typeof locationId === 'number' && engine && typeof engine.getDirezioniLuogo === 'function'
-    ? engine.getDirezioniLuogo(locationId)
-    : {};
+  const direzioni =
+    typeof locationId === 'number' && engine && typeof engine.getDirezioniLuogo === 'function'
+      ? engine.getDirezioniLuogo(locationId)
+      : {};
   const availableDirections = Object.entries(direzioni)
     .filter(([, value]) => typeof value === 'number' && value >= 1)
     .map(([key]) => key);
@@ -129,26 +130,42 @@ function withState(engine, payload, state) {
 function sendInvalidInput(res, engine, details, parseResult) {
   const state = engine.getGameStateSnapshot();
   const userMessage = getSystemMessage(invalidInputMessageKey(details), state.currentLingua);
-  return res.status(400).json(maybeAttachDebug(withState(engine, {
-    ok: false,
-    error: 'INVALID_INPUT',
-    details,
-    userMessage,
-    parseResult,
-    command: null,
-    engine: null,
-  }, state)));
+  return res.status(400).json(
+    maybeAttachDebug(
+      withState(
+        engine,
+        {
+          ok: false,
+          error: 'INVALID_INPUT',
+          details,
+          userMessage,
+          parseResult,
+          command: null,
+          engine: null,
+        },
+        state
+      )
+    )
+  );
 }
 
 // 200 ok: conferma FINE/riavvio (parseResult e command nulli) oppure comando eseguito.
 function sendExecuted(res, engine, parseResult, command, engineResult) {
   const nextState = engine.getGameStateSnapshot();
-  return res.json(maybeAttachDebug(withState(engine, {
-    ok: true,
-    parseResult,
-    command,
-    engine: engineResult,
-  }, nextState)));
+  return res.json(
+    maybeAttachDebug(
+      withState(
+        engine,
+        {
+          ok: true,
+          parseResult,
+          command,
+          engine: engineResult,
+        },
+        nextState
+      )
+    )
+  );
 }
 
 // Parse error = errore "utente" (comando sconosciuto / sintassi): non è un Bad Request.
@@ -156,50 +173,84 @@ function sendExecuted(res, engine, parseResult, command, engineResult) {
 function sendParseError(res, engine, parsed, state) {
   const userMessage = mapParseErrorToUserMessage(parsed, state.currentLingua);
   const currentState = engine.getGameStateSnapshot();
-  return res.status(200).json(maybeAttachDebug(withState(engine, {
-    ok: false,
-    parseResult: parsed,
-    command: null,
-    engine: null,
-    error: parsed.Error,
-    userMessage,
-  }, currentState)));
+  return res.status(200).json(
+    maybeAttachDebug(
+      withState(
+        engine,
+        {
+          ok: false,
+          parseResult: parsed,
+          command: null,
+          engine: null,
+          error: parsed.Error,
+          userMessage,
+        },
+        currentState
+      )
+    )
+  );
 }
 
-router.post('/execute', validateCommandInput({ mode: 'engine', behavior: 'attach' }), async (req, res, next) => {
-  try {
-    const engine = getEngineOrSendError(req, res);
-    if (!engine) return;
+router.post(
+  '/execute',
+  validateCommandInput({ mode: 'engine', behavior: 'attach' }),
+  async (req, res, next) => {
+    try {
+      const engine = getEngineOrSendError(req, res);
+      if (!engine) return;
 
-    if (req.commandInputValidationError) {
-      const details = req.commandInputValidationError.details;
-      return sendInvalidInput(res, engine, details, { IsValid: false, Error: 'INVALID_INPUT', Details: details });
-    }
+      if (req.commandInputValidationError) {
+        const details = req.commandInputValidationError.details;
+        return sendInvalidInput(res, engine, details, {
+          IsValid: false,
+          Error: 'INVALID_INPUT',
+          Details: details,
+        });
+      }
 
-    const { input } = req.body || {};
-    if (!input || typeof input !== 'string') {
-      return sendInvalidInput(res, engine, 'NOT_A_STRING', null);
+      const { input } = req.body || {};
+      if (!input || typeof input !== 'string') {
+        return sendInvalidInput(res, engine, 'NOT_A_STRING', null);
+      }
+      // ensureVocabulary ora chiamata automaticamente in parseInput
+      const state = engine.getGameStateSnapshot();
+      // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
+      if (state.awaitingEndConfirm) {
+        return sendExecuted(
+          res,
+          engine,
+          null,
+          null,
+          normalizeEngineResult(engine.confirmEnd(input))
+        );
+      }
+      // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
+      if (state.awaitingRestart) {
+        return sendExecuted(
+          res,
+          engine,
+          null,
+          null,
+          normalizeEngineResult(await engine.confirmRestart(input))
+        );
+      }
+      const parsed = await parseInput(input, state);
+      if (parsed.IsValid !== true) {
+        return sendParseError(res, engine, parsed, state);
+      }
+      const command = toCommandDTO(parsed);
+      return sendExecuted(
+        res,
+        engine,
+        parsed,
+        command,
+        normalizeEngineResult(await engine.executeCommandAsync(parsed))
+      );
+    } catch (err) {
+      return next(err);
     }
-    // ensureVocabulary ora chiamata automaticamente in parseInput
-    const state = engine.getGameStateSnapshot();
-    // Se siamo in attesa conferma FINE, bypassa parser e interpreta input come SI/NO
-    if (state.awaitingEndConfirm) {
-      return sendExecuted(res, engine, null, null, normalizeEngineResult(engine.confirmEnd(input)));
-    }
-    // Se siamo in attesa conferma riavvio, bypassa parser e interpreta input come SI/NO
-    if (state.awaitingRestart) {
-      return sendExecuted(res, engine, null, null, normalizeEngineResult(await engine.confirmRestart(input)));
-    }
-    const parsed = await parseInput(input, state);
-    if (parsed.IsValid !== true) {
-      return sendParseError(res, engine, parsed, state);
-    }
-    const command = toCommandDTO(parsed);
-    return sendExecuted(res, engine, parsed, command, normalizeEngineResult(await engine.executeCommandAsync(parsed)));
-  } catch (err) {
-    return next(err);
   }
-});
+);
 
 // Stato engine: snapshot
 router.get('/state', (req, res, next) => {
@@ -250,11 +301,18 @@ router.post('/save-client-state', (req, res, next) => {
         Oggetti: gameState.Oggetti,
       },
       timestamp: new Date().toISOString(),
-      version: appVersion
+      version: appVersion,
     };
     // Imposta header per download
     const now = new Date();
-    const timestamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '_' + ('0' + now.getHours()).slice(-2) + ('0' + now.getMinutes()).slice(-2) + ('0' + now.getSeconds()).slice(-2);
+    const timestamp =
+      now.getFullYear() +
+      ('0' + (now.getMonth() + 1)).slice(-2) +
+      ('0' + now.getDate()).slice(-2) +
+      '_' +
+      ('0' + now.getHours()).slice(-2) +
+      ('0' + now.getMinutes()).slice(-2) +
+      ('0' + now.getSeconds()).slice(-2);
     const filename = `MissioneOdessa_Save_${timestamp}.json`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.json(saveData);
@@ -276,8 +334,10 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
     // Guardrail (lingua): il caricamento è consentito solo se la lingua del save coincide
     // con la lingua corrente della sessione. In caso di mismatch, non applicare modifiche.
     const currentState = engine.getGameStateSnapshot();
-    const saveLanguage = typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : undefined;
-    const sessionLanguage = typeof currentState?.currentLingua === 'number' ? currentState.currentLingua : undefined;
+    const saveLanguage =
+      typeof gameState?.currentLingua === 'number' ? gameState.currentLingua : undefined;
+    const sessionLanguage =
+      typeof currentState?.currentLingua === 'number' ? currentState.currentLingua : undefined;
 
     // Nota: la validazione del payload di load è volutamente permissiva (per non rompere vecchi save).
     // Per questo applichiamo il blocco di mismatch solo per codici lingua supportati (1=IT, 2=EN).
@@ -292,17 +352,17 @@ router.post('/load-client-state', validateSaveData(), (req, res, next) => {
         ok: false,
         error: 'LANGUAGE_MISMATCH',
         saveLanguage,
-        sessionLanguage
+        sessionLanguage,
       });
     }
 
     // Ripristina gameState
     engine.setGameState(gameState);
-    
+
     // BUGFIX: Reset parser vocabulary cache dopo caricamento
     // La cache del parser deve essere ricostruita con i nuovi dati
     resetVocabularyCache();
-    
+
     res.json({ ok: true, message: 'Stato ripristinato' });
   } catch (err) {
     return next(err);

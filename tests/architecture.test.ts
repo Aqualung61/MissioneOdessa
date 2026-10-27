@@ -79,8 +79,8 @@ function importSpecifiers(source: string): string[] {
   const patterns = [
     /\bimport\s+[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g, // import x from '…'
     /\bexport\s+[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g, // export … from '…'
-    /\bimport\s*['"]([^'"]+)['"]/g,                  // import '…'
-    /\bimport\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,      // import('…')
+    /\bimport\s*['"]([^'"]+)['"]/g, // import '…'
+    /\bimport\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g, // import('…')
   ];
   for (const re of patterns) {
     for (const m of source.matchAll(re)) specs.push(m[1]);
@@ -91,7 +91,9 @@ function importSpecifiers(source: string): string[] {
 function lexiconConcepts(nomeTipo: string): string[] {
   const tipo = TipiLessico.find((t) => t.NomeTipo === nomeTipo);
   if (!tipo) throw new Error(`Tipo di lessico ${nomeTipo} non trovato`);
-  return TerminiLessico.filter((t) => t.ID_TipoLessico === tipo.ID_TipoLessico).map((t) => t.Concetto);
+  return TerminiLessico.filter((t) => t.ID_TipoLessico === tipo.ID_TipoLessico).map(
+    (t) => t.Concetto
+  );
 }
 
 describe('Architettura del motore (#63)', () => {
@@ -111,7 +113,7 @@ describe('Architettura del motore (#63)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('2. l\'elenco dei gestori segue la precedenza di TD §4', () => {
+  it("2. l'elenco dei gestori segue la precedenza di TD §4", () => {
     expect(odessaGame.verbHandlers.map((h) => h.id)).toEqual(EXPECTED_HANDLER_IDS);
   });
 
@@ -149,16 +151,38 @@ describe('Architettura del motore (#63)', () => {
         const engine = createEngine();
         engine.initializeOriginalData();
         engine.resetGameState(1);
-        const r = engine.executeCommand({ IsValid: true, CommandType: 'SYSTEM', VerbConcept: c, CanonicalVerb: c });
+        const r = engine.executeCommand({
+          IsValid: true,
+          CommandType: 'SYSTEM',
+          VerbConcept: c,
+          CanonicalVerb: c,
+        });
         expect(r.resultType, c).not.toBe('ERROR');
       }
     });
 
     it('5. createEngine() e createEngine(odessaGame) rispondono allo stesso modo', async () => {
       const commands = [
-        'inventario', 'guarda', 'est', 'ovest', 'ovest', 'prendi torcia', 'accendi', 'nord',
-        'esamina quadro', 'apri botola', 'apri botola', 'posa torcia', 'sorridi', 'dormi',
-        'scava', 'gira manopola', 'punti', 'aiuto', 'parla', 'xyz',
+        'inventario',
+        'guarda',
+        'est',
+        'ovest',
+        'ovest',
+        'prendi torcia',
+        'accendi',
+        'nord',
+        'esamina quadro',
+        'apri botola',
+        'apri botola',
+        'posa torcia',
+        'sorridi',
+        'dormi',
+        'scava',
+        'gira manopola',
+        'punti',
+        'aiuto',
+        'parla',
+        'xyz',
       ];
       const a = createEngine();
       const b = createEngine(odessaGame);
@@ -196,7 +220,7 @@ describe('Architettura del motore (#63)', () => {
     }
   });
 
-  it('9. createEngine restituisce le 21 chiavi dell\'API nell\'ordine di e088e7c', () => {
+  it("9. createEngine restituisce le 21 chiavi dell'API nell'ordine di e088e7c", () => {
     expect(Object.keys(createEngine())).toEqual([
       'enterLocation',
       'executeCommandAsync',

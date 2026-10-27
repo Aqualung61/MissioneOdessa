@@ -6,7 +6,12 @@ export const spegni = {
   id: 'odessa.action.spegni',
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'SPEGNERE',
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.spegni.notTime'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.spegni.notTime'),
+    effects: [],
+  }),
 };
 
 // 10 — odessa.action.scappa
@@ -15,7 +20,12 @@ export const scappa = {
   id: 'odessa.action.scappa',
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'SCAPPARE',
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.scappa.cantEscape'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.scappa.cantEscape'),
+    effects: [],
+  }),
 };
 
 // 11 — odessa.action.sorridi
@@ -24,7 +34,12 @@ export const sorridi = {
   id: 'odessa.action.sorridi',
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'SORRIDERE',
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.sorridi.cheese'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.sorridi.cheese'),
+    effects: [],
+  }),
 };
 
 // 12 — odessa.action.dormi
@@ -34,7 +49,12 @@ export const dormi = {
   id: 'odessa.action.dormi',
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'DORMIRE' || cmd.concept === 'SEDERSI',
-  run: (cmd, ctx) => ({ accepted: true, resultType: 'OK', message: ctx.msg('engine.dormi.noTimeToWaste'), effects: [] }),
+  run: (cmd, ctx) => ({
+    accepted: true,
+    resultType: 'OK',
+    message: ctx.msg('engine.dormi.noTimeToWaste'),
+    effects: [],
+  }),
 };
 
 // 13 — odessa.action.parla
@@ -44,7 +64,10 @@ export const parla = {
   types: ['ACTION'],
   match: (cmd) => cmd.concept === 'PARLARE',
   run: (cmd, ctx) => {
-    const chiave = ctx.state.currentLocationId === ctx.game.config.luoghi.barriera ? 'engine.parla.guardGerman' : 'engine.parla.toSelf';
+    const chiave =
+      ctx.state.currentLocationId === ctx.game.config.luoghi.barriera
+        ? 'engine.parla.guardGerman'
+        : 'engine.parla.toSelf';
     return { accepted: true, resultType: 'OK', message: ctx.msg(chiave), effects: [] };
   },
 };

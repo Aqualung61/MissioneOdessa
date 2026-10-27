@@ -45,6 +45,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Test
         # Evita timeout del runner in caso di test lunghi senza output.
         run: npm test -- --reporter=verbose
