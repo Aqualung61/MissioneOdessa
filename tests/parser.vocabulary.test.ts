@@ -59,7 +59,7 @@ async function buildActualPairs(lingua: number): Promise<VocabPair[]> {
     .map(([t, i]) => [t, canon(i)] as VocabPair);
 }
 
-describe('Istantanea del vocabolario (#63, lotto 2)', () => {
+describe('Istantanea del vocabolario (#63)', () => {
   let baseline: BaselineFile;
 
   beforeAll(async () => {

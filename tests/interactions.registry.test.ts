@@ -30,7 +30,7 @@ function minimalCtx() {
   };
 }
 
-describe('Registri delle interazioni (#63, lotto 4b, TD §5.1)', () => {
+describe('Registri delle interazioni (#63)', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

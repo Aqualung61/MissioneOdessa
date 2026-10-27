@@ -30,7 +30,7 @@ function listSources(dir: string): string[] {
   return out;
 }
 
-describe('Accesso ai dati statici (lotto 5)', () => {
+describe('Accesso ai dati statici', () => {
   it('la ricerca riconosce le forme di accesso diretto', () => {
     expect(DIRECT_ACCESS.test('const d = global.odessaData;')).toBe(true);
     expect(DIRECT_ACCESS.test('globalThis.odessaData = x')).toBe(true);

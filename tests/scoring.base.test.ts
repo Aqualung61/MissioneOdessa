@@ -89,27 +89,6 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
     expect(state.punteggio.totale).toBe(4); // 1 iniziale + 3 nuovi
   });
 
-  it.skip('Eseguire interazione (sposta_quadro_24) assegna +2 punti', () => {
-    // Setup: vai al luogo 24
-    setCurrentLocation(24);
-    const punteggioBefore = getGameState().punteggio.totale;
-    
-    // Esegui interazione SPOSTA QUADRO
-    const result = executeCommand({
-      IsValid: true,
-      CommandType: 'ACTION',
-      CanonicalVerb: 'SPOSTARE',
-      Noun: 'QUADRO',
-      Error: null
-    });
-    
-    expect(result.accepted).toBe(true);
-    
-    const state = getGameState();
-    expect(state.punteggio.interazioniPunteggio.has('sposta_quadro_24')).toBe(true);
-    expect(state.punteggio.totale).toBe(punteggioBefore + 2); // +2 per interazione
-  });
-
   it('Rieseguire stessa interazione NON assegna +2 aggiuntivi', () => {
     setCurrentLocation(24);
     
@@ -135,87 +114,5 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
     
     const punteggioAfterSecond = getGameState().punteggio.totale;
     expect(punteggioAfterSecond).toBe(punteggioAfterFirst); // Nessun incremento
-  });
-
-  it.skip('Eseguire interazione ripetibile (esamina_botola_57) assegna +2 solo prima volta', () => {
-    // Setup: vai a luogo 57 e fai prerequisiti
-    setCurrentLocation(57);
-    
-    // Simula carica_pesa (prerequisito per botola)
-    const state = getGameState();
-    const peso = state.Oggetti.find(o => o.ID === 26);
-    if (peso) {
-      peso.IDLuogo = 0; // Metti in inventario
-      peso.Attivo = 3;
-    }
-    
-    // Esegui carica pesa prima
-    executeCommand({
-      IsValid: true,
-      CommandType: 'ACTION',
-      CanonicalVerb: 'CARICARE',
-      Noun: 'PESA',
-      Error: null
-    });
-    
-    const punteggioBeforeBotola = getGameState().punteggio.totale;
-    
-    // Prima esecuzione esamina botola (ripetibile)
-    const result1 = executeCommand({
-      IsValid: true,
-      CommandType: 'ACTION',
-      CanonicalVerb: 'ESAMINARE',
-      Noun: 'BOTOLA',
-      Error: null
-    });
-    
-    expect(result1.accepted).toBe(true);
-    const punteggioAfterFirst = getGameState().punteggio.totale;
-    expect(punteggioAfterFirst).toBe(punteggioBeforeBotola + 2); // +2 prima volta
-    
-    // Seconda esecuzione (ripetibile = può essere eseguita, ma NO +2)
-    const result2 = executeCommand({
-      IsValid: true,
-      CommandType: 'ACTION',
-      CanonicalVerb: 'ESAMINARE',
-      Noun: 'BOTOLA',
-      Error: null
-    });
-    
-    expect(result2.accepted).toBe(true);
-    const punteggioAfterSecond = getGameState().punteggio.totale;
-    expect(punteggioAfterSecond).toBe(punteggioAfterFirst); // NO +2 seconda volta
-  });
-
-  it.skip('Punteggio persiste in salva/carica', () => {
-    // Setup stato con punteggio
-    setCurrentLocation(2);
-    setCurrentLocation(3);
-    setCurrentLocation(24);
-    
-    executeCommand({
-      IsValid: true,
-      CommandType: 'ACTION',
-      CanonicalVerb: 'SPOSTARE',
-      Noun: 'QUADRO',
-      Error: null
-    });
-    
-    const stateBefore = getGameState();
-    const punteggioExpected = stateBefore.punteggio.totale;
-    
-    // Salva
-    const result = executeCommand({
-      IsValid: true,
-      CommandType: 'SYSTEM',
-      Concept: 'Concetto: Salva Partita',
-      CanonicalVerb: 'SALVARE',
-      Error: null
-    });
-    
-    expect(result.saveData).toBeDefined();
-    expect(result.saveData.punteggio).toBeDefined();
-    expect(result.saveData.punteggio.totale).toBe(punteggioExpected);
-    expect(Array.isArray(result.saveData.punteggio.interazioniPunteggio)).toBe(true);
   });
 });

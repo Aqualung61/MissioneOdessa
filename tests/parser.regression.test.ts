@@ -245,7 +245,7 @@ async function computeExpected(testCase: BaselineCase, byLangInput: Map<string, 
   return baselineExpected;
 }
 
-describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
+describe('Corpus di non regressione del parser (#109)', () => {
   let baseline: BaselineFile;
   let byLangInput: Map<string, BaselineCase>;
 
@@ -285,7 +285,7 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
   // definizione i nomi di 3+ parole; i 12 casi con carica/load non fanno più parte dei
   // "invariati" ma della regola P-1 (211 casi del corpus: 12 carica/load + 199 con altri
   // verbi d'azione), che si somma alla L2b senza sovrapporsi (150 + 211 = 361).
-  it('i cambi attesi del lotto L2b sono esattamente 150 (8 verbi da soli + 94 IT + 48 EN con CARICA/LOAD); i 12 nomi di 3+ parole con carica/load restano fuori da L2b e sono coperti dalla regola P-1 (#128)', () => {
+  it('i cambi attesi per CARICA/LOAD sono esattamente 150 (8 verbi da soli + 94 IT + 48 EN con CARICA/LOAD); i 12 nomi di 3+ parole con carica/load restano fuori da questi cambi e sono coperti dalla regola P-1 (#128)', () => {
     // Conteggio della sola regola L2b (EXPECTED_CHANGES L1 + BARE_VERB_CHANGES + CARICA/LOAD),
     // senza il livello di L3 (rimozione E5): quest'ultimo è un livello indipendente,
     // aggiunto sopra in `computeExpected`, non una modifica alla regola L2b in sé. Per i
@@ -337,7 +337,7 @@ describe('Corpus di non regressione del parser (#109, lotto L1)', () => {
   });
 
   // Aggiornato per #109 (lotto L3)
-  it('i cambi attesi del lotto L3 sono esattamente 194 casi (una voce rimossa, E5): ciascuno dà oggi lo stesso esito di una parola sconosciuta nella stessa posizione, nessun altro caso è toccato da questa regola', async () => {
+  it('i cambi attesi per la voce rimossa sono esattamente 194 casi (una voce rimossa, E5): ciascuno dà oggi lo stesso esito di una parola sconosciuta nella stessa posizione, nessun altro caso è toccato da questa regola', async () => {
     const legacyCases = baseline.cases.filter((c) => LEGACY_REMOVED_WORDS.test(c.input));
     expect(legacyCases.length).toBe(194);
 

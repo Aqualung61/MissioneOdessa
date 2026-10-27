@@ -25,7 +25,7 @@ import Introduzione from '../src/data-internal/Introduzione.json';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = any;
 
-describe('Route di servizio (lotto 5, P0)', () => {
+describe('Route di servizio', () => {
   let server: Server;
   let base = '';
   const prevNodeEnv = process.env.NODE_ENV;

@@ -17,13 +17,13 @@ import { initOdessa } from '../src/initOdessa.js';
 import { ensureVocabulary } from '../src/logic/parser.js';
 import { generateResponses, loadResponsesBaseline, writeResponsesSnapshot } from './testUtils/responseSnapshot.js';
 
-describe('Istantanea delle risposte (#109, lotto L2a)', () => {
+describe('Istantanea delle risposte (#109)', () => {
   beforeAll(async () => {
     await initOdessa();
     await ensureVocabulary();
   });
 
-  it('riporta la baseline registrata con 88.151 righe (aggiornata in Fase 1B, #109 lotto L3)', () => {
+  it('riporta la baseline registrata con 88.151 righe (#109)', () => {
     const baseline = loadResponsesBaseline();
     expect(baseline.length).toBe(88151);
   });

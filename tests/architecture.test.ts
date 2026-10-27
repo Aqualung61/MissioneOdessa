@@ -94,7 +94,7 @@ function lexiconConcepts(nomeTipo: string): string[] {
   return TerminiLessico.filter((t) => t.ID_TipoLessico === tipo.ID_TipoLessico).map((t) => t.Concetto);
 }
 
-describe('Architettura del motore (#63, lotto 4a, TD §5.1)', () => {
+describe('Architettura del motore (#63)', () => {
   it('1. nessun file di src/logic/core importa da src/game (statici e dinamici)', () => {
     const files = listJsFiles(coreDir);
     expect(files.length).toBeGreaterThan(0);

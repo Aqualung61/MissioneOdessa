@@ -55,7 +55,7 @@ function newEngine(lingua: number): Engine {
   return engine;
 }
 
-describe('Caratterizzazione del caricamento dello stato (lotto 5, P0)', () => {
+describe('Caratterizzazione del caricamento dello stato', () => {
   beforeAll(async () => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
     await initOdessa();

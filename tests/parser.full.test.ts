@@ -67,7 +67,7 @@ function nonStringInputFor(label: string): Json {
   return JSON.parse(label);
 }
 
-describe('Istantanea completa del parser (#63, lotto 2)', () => {
+describe('Istantanea completa del parser (#63)', () => {
   let baseline: BaselineFile;
 
   beforeAll(async () => {
