@@ -17,7 +17,8 @@ const srcDir = join(root, 'src');
 
 const ALLOWED = new Set(['src/logic/core/gameData.js', 'src/initOdessa.js']);
 // Forme: global.odessaData, globalThis.odessaData, global?.odessaData (E-1), global['odessaData'], global?.['odessaData']
-const DIRECT_ACCESS = /global(This)?\s*(\?\.|\.)\s*odessaData|global(This)?\s*(\?\.)?\s*\[\s*['"]odessaData/;
+const DIRECT_ACCESS =
+  /global(This)?\s*(\?\.|\.)\s*odessaData|global(This)?\s*(\?\.)?\s*\[\s*['"]odessaData/;
 const SOURCE_EXT = /\.(js|mjs|cjs|ts)$/;
 
 function listSources(dir: string): string[] {

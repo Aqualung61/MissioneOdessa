@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
-import { executeCommand, resetGameState, getGameStateSnapshot, initializeOriginalData } from '../src/logic/engine.js';
+import {
+  executeCommand,
+  resetGameState,
+  getGameStateSnapshot,
+  initializeOriginalData,
+} from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -51,7 +56,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res.message).toMatch(/Hai preso/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia ora in inventario (IDLuogo = 0)
-    const statuetta = snap.Oggetti.find(o => o.Oggetto === 'Statuetta');
+    const statuetta = snap.Oggetti.find((o) => o.Oggetto === 'Statuetta');
     expect(statuetta).toBeDefined();
     expect(statuetta.IDLuogo).toBe(0);
   });
@@ -69,7 +74,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     expect(res2.message).toMatch(/Hai posato/i);
     const snap = getGameStateSnapshot();
     // Verifica che l'oggetto sia tornato nel luogo corrente
-    const statuetta = snap.Oggetti.find(o => o.Oggetto === 'Statuetta');
+    const statuetta = snap.Oggetti.find((o) => o.Oggetto === 'Statuetta');
     expect(statuetta).toBeDefined();
     expect(statuetta.IDLuogo).toBe(22);
   });
@@ -118,7 +123,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     // Imposta luogo corrente a 14 dove ci sono "Sedie" (Attivo=1, scenico)
     const { setCurrentLocation } = await import('../src/logic/engine.js');
     setCurrentLocation(14);
-    
+
     const parsed = await parseCommand(null, 'PRENDI SEDIE');
     expect(parsed.IsValid).toBe(true);
     const res = executeCommand(parsed);
@@ -144,7 +149,7 @@ describe('Engine gameplay base: PRENDI/POSA e INVENTARIO', () => {
     // Imposta luogo corrente a 24 dove ci sono "Scaffali vuoti" (Attivo=1, scenico)
     const { setCurrentLocation } = await import('../src/logic/engine.js');
     setCurrentLocation(24);
-    
+
     // Test con "SCAFFALI" (forma breve che il parser riconosce)
     // Il parser converte "SCAFFALI" in concetto "SCAFFALI_Vuoti"
     // L'engine normalizza sia il concetto che il nome oggetto per confrontarli
@@ -192,7 +197,7 @@ describe('Engine gameplay base EN: TAKE/DROP e INVENTORY', () => {
     expect(res.message).toMatch(/You took/i);
 
     const snap = getGameStateSnapshot();
-    const lamp = snap.Oggetti.find(o => o.Oggetto === 'Lamp');
+    const lamp = snap.Oggetti.find((o) => o.Oggetto === 'Lamp');
     expect(lamp).toBeDefined();
     expect(lamp!.IDLuogo).toBe(0);
   });

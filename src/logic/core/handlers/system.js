@@ -3,7 +3,14 @@
 // ripiego di `dispatch`.
 
 // Concetti di SISTEMA gestiti (confrontati con il lessico).
-export const HANDLED_SYSTEM_CONCEPTS = ['INVENTARIO', 'AIUTO', 'SALVARE', 'CARICARE', 'PUNTI', 'FINE'];
+export const HANDLED_SYSTEM_CONCEPTS = [
+  'INVENTARIO',
+  'AIUTO',
+  'SALVARE',
+  'CARICARE',
+  'PUNTI',
+  'FINE',
+];
 
 // 5 — core.system
 export const system = {
@@ -14,17 +21,26 @@ export const system = {
     const gameState = ctx.state;
     switch (concept) {
       case 'INVENTARIO': {
-        const inventoryItems = (gameState.Oggetti || []).filter(item => item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === gameState.currentLingua);
+        const inventoryItems = (gameState.Oggetti || []).filter(
+          (item) =>
+            item.Attivo >= 3 && item.IDLuogo === 0 && item.IDLingua === gameState.currentLingua
+        );
         if (inventoryItems.length === 0) {
-          return { accepted: true, resultType: 'OK', message: ctx.msg('engine.inventory.empty'), effects: [], showLocation: true };
+          return {
+            accepted: true,
+            resultType: 'OK',
+            message: ctx.msg('engine.inventory.empty'),
+            effects: [],
+            showLocation: true,
+          };
         }
-        const itemNames = inventoryItems.map(item => item.Oggetto).join(', ');
+        const itemNames = inventoryItems.map((item) => item.Oggetto).join(', ');
         return {
           accepted: true,
           resultType: 'OK',
           message: ctx.msg('engine.inventory.list', [itemNames]),
           effects: [],
-          showLocation: true
+          showLocation: true,
         };
       }
       case 'AIUTO': {
@@ -32,10 +48,20 @@ export const system = {
         return { accepted: true, resultType: 'OK', message, effects: [], showLocation: true };
       }
       case 'SALVARE': {
-        return { accepted: true, resultType: 'SAVE_GAME', message: ctx.msg('engine.save.inProgress'), effects: [] };
+        return {
+          accepted: true,
+          resultType: 'SAVE_GAME',
+          message: ctx.msg('engine.save.inProgress'),
+          effects: [],
+        };
       }
       case 'CARICARE':
-        return { accepted: true, resultType: 'LOAD_GAME', message: ctx.msg('engine.load.inProgress'), effects: [] };
+        return {
+          accepted: true,
+          resultType: 'LOAD_GAME',
+          message: ctx.msg('engine.load.inProgress'),
+          effects: [],
+        };
       case 'PUNTI': {
         // § 3.2.3 Task 6: Display score with rank and breakdown (i18n ready)
         const totale = gameState.punteggio.totale;
@@ -52,13 +78,24 @@ export const system = {
           rango,
           visitedPlaces.toString(),
           interazioni.toString(),
-          misteri.toString()
+          misteri.toString(),
         ]);
-        return { accepted: true, resultType: 'OK', message: breakdown, effects: [], showLocation: true };
+        return {
+          accepted: true,
+          resultType: 'OK',
+          message: breakdown,
+          effects: [],
+          showLocation: true,
+        };
       }
       case 'FINE':
         gameState.awaitingEndConfirm = true;
-        return { accepted: true, resultType: 'CONFIRM_END', message: ctx.msg('engine.end.confirm'), effects: [] };
+        return {
+          accepted: true,
+          resultType: 'CONFIRM_END',
+          message: ctx.msg('engine.end.confirm'),
+          effects: [],
+        };
       default:
         return null;
     }

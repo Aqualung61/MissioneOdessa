@@ -58,33 +58,33 @@ export const odessaGame = {
   id: 'odessa',
   config: CONFIG,
   verbHandlers: [
-    unknownDirection,   // 1  core.nav.unknownDirection
-    collapsedPassage,   // 2  odessa.nav.collapsedPassage
-    blockedWithText,    // 3  odessa.nav.blockedWithText
-    move,               // 4  core.nav.move
-    system,             // 5  core.system
-    darkness,           // 6  odessa.action.darkness
-    lightMatches,       // 7  odessa.action.lightMatches
-    loadWeight,         // 8  odessa.action.loadWeight
-    spegni,             // 9  odessa.action.spegni
-    scappa,             // 10 odessa.action.scappa
-    sorridi,            // 11 odessa.action.sorridi
-    dormi,              // 12 odessa.action.dormi
-    parla,              // 13 odessa.action.parla
-    attackGuard,        // 14 odessa.action.attackGuard
-    lightGeneric,       // 15 odessa.action.lightGeneric
-    lightTorch,         // 16 odessa.action.lightTorch
-    dig,                // 17 odessa.action.dig
-    interaction,        // 18 core.action.interaction
-    rotateDirection,    // 19 odessa.action.rotateDirection
-    rotateKnob,         // 20 odessa.action.rotateKnob
-    moveObject,         // 21 odessa.action.moveObject
-    examineSpecial,     // 22 odessa.action.examineSpecial
-    examine,            // 23 core.action.examine
-    openClose,          // 24 core.action.openClose
-    take,               // 25 core.action.take
-    drop,               // 26 core.action.drop
-    fallback,           // 27 core.action.fallback
+    unknownDirection, // 1  core.nav.unknownDirection
+    collapsedPassage, // 2  odessa.nav.collapsedPassage
+    blockedWithText, // 3  odessa.nav.blockedWithText
+    move, // 4  core.nav.move
+    system, // 5  core.system
+    darkness, // 6  odessa.action.darkness
+    lightMatches, // 7  odessa.action.lightMatches
+    loadWeight, // 8  odessa.action.loadWeight
+    spegni, // 9  odessa.action.spegni
+    scappa, // 10 odessa.action.scappa
+    sorridi, // 11 odessa.action.sorridi
+    dormi, // 12 odessa.action.dormi
+    parla, // 13 odessa.action.parla
+    attackGuard, // 14 odessa.action.attackGuard
+    lightGeneric, // 15 odessa.action.lightGeneric
+    lightTorch, // 16 odessa.action.lightTorch
+    dig, // 17 odessa.action.dig
+    interaction, // 18 core.action.interaction
+    rotateDirection, // 19 odessa.action.rotateDirection
+    rotateKnob, // 20 odessa.action.rotateKnob
+    moveObject, // 21 odessa.action.moveObject
+    examineSpecial, // 22 odessa.action.examineSpecial
+    examine, // 23 core.action.examine
+    openClose, // 24 core.action.openClose
+    take, // 25 core.action.take
+    drop, // 26 core.action.drop
+    fallback, // 27 core.action.fallback
   ],
   prerequisiteTypes,
   effectTypes,

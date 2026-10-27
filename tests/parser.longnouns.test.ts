@@ -44,7 +44,10 @@ const LONG_NOUNS: Array<[number, string, string, string, string]> = [
   [2, 'tapestry in terrible condition', 'tapestry', 'Tapestry in terrible condition', 'TAPESTRY'],
   [2, 'trophies on the walls', 'trophies', 'Trophies on the walls', 'TROPHIES'],
 ];
-const VERBS: Record<number, string[]> = { 1: ['esamina', 'prendi', 'carica'], 2: ['examine', 'take', 'load'] };
+const VERBS: Record<number, string[]> = {
+  1: ['esamina', 'prendi', 'carica'],
+  2: ['examine', 'take', 'load'],
+};
 
 describe('Nomi di 3+ parole (#128)', () => {
   const originalData = global.odessaData;
@@ -75,12 +78,17 @@ describe('Nomi di 3+ parole (#128)', () => {
           expect(withoutTypedForm(long)).toEqual(withoutTypedForm(short));
           // NounLiteral: parole digitate senza parole vuote (TD Lessico L3, §4.10)
           const stopwords = ['in', 'alle', 'on', 'the'];
-          expect(long.NounLiteral).toBe(lunga.split(' ').filter((w) => !stopwords.includes(w)).join(' '));
+          expect(long.NounLiteral).toBe(
+            lunga
+              .split(' ')
+              .filter((w) => !stopwords.includes(w))
+              .join(' ')
+          );
         });
       }
     }
 
-    it('articoli e maiuscole non cambiano l\'esito', async () => {
+    it("articoli e maiuscole non cambiano l'esito", async () => {
       const a = await parse('ESAMINA IL BASTONE DI COMANDO', 1);
       const b = await parse('esamina bastone', 1);
       expect(a.IsValid).toBe(true);
@@ -91,7 +99,7 @@ describe('Nomi di 3+ parole (#128)', () => {
     });
   });
 
-  describe('Voci con stopword: forma completa, senza stopword o con un\'altra (Q1)', () => {
+  describe("Voci con stopword: forma completa, senza stopword o con un'altra (Q1)", () => {
     const cases: Array<[number, string, string]> = [
       [1, 'esamina trofei alle pareti', 'esamina trofei'],
       [1, 'esamina trofei pareti', 'esamina trofei'],
@@ -211,13 +219,20 @@ describe('Nomi di 3+ parole (#128)', () => {
     for (const lingua of [1, 2]) {
       it(`[${lingua}] nessuna coppia di voci condivide la chiave derivata; nessuna chiave derivata coincide con una chiave del tokenMap di un altro termine`, async () => {
         const voci = VociLessico.filter((v) => v.ID_Lingua === lingua);
-        const stop = new Set(voci.filter((v) => tipoDi(v.ID_Termine) === 'STOPWORD').map((v) => norm(v.Voce)));
+        const stop = new Set(
+          voci.filter((v) => tipoDi(v.ID_Termine) === 'STOPWORD').map((v) => norm(v.Voce))
+        );
         const { tokenMap } = await ensureVocabulary({ currentLingua: lingua });
         const seen = new Map<string, number>();
-        const lunghe = voci.filter((v) => tipoDi(v.ID_Termine) === 'NOUN' && norm(v.Voce).split(' ').length >= 3);
+        const lunghe = voci.filter(
+          (v) => tipoDi(v.ID_Termine) === 'NOUN' && norm(v.Voce).split(' ').length >= 3
+        );
         expect(lunghe.length).toBe(lingua === 1 ? 5 : 2);
         for (const v of lunghe) {
-          const key = norm(v.Voce).split(' ').filter((w) => !stop.has(w)).join(' ');
+          const key = norm(v.Voce)
+            .split(' ')
+            .filter((w) => !stop.has(w))
+            .join(' ');
           expect(seen.has(key), `chiave derivata duplicata: ${key}`).toBe(false);
           seen.set(key, v.ID_Termine);
           const esistente = tokenMap.get(key);
@@ -225,18 +240,27 @@ describe('Nomi di 3+ parole (#128)', () => {
           // tokenMap e dello stesso termine; le altre non devono coincidere con nulla.
           if (esistente) expect(esistente.termId, `chiave ${key}`).toBe(v.ID_Termine);
         }
-        const conStopword = lunghe.filter((v) => norm(v.Voce).split(' ').some((w) => stop.has(w)));
+        const conStopword = lunghe.filter((v) =>
+          norm(v.Voce)
+            .split(' ')
+            .some((w) => stop.has(w))
+        );
         expect(conStopword.length).toBe(lingua === 1 ? 2 : 2);
         for (const v of conStopword) {
-          const key = norm(v.Voce).split(' ').filter((w) => !stop.has(w)).join(' ');
-          expect(tokenMap.has(key), `la chiave derivata ${key} non deve essere nel tokenMap`).toBe(false);
+          const key = norm(v.Voce)
+            .split(' ')
+            .filter((w) => !stop.has(w))
+            .join(' ');
+          expect(tokenMap.has(key), `la chiave derivata ${key} non deve essere nel tokenMap`).toBe(
+            false
+          );
         }
       });
     }
   });
 
   describe('Genericità', () => {
-    it('il codice dell\'indice e della ricerca non contiene riferimenti a Odessa', () => {
+    it("il codice dell'indice e della ricerca non contiene riferimenti a Odessa", () => {
       const src = readFileSync(resolve(__dirname, '..', 'src', 'logic', 'parser.js'), 'utf8');
       const start = src.indexOf('function buildLongNounIndex');
       const end = src.indexOf('export async function ensureVocabulary');
@@ -270,7 +294,12 @@ describe('Nomi di 3+ parole (#128)', () => {
       ];
       const saved = global.odessaData;
       try {
-        global.odessaData = { VociLessico: voci, TerminiLessico: termini, TipiLessico: tipi, Oggetti: [] };
+        global.odessaData = {
+          VociLessico: voci,
+          TerminiLessico: termini,
+          TipiLessico: tipi,
+          Oggetti: [],
+        };
         resetVocabularyCache();
         const full = await parse('esamina gatto nero di casa', 1);
         expect(full.IsValid).toBe(true);

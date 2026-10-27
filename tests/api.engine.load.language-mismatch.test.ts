@@ -53,25 +53,33 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
     const session = createSessionState();
 
     // Metti la sessione in lingua IT (1)
-    const resetRes = await fetchWithSession(`${baseUrl}/api/engine/reset`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idLingua: 1 }),
-    }, session);
+    const resetRes = await fetchWithSession(
+      `${baseUrl}/api/engine/reset`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idLingua: 1 }),
+      },
+      session
+    );
     expect(resetRes.status).toBe(200);
 
     const luoghiRef = getOdessaDataGlobal().Luoghi;
     const luoghiLen = Array.isArray(luoghiRef) ? luoghiRef.length : null;
 
     // Prova a caricare un save in lingua EN (2)
-    const res = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gameState: { currentLingua: 2 },
-        odessaData: { Luoghi: [] },
-      }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/load-client-state`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameState: { currentLingua: 2 },
+          odessaData: { Luoghi: [] },
+        }),
+      },
+      session
+    );
 
     expect(res.status).toBe(409);
     const body = await res.json();
@@ -112,11 +120,15 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
     const originalLuoghi = getOdessaDataGlobal().Luoghi;
     try {
       // Metti la sessione in lingua IT (1)
-      const resetRes = await fetchWithSession(`${baseUrl}/api/engine/reset`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idLingua: 1 }),
-      }, session);
+      const resetRes = await fetchWithSession(
+        `${baseUrl}/api/engine/reset`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idLingua: 1 }),
+        },
+        session
+      );
       expect(resetRes.status).toBe(200);
 
       const stateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
@@ -131,14 +143,18 @@ describe('POST /api/engine/load-client-state (language mismatch)', () => {
         guardTimer: 3,
       };
 
-      const res = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameState: loadedGameState,
-          odessaData: { Luoghi: [] },
-        }),
-      }, session);
+      const res = await fetchWithSession(
+        `${baseUrl}/api/engine/load-client-state`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameState: loadedGameState,
+            odessaData: { Luoghi: [] },
+          }),
+        },
+        session
+      );
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.ok).toBe(true);

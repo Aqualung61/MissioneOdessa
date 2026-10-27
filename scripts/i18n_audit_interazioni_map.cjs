@@ -14,7 +14,7 @@ for (const o of oggetti) {
 }
 
 const oggettiByNormIt = new Map();
-for (const o of oggetti.filter(o => o.IDLingua === 1)) {
+for (const o of oggetti.filter((o) => o.IDLingua === 1)) {
   oggettiByNormIt.set(norm(o.Oggetto), o);
 }
 
@@ -25,7 +25,7 @@ function mapItToEnObjectName(itName) {
   return enObj?.Oggetto ?? null;
 }
 
-const itOnly = interazioni.filter(i => i.IDLingua === 1);
+const itOnly = interazioni.filter((i) => i.IDLingua === 1);
 const references = new Map();
 
 function addRef(kind, value, where) {
@@ -46,7 +46,7 @@ for (const i of itOnly) {
 }
 
 const rows = Array.from(references.values())
-  .map(r => ({
+  .map((r) => ({
     kind: r.kind,
     it: r.value,
     en: mapItToEnObjectName(r.value),
@@ -54,7 +54,7 @@ const rows = Array.from(references.values())
   }))
   .sort((a, b) => a.it.localeCompare(b.it));
 
-const missing = rows.filter(r => r.en == null);
+const missing = rows.filter((r) => r.en == null);
 console.log('Interazioni IT records:', itOnly.length);
 console.log('Unique referenced strings:', rows.length);
 console.log('Mapped:', rows.length - missing.length, 'Missing:', missing.length);
@@ -67,6 +67,6 @@ if (missing.length) {
 }
 
 console.log('\nSample mappings:');
-for (const r of rows.filter(r => r.en != null).slice(0, 100)) {
+for (const r of rows.filter((r) => r.en != null).slice(0, 100)) {
   console.log('-', r.kind, JSON.stringify(r.it), '=>', JSON.stringify(r.en));
 }

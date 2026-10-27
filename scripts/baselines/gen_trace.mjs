@@ -17,11 +17,15 @@ const { loadMessaggiSistema } = await imp('src/logic/systemMessages.js');
 const { ensureVocabulary, parseCommand } = await imp('src/logic/parser.js');
 const { createEngine } = await imp('src/logic/engine.js');
 
-const quiet = console.log; console.log = () => {};
-await initOdessa(); loadMessaggiSistema(); await ensureVocabulary();
+const quiet = console.log;
+console.log = () => {};
+await initOdessa();
+loadMessaggiSistema();
+await ensureVocabulary();
 console.log = quiet;
 
-const fixture = (...p) => JSON.parse(readFileSync(resolve(repo, 'tests', 'fixtures', ...p), 'utf8'));
+const fixture = (...p) =>
+  JSON.parse(readFileSync(resolve(repo, 'tests', 'fixtures', ...p), 'utf8'));
 const walk = (name) => fixture('walkthrough', `${name}.json`).steps.map((s) => s.command);
 
 // JSON canonico: chiavi ordinate, Set/Map come array, funzioni e undefined omessi
@@ -29,7 +33,8 @@ function canon(v) {
   if (v === null || typeof v !== 'object') return v;
   if (v instanceof Set) return [...v].map(canon);
   if (v instanceof Map) return canon(Object.fromEntries(v));
-  if (Array.isArray(v)) return v.map((x) => (typeof x === 'function' || x === undefined ? null : canon(x)));
+  if (Array.isArray(v))
+    return v.map((x) => (typeof x === 'function' || x === undefined ? null : canon(x)));
   const o = {};
   for (const k of Object.keys(v).sort()) {
     if (typeof v[k] === 'function' || v[k] === undefined) continue;
@@ -37,12 +42,16 @@ function canon(v) {
   }
   return o;
 }
-const sha = (v) => createHash('sha256').update(JSON.stringify(canon(v))).digest('hex');
+const sha = (v) =>
+  createHash('sha256')
+    .update(JSON.stringify(canon(v)))
+    .digest('hex');
 
 // Snapshot normalizzato: senza timestamp e versione dell'applicazione
 function snap(engine) {
   const s = engine.getGameStateSnapshot();
-  delete s.timestamp; delete s.version;
+  delete s.timestamp;
+  delete s.version;
   return s;
 }
 
@@ -74,7 +83,14 @@ function compact(s, initialPos) {
     seq: s.sequenze,
     inv: inv.sort((a, b) => a - b),
     moved,
-    end: { victory: s.victory, ended: s.ended, awaitingRestart: s.awaitingRestart, awaitingEndConfirm: s.awaitingEndConfirm, awaitingContinue: s.awaitingContinue, movementBlocked: s.movementBlocked },
+    end: {
+      victory: s.victory,
+      ended: s.ended,
+      awaitingRestart: s.awaitingRestart,
+      awaitingEndConfirm: s.awaitingEndConfirm,
+      awaitingContinue: s.awaitingContinue,
+      movementBlocked: s.movementBlocked,
+    },
   });
 }
 
@@ -87,7 +103,8 @@ function newEngine(lingua) {
 
 function initialPositions(engine) {
   const m = {};
-  for (const o of engine.getGameStateSnapshot().Oggetti) m[`${o.IDLingua}:${o.ID}`] = [o.IDLuogo, o.Attivo];
+  for (const o of engine.getGameStateSnapshot().Oggetti)
+    m[`${o.IDLingua}:${o.ID}`] = [o.IDLuogo, o.Attivo];
   return m;
 }
 
@@ -101,7 +118,13 @@ function record(i, input, parsed, result, s, initialPos) {
   return {
     i,
     input,
-    parse: { valid: parsed.IsValid, type: parsed.CommandType, verb: parsed.VerbConcept, noun: parsed.NounConcept, error: parsed.Error },
+    parse: {
+      valid: parsed.IsValid,
+      type: parsed.CommandType,
+      verb: parsed.VerbConcept,
+      noun: parsed.NounConcept,
+      error: parsed.Error,
+    },
     result: canon(result),
     state: compact(s, initialPos),
     sha: sha({ parsed, result, state: s }),
@@ -110,25 +133,47 @@ function record(i, input, parsed, result, s, initialPos) {
 
 function withEnv(env, fn) {
   const saved = {};
-  for (const k of Object.keys(env || {})) { saved[k] = process.env[k]; process.env[k] = env[k]; }
+  for (const k of Object.keys(env || {})) {
+    saved[k] = process.env[k];
+    process.env[k] = env[k];
+  }
   return fn().finally(() => {
-    for (const k of Object.keys(saved)) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; }
+    for (const k of Object.keys(saved)) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
   });
 }
 
-const out = { format: 1, generator: 'gen_trace.mjs', normalization: 'snapshot senza timestamp e version; JSON canonico a chiavi ordinate; sha = SHA-256 di {parsed, result, state}', scenarios: [] };
+const out = {
+  format: 1,
+  generator: 'gen_trace.mjs',
+  normalization:
+    'snapshot senza timestamp e version; JSON canonico a chiavi ordinate; sha = SHA-256 di {parsed, result, state}',
+  scenarios: [],
+};
 
 for (const sc of ENGINE_SCENARIOS) {
   const engine = newEngine(sc.lingua);
   const initialPos = initialPositions(engine);
-  if (sc.prefix) for (const c of walk(sc.prefix.walkthrough).slice(0, sc.prefix.upTo)) await step(engine, c);
+  if (sc.prefix)
+    for (const c of walk(sc.prefix.walkthrough).slice(0, sc.prefix.upTo)) await step(engine, c);
   const env = { ...(sc.env || {}) };
-  if (sc.envFromTurns) env.GAME_MAX_TURNS_CONSUMED = String(engine.getGameState().turn.totalTurnsConsumed + sc.envFromTurns);
+  if (sc.envFromTurns)
+    env.GAME_MAX_TURNS_CONSUMED = String(
+      engine.getGameState().turn.totalTurnsConsumed + sc.envFromTurns
+    );
   const commands = sc.walkthrough ? walk(sc.walkthrough) : sc.commands;
   const steps = [];
   const start = sc.prefix ? sc.prefix.upTo : 0;
   await withEnv(env, async () => {
-    if (sc.prefix) steps.push({ i: start, input: null, state: compact(snap(engine), initialPos), sha: sha({ state: snap(engine) }) });
+    if (sc.prefix)
+      steps.push({
+        i: start,
+        input: null,
+        state: compact(snap(engine), initialPos),
+        sha: sha({ state: snap(engine) }),
+      });
     let i = start;
     for (const c of commands) {
       const { parsed, result } = await step(engine, c);
@@ -151,17 +196,31 @@ for (const sc of RESUME_SCENARIOS) {
   const engine = newEngine(sc.lingua);
   const initialPos = initialPositions(engine);
   engine.setGameState(JSON.parse(JSON.stringify(saved)));
-  const steps = [{ i: sc.saveAt, input: null, state: compact(snap(engine), initialPos), sha: sha({ state: snap(engine) }) }];
+  const steps = [
+    {
+      i: sc.saveAt,
+      input: null,
+      state: compact(snap(engine), initialPos),
+      sha: sha({ state: snap(engine) }),
+    },
+  ];
   let i = sc.saveAt;
   for (const c of commands.slice(sc.saveAt)) {
     const { parsed, result } = await step(engine, c);
     steps.push(record(++i, c, parsed, result, snap(engine), initialPos));
   }
-  out.scenarios.push({ id: sc.id, lingua: sc.lingua, resume: { walkthrough: sc.walkthrough, saveAt: sc.saveAt, saveFile: sc.saveFile || null }, steps });
+  out.scenarios.push({
+    id: sc.id,
+    lingua: sc.lingua,
+    resume: { walkthrough: sc.walkthrough, saveAt: sc.saveAt, saveFile: sc.saveFile || null },
+    steps,
+  });
 }
 
 mkdirSync(outDir, { recursive: true });
 const text = JSON.stringify(out, null, 1) + '\n';
 writeFileSync(resolve(outDir, 'engine_trace.json'), text);
 const n = out.scenarios.reduce((a, s) => a + s.steps.length, 0);
-process.stdout.write(`scenari ${out.scenarios.length}, passi ${n}, KB ${(text.length / 1024).toFixed(0)}, sha ${createHash('sha256').update(text).digest('hex')}\n`);
+process.stdout.write(
+  `scenari ${out.scenarios.length}, passi ${n}, KB ${(text.length / 1024).toFixed(0)}, sha ${createHash('sha256').update(text).digest('hex')}\n`
+);

@@ -43,19 +43,27 @@ async function run(engine: Engine, command: string) {
 }
 
 function walkthrough(lingua: number): Walkthrough {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json') as Walkthrough;
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ) as Walkthrough;
 }
 
 /** Stretto passaggio (32), prima di attraversarlo verso sud (dopo il passo 80 del percorso completo). */
 async function toPassaggio32(lingua = 1): Promise<Engine> {
   const engine = newEngine(lingua);
-  for (const s of walkthrough(lingua).steps.filter((x) => x.step <= 80)) await run(engine, s.command);
+  for (const s of walkthrough(lingua).steps.filter((x) => x.step <= 80))
+    await run(engine, s.command);
   expect(engine.getGameState().currentLocationId).toBe(32);
   return engine;
 }
 
-const RACCONTO_IT = 'Appena ti lasci alle spalle il tratto di passaggio, questo crolla: sei stato fortunato a non restare sepolto dal crollo ma da quella parte ora non si può più passare.';
-const RACCONTO_EN = "As soon as you leave the stretch of passage behind you, it collapses. You were lucky not to be buried by the cave-in, but you can't go back that way anymore.";
+const RACCONTO_IT =
+  'Appena ti lasci alle spalle il tratto di passaggio, questo crolla: sei stato fortunato a non restare sepolto dal crollo ma da quella parte ora non si può più passare.';
+const RACCONTO_EN =
+  "As soon as you leave the stretch of passage behind you, it collapses. You were lucky not to be buried by the cave-in, but you can't go back that way anymore.";
 const BLOCCATO_IT = 'Non puoi passare: il passaggio è crollato.';
 const BLOCCATO_EN = "You can't get through: the passage has collapsed.";
 const DESCRIZIONE_36_IT = 'Sei in uno stretto passaggio. Il soffitto è crollato a nord.';
@@ -74,8 +82,24 @@ describe('passaggio crollato nel sotterraneo (#117)', () => {
   });
 
   describe.each([
-    { label: 'IT', lingua: 1, racconto: RACCONTO_IT, bloccato: BLOCCATO_IT, descrizione36: DESCRIZIONE_36_IT, guarda: 'guarda', infila: 'infila medaglione' },
-    { label: 'EN', lingua: 2, racconto: RACCONTO_EN, bloccato: BLOCCATO_EN, descrizione36: DESCRIZIONE_36_EN, guarda: 'look', infila: 'insert medallion' },
+    {
+      label: 'IT',
+      lingua: 1,
+      racconto: RACCONTO_IT,
+      bloccato: BLOCCATO_IT,
+      descrizione36: DESCRIZIONE_36_IT,
+      guarda: 'guarda',
+      infila: 'infila medaglione',
+    },
+    {
+      label: 'EN',
+      lingua: 2,
+      racconto: RACCONTO_EN,
+      bloccato: BLOCCATO_EN,
+      descrizione36: DESCRIZIONE_36_EN,
+      guarda: 'look',
+      infila: 'insert medallion',
+    },
   ])('$label', ({ lingua, racconto, bloccato, descrizione36, guarda, infila }) => {
     it('TP-01: primo passaggio da 32 a sud (36): racconto del crollo, flag impostato', async () => {
       const engine = await toPassaggio32(lingua);
@@ -133,7 +157,9 @@ describe('passaggio crollato nel sotterraneo (#117)', () => {
       }
       expect(source.getGameState().currentLocationId).toBe(32);
 
-      const snapshot = source.getGameStateSnapshot() as Record<string, unknown> & { visitedPlaces: number[] };
+      const snapshot = source.getGameStateSnapshot() as Record<string, unknown> & {
+        visitedPlaces: number[];
+      };
       expect(snapshot.visitedPlaces).toContain(36);
       delete (snapshot as { flags?: unknown }).flags;
 

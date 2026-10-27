@@ -22,7 +22,7 @@ export function buildCommand(parseResult, state, helpers) {
     );
     const nounForMissingObject = esisteComeOggettoOvunque
       ? noun.toLowerCase().replace(/_/g, ' ')
-      : (parseResult.NounLiteral || noun.toLowerCase().replace(/_/g, ' '));
+      : parseResult.NounLiteral || noun.toLowerCase().replace(/_/g, ' ');
     return { type, parseResult, concept, verb, noun, nounForMissingObject };
   }
 

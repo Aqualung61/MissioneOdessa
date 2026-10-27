@@ -48,12 +48,18 @@ async function runAll(engine: Engine, commands: string[]) {
 }
 
 function walkthrough(lingua: number): Step[] {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 async function playUpTo(lingua: number, uptoStep: number): Promise<Engine> {
   const engine = newEngine(lingua);
-  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep)) await run(engine, s.command);
+  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep))
+    await run(engine, s.command);
   return engine;
 }
 
@@ -61,16 +67,37 @@ async function playUpTo(lingua: number, uptoStep: number): Promise<Engine> {
 // del 44, lo scomparto del 25, la porta del 27 e scarica pesa/peso al 57 non usano
 // chiavi di MessaggiSistema ma il testo diretto, come le interazioni esistenti
 // (es. carica_pesa_57).
-const CASSAFORTE_CHIUSA = { 1: 'La cassaforte è chiusa con una serratura a combinazione.', 2: 'The safe is locked with a combination lock.' };
+const CASSAFORTE_CHIUSA = {
+  1: 'La cassaforte è chiusa con una serratura a combinazione.',
+  2: 'The safe is locked with a combination lock.',
+};
 const CASSAFORTE_APERTA = { 1: 'È già aperta.', 2: "It's already open." };
-const CASSAFORTE_GIA_CHIUSA = { 1: 'La cassaforte è già chiusa.', 2: 'The safe is already closed.' };
-const CASSAFORTE_RIMANE_APERTA = { 1: 'La cassaforte rimane aperta: la serratura non scatta più.', 2: 'The safe stays open: the lock no longer catches.' };
-const SCOMPARTO_RIMANE_APERTO = { 1: 'Lo scomparto rimane aperto: si deve essere rotto il meccanismo.', 2: 'The compartment stays open: the mechanism must be broken.' };
-const PORTA44_CHIUSA_SCATTO = { 1: 'La porta è chiusa con un meccanismo a scatto.', 2: 'The door is held shut by a spring mechanism.' };
+const CASSAFORTE_GIA_CHIUSA = {
+  1: 'La cassaforte è già chiusa.',
+  2: 'The safe is already closed.',
+};
+const CASSAFORTE_RIMANE_APERTA = {
+  1: 'La cassaforte rimane aperta: la serratura non scatta più.',
+  2: 'The safe stays open: the lock no longer catches.',
+};
+const SCOMPARTO_RIMANE_APERTO = {
+  1: 'Lo scomparto rimane aperto: si deve essere rotto il meccanismo.',
+  2: 'The compartment stays open: the mechanism must be broken.',
+};
+const PORTA44_CHIUSA_SCATTO = {
+  1: 'La porta è chiusa con un meccanismo a scatto.',
+  2: 'The door is held shut by a spring mechanism.',
+};
 const PORTA44_GIA_APERTA = { 1: 'La porta è già aperta.', 2: 'The door is already open.' };
 const PORTA44_GIA_CHIUSA = { 1: 'La porta è già chiusa.', 2: 'The door is already closed.' };
-const PORTA44_SOLO_AUTOMATICO = { 1: 'La porta si chiude solo azionando il meccanismo automatico.', 2: 'The door only closes by operating the automatic mechanism.' };
-const PORTA27_BLOCCATA = { 1: 'Non riesci a chiudere la porta: un meccanismo la blocca.', 2: "You can't close the door: a mechanism is blocking it." };
+const PORTA44_SOLO_AUTOMATICO = {
+  1: 'La porta si chiude solo azionando il meccanismo automatico.',
+  2: 'The door only closes by operating the automatic mechanism.',
+};
+const PORTA27_BLOCCATA = {
+  1: 'Non riesci a chiudere la porta: un meccanismo la blocca.',
+  2: "You can't close the door: a mechanism is blocking it.",
+};
 const SCARICA_BLOCCATO = { 1: 'Il meccanismo si è bloccato.', 2: 'The mechanism has jammed.' };
 const SCARICA_NON_CARICA = { 1: 'La pesa non è carica.', 2: "The scale isn't loaded." };
 // Il testo di successo del caricamento (interazione esistente carica_pesa_57, invariata)
@@ -103,13 +130,19 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const peso = lingua === 1 ? 'scarica peso' : 'unload weight';
 
       const nonCaricaPesa = await run(await playUpTo(lingua, 119), pesa);
-      expect(nonCaricaPesa.message, `${pesa}, non carica`).toBe(SCARICA_NON_CARICA[lingua as 1 | 2]);
+      expect(nonCaricaPesa.message, `${pesa}, non carica`).toBe(
+        SCARICA_NON_CARICA[lingua as 1 | 2]
+      );
       const nonCaricaPeso = await run(await playUpTo(lingua, 119), peso);
-      expect(nonCaricaPeso.message, `${peso}, non carica`).toBe(SCARICA_NON_CARICA[lingua as 1 | 2]);
+      expect(nonCaricaPeso.message, `${peso}, non carica`).toBe(
+        SCARICA_NON_CARICA[lingua as 1 | 2]
+      );
 
       const dopoCaricata = await playUpTo(lingua, 120); // 120 = metti peso/put weight
       const bloccato = await run(dopoCaricata, pesa);
-      expect(bloccato.message, `${pesa}, dopo il caricamento`).toBe(SCARICA_BLOCCATO[lingua as 1 | 2]);
+      expect(bloccato.message, `${pesa}, dopo il caricamento`).toBe(
+        SCARICA_BLOCCATO[lingua as 1 | 2]
+      );
     }
   });
 
@@ -128,14 +161,17 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
     }
   });
 
-  it("carica peso/pesa: stesso esito di metti peso/put weight, stesso punteggio una sola volta (TB-02, entrambi gli ordini)", async () => {
+  it('carica peso/pesa: stesso esito di metti peso/put weight, stesso punteggio una sola volta (TB-02, entrambi gli ordini)', async () => {
     for (const lingua of [1, 2]) {
       const caricaPeso = lingua === 1 ? 'carica peso' : 'load weight';
       const caricaPesa = lingua === 1 ? 'carica pesa' : 'load scale';
       const mettiPeso = lingua === 1 ? 'metti peso' : 'put weight';
 
       // "carica peso" da solo: stesso esito di "metti peso".
-      const [success1, success2] = await Promise.all([run(await playUpTo(lingua, 119), caricaPeso), run(await playUpTo(lingua, 119), mettiPeso)]);
+      const [success1, success2] = await Promise.all([
+        run(await playUpTo(lingua, 119), caricaPeso),
+        run(await playUpTo(lingua, 119), mettiPeso),
+      ]);
       expect(success1.message, caricaPeso).toContain(CARICA_SUCCESSO_TESTO[lingua as 1 | 2]);
       expect(success1.message, `${caricaPeso} = ${mettiPeso}`).toBe(success2.message);
 
@@ -150,9 +186,16 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
         const r1 = await run(engine, caricaPeso);
         const scoreAfterFirst = engine.getGameState().punteggio.totale;
         const r2 = await run(engine, mettiPeso);
-        expect(r1.message, `${caricaPeso} (primo)`).toContain(CARICA_SUCCESSO_TESTO[lingua as 1 | 2]);
-        expect(r2.message, `${mettiPeso} dopo ${caricaPeso}`).toBe(msg('engine.interaction.alreadyDone', lingua));
-        expect(engine.getGameState().punteggio.totale, 'punteggio invariato dopo il secondo comando').toBe(scoreAfterFirst);
+        expect(r1.message, `${caricaPeso} (primo)`).toContain(
+          CARICA_SUCCESSO_TESTO[lingua as 1 | 2]
+        );
+        expect(r2.message, `${mettiPeso} dopo ${caricaPeso}`).toBe(
+          msg('engine.interaction.alreadyDone', lingua)
+        );
+        expect(
+          engine.getGameState().punteggio.totale,
+          'punteggio invariato dopo il secondo comando'
+        ).toBe(scoreAfterFirst);
       }
 
       // Ordine 2 (inverso): "metti peso" poi "carica peso" -> stesso risultato.
@@ -161,9 +204,16 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
         const r1 = await run(engine, mettiPeso);
         const scoreAfterFirst = engine.getGameState().punteggio.totale;
         const r2 = await run(engine, caricaPeso);
-        expect(r1.message, `${mettiPeso} (primo)`).toContain(CARICA_SUCCESSO_TESTO[lingua as 1 | 2]);
-        expect(r2.message, `${caricaPeso} dopo ${mettiPeso}`).toBe(msg('engine.interaction.alreadyDone', lingua));
-        expect(engine.getGameState().punteggio.totale, 'punteggio invariato dopo il secondo comando').toBe(scoreAfterFirst);
+        expect(r1.message, `${mettiPeso} (primo)`).toContain(
+          CARICA_SUCCESSO_TESTO[lingua as 1 | 2]
+        );
+        expect(r2.message, `${caricaPeso} dopo ${mettiPeso}`).toBe(
+          msg('engine.interaction.alreadyDone', lingua)
+        );
+        expect(
+          engine.getGameState().punteggio.totale,
+          'punteggio invariato dopo il secondo comando'
+        ).toBe(scoreAfterFirst);
       }
     }
   });
@@ -179,7 +229,7 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
     }
   });
 
-  it('carica con altri nomi resta un\'azione senza effetto', async () => {
+  it("carica con altri nomi resta un'azione senza effetto", async () => {
     for (const lingua of [1, 2]) {
       const verbo = lingua === 1 ? 'caricare' : 'load';
       const comando = lingua === 1 ? 'carica documenti' : 'load documents';
@@ -228,9 +278,13 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
       // Alla barriera (passo 146): sia "parla"/"talk" sia "rispondi"/"answer".
       const barrieraParla = await run(await playUpTo(lingua, 146), parla);
-      expect(barrieraParla.message, `${parla} alla barriera`).toBe(msg('engine.parla.guardGerman', lingua));
+      expect(barrieraParla.message, `${parla} alla barriera`).toBe(
+        msg('engine.parla.guardGerman', lingua)
+      );
       const barrieraRispondi = await run(await playUpTo(lingua, 146), rispondi);
-      expect(barrieraRispondi.message, `${rispondi} alla barriera`).toBe(msg('engine.parla.guardGerman', lingua));
+      expect(barrieraRispondi.message, `${rispondi} alla barriera`).toBe(
+        msg('engine.parla.guardGerman', lingua)
+      );
     }
   });
 
@@ -250,7 +304,9 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       // Nessuna fonte: dopo l'incontro con Ferenc (passo 146) spariscono tutti gli
       // oggetti tranne i Documenti (R11): né torcia, né fiammiferi, né lampada.
       const nessunaFonte = await run(await playUpTo(lingua, 146), accendi);
-      expect(nessunaFonte.message, `${accendi}, nessuna fonte`).toBe(msg('engine.light.noSourceHere', lingua));
+      expect(nessunaFonte.message, `${accendi}, nessuna fonte`).toBe(
+        msg('engine.light.noSourceHere', lingua)
+      );
     }
   });
 
@@ -262,7 +318,9 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
       // Con te, funzionante.
       const funzionante = await run(newEngine(lingua), accendiTorcia);
-      expect(funzionante.message, `${accendiTorcia}, funzionante`).toBe(msg('engine.torch.alreadyLit', lingua));
+      expect(funzionante.message, `${accendiTorcia}, funzionante`).toBe(
+        msg('engine.torch.alreadyLit', lingua)
+      );
 
       // Nel luogo ma non con te: la si posa, poi si tenta di accenderla. Posata la
       // torcia resta al buio (unica fonte di luce allo stato iniziale), quindi il
@@ -270,13 +328,17 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const nelLuogo = newEngine(lingua);
       await run(nelLuogo, posaTorcia);
       const rNelLuogo = await run(nelLuogo, accendiTorcia);
-      expect(rNelLuogo.message, `${accendiTorcia}, nel luogo ma non con te`).toContain(msg('engine.torch.takeFirst', lingua));
+      expect(rNelLuogo.message, `${accendiTorcia}, nel luogo ma non con te`).toContain(
+        msg('engine.torch.takeFirst', lingua)
+      );
 
       // Con te, guasta: la torcia si guasta dopo 6 turni (resta con te, mai posata).
       const guasta = newEngine(lingua);
       await runAll(guasta, Array(6).fill(guarda));
       const rGuasta = await run(guasta, accendiTorcia);
-      expect(rGuasta.message, `${accendiTorcia}, guasta`).toContain(msg('engine.torch.broken', lingua));
+      expect(rGuasta.message, `${accendiTorcia}, guasta`).toContain(
+        msg('engine.torch.broken', lingua)
+      );
     }
   });
 
@@ -286,11 +348,17 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const scavaMacerie = lingua === 1 ? 'scava macerie' : 'dig rubble';
 
       // Luogo 11 (passo 14): badile non ancora preso.
-      const [r11a, r11b] = await Promise.all([run(await playUpTo(lingua, 14), scava), run(await playUpTo(lingua, 14), scavaMacerie)]);
+      const [r11a, r11b] = await Promise.all([
+        run(await playUpTo(lingua, 14), scava),
+        run(await playUpTo(lingua, 14), scavaMacerie),
+      ]);
       expect(r11a.message, `${scava} al luogo 11`).toBe(r11b.message);
 
       // Luogo 49 (passo 101): badile ancora in inventario (posato solo al passo 104).
-      const [r49a, r49b] = await Promise.all([run(await playUpTo(lingua, 101), scava), run(await playUpTo(lingua, 101), scavaMacerie)]);
+      const [r49a, r49b] = await Promise.all([
+        run(await playUpTo(lingua, 101), scava),
+        run(await playUpTo(lingua, 101), scavaMacerie),
+      ]);
       expect(r49a.message, `${scava} al luogo 49`).toBe(r49b.message);
     }
   });
@@ -302,13 +370,17 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
       // Con badile (ancora in inventario al passo 80: posato solo al passo 104).
       const conBadile = await run(await playUpTo(lingua, 80), scava);
-      expect(conBadile.message, `${scava} al 32, con badile`).toBe(msg('engine.dig.digging', lingua));
+      expect(conBadile.message, `${scava} al 32, con badile`).toBe(
+        msg('engine.dig.digging', lingua)
+      );
 
       // Senza badile: lo si posa appena arrivati.
       const engineSenza = await playUpTo(lingua, 80);
       await run(engineSenza, posaBadile);
       const senzaBadile = await run(engineSenza, scava);
-      expect(senzaBadile.message, `${scava} al 32, senza badile`).toBe(msg('engine.dig.bareHandsNoTool', lingua));
+      expect(senzaBadile.message, `${scava} al 32, senza badile`).toBe(
+        msg('engine.dig.bareHandsNoTool', lingua)
+      );
     }
   });
 
@@ -318,12 +390,16 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const posaBadile = lingua === 1 ? 'posa badile' : 'drop spade';
 
       const conBadile = await run(await playUpTo(lingua, 81), scava);
-      expect(conBadile.message, `${scava} al 36, con badile`).toBe(msg('engine.dig.noPassageNorth', lingua));
+      expect(conBadile.message, `${scava} al 36, con badile`).toBe(
+        msg('engine.dig.noPassageNorth', lingua)
+      );
 
       const engineSenza = await playUpTo(lingua, 81);
       await run(engineSenza, posaBadile);
       const senzaBadile = await run(engineSenza, scava);
-      expect(senzaBadile.message, `${scava} al 36, senza badile`).toBe(msg('engine.dig.bareHandsNoTool', lingua));
+      expect(senzaBadile.message, `${scava} al 36, senza badile`).toBe(
+        msg('engine.dig.bareHandsNoTool', lingua)
+      );
     }
   });
 
@@ -337,7 +413,9 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const engineSenza = await playUpTo(lingua, 101);
       await run(engineSenza, posaBadile);
       const senzaBadile = await run(engineSenza, scavaMacerie);
-      expect(senzaBadile.message, `${scavaMacerie} senza badile`).toBe(msg('engine.dig.bareHandsNoTool', lingua));
+      expect(senzaBadile.message, `${scavaMacerie} senza badile`).toBe(
+        msg('engine.dig.bareHandsNoTool', lingua)
+      );
 
       // Già scavato (il passo 102 esegue "scava macerie").
       const giaScavato = await run(await playUpTo(lingua, 102), scava);
@@ -349,10 +427,14 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
     for (const lingua of [1, 2]) {
       const scava = lingua === 1 ? 'scava' : 'dig';
       const senzaBadile = await run(newEngine(lingua), scava); // badile non ancora preso (passo 29)
-      expect(senzaBadile.message, `${scava} altrove, senza badile`).toBe(msg('engine.dig.noToolHere', lingua));
+      expect(senzaBadile.message, `${scava} altrove, senza badile`).toBe(
+        msg('engine.dig.noToolHere', lingua)
+      );
 
       const conBadile = await run(await playUpTo(lingua, 29), scava); // appena preso, luogo 18
-      expect(conBadile.message, `${scava} altrove, con badile`).toBe(msg('engine.dig.digging', lingua));
+      expect(conBadile.message, `${scava} altrove, con badile`).toBe(
+        msg('engine.dig.digging', lingua)
+      );
     }
   });
 
@@ -369,9 +451,13 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
       // Aperta (passo 42: sequenza DESTRA,SINISTRA,SINISTRA,DESTRA,SINISTRA completata).
       const apriAperta = await run(await playUpTo(lingua, 42), apriCassaforte);
-      expect(apriAperta.message, `${apriCassaforte}, aperta`).toBe(CASSAFORTE_APERTA[lingua as 1 | 2]);
+      expect(apriAperta.message, `${apriCassaforte}, aperta`).toBe(
+        CASSAFORTE_APERTA[lingua as 1 | 2]
+      );
       const chiudiAperta = await run(await playUpTo(lingua, 42), chiudiCassaforte);
-      expect(chiudiAperta.message, `${chiudiCassaforte}, aperta (D6)`).toBe(CASSAFORTE_RIMANE_APERTA[lingua as 1 | 2]);
+      expect(chiudiAperta.message, `${chiudiCassaforte}, aperta (D6)`).toBe(
+        CASSAFORTE_RIMANE_APERTA[lingua as 1 | 2]
+      );
     }
   });
 
@@ -398,7 +484,9 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
       const apriAperta = await run(await playUpTo(lingua, 95), apriPorta);
       expect(apriAperta.message, `${apriPorta}, aperta`).toBe(PORTA44_GIA_APERTA[lingua as 1 | 2]);
       const chiudiAperta = await run(await playUpTo(lingua, 95), chiudiPorta);
-      expect(chiudiAperta.message, `${chiudiPorta}, aperta`).toBe(PORTA44_SOLO_AUTOMATICO[lingua as 1 | 2]);
+      expect(chiudiAperta.message, `${chiudiPorta}, aperta`).toBe(
+        PORTA44_SOLO_AUTOMATICO[lingua as 1 | 2]
+      );
     }
   });
 
@@ -435,7 +523,9 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
       // Cassaforte (Attivo scenico, non trasportabile), visibile dal passo 37.
       const nonTrasportabile = await run(await playUpTo(lingua, 37), muoviCassaforte);
-      expect(nonTrasportabile.message, muoviCassaforte).toBe(msg('engine.move.notPossible', lingua));
+      expect(nonTrasportabile.message, muoviCassaforte).toBe(
+        msg('engine.move.notPossible', lingua)
+      );
     }
   });
 
@@ -450,7 +540,10 @@ describe("Lessico L2b: verbi e risposte dell'originale, CARICA (#109, #98)", () 
 
   it('TB-05: ogni comando nuovo consuma un turno', async () => {
     for (const lingua of [1, 2]) {
-      const comandi = lingua === 1 ? ['spegni', 'scappa', 'sorridi', 'dormi', 'siediti', 'parla'] : ['extinguish', 'flee', 'smile', 'sleep', 'sit', 'talk'];
+      const comandi =
+        lingua === 1
+          ? ['spegni', 'scappa', 'sorridi', 'dormi', 'siediti', 'parla']
+          : ['extinguish', 'flee', 'smile', 'sleep', 'sit', 'talk'];
       const engine = newEngine(lingua);
       for (const comando of comandi) {
         const before = engine.getGameState().turn.totalTurnsConsumed;

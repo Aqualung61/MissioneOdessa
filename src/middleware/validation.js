@@ -8,7 +8,12 @@ function hasControlChars(s) {
   // Reject ASCII control chars (incl. DEL). Keep it strict for command inputs.
   for (let i = 0; i < s.length; i++) {
     const code = s.charCodeAt(i);
-    const isControl = (code >= 0 && code <= 8) || code === 11 || code === 12 || (code >= 14 && code <= 31) || code === 127;
+    const isControl =
+      (code >= 0 && code <= 8) ||
+      code === 11 ||
+      code === 12 ||
+      (code >= 14 && code <= 31) ||
+      code === 127;
     if (isControl) return true;
   }
   return false;
@@ -112,7 +117,8 @@ export function validateSaveData(options = {}) {
 
     // Basic item sanity: avoid primitives in collections
     if (!luoghi.every(isPlainObject)) return respondInvalid(req, res, mode, 'LUOGHI_ITEMS_INVALID');
-    if (Array.isArray(oggetti) && !oggetti.every(isPlainObject)) return respondInvalid(req, res, mode, 'OGGETTI_ITEMS_INVALID');
+    if (Array.isArray(oggetti) && !oggetti.every(isPlainObject))
+      return respondInvalid(req, res, mode, 'OGGETTI_ITEMS_INVALID');
 
     return next();
   };

@@ -172,11 +172,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
       gameState.visitedPlaces.push(locationId);
     }
 
-    const loadRes = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ gameState, odessaData: { Luoghi: [] } }),
-    }, session);
+    const loadRes = await fetchWithSession(
+      `${baseUrl}/api/engine/load-client-state`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameState, odessaData: { Luoghi: [] } }),
+      },
+      session
+    );
     expect(loadRes.status).toBe(200);
   }
 
@@ -189,11 +193,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     await positionAt(session, pick.fromId);
 
-    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: keyToVerb(pick.key) }),
+      },
+      session
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -220,16 +228,24 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     await positionAt(session, pick.fromId);
 
-    const beforeStateRes = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
+    const beforeStateRes = await fetchWithSession(
+      `${baseUrl}/api/engine/state`,
+      undefined,
+      session
+    );
     expect(beforeStateRes.status).toBe(200);
     const beforeStateBody = await beforeStateRes.json();
     const before = beforeStateBody?.state?.currentLocationId;
 
-    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: keyToVerb(pick.key) }),
+      },
+      session
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -251,11 +267,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
 
     await positionAt(session, pick.fromId);
 
-    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: keyToVerb(pick.key) }),
+      },
+      session
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -279,11 +299,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
     await positionAt(session, pick.fromId);
 
     // Porta lo stato in awaitingRestart
-    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    }, session);
+    const r1 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: keyToVerb(pick.key) }),
+      },
+      session
+    );
     expect(r1.status).toBe(200);
 
     const snap1Res = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
@@ -291,11 +315,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
     const snap1Body = await snap1Res.json();
     expect(snap1Body?.state?.awaitingRestart).toBe(true);
 
-    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'NO' }),
-    }, session);
+    const r2 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'NO' }),
+      },
+      session
+    );
     expect(r2.status).toBe(200);
     const body2 = await r2.json();
 
@@ -317,11 +345,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
     await positionAt(session, pick.fromId);
 
     // Porta lo stato in awaitingRestart
-    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: keyToVerb(pick.key) }),
-    }, session);
+    const r1 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: keyToVerb(pick.key) }),
+      },
+      session
+    );
     expect(r1.status).toBe(200);
 
     const snap1Res = await fetchWithSession(`${baseUrl}/api/engine/state`, undefined, session);
@@ -329,11 +361,15 @@ describe('Sprint 4.1.5 - hardening navigation via HTTP (POST /api/engine/execute
     const snap1Body = await snap1Res.json();
     expect(snap1Body?.state?.awaitingRestart).toBe(true);
 
-    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'SI' }),
-    }, session);
+    const r2 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'SI' }),
+      },
+      session
+    );
 
     expect(r2.status).toBe(200);
     const body2 = await r2.json();

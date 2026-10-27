@@ -49,16 +49,15 @@ export function hasActiveLight(gameState) {
   if (gameState.currentLocationId === CONFIG.luoghi.barriera) return true;
 
   // Torcia: in inventario E funzionante
-  const torcia = gameState.Oggetti.find(o => o.ID === CONFIG.oggetti.torcia);
-  const hasTorcia = torcia &&
-                    torcia.IDLuogo === 0 &&
-                    !gameState.timers.torciaDifettosa;
+  const torcia = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.torcia);
+  const hasTorcia = torcia && torcia.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
 
   // Lampada accesa: fa luce solo dove si trova, in inventario o nel luogo corrente (R8, §4.3)
-  const lampada = gameState.Oggetti.find(o => o.ID === CONFIG.oggetti.lampada);
-  const hasLampada = gameState.timers.lampadaAccesa &&
-                      !!lampada &&
-                      (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId);
+  const lampada = gameState.Oggetti.find((o) => o.ID === CONFIG.oggetti.lampada);
+  const hasLampada =
+    gameState.timers.lampadaAccesa &&
+    !!lampada &&
+    (lampada.IDLuogo === 0 || lampada.IDLuogo === gameState.currentLocationId);
 
   // Fiammifero acceso (R8): luce per il comando successivo a quello che lo accende
   const hasMatch = gameState.timers.matchTimer > 0;
@@ -83,7 +82,9 @@ const INTERAZIONE_SPOSTA_QUADRO = 'sposta_quadro_24';
 export function deriveLoadedFlags(newState) {
   const flags = { ...(newState.flags || {}) };
   if (typeof flags.cassaforteScoperta !== 'boolean') {
-    flags.cassaforteScoperta = (newState.interazioniEseguite || []).includes(INTERAZIONE_SPOSTA_QUADRO);
+    flags.cassaforteScoperta = (newState.interazioniEseguite || []).includes(
+      INTERAZIONE_SPOSTA_QUADRO
+    );
   }
   if (typeof flags.bastoneLiberato !== 'boolean') {
     const bastone = (newState.Oggetti || []).find((o) => o.ID === BASTONE_ID);
@@ -91,7 +92,9 @@ export function deriveLoadedFlags(newState) {
   }
   // passaggioCrollato: dedotto da visitedPlaces (salvataggi senza il flag, #117).
   if (typeof flags.passaggioCrollato !== 'boolean') {
-    flags.passaggioCrollato = (newState.visitedPlaces || []).includes(CONFIG.luoghi.passaggioCrollato.destinazione);
+    flags.passaggioCrollato = (newState.visitedPlaces || []).includes(
+      CONFIG.luoghi.passaggioCrollato.destinazione
+    );
   }
   return flags;
 }
@@ -139,7 +142,9 @@ export function initialOpenStates() {
 export function deriveLoadedGuardTimer(newState) {
   return typeof newState.guardTimer === 'number'
     ? newState.guardTimer
-    : (newState.narrativeState === 'ENDING_PHASE_2_WAIT' ? CONFIG.regole.timerGuardia : 0);
+    : newState.narrativeState === 'ENDING_PHASE_2_WAIT'
+      ? CONFIG.regole.timerGuardia
+      : 0;
 }
 
 /**
@@ -151,7 +156,8 @@ export function deriveLoadedTimers(newState) {
   const timers = { ...(newState.timers || {}) };
   if (typeof timers.matchesLeft !== 'number') {
     const fiammiferi = (newState.Oggetti || []).find((o) => o.ID === CONFIG.oggetti.fiammiferi);
-    timers.matchesLeft = fiammiferi && fiammiferi.IDLuogo !== -1 ? CONFIG.regole.fiammiferiIniziali : 0;
+    timers.matchesLeft =
+      fiammiferi && fiammiferi.IDLuogo !== -1 ? CONFIG.regole.fiammiferiIniziali : 0;
   }
   if (typeof timers.matchTimer !== 'number') {
     timers.matchTimer = 0;

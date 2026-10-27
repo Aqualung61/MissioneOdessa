@@ -58,8 +58,20 @@ function sameFields(a: ParsedFields, b: ParsedFields): boolean {
   );
 }
 
-function toFields(c: { IsValid: boolean; CommandType: string | null; VerbConcept: string | null; NounConcept: string | null; Error: string }): ParsedFields {
-  return { IsValid: c.IsValid, CommandType: c.CommandType, VerbConcept: c.VerbConcept, NounConcept: c.NounConcept, Error: c.Error };
+function toFields(c: {
+  IsValid: boolean;
+  CommandType: string | null;
+  VerbConcept: string | null;
+  NounConcept: string | null;
+  Error: string;
+}): ParsedFields {
+  return {
+    IsValid: c.IsValid,
+    CommandType: c.CommandType,
+    VerbConcept: c.VerbConcept,
+    NounConcept: c.NounConcept,
+    Error: c.Error,
+  };
 }
 
 // Cambi attesi (TD Lessico L1 sinonimi §4, §5.1):
@@ -67,22 +79,88 @@ function toFields(c: { IsValid: boolean; CommandType: string | null; VerbConcept
 // `guarda`, `esamina`, `dormi`. Per questi tre casi EN il test non accetta più il
 // valore della baseline: richiede solo il valore nuovo.
 const EXPECTED_CHANGES: Record<string, ParsedFields> = {
-  LOOK: { IsValid: true, CommandType: 'ACTION', VerbConcept: 'GUARDARE', NounConcept: null, Error: 'NONE' },
-  EXAMINE: { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ESAMINARE', NounConcept: null, Error: 'NONE' },
-  SLEEP: { IsValid: true, CommandType: 'ACTION', VerbConcept: 'DORMIRE', NounConcept: null, Error: 'NONE' },
+  LOOK: {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'GUARDARE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  EXAMINE: {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ESAMINARE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  SLEEP: {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'DORMIRE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
 };
 
 // 8 verbi che diventano validi da soli, per regola
 // (TD Lessico L2 risposte e testi, §5.5 v1.1). Chiave: `${lang}|${INPUT_NORMALIZZATO}`.
 const BARE_VERB_CHANGES: Record<string, ParsedFields> = {
-  '1|SCAVA': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'SCAVARE', NounConcept: null, Error: 'NONE' },
-  '1|SCAVARE': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'SCAVARE', NounConcept: null, Error: 'NONE' },
-  '1|ACCENDI': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
-  '1|ACCENDERE': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
-  '1|ILLUMINA': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
-  '1|ILLUMINARE': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
-  '2|DIG': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'SCAVARE', NounConcept: null, Error: 'NONE' },
-  '2|LIGHT': { IsValid: true, CommandType: 'ACTION', VerbConcept: 'ACCENDERE', NounConcept: null, Error: 'NONE' },
+  '1|SCAVA': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'SCAVARE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '1|SCAVARE': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'SCAVARE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '1|ACCENDI': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ACCENDERE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '1|ACCENDERE': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ACCENDERE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '1|ILLUMINA': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ACCENDERE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '1|ILLUMINARE': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ACCENDERE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '2|DIG': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'SCAVARE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
+  '2|LIGHT': {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'ACCENDERE',
+    NounConcept: null,
+    Error: 'NONE',
+  },
 };
 
 // I 12 casi con un nome di 3 o più parole
@@ -113,9 +191,15 @@ const CARICA_LOAD_UNCHANGED_INPUTS: Array<{ lang: number; input: string }> = [
  * sulla baseline per "esamina" / "examine", invariati). In quel caso il valore resta
  * quello della baseline.
  */
-function expectedForCaricaLoad(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): ParsedFields | null {
+function expectedForCaricaLoad(
+  testCase: BaselineCase,
+  byLangInput: Map<string, BaselineCase>
+): ParsedFields | null {
   const normalized = testCase.input.trim();
-  const match = testCase.lang === 1 ? /^(?:carica|load)\s+(.+)$/i.exec(normalized) : /^load\s+(.+)$/i.exec(normalized);
+  const match =
+    testCase.lang === 1
+      ? /^(?:carica|load)\s+(.+)$/i.exec(normalized)
+      : /^load\s+(.+)$/i.exec(normalized);
   if (!match) return null;
 
   const nome = match[1];
@@ -123,10 +207,18 @@ function expectedForCaricaLoad(testCase: BaselineCase, byLangInput: Map<string, 
   if (noteWords.length >= 3) return null; // resta invariato: vedi CARICA_LOAD_UNCHANGED_INPUTS
 
   const verboRiferimento = testCase.lang === 1 ? 'esamina' : 'examine';
-  const riferimento = byLangInput.get(`${testCase.lang}|${`${verboRiferimento} ${nome}`.toLowerCase()}`);
+  const riferimento = byLangInput.get(
+    `${testCase.lang}|${`${verboRiferimento} ${nome}`.toLowerCase()}`
+  );
   const nounConcept = riferimento && riferimento.IsValid ? riferimento.NounConcept : null;
 
-  return { IsValid: true, CommandType: 'ACTION', VerbConcept: 'CARICARE', NounConcept: nounConcept, Error: 'NONE' };
+  return {
+    IsValid: true,
+    CommandType: 'ACTION',
+    VerbConcept: 'CARICARE',
+    NounConcept: nounConcept,
+    Error: 'NONE',
+  };
 }
 
 // Regola P-1 (#128, TD Parser nomi lunghi v1.1, §5.1). Un comando
@@ -165,19 +257,32 @@ const lexiconCache = new Map<number, LexiconByLang>();
 function lexiconFor(lang: number): LexiconByLang {
   const cached = lexiconCache.get(lang);
   if (cached) return cached;
-  const voci = VociLessico.filter((v) => v.ID_Lingua === lang).map((v) => ({ ...v, ...lexiconTipo(v.ID_Termine) }));
-  const stopwords = new Set(voci.filter((v) => v.tipo === 'STOPWORD').map((v) => normalizeWords(v.Voce).join(' ')));
+  const voci = VociLessico.filter((v) => v.ID_Lingua === lang).map((v) => ({
+    ...v,
+    ...lexiconTipo(v.ID_Termine),
+  }));
+  const stopwords = new Set(
+    voci.filter((v) => v.tipo === 'STOPWORD').map((v) => normalizeWords(v.Voce).join(' '))
+  );
   const lex: LexiconByLang = {
     stopwords,
-    actionVerbs: new Set(voci.filter((v) => v.tipo === 'VERBO_AZIONE').map((v) => v.Voce.toUpperCase())),
-    caricaVerbs: new Set(voci.filter((v) => v.tipo === 'SISTEMA' && v.concetto === 'CARICARE').map((v) => v.Voce.toUpperCase())),
+    actionVerbs: new Set(
+      voci.filter((v) => v.tipo === 'VERBO_AZIONE').map((v) => v.Voce.toUpperCase())
+    ),
+    caricaVerbs: new Set(
+      voci
+        .filter((v) => v.tipo === 'SISTEMA' && v.concetto === 'CARICARE')
+        .map((v) => v.Voce.toUpperCase())
+    ),
     longNouns: new Map(),
     shortVoce: new Map(),
   };
   for (const v of voci.filter((x) => x.tipo === 'NOUN')) {
     const words = normalizeWords(v.Voce);
-    if (words.length === 1 && !lex.shortVoce.has(v.ID_Termine)) lex.shortVoce.set(v.ID_Termine, v.Voce);
-    if (words.length >= 3) lex.longNouns.set(words.filter((w) => !stopwords.has(w)).join(' '), v.ID_Termine);
+    if (words.length === 1 && !lex.shortVoce.has(v.ID_Termine))
+      lex.shortVoce.set(v.ID_Termine, v.Voce);
+    if (words.length >= 3)
+      lex.longNouns.set(words.filter((w) => !stopwords.has(w)).join(' '), v.ID_Termine);
   }
   lexiconCache.set(lang, lex);
   return lex;
@@ -188,7 +293,10 @@ function lexiconFor(lang: number): LexiconByLang {
  * è quello del comando equivalente con la voce breve dello stesso termine (per
  * carica/load, quello previsto dalla regola L2b).
  */
-function expectedForLongNoun(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): ParsedFields | null {
+function expectedForLongNoun(
+  testCase: BaselineCase,
+  byLangInput: Map<string, BaselineCase>
+): ParsedFields | null {
   const lex = lexiconFor(testCase.lang);
   const tokens = normalizeWords(testCase.input).filter((w) => !lex.stopwords.has(w));
   if (tokens.length < 3) return null;
@@ -219,7 +327,10 @@ async function expectedForLegacyRemoval(testCase: BaselineCase): Promise<ParsedF
   return toFields(res);
 }
 
-async function computeExpected(testCase: BaselineCase, byLangInput: Map<string, BaselineCase>): Promise<ParsedFields> {
+async function computeExpected(
+  testCase: BaselineCase,
+  byLangInput: Map<string, BaselineCase>
+): Promise<ParsedFields> {
   const normalizedInput = testCase.input.trim().toUpperCase();
   const baselineExpected = toFields(testCase);
 
@@ -299,7 +410,10 @@ describe('Corpus di non regressione del parser (#109)', () => {
 
       const baselineExpected = toFields(testCase);
       const bareKey = `${testCase.lang}|${normalizedInput}`;
-      const expected = BARE_VERB_CHANGES[bareKey] || expectedForCaricaLoad(testCase, byLangInput) || baselineExpected;
+      const expected =
+        BARE_VERB_CHANGES[bareKey] ||
+        expectedForCaricaLoad(testCase, byLangInput) ||
+        baselineExpected;
       if (!sameFields(baselineExpected, expected)) changedCount++;
     }
     // 8 (verbi da soli) + 94 (IT carica/load + nome) + 48 (EN load + nome) = 150
@@ -311,8 +425,13 @@ describe('Corpus di non regressione del parser (#109)', () => {
       const testCase = byLangInput.get(`${lang}|${input.toLowerCase()}`);
       expect(testCase, `caso non trovato nel corpus: "${input}" (lingua ${lang})`).toBeDefined();
       if (!testCase) continue;
-      expect(expectedForCaricaLoad(testCase, byLangInput), `"${input}" non è coperto da L2b`).toBeNull();
-      expect(testCase.Error, `"${input}" è registrato SYNTAX_INVALID_STRUCTURE`).toBe('SYNTAX_INVALID_STRUCTURE');
+      expect(
+        expectedForCaricaLoad(testCase, byLangInput),
+        `"${input}" non è coperto da L2b`
+      ).toBeNull();
+      expect(testCase.Error, `"${input}" è registrato SYNTAX_INVALID_STRUCTURE`).toBe(
+        'SYNTAX_INVALID_STRUCTURE'
+      );
       const expected = expectedForLongNoun(testCase, byLangInput);
       expect(expected, `"${input}" deve essere valido (P-1)`).not.toBeNull();
       expect(expected?.IsValid).toBe(true);
@@ -321,7 +440,7 @@ describe('Corpus di non regressione del parser (#109)', () => {
   });
 
   // Aggiunto per #128 (v1.4.4, TD Parser nomi lunghi v1.1, §5.1)
-  it('la regola P-1 (#128) riguarda esattamente 211 casi del corpus (12 carica/load + 199 altri verbi d\'azione), tutti registrati SYNTAX_INVALID_STRUCTURE, e diventano validi', async () => {
+  it("la regola P-1 (#128) riguarda esattamente 211 casi del corpus (12 carica/load + 199 altri verbi d'azione), tutti registrati SYNTAX_INVALID_STRUCTURE, e diventano validi", async () => {
     const p1Cases = baseline.cases.filter((c) => expectedForLongNoun(c, byLangInput) !== null);
     expect(p1Cases.length).toBe(211);
     expect(p1Cases.filter((c) => /^(?:carica|load)\s/i.test(c.input.trim())).length).toBe(12);

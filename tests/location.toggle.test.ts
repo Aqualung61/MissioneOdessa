@@ -39,12 +39,15 @@ describe('Toggle di direzione (E-7)', () => {
   });
 
   const withInteractions = (transform: (all: Json[]) => Json[]) => {
-    global.odessaData = { ...original, Interazioni: transform(JSON.parse(JSON.stringify(original.Interazioni))) };
+    global.odessaData = {
+      ...original,
+      Interazioni: transform(JSON.parse(JSON.stringify(original.Interazioni))),
+    };
   };
 
   const luogo44 = () => original.Luoghi.find((l: Json) => l.ID === 44 && l.IDLingua === 1);
 
-  it('toggle aperto con interazione trovata: la direzione riceve la destinazione dell\'effetto', () => {
+  it("toggle aperto con interazione trovata: la direzione riceve la destinazione dell'effetto", () => {
     expect(getDirezioniLuogo(engineWithToggle('44_Est', true), 44).Est).toBe(45);
   });
 
@@ -56,7 +59,8 @@ describe('Toggle di direzione (E-7)', () => {
     withInteractions((all) => {
       for (const i of all) {
         for (const e of i.effetti || []) {
-          if (e.tipo === 'TOGGLE_DIREZIONE' && e.luogo === 44 && e.direzione === 'Est') delete e.destinazione;
+          if (e.tipo === 'TOGGLE_DIREZIONE' && e.luogo === 44 && e.direzione === 'Est')
+            delete e.destinazione;
         }
       }
       return all;
@@ -71,9 +75,14 @@ describe('Toggle di direzione (E-7)', () => {
     expect(getDirezioniLuogo(engineWithToggle('44_Est', true), 44).Est).toBe(luogo44().Est);
   });
 
-  it('toggleDestination: restituisce l\'effetto trovato oppure null', () => {
+  it("toggleDestination: restituisce l'effetto trovato oppure null", () => {
     const effetto = toggleDestination(original, 1, 44, 'Est');
-    expect(effetto).toMatchObject({ tipo: 'TOGGLE_DIREZIONE', luogo: 44, direzione: 'Est', destinazione: 45 });
+    expect(effetto).toMatchObject({
+      tipo: 'TOGGLE_DIREZIONE',
+      luogo: 44,
+      direzione: 'Est',
+      destinazione: 45,
+    });
     expect(toggleDestination(original, 1, 44, 'Nord')).toBeNull();
     expect(toggleDestination({}, 1, 44, 'Est')).toBeNull();
   });

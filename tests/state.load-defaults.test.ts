@@ -23,7 +23,14 @@ import { createEngine } from '../src/logic/engine.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = any;
 
-const SAVE_PATH = resolve(__dirname, '..', 'tests', 'fixtures', 'trace', 'save_v141_full_it_step91.json');
+const SAVE_PATH = resolve(
+  __dirname,
+  '..',
+  'tests',
+  'fixtures',
+  'trace',
+  'save_v141_full_it_step91.json'
+);
 
 function baseSave(): Json {
   return JSON.parse(readFileSync(SAVE_PATH, 'utf8')).gameState;
@@ -64,7 +71,10 @@ describe('Default dei salvataggi incompleti (D-5-4)', () => {
   });
 
   describe.each(COLLECTIONS)('$field', ({ field, empty, location, command }) => {
-    it.each([['assente', undefined], ['null', null]])('%s → default vuoto e il comando risponde senza eccezioni', async (_label, value) => {
+    it.each([
+      ['assente', undefined],
+      ['null', null],
+    ])('%s → default vuoto e il comando risponde senza eccezioni', async (_label, value) => {
       const save = baseSave();
       if (value === undefined) delete save[field];
       else save[field] = value;

@@ -58,7 +58,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function assertRecord(value: unknown, message = 'Expected a JSON object'): asserts value is Record<string, unknown> {
+function assertRecord(
+  value: unknown,
+  message = 'Expected a JSON object'
+): asserts value is Record<string, unknown> {
   if (!isRecord(value)) throw new Error(message);
 }
 

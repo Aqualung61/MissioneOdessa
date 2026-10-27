@@ -146,9 +146,11 @@ describe('Parser REQ01 - casi base', () => {
     expect(res.NounConcept).toBe('Secret compartment');
   });
 
-
   it('Invalid input: non-stringa => INVALID_INPUT (NOT_A_STRING)', async () => {
-    const parse = parseCommand as unknown as (dbPath: unknown, input: unknown) => Promise<{ IsValid: boolean; Error: string; Details?: string | null }>;
+    const parse = parseCommand as unknown as (
+      dbPath: unknown,
+      input: unknown
+    ) => Promise<{ IsValid: boolean; Error: string; Details?: string | null }>;
     const res = await parse(null, 123);
     expect(res.IsValid).toBe(false);
     expect(res.Error).toBe('INVALID_INPUT');

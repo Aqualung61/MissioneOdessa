@@ -22,7 +22,10 @@ export function guardEffect(gameState, result) {
   if (gameState.ended || gameState.awaitingRestart) {
     return;
   }
-  if (gameState.narrativeState !== 'ENDING_PHASE_2_WAIT' || gameState.currentLocationId !== CONFIG.luoghi.barriera) {
+  if (
+    gameState.narrativeState !== 'ENDING_PHASE_2_WAIT' ||
+    gameState.currentLocationId !== CONFIG.luoghi.barriera
+  ) {
     return;
   }
 

@@ -7,7 +7,11 @@ function readWorkspaceFile(...parts: string[]) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function expectElementHasAttrs(html: string, tag: string, attrs: Array<{ name: string; value: string }>) {
+function expectElementHasAttrs(
+  html: string,
+  tag: string,
+  attrs: Array<{ name: string; value: string }>
+) {
   const lookaheads = attrs
     .map((a) => `(?=[^>]*\\b${a.name}="${a.value.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}")`)
     .join('');
@@ -36,10 +40,18 @@ describe('Sprint 59.8 — Frontend UI bindings anti-regressione', () => {
       { name: 'data-i18n', value: 'ui.button.submit' },
     ]);
 
-    expectElementHasAttrs(html, 'section', [{ name: 'data-i18n-aria-label', value: 'ui.aria.placesSection' }]);
-    expectElementHasAttrs(html, 'section', [{ name: 'data-i18n-aria-label', value: 'ui.aria.consoleSection' }]);
-    expectElementHasAttrs(html, 'div', [{ name: 'data-i18n-aria-label', value: 'ui.aria.outputWrapper' }]);
-    expectElementHasAttrs(html, 'div', [{ name: 'data-i18n-aria-label', value: 'ui.aria.outputDescription' }]);
+    expectElementHasAttrs(html, 'section', [
+      { name: 'data-i18n-aria-label', value: 'ui.aria.placesSection' },
+    ]);
+    expectElementHasAttrs(html, 'section', [
+      { name: 'data-i18n-aria-label', value: 'ui.aria.consoleSection' },
+    ]);
+    expectElementHasAttrs(html, 'div', [
+      { name: 'data-i18n-aria-label', value: 'ui.aria.outputWrapper' },
+    ]);
+    expectElementHasAttrs(html, 'div', [
+      { name: 'data-i18n-aria-label', value: 'ui.aria.outputDescription' },
+    ]);
 
     expectElementHasAttrs(html, 'img', [
       { name: 'id', value: 'dynamicPlaceImage' },

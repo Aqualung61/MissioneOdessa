@@ -3,7 +3,7 @@ import Interazioni from '../src/data-internal/Interazioni.json';
 
 function assertCompleteI18nByStringId<T extends { id: string; IDLingua: number }>(
   datasetName: string,
-  rows: T[],
+  rows: T[]
 ) {
   const byId = new Map<string, Set<number>>();
 
@@ -15,7 +15,7 @@ function assertCompleteI18nByStringId<T extends { id: string; IDLingua: number }
   for (const [id, langs] of byId.entries()) {
     expect(
       [datasetName, id, Array.from(langs).sort((a, b) => a - b)],
-      `${datasetName}: copertura i18n incompleta per id=${id}`,
+      `${datasetName}: copertura i18n incompleta per id=${id}`
     ).toEqual([datasetName, id, [1, 2]]);
   }
 

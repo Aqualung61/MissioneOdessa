@@ -13,7 +13,12 @@ import { createContext } from './context.js';
 import { dispatch } from './dispatch.js';
 import { buildCommand } from './command.js';
 import { debugStateSnapshot } from './state.js';
-import { shouldConsumeTurn, prepareTurnContext, runPreExecutionChecks, applyTurnEffects } from './turn.js';
+import {
+  shouldConsumeTurn,
+  prepareTurnContext,
+  runPreExecutionChecks,
+  applyTurnEffects,
+} from './turn.js';
 
 function summarizeParseResult(parseResult) {
   if (!parseResult || typeof parseResult !== 'object') return null;
@@ -39,10 +44,7 @@ function debugDelta(before, after) {
     score: (after.score ?? 0) - (before.score ?? 0),
     totalTurnsConsumed: (after.totalTurnsConsumed ?? 0) - (before.totalTurnsConsumed ?? 0),
     turnsInDangerZone: (after.turnsInDangerZone ?? 0) - (before.turnsInDangerZone ?? 0),
-    awaitingRestart:
-      (after.awaitingRestart ?? false) === (before.awaitingRestart ?? false)
-        ? 0
-        : 1,
+    awaitingRestart: (after.awaitingRestart ?? false) === (before.awaitingRestart ?? false) ? 0 : 1,
   };
 }
 
@@ -85,14 +87,19 @@ function recordExecuteEvent(eng, debugBefore, kind, parseResult, result, consume
 // Phase 0: Validation (preserved from original). Restituisce il risultato di rifiuto, o null.
 function rejectInvalidParse(eng, parseResult) {
   if (!parseResult) {
-    return { accepted: false, resultType: 'ERROR', message: getSystemMessage('engine.error.noParseResult', eng.state.currentLingua) };
+    return {
+      accepted: false,
+      resultType: 'ERROR',
+      message: getSystemMessage('engine.error.noParseResult', eng.state.currentLingua),
+    };
   }
   if (parseResult.IsValid !== true) {
     const userMessage = mapParseErrorToUserMessage(parseResult, eng.state.currentLingua);
     return {
       accepted: false,
       resultType: 'ERROR',
-      message: userMessage || getSystemMessage('parse.error.invalidInputGeneric', eng.state.currentLingua),
+      message:
+        userMessage || getSystemMessage('parse.error.invalidInputGeneric', eng.state.currentLingua),
     };
   }
   return null;
@@ -127,7 +134,11 @@ export function executeCommand(eng, helpers, parseResult) {
 
   // Phase 3: Execute core command logic: gestori di verbo in ordine di precedenza.
   // Il contesto si crea qui, a ogni comando: lo stato può essere stato riassegnato.
-  const result = dispatch(eng.game.verbHandlers, buildCommand(parseResult, eng.state, helpers), createContext(eng.state, eng.game, helpers));
+  const result = dispatch(
+    eng.game.verbHandlers,
+    buildCommand(parseResult, eng.state, helpers),
+    createContext(eng.state, eng.game, helpers)
+  );
 
   // Phase 4: Apply turn effects (torch, darkness)
   // Gli effetti si applicano a ogni comando che consuma un turno, accettato o no (#107)

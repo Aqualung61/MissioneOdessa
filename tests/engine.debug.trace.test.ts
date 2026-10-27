@@ -4,8 +4,18 @@ import type { Server } from 'http';
 import { request as httpRequest } from 'node:http';
 
 import engineRoutes from '../src/api/engineRoutes.js';
-import { initializeOriginalData, resetGameState, executeCommand, getGameState, setCurrentLocation } from '../src/logic/engine.js';
-import { getEngineDebugTrace, pushEngineDebugEvent, resetEngineDebugTrace } from '../src/logic/engineDebug.js';
+import {
+  initializeOriginalData,
+  resetGameState,
+  executeCommand,
+  getGameState,
+  setCurrentLocation,
+} from '../src/logic/engine.js';
+import {
+  getEngineDebugTrace,
+  pushEngineDebugEvent,
+  resetEngineDebugTrace,
+} from '../src/logic/engineDebug.js';
 
 type StartedServer = { server: Server; baseUrl: string };
 
@@ -21,7 +31,7 @@ function assertRecord(value: unknown, name = 'value'): asserts value is Record<s
 
 async function httpJson(
   url: string,
-  options?: { method?: string; body?: unknown; headers?: Record<string, string> },
+  options?: { method?: string; body?: unknown; headers?: Record<string, string> }
 ): Promise<{ status: number; json: unknown }> {
   return await new Promise((resolve, reject) => {
     const u = new URL(url);
@@ -58,7 +68,7 @@ async function httpJson(
             reject(error);
           }
         });
-      },
+      }
     );
 
     req.on('error', reject);

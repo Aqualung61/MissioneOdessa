@@ -25,7 +25,9 @@ function baseConfig() {
       cassaforte: 24,
       zoneAperte: [51, 52, 53],
       passaggioCrollato: { luogo: 32, direzione: 'Sud', destinazione: 36 },
-      movimentiBloccatiConTesto: [{ luogo: 1, direzione: 'Ovest', messaggio: 'engine.move.leaveHouseWest' }],
+      movimentiBloccatiConTesto: [
+        { luogo: 1, direzione: 'Ovest', messaggio: 'engine.move.leaveHouseWest' },
+      ],
       macerieEsaminabili: [11, 32, 36],
       scavoDelegatoAInterazione: [11, 49],
       scavoSenzaAttrezzo: [32, 36],
@@ -185,13 +187,19 @@ describe('gameConfig — caricamento e validazione', () => {
     const broken = baseConfig() as Record<string, Record<string, unknown>>;
     delete broken.oggetti.badile;
     const filePath = writeFixture(broken, dir);
-    expect(() => loadGameConfig(filePath, { required: ['oggetti.badile'] })).toThrowError(/oggetti\.badile/);
+    expect(() => loadGameConfig(filePath, { required: ['oggetti.badile'] })).toThrowError(
+      /oggetti\.badile/
+    );
   });
 
   it('con "required" non lancia se tutte le chiavi annidate richieste sono presenti', () => {
     const dir = makeTempDir();
     const filePath = writeFixture(baseConfig(), dir);
-    expect(() => loadGameConfig(filePath, { required: ['oggetti.badile', 'luoghi.passaggioCrollato.destinazione'] })).not.toThrow();
+    expect(() =>
+      loadGameConfig(filePath, {
+        required: ['oggetti.badile', 'luoghi.passaggioCrollato.destinazione'],
+      })
+    ).not.toThrow();
   });
 });
 
@@ -244,17 +252,20 @@ describe('gameConfig — coerenza dei dati Odessa', () => {
       ...CONFIG.punteggio.ranghi.map((r) => r.chiave),
     ];
     for (const chiave of chiavi) {
-      expect(messaggiChiavi.has(chiave), `chiave messaggio "${chiave}" non trovata in MessaggiSistema.json`).toBe(true);
+      expect(
+        messaggiChiavi.has(chiave),
+        `chiave messaggio "${chiave}" non trovata in MessaggiSistema.json`
+      ).toBe(true);
     }
   });
 
   it('ogni concetto citato in regole.* e lessico.* esiste in TerminiLessico.json', () => {
-    const concetti = [
-      ...CONFIG.regole.verbiBloccatiAlBuio,
-      ...CONFIG.lessico.verbiSenzaOggetto,
-    ];
+    const concetti = [...CONFIG.regole.verbiBloccatiAlBuio, ...CONFIG.lessico.verbiSenzaOggetto];
     for (const concetto of concetti) {
-      expect(concettiLessico.has(concetto), `concetto "${concetto}" non trovato in TerminiLessico.json`).toBe(true);
+      expect(
+        concettiLessico.has(concetto),
+        `concetto "${concetto}" non trovato in TerminiLessico.json`
+      ).toBe(true);
     }
     // oggettiSceniciSenzaPresenza non sono concetti di TerminiLessico (sono nomi di
     // oggetti scenici senza record in Oggetti.json): verificati solo come stringhe non vuote.
@@ -289,7 +300,12 @@ describe('rankKeyFor', () => {
   });
 
   it('restituisce null se nessuna soglia è superata', () => {
-    expect(rankKeyFor(-1, [{ minimo: 0, chiave: 'engine.rank.novice' }].filter((r) => r.minimo > 0))).toBeNull();
+    expect(
+      rankKeyFor(
+        -1,
+        [{ minimo: 0, chiave: 'engine.rank.novice' }].filter((r) => r.minimo > 0)
+      )
+    ).toBeNull();
   });
 });
 

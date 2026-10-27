@@ -42,7 +42,14 @@ export const PREREQUISITE_TYPES = new Set([
  * Chiavi ammesse in un prerequisito.
  * @type {Set<string>}
  */
-export const PREREQUISITE_KEYS = new Set(['tipo', 'target', 'luogo', 'direzione', 'flag', 'risposta']);
+export const PREREQUISITE_KEYS = new Set([
+  'tipo',
+  'target',
+  'luogo',
+  'direzione',
+  'flag',
+  'risposta',
+]);
 
 /**
  * Campi obbligatori per tipo di prerequisito.
@@ -140,7 +147,9 @@ function checkPunteggio(record, byLang, errors) {
   if (typeof record.punteggio === 'string') {
     const idsStessaLingua = byLang.get(record.IDLingua);
     if (!idsStessaLingua || !idsStessaLingua.has(record.punteggio)) {
-      errors.push(`${where} punteggio riferisce un id inesistente nella stessa lingua: ${record.punteggio}`);
+      errors.push(
+        `${where} punteggio riferisce un id inesistente nella stessa lingua: ${record.punteggio}`
+      );
     }
   }
 }
@@ -152,31 +161,45 @@ function compareRecords(id, a, b, baseLang, lang, errors) {
   const typesA = reqA.map((r) => r?.tipo).join(',');
   const typesB = reqB.map((r) => r?.tipo).join(',');
   if (typesA !== typesB) {
-    errors.push(`[${id}] tipi di prerequisito diversi tra lingue ${baseLang} e ${lang}: ${typesA} / ${typesB}`);
+    errors.push(
+      `[${id}] tipi di prerequisito diversi tra lingue ${baseLang} e ${lang}: ${typesA} / ${typesB}`
+    );
   } else {
     reqA.forEach((r, idx) => {
-      if (typeof r?.risposta === 'string' !== (typeof reqB[idx]?.risposta === 'string')) {
-        errors.push(`[${id}] prerequisito #${idx + 1}: risposta presente solo in una lingua (${baseLang}/${lang})`);
+      if ((typeof r?.risposta === 'string') !== (typeof reqB[idx]?.risposta === 'string')) {
+        errors.push(
+          `[${id}] prerequisito #${idx + 1}: risposta presente solo in una lingua (${baseLang}/${lang})`
+        );
       }
     });
   }
-  const effA = effectsOf(a).map((e) => e?.tipo).join(',');
-  const effB = effectsOf(b).map((e) => e?.tipo).join(',');
+  const effA = effectsOf(a)
+    .map((e) => e?.tipo)
+    .join(',');
+  const effB = effectsOf(b)
+    .map((e) => e?.tipo)
+    .join(',');
   if (effA !== effB) {
-    errors.push(`[${id}] tipi di effetto diversi tra lingue ${baseLang} e ${lang}: ${effA} / ${effB}`);
+    errors.push(
+      `[${id}] tipi di effetto diversi tra lingue ${baseLang} e ${lang}: ${effA} / ${effB}`
+    );
   }
   if (a?.punteggio !== b?.punteggio) {
-    errors.push(`[${id}] punteggio diverso tra lingue ${baseLang} e ${lang}: ${JSON.stringify(a?.punteggio)} / ${JSON.stringify(b?.punteggio)}`);
+    errors.push(
+      `[${id}] punteggio diverso tra lingue ${baseLang} e ${lang}: ${JSON.stringify(a?.punteggio)} / ${JSON.stringify(b?.punteggio)}`
+    );
   }
 }
 
 // Coerenza IT/EN: stessi id; per ogni id, stessi tipi nello stesso ordine; risposta presente in entrambe.
 function checkLanguagePair(base, other, baseLang, lang, errors) {
   for (const id of base.keys()) {
-    if (!other.has(id)) errors.push(`[${id}] presente in lingua ${baseLang} ma assente in lingua ${lang}`);
+    if (!other.has(id))
+      errors.push(`[${id}] presente in lingua ${baseLang} ma assente in lingua ${lang}`);
   }
   for (const id of other.keys()) {
-    if (!base.has(id)) errors.push(`[${id}] presente in lingua ${lang} ma assente in lingua ${baseLang}`);
+    if (!base.has(id))
+      errors.push(`[${id}] presente in lingua ${lang} ma assente in lingua ${baseLang}`);
   }
   for (const [id, a] of base.entries()) {
     const b = other.get(id);

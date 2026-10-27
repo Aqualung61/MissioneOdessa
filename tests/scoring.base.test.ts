@@ -4,7 +4,13 @@
  */
 
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { resetGameState, getGameState, setCurrentLocation, executeCommand, initializeOriginalData } from '../src/logic/engine.js';
+import {
+  resetGameState,
+  getGameState,
+  setCurrentLocation,
+  executeCommand,
+  initializeOriginalData,
+} from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';
@@ -35,7 +41,7 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
       TipiLessico,
       VociLessico,
       MessaggiSistema,
-      Interazioni
+      Interazioni,
     };
     initializeOriginalData();
   });
@@ -54,10 +60,10 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
   it('Visitare nuovo luogo assegna +1 punto', () => {
     const stateBefore = getGameState();
     expect(stateBefore.punteggio.totale).toBe(1);
-    
+
     // Cambia luogo a ID=2
     setCurrentLocation(2);
-    
+
     const stateAfter = getGameState();
     expect(stateAfter.currentLocationId).toBe(2);
     expect(stateAfter.visitedPlaces.has(2)).toBe(true);
@@ -69,11 +75,11 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
     // Visita luogo 2
     setCurrentLocation(2);
     expect(getGameState().punteggio.totale).toBe(2);
-    
+
     // Torna a luogo 1
     setCurrentLocation(1);
     expect(getGameState().punteggio.totale).toBe(2); // Nessun incremento
-    
+
     // Torna a luogo 2
     setCurrentLocation(2);
     expect(getGameState().punteggio.totale).toBe(2); // Nessun incremento
@@ -83,7 +89,7 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
     setCurrentLocation(2);
     setCurrentLocation(3);
     setCurrentLocation(4);
-    
+
     const state = getGameState();
     expect(state.visitedPlaces.size).toBe(4); // 1, 2, 3, 4
     expect(state.punteggio.totale).toBe(4); // 1 iniziale + 3 nuovi
@@ -91,27 +97,27 @@ describe('Sprint 3.2.1 - Sistema Punteggio Base', () => {
 
   it('Rieseguire stessa interazione NON assegna +2 aggiuntivi', () => {
     setCurrentLocation(24);
-    
+
     // Prima esecuzione
     executeCommand({
       IsValid: true,
       CommandType: 'ACTION',
       CanonicalVerb: 'SPOSTARE',
       Noun: 'QUADRO',
-      Error: null
+      Error: null,
     });
-    
+
     const punteggioAfterFirst = getGameState().punteggio.totale;
-    
+
     // Seconda esecuzione (non ripetibile, ma test logica punteggio)
     executeCommand({
       IsValid: true,
       CommandType: 'ACTION',
       CanonicalVerb: 'SPOSTARE',
       Noun: 'QUADRO',
-      Error: null
+      Error: null,
     });
-    
+
     const punteggioAfterSecond = getGameState().punteggio.totale;
     expect(punteggioAfterSecond).toBe(punteggioAfterFirst); // Nessun incremento
   });

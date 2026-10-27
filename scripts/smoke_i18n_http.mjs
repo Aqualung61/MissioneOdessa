@@ -79,52 +79,98 @@ async function main() {
   try {
     const up = await waitForServer();
     if (!up) {
-      print({ step: 'waitForServer', ok: false, base, note: 'Server non raggiungibile', serverLogTail: serverLog.slice(-2000) });
+      print({
+        step: 'waitForServer',
+        ok: false,
+        base,
+        note: 'Server non raggiungibile',
+        serverLogTail: serverLog.slice(-2000),
+      });
       process.exitCode = 1;
       return;
     }
 
-  const version = await requestJson('/api/version');
-  print({ step: 'version', ok: version.ok, status: version.status, version: version.json?.version });
+    const version = await requestJson('/api/version');
+    print({
+      step: 'version',
+      ok: version.ok,
+      status: version.status,
+      version: version.json?.version,
+    });
 
-  const state0 = await requestJson('/api/engine/state');
-  print({ step: 'engine.state.initial', ok: state0.ok, status: state0.status, lingua: state0.json?.state?.currentLingua, location: state0.json?.state?.currentLocationId });
+    const state0 = await requestJson('/api/engine/state');
+    print({
+      step: 'engine.state.initial',
+      ok: state0.ok,
+      status: state0.status,
+      lingua: state0.json?.state?.currentLingua,
+      location: state0.json?.state?.currentLocationId,
+    });
 
-  let session = state0.headers;
-  let headers = pickSessionHeaders(session);
+    let session = state0.headers;
+    let headers = pickSessionHeaders(session);
 
-  const reset = await requestJson('/api/engine/reset', { method: 'POST', headers, body: { idLingua: 2 } });
-  session = { sessionId: reset.headers.sessionId ?? session.sessionId, gameId: reset.headers.gameId ?? session.gameId };
-  headers = pickSessionHeaders(session);
-  print({ step: 'engine.reset', ok: reset.ok, status: reset.status, lingua: reset.json?.state?.currentLingua });
+    const reset = await requestJson('/api/engine/reset', {
+      method: 'POST',
+      headers,
+      body: { idLingua: 2 },
+    });
+    session = {
+      sessionId: reset.headers.sessionId ?? session.sessionId,
+      gameId: reset.headers.gameId ?? session.gameId,
+    };
+    headers = pickSessionHeaders(session);
+    print({
+      step: 'engine.reset',
+      ok: reset.ok,
+      status: reset.status,
+      lingua: reset.json?.state?.currentLingua,
+    });
 
-  const fm = await requestJson('/api/frontend-messages/2', { headers });
-  print({ step: 'frontend-messages', ok: fm.ok, status: fm.status, count: fm.json?.count });
+    const fm = await requestJson('/api/frontend-messages/2', { headers });
+    print({ step: 'frontend-messages', ok: fm.ok, status: fm.status, count: fm.json?.count });
 
-  const help = await requestJson('/api/engine/execute', { method: 'POST', headers, body: { input: 'HELP' } });
-  const helpMsg = help.json?.engine?.message ?? '';
-  print({
-    step: 'execute.HELP',
-    ok: help.ok,
-    status: help.status,
-    containsAvailable: typeof helpMsg === 'string' && helpMsg.includes('Available commands'),
-    containsComandi: typeof helpMsg === 'string' && helpMsg.includes('Comandi disponibili'),
-  });
+    const help = await requestJson('/api/engine/execute', {
+      method: 'POST',
+      headers,
+      body: { input: 'HELP' },
+    });
+    const helpMsg = help.json?.engine?.message ?? '';
+    print({
+      step: 'execute.HELP',
+      ok: help.ok,
+      status: help.status,
+      containsAvailable: typeof helpMsg === 'string' && helpMsg.includes('Available commands'),
+      containsComandi: typeof helpMsg === 'string' && helpMsg.includes('Comandi disponibili'),
+    });
 
-  const inv = await requestJson('/api/engine/execute', { method: 'POST', headers, body: { input: 'INVENTORY' } });
-  const invMsg = inv.json?.engine?.message ?? '';
-  print({ step: 'execute.INVENTORY', ok: inv.ok, status: inv.status, msgSample: typeof invMsg === 'string' ? invMsg.slice(0, 120) : null });
+    const inv = await requestJson('/api/engine/execute', {
+      method: 'POST',
+      headers,
+      body: { input: 'INVENTORY' },
+    });
+    const invMsg = inv.json?.engine?.message ?? '';
+    print({
+      step: 'execute.INVENTORY',
+      ok: inv.ok,
+      status: inv.status,
+      msgSample: typeof invMsg === 'string' ? invMsg.slice(0, 120) : null,
+    });
 
-  const mp = await requestJson('/api/engine/execute', { method: 'POST', headers, body: { input: 'MOVE PAINTING' } });
-  const mpMsg = mp.json?.engine?.message ?? '';
-  print({
-    step: 'execute.MOVE_PAINTING',
-    ok: mp.ok,
-    status: mp.status,
-    containsYouMove: typeof mpMsg === 'string' && mpMsg.includes('You move'),
-    hasItalianAccents: typeof mpMsg === 'string' && /[àèéìòù]/.test(mpMsg),
-    msgSample: typeof mpMsg === 'string' ? mpMsg.slice(0, 160) : null,
-  });
+    const mp = await requestJson('/api/engine/execute', {
+      method: 'POST',
+      headers,
+      body: { input: 'MOVE PAINTING' },
+    });
+    const mpMsg = mp.json?.engine?.message ?? '';
+    print({
+      step: 'execute.MOVE_PAINTING',
+      ok: mp.ok,
+      status: mp.status,
+      containsYouMove: typeof mpMsg === 'string' && mpMsg.includes('You move'),
+      hasItalianAccents: typeof mpMsg === 'string' && /[àèéìòù]/.test(mpMsg),
+      msgSample: typeof mpMsg === 'string' ? mpMsg.slice(0, 160) : null,
+    });
   } finally {
     child.kill('SIGTERM');
     await sleep(250);

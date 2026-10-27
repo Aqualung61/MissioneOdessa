@@ -10,7 +10,23 @@ const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
 // 'Azioni' non è più una tabella (sostituita da SBLOCCA_DIREZIONE in Interazioni)
-const tableNames = ['Interazioni', 'Introduzione', 'Storia', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiFrontend', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
+const tableNames = [
+  'Interazioni',
+  'Introduzione',
+  'Storia',
+  'LessicoSoftware',
+  'Lingue',
+  'Luoghi',
+  'LuoghiLogici',
+  'MessaggiFrontend',
+  'MessaggiSistema',
+  'Oggetti',
+  'Piattaforme',
+  'Software',
+  'TerminiLessico',
+  'TipiLessico',
+  'VociLessico',
+];
 
 /**
  * Legge tutte le tabelle JSON di `src/data-internal/` e le pubblica in `global.odessaData`.

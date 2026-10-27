@@ -44,8 +44,14 @@ export function darknessEffect(gameState, result, parseResult) {
       turn.darknessTimer = CONFIG.regole.timerBuio;
     }
     // L'avviso di torcia guasta contiene già l'avviso di pericolo
-    if (gameState.currentLocationId !== CONFIG.luoghi.barriera && !turn.current.torchDefectiveWarning) {
-      appendTurnMessage(result, getSystemMessage('timer.darkness.warning', gameState.currentLingua));
+    if (
+      gameState.currentLocationId !== CONFIG.luoghi.barriera &&
+      !turn.current.torchDefectiveWarning
+    ) {
+      appendTurnMessage(
+        result,
+        getSystemMessage('timer.darkness.warning', gameState.currentLingua)
+      );
     }
   } else {
     turn.darknessTimer = 0;

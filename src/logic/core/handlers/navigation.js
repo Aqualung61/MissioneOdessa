@@ -30,9 +30,8 @@ export const unknownDirection = {
   types: ['NAVIGATION'],
   match: (cmd) => !directionFieldFor(cmd.concept),
   run: (cmd, ctx) => {
-    const messageUnknown = ctx.state.currentLingua === 2
-      ? 'Direction not recognized.'
-      : 'Direzione non riconosciuta.';
+    const messageUnknown =
+      ctx.state.currentLingua === 2 ? 'Direction not recognized.' : 'Direzione non riconosciuta.';
 
     return {
       accepted: true,
@@ -50,9 +49,10 @@ export const move = {
   run: (cmd, ctx) => {
     const directionField = directionFieldFor(cmd.concept);
 
-    const messageBlocked = ctx.state.currentLingua === 2
-      ? 'You cannot go that way.'
-      : 'Non puoi andare in quella direzione.';
+    const messageBlocked =
+      ctx.state.currentLingua === 2
+        ? 'You cannot go that way.'
+        : 'Non puoi andare in quella direzione.';
 
     const currentId = ctx.state.currentLocationId;
     const direzioni = ctx.helpers.getDirezioniLuogo(currentId);

@@ -2,7 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'http';
 import type { NextFunction, Request, Response } from 'express';
-import { validateCommandInput, validateSaveData, validateSuiteParam } from '../src/middleware/validation.js';
+import {
+  validateCommandInput,
+  validateSaveData,
+  validateSuiteParam,
+} from '../src/middleware/validation.js';
 
 type StartedServer = { server: Server; baseUrl: string };
 

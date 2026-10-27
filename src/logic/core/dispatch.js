@@ -23,6 +23,11 @@ export function runHandlers(handlers, cmd, ctx) {
  * @returns {Object} risultato del primo gestore che risponde
  */
 export function dispatch(handlers, cmd, ctx) {
-  return runHandlers(handlers, cmd, ctx)
-    ?? { accepted: false, resultType: 'ERROR', message: ctx.msg('engine.error.unknownCommandType') };
+  return (
+    runHandlers(handlers, cmd, ctx) ?? {
+      accepted: false,
+      resultType: 'ERROR',
+      message: ctx.msg('engine.error.unknownCommandType'),
+    }
+  );
 }

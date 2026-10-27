@@ -65,12 +65,17 @@ export default [
   {
     files: ['src/logic/core/**/*.js'],
     rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [{
-          group: ['**/game/**'],
-          message: 'src/logic/core non deve dipendere da un gioco specifico (src/game/**).',
-        }],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/game/**'],
+              message: 'src/logic/core non deve dipendere da un gioco specifico (src/game/**).',
+            },
+          ],
+        },
+      ],
     },
   },
   // Disabilita regole per file minificati

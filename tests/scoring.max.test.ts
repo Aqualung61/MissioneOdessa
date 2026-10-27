@@ -12,7 +12,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(__dirname, '..');
-const data = (name: string) => JSON.parse(readFileSync(resolve(root, 'src', 'data-internal', name), 'utf8'));
+const data = (name: string) =>
+  JSON.parse(readFileSync(resolve(root, 'src', 'data-internal', name), 'utf8'));
 
 interface Effetto {
   tipo: string;
@@ -43,9 +44,13 @@ function mysteryId(e: Effetto): string | null {
 // aggiunge un nuovo +2 se quella chiave è già stata contata (§4.1 della specifica).
 function computeMax(): number {
   const luoghi = data('Luoghi.json').filter((l: { IDLingua: number }) => l.IDLingua === 1);
-  const interazioni = data('Interazioni.json').filter((i: { IDLingua: number }) => i.IDLingua === 1) as Interazione[];
+  const interazioni = data('Interazioni.json').filter(
+    (i: { IDLingua: number }) => i.IDLingua === 1
+  ) as Interazione[];
   const places = luoghi.filter((l: { Terminale: number }) => l.Terminale !== -1).length;
-  const scored = interazioni.filter((i) => !i.effetti.some((e) => e.tipo === 'SEQUENZA') && i.punteggio !== false);
+  const scored = interazioni.filter(
+    (i) => !i.effetti.some((e) => e.tipo === 'SEQUENZA') && i.punteggio !== false
+  );
 
   const chiavi = new Set<string>();
   const mysteries = new Set<string>();
@@ -70,7 +75,9 @@ describe('punteggio massimo', () => {
   });
 
   it('il massimo mostrato nei messaggi di sistema (IT, EN) è /138', () => {
-    const msgs = data('MessaggiSistema.json').filter((m: { Chiave: string }) => m.Chiave === 'engine.score.breakdown');
+    const msgs = data('MessaggiSistema.json').filter(
+      (m: { Chiave: string }) => m.Chiave === 'engine.score.breakdown'
+    );
     expect(msgs.map((m: { IDLingua: number }) => m.IDLingua).sort()).toEqual([1, 2]);
     for (const m of msgs) expect(m.Messaggio).toContain('/138');
   });

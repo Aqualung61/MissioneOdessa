@@ -8,7 +8,6 @@ import { resetGameState, getGameState, initializeOriginalData } from '../../src/
 import { gameOverEffect } from '../../src/logic/turnEffects/gameOverEffect.js';
 
 describe('gameOverEffect - Sprint 3.3.5.B', () => {
-  
   beforeEach(() => {
     initializeOriginalData();
     resetGameState(1);
@@ -21,10 +20,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.turn.current.darknessExpired = true;
       state.awaitingRestart = false;
       state.ended = false;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(true);
       expect(result.gameOverReason).toBe('DARKNESS');
       expect(result.message).toBeTruthy();
@@ -36,10 +35,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.turn.turnsInDarkness = 2;
       state.awaitingRestart = false;
       state.ended = false;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
       expect(state.awaitingRestart).toBe(false);
     });
@@ -49,10 +48,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.currentLingua = 1;
       state.turn.current.darknessExpired = true;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOverReason).toBe('DARKNESS');
       expect(result.message).toContain('💀');
       expect(result.message).toContain('BUIO');
@@ -63,10 +62,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.currentLingua = 2;
       state.turn.current.darknessExpired = true;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOverReason).toBe('DARKNESS');
       expect(result.message).toContain('💀');
       expect(result.message).toContain('DARK');
@@ -78,10 +77,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.currentLocationId = 8;
       state.currentLingua = 1;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(true);
       expect(result.gameOverReason).toBe('TERMINAL_LOCATION');
       expect(result.message).toBeTruthy();
@@ -92,10 +91,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.currentLocationId = 1;
       state.currentLingua = 1;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
     });
 
@@ -103,10 +102,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.currentLocationId = 8;
       state.currentLingua = 1;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOverReason).toBe('TERMINAL_LOCATION');
       expect(result.message).toBeTruthy();
       expect(typeof result.message).toBe('string');
@@ -118,10 +117,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.awaitingRestart = true;
       state.turn.turnsInDarkness = 5;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
     });
 
@@ -129,10 +128,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       const state = getGameState();
       state.ended = true;
       state.turn.turnsInDarkness = 3;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
     });
 
@@ -142,10 +141,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.turn.current.darknessExpired = true;
       state.currentLocationId = 8;
       state.currentLingua = 1;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOverReason).toBe('DARKNESS');
       expect(result.message).toContain('BUIO');
     });
@@ -181,10 +180,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
     it('dovrebbe sovrascrivere result.message con game over message', () => {
       const state = getGameState();
       state.turn.current.darknessExpired = true;
-      
+
       const result = { message: 'Original command result', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.message).not.toBe('Original command result');
       expect(result.message).toContain('💀');
       expect(result.gameOverReason).toBe('DARKNESS');
@@ -211,27 +210,27 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
     it('NON dovrebbe triggare con turnsInDangerZone = 3', () => {
       const state = getGameState();
       state.turn.turnsInDangerZone = 3;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
     });
 
     it('NON dovrebbe triggerare con turnsInDangerZone < 4', () => {
       const state = getGameState();
       state.turn.turnsInDangerZone = 2;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
     });
   });
 
   describe('CHECK 4: Guardia Insospettita - Sprint 3.3.5.D', () => {
     // Aggiornato per decisione R4 (#107)
-    it('dovrebbe triggerare l\'arresto quando il timer della guardia arriva a 0 al luogo 59', () => {
+    it("dovrebbe triggerare l'arresto quando il timer della guardia arriva a 0 al luogo 59", () => {
       const state = getGameState();
       state.currentLocationId = 59;
       state.narrativeState = 'ENDING_PHASE_2_WAIT';
@@ -254,10 +253,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.currentLocationId = 59;
       state.narrativeState = 'ENDING_PHASE_2_WAIT';
       state.guardTimer = 2;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false);
       expect(state.awaitingRestart).toBe(false);
     });
@@ -267,10 +266,10 @@ describe('gameOverEffect - Sprint 3.3.5.B', () => {
       state.currentLocationId = 59;
       state.narrativeState = null; // Stato narrativo non attivo
       state.unusefulCommandsCounter = 3;
-      
+
       const result = { message: '', gameOver: false };
       gameOverEffect(state, result, null);
-      
+
       expect(result.gameOver).toBe(false); // Non triggerare senza stato narrativo
     });
 

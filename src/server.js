@@ -1,7 +1,6 @@
 // src/server.js
 // Entry point: avvio server Express, carica dati in memoria e monta API/statico
 
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -27,7 +26,6 @@ import { appVersion } from './version.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 console.log(`Missione Odessa - Versione: ${appVersion}`);
 
 // ...existing code...
@@ -37,23 +35,25 @@ const app = express();
 if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
   app.set('trust proxy', 1);
 }
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      baseUri: ["'self'"],
-      objectSrc: ["'none'"],
-      frameAncestors: ["'none'"],
-      formAction: ["'self'"],
-      fontSrc: ["'self'", "data:"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      scriptSrcAttr: ["'none'"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        fontSrc: ["'self'", 'data:'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        connectSrc: ["'self'"],
+      },
     },
-  },
-}));
+  })
+);
 const PORT = process.env.PORT || 3001;
 const BASE_PATH = process.env.BASE_PATH || '';
 console.log(`Base path: ${BASE_PATH || 'root'}`);
@@ -72,7 +72,6 @@ try {
   console.error('Errore nel caricamento dati in memoria:', err.message);
   process.exit(1); // Esci se non riesci a caricare
 }
-
 
 // API: versione applicazione
 app.get(BASE_PATH + '/api/version', apiLimiter, (req, res) => {
@@ -96,18 +95,20 @@ const ROOT = path.resolve(__dirname, '..');
 // Abilita cross-origin solo se esplicitamente richiesto via whitelist.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
-  .map(s => s.trim())
+  .map((s) => s.trim())
   .filter(Boolean);
 
 if (allowedOrigins.length > 0) {
-  app.use(cors({
-    origin: (origin, callback) => {
-      // origin può essere undefined per richieste non-browser (curl/server-to-server)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error('Not allowed by CORS'));
-    },
-  }));
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // origin può essere undefined per richieste non-browser (curl/server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
+      },
+    })
+  );
 }
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '1mb';
 app.use(express.json({ limit: JSON_BODY_LIMIT, strict: true }));
@@ -143,7 +144,6 @@ if (process.env.NODE_ENV === 'test') {
       res.json({ ok: true });
     } catch {
       // In contesto test può fallire l'invio risposta: prosegui comunque allo shutdown
-      ;
     }
     // Chiudi il server con un piccolo delay per dare tempo alla risposta di partire
     setTimeout(() => {

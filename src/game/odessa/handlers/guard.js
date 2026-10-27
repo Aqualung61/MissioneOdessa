@@ -9,7 +9,8 @@
 export const attackGuard = {
   id: 'odessa.action.attackGuard',
   types: ['ACTION'],
-  match: (cmd, ctx) => cmd.concept === 'ATTACCARE' && ctx.state.currentLocationId === ctx.game.config.luoghi.barriera,
+  match: (cmd, ctx) =>
+    cmd.concept === 'ATTACCARE' && ctx.state.currentLocationId === ctx.game.config.luoghi.barriera,
   run: (cmd, ctx) => {
     ctx.state.awaitingRestart = true;
     return {

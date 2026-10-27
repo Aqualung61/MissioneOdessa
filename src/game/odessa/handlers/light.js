@@ -12,8 +12,11 @@ export const lightMatches = {
   types: ['ACTION'],
   match: (cmd, ctx) => {
     const fiammiferiRecord = findFiammiferi(ctx);
-    return cmd.concept === 'ACCENDERE' && fiammiferiRecord &&
-      ctx.helpers.normalize(fiammiferiRecord.Oggetto) === ctx.helpers.normalize(cmd.noun);
+    return (
+      cmd.concept === 'ACCENDERE' &&
+      fiammiferiRecord &&
+      ctx.helpers.normalize(fiammiferiRecord.Oggetto) === ctx.helpers.normalize(cmd.noun)
+    );
   },
   run: (cmd, ctx) => ctx.helpers.accendiFiammifero(),
 };
@@ -29,23 +32,39 @@ export const lightGeneric = {
     const gameState = ctx.state;
     const fiammiferiRecord = findFiammiferi(ctx);
     const torciaRecord = gameState.Oggetti.find((o) => o.ID === ctx.game.config.oggetti.torcia);
-    const torciaConTe = !!torciaRecord && torciaRecord.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
+    const torciaConTe =
+      !!torciaRecord && torciaRecord.IDLuogo === 0 && !gameState.timers.torciaDifettosa;
     if (torciaConTe) {
-      return { accepted: true, resultType: 'OK', message: ctx.msg('engine.torch.alreadyLit'), effects: [] };
+      return {
+        accepted: true,
+        resultType: 'OK',
+        message: ctx.msg('engine.torch.alreadyLit'),
+        effects: [],
+      };
     }
-    const fiammiferiDisponibili = fiammiferiRecord &&
-      (fiammiferiRecord.IDLuogo === 0 || fiammiferiRecord.IDLuogo === gameState.currentLocationId) &&
-      fiammiferiRecord.Attivo >= 1 && gameState.timers.matchesLeft > 0;
+    const fiammiferiDisponibili =
+      fiammiferiRecord &&
+      (fiammiferiRecord.IDLuogo === 0 ||
+        fiammiferiRecord.IDLuogo === gameState.currentLocationId) &&
+      fiammiferiRecord.Attivo >= 1 &&
+      gameState.timers.matchesLeft > 0;
     if (fiammiferiDisponibili) {
       return ctx.helpers.accendiFiammifero();
     }
-    const lampadaConTe = gameState.Oggetti.some((o) => o.ID === ctx.game.config.oggetti.lampada && o.IDLuogo === 0 && o.Attivo >= 3);
+    const lampadaConTe = gameState.Oggetti.some(
+      (o) => o.ID === ctx.game.config.oggetti.lampada && o.IDLuogo === 0 && o.Attivo >= 3
+    );
     if (lampadaConTe) {
       const lampadaLocalizzata = gameState.currentLingua === 1 ? 'LAMPADA' : 'LAMP';
       const risultatoLampada = ctx.helpers.cercaEseguiInterazione('ACCENDERE', lampadaLocalizzata);
       if (risultatoLampada) return risultatoLampada;
     }
-    return { accepted: true, resultType: 'OK', message: ctx.msg('engine.light.noSourceHere'), effects: [] };
+    return {
+      accepted: true,
+      resultType: 'OK',
+      message: ctx.msg('engine.light.noSourceHere'),
+      effects: [],
+    };
   },
 };
 
@@ -58,7 +77,8 @@ export const lightTorch = {
   id: 'odessa.action.lightTorch',
   types: ['ACTION'],
   match: (cmd, ctx) => {
-    const torciaElettricaLocalizzata = ctx.state.currentLingua === 1 ? 'TORCIA_ELETTRICA' : 'FLASHLIGHT';
+    const torciaElettricaLocalizzata =
+      ctx.state.currentLingua === 1 ? 'TORCIA_ELETTRICA' : 'FLASHLIGHT';
     return cmd.concept === 'ACCENDERE' && cmd.noun === torciaElettricaLocalizzata;
   },
   run: (cmd, ctx) => {
@@ -67,11 +87,18 @@ export const lightTorch = {
     const conTe = !!torciaRecord && torciaRecord.IDLuogo === 0;
     const nelLuogo = !!torciaRecord && torciaRecord.IDLuogo === gameState.currentLocationId;
     if (conTe) {
-      const chiave = gameState.timers.torciaDifettosa ? 'engine.torch.broken' : 'engine.torch.alreadyLit';
+      const chiave = gameState.timers.torciaDifettosa
+        ? 'engine.torch.broken'
+        : 'engine.torch.alreadyLit';
       return { accepted: true, resultType: 'OK', message: ctx.msg(chiave), effects: [] };
     }
     if (nelLuogo) {
-      return { accepted: true, resultType: 'OK', message: ctx.msg('engine.torch.takeFirst'), effects: [] };
+      return {
+        accepted: true,
+        resultType: 'OK',
+        message: ctx.msg('engine.torch.takeFirst'),
+        effects: [],
+      };
     }
     // Altrimenti (torcia non qui): prosegue con l'elaborazione standard sotto.
     return null;

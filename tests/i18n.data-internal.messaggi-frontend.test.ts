@@ -29,7 +29,7 @@ function assertCompleteI18nByKey(datasetName: string, rows: FrontendMessageRow[]
   for (const [key, langs] of byKey.entries()) {
     expect(
       [datasetName, key, Array.from(langs).sort((a, b) => a - b)],
-      `${datasetName}: copertura i18n incompleta per Chiave=${key}`,
+      `${datasetName}: copertura i18n incompleta per Chiave=${key}`
     ).toEqual([datasetName, key, [1, 2]]);
   }
 

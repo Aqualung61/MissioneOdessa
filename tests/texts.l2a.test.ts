@@ -57,18 +57,30 @@ async function runAll(engine: Engine, commands: string[]) {
 }
 
 function walkthrough(lingua: number): Step[] {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 async function playUpTo(lingua: number, uptoStep: number): Promise<Engine> {
   const engine = newEngine(lingua);
-  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep)) await run(engine, s.command);
+  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep))
+    await run(engine, s.command);
   return engine;
 }
 
 async function pickFields(command: string, lingua: number): Promise<ParsedFields> {
   const r = await parseCommand(null, command, { currentLingua: lingua });
-  return { IsValid: r.IsValid, CommandType: r.CommandType, VerbConcept: r.VerbConcept, NounConcept: r.NounConcept, Error: r.Error };
+  return {
+    IsValid: r.IsValid,
+    CommandType: r.CommandType,
+    VerbConcept: r.VerbConcept,
+    NounConcept: r.NounConcept,
+    Error: r.Error,
+  };
 }
 
 describe('Lessico L2a: rete dei testi e correzioni IT/EN (#109)', () => {
@@ -128,7 +140,7 @@ describe('Lessico L2a: rete dei testi e correzioni IT/EN (#109)', () => {
     }
   });
 
-  it('TA-07: alla barriera il movimento bloccato precede l\'avviso della guardia', async () => {
+  it("TA-07: alla barriera il movimento bloccato precede l'avviso della guardia", async () => {
     const engine = await playUpTo(1, 146);
     expect(engine.getGameState().currentLocationId).toBe(59);
 

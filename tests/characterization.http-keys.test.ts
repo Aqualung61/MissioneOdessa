@@ -54,11 +54,14 @@ function shape(v: Json): string {
 // Attesi (comportamento di riferimento)
 // ---------------------------------------------------------------------------
 
-const STATE = '{openStates:{BOTOLA},awaitingEndConfirm,awaitingRestart,currentLocationId,ended,visitedPlaces:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}],interazioniEseguite:[],direzioniSbloccate:{},direzioniToggle:{},sequenze:{},flags:{},currentLingua,punteggio:{totale,interazioniPunteggio:[],misteriRisolti:[]},timers:{movementCounter,torciaDifettosa,lampadaAccesa,azioniInLuogoPericoloso,ultimoLuogoPericoloso,matchesLeft,matchTimer},narrativeState,narrativePhase,victory,movementBlocked,guardTimer,awaitingContinue,turn:{globalTurnNumber,totalTurnsConsumed,turnsInDarkness,turnsInDangerZone,darknessTimer,openAreaTimer,movedThisTurn,current:{parseResult,consumesTurn,location,hasLight,inDangerZone},previous:{location,hasLight,consumedTurn,inDangerZone}},currentLocationName,timestamp,version}';
-const STATE_LOADED = '{openStates:{BOTOLA},awaitingEndConfirm,awaitingRestart,currentLocationId,ended,visitedPlaces:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}],interazioniEseguite:[],direzioniSbloccate:{20_Sud,21_Nord,27_Nord,28_Sud,36_Ovest,37_Est},direzioniToggle:{42_Est,43_Ovest},sequenze:{cassaforte_24:{pattern:[],progressione:[],completata}},flags:{cassaforteScoperta,passaggioCrollato,bastoneLiberato},currentLingua,punteggio:{totale,interazioniPunteggio:[],misteriRisolti:[]},timers:{movementCounter,torciaDifettosa,lampadaAccesa,azioniInLuogoPericoloso,ultimoLuogoPericoloso,matchesLeft,matchTimer},narrativeState,narrativePhase,victory,movementBlocked,guardTimer,awaitingContinue,turn:{globalTurnNumber,totalTurnsConsumed,turnsInDarkness,turnsInDangerZone,darknessTimer,openAreaTimer,movedThisTurn,current:{parseResult,consumesTurn,location,hasLight,inDangerZone},previous:{location,hasLight,consumedTurn,inDangerZone}},currentLocationName,timestamp,version}';
+const STATE =
+  '{openStates:{BOTOLA},awaitingEndConfirm,awaitingRestart,currentLocationId,ended,visitedPlaces:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}],interazioniEseguite:[],direzioniSbloccate:{},direzioniToggle:{},sequenze:{},flags:{},currentLingua,punteggio:{totale,interazioniPunteggio:[],misteriRisolti:[]},timers:{movementCounter,torciaDifettosa,lampadaAccesa,azioniInLuogoPericoloso,ultimoLuogoPericoloso,matchesLeft,matchTimer},narrativeState,narrativePhase,victory,movementBlocked,guardTimer,awaitingContinue,turn:{globalTurnNumber,totalTurnsConsumed,turnsInDarkness,turnsInDangerZone,darknessTimer,openAreaTimer,movedThisTurn,current:{parseResult,consumesTurn,location,hasLight,inDangerZone},previous:{location,hasLight,consumedTurn,inDangerZone}},currentLocationName,timestamp,version}';
+const STATE_LOADED =
+  '{openStates:{BOTOLA},awaitingEndConfirm,awaitingRestart,currentLocationId,ended,visitedPlaces:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}],interazioniEseguite:[],direzioniSbloccate:{20_Sud,21_Nord,27_Nord,28_Sud,36_Ovest,37_Est},direzioniToggle:{42_Est,43_Ovest},sequenze:{cassaforte_24:{pattern:[],progressione:[],completata}},flags:{cassaforteScoperta,passaggioCrollato,bastoneLiberato},currentLingua,punteggio:{totale,interazioniPunteggio:[],misteriRisolti:[]},timers:{movementCounter,torciaDifettosa,lampadaAccesa,azioniInLuogoPericoloso,ultimoLuogoPericoloso,matchesLeft,matchTimer},narrativeState,narrativePhase,victory,movementBlocked,guardTimer,awaitingContinue,turn:{globalTurnNumber,totalTurnsConsumed,turnsInDarkness,turnsInDangerZone,darknessTimer,openAreaTimer,movedThisTurn,current:{parseResult,consumesTurn,location,hasLight,inDangerZone},previous:{location,hasLight,consumedTurn,inDangerZone}},currentLocationName,timestamp,version}';
 const UI = 'ui:{location:{id,name},direzioni:{Nord,Est,Sud,Ovest,Su,Giu},availableDirections:[]}';
 const STATS = 'stats:{visitedPlaces,interactions,mysteries,score,rank,rankKey}';
-const PARSE = 'parseResult:{IsValid,OriginalInput,NormalizedInput,CommandType,CanonicalVerb,CanonicalNoun,NounIndex,VerbTermId,VerbConcept,NounTermId,NounConcept,NounLiteral,Error,Details,UnknownToken,UnknownNounToken}';
+const PARSE =
+  'parseResult:{IsValid,OriginalInput,NormalizedInput,CommandType,CanonicalVerb,CanonicalNoun,NounIndex,VerbTermId,VerbConcept,NounTermId,NounConcept,NounLiteral,Error,Details,UnknownToken,UnknownNounToken}';
 const COMMAND = 'command:{original,normalized,type,verb:{canonical,termId,concept},noun}';
 const ENGINE = 'engine:{accepted,resultType,message,effects:[],turnMessages:[],gameOver}';
 const DEBUG =
@@ -74,8 +77,8 @@ const EXPECTED: Record<string, string> = {
   'execute/attesa FINE': `200 {ok,parseResult,command,engine:{accepted,resultType,message,turnMessages:[],gameOver},state:${STATE},${UI},${STATS}}`,
   'execute/FINE confermata': `200 {ok,parseResult,command,engine:{accepted,resultType,message,gameOver,turnMessages:[]},state:${STATE},${UI},${STATS}}`,
   'execute/attesa riavvio': `200 {ok,parseResult,command,engine:{accepted,resultType,message,turnMessages:[],gameOver},state:${STATE},${UI},${STATS}}`,
-  'stats': `200 {ok,visitedPlaces,interactions,mysteries,score,rank,rankKey}`,
-  'state': `200 {ok,state:${STATE}}`,
+  stats: `200 {ok,visitedPlaces,interactions,mysteries,score,rank,rankKey}`,
+  state: `200 {ok,state:${STATE}}`,
   'save-client-state': `200 {gameState:${STATE},odessaData:{Luoghi:[],Oggetti:[{ID,IDLingua,Oggetto,Attivo,IDLuogo,descrizione}]},timestamp,version}`,
   'save-client-state (luoghi non valido)': `400 {ok,error}`,
   'load-client-state 409': `409 {ok,error,saveLanguage,sessionLanguage}`,
@@ -87,7 +90,6 @@ const EXPECTED: Record<string, string> = {
   'state (debug)': `200 {ok,state:${STATE},${DEBUG}}`,
 };
 
-
 // ---------------------------------------------------------------------------
 
 describe('Ordine delle chiavi dei corpi HTTP', () => {
@@ -95,7 +97,12 @@ describe('Ordine delle chiavi dei corpi HTTP', () => {
   let base = '';
   const actual: Record<string, string> = {};
 
-  async function http(session: SessionState, method: string, path: string, body?: Json): Promise<{ status: number; body: Json }> {
+  async function http(
+    session: SessionState,
+    method: string,
+    path: string,
+    body?: Json
+  ): Promise<{ status: number; body: Json }> {
     const init: RequestInit = { method };
     if (body !== undefined) {
       init.headers = { 'Content-Type': 'application/json' };
@@ -124,7 +131,7 @@ describe('Ordine delle chiavi dei corpi HTTP', () => {
       const s = app.listen(0, '127.0.0.1', () => resolveServer(s));
     });
     const address = server.address();
-    base = `http://127.0.0.1:${typeof address === 'string' ? 0 : address?.port ?? 0}`;
+    base = `http://127.0.0.1:${typeof address === 'string' ? 0 : (address?.port ?? 0)}`;
 
     const save = JSON.parse(readFileSync(SAVE_PATH, 'utf8'));
     const record = (label: string, status: number, body: Json) => {
@@ -135,7 +142,8 @@ describe('Ordine delle chiavi dei corpi HTTP', () => {
       await http(s, 'POST', '/api/engine/reset', { idLingua: lingua });
       return s;
     };
-    const exec = (s: SessionState, input: unknown) => http(s, 'POST', '/api/engine/execute', { input });
+    const exec = (s: SessionState, input: unknown) =>
+      http(s, 'POST', '/api/engine/execute', { input });
 
     // execute: input non valido dal validatore
     {

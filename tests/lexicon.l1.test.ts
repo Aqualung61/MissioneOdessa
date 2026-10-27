@@ -45,19 +45,31 @@ async function run(engine: Engine, command: string) {
 }
 
 function walkthrough(lingua: number): Step[] {
-  return loadJson('tests', 'fixtures', 'walkthrough', lingua === 1 ? 'full_it.json' : 'full_en.json').steps as Step[];
+  return loadJson(
+    'tests',
+    'fixtures',
+    'walkthrough',
+    lingua === 1 ? 'full_it.json' : 'full_en.json'
+  ).steps as Step[];
 }
 
 /** Riproduce i passi del percorso di riferimento fino al passo `uptoStep` incluso, su un motore nuovo. */
 async function playUpTo(lingua: number, uptoStep: number): Promise<Engine> {
   const engine = newEngine(lingua);
-  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep)) await run(engine, s.command);
+  for (const s of walkthrough(lingua).filter((x) => x.step <= uptoStep))
+    await run(engine, s.command);
   return engine;
 }
 
 async function pickFields(command: string, lingua: number): Promise<ParsedFields> {
   const r = await parseCommand(null, command, { currentLingua: lingua });
-  return { IsValid: r.IsValid, CommandType: r.CommandType, VerbConcept: r.VerbConcept, NounConcept: r.NounConcept, Error: r.Error };
+  return {
+    IsValid: r.IsValid,
+    CommandType: r.CommandType,
+    VerbConcept: r.VerbConcept,
+    NounConcept: r.NounConcept,
+    Error: r.Error,
+  };
 }
 
 describe('Lessico L1: sinonimi e parser (#109)', () => {
@@ -147,7 +159,9 @@ describe('Lessico L1: sinonimi e parser (#109)', () => {
 
   it('TB-06: EN look/examine/observe da soli descrivono il luogo; sleep è valido', async () => {
     const reference = newEngine(2);
-    const expectedDescription = reference.generaDescrizioneLuogoConOggetti(reference.getGameState().currentLocationId);
+    const expectedDescription = reference.generaDescrizioneLuogoConOggetti(
+      reference.getGameState().currentLocationId
+    );
 
     for (const command of ['look', 'examine', 'observe']) {
       const r = await run(newEngine(2), command);

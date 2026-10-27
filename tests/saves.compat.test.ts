@@ -100,54 +100,62 @@ describe('Compatibilità dei salvataggi v1.4.1 (#63)', () => {
     expect(stripVolatile(produced)).toEqual(stripVolatile(save));
   });
 
-  it(
-    'caricamento via HTTP (load-client-state): i passi 92-147 via /execute completano la vittoria con punteggio 138 e 147 turni',
-    async () => {
-      const app = express();
-      app.use(express.json({ limit: '1mb' }));
-      app.use('/api/engine', engineRoutes);
+  it('caricamento via HTTP (load-client-state): i passi 92-147 via /execute completano la vittoria con punteggio 138 e 147 turni', async () => {
+    const app = express();
+    app.use(express.json({ limit: '1mb' }));
+    app.use('/api/engine', engineRoutes);
 
-      const server: Server = await new Promise((resolveServer) => {
-        const s = app.listen(0, '127.0.0.1', () => resolveServer(s));
-      });
-      const address = server.address();
-      const port = typeof address === 'string' ? 0 : address?.port ?? 0;
-      const base = `http://127.0.0.1:${port}`;
+    const server: Server = await new Promise((resolveServer) => {
+      const s = app.listen(0, '127.0.0.1', () => resolveServer(s));
+    });
+    const address = server.address();
+    const port = typeof address === 'string' ? 0 : (address?.port ?? 0);
+    const base = `http://127.0.0.1:${port}`;
 
-      try {
-        const session: SessionState = createSessionState();
-        await fetchWithSession(
-          `${base}/api/engine/reset`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idLingua: 1 }) },
+    try {
+      const session: SessionState = createSessionState();
+      await fetchWithSession(
+        `${base}/api/engine/reset`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idLingua: 1 }),
+        },
+        session
+      );
+
+      const loadRes = await fetchWithSession(
+        `${base}/api/engine/load-client-state`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(save),
+        },
+        session
+      );
+      expect(loadRes.status).toBe(200);
+
+      let lastBody: Json = null;
+      for (const c of commandsAfter91) {
+        const res = await fetchWithSession(
+          `${base}/api/engine/execute`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: c }),
+          },
           session
         );
-
-        const loadRes = await fetchWithSession(
-          `${base}/api/engine/load-client-state`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(save) },
-          session
-        );
-        expect(loadRes.status).toBe(200);
-
-        let lastBody: Json = null;
-        for (const c of commandsAfter91) {
-          const res = await fetchWithSession(
-            `${base}/api/engine/execute`,
-            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input: c }) },
-            session
-          );
-          lastBody = await res.json();
-        }
-
-        const state = lastBody.state ?? lastBody.gameState;
-        expect(state.victory).toBe(walkthrough.expected.victory);
-        expect(state.ended).toBe(walkthrough.expected.ended);
-        expect(state.turn.totalTurnsConsumed).toBe(walkthrough.expected.finalTurns);
-        expect(state.punteggio.totale).toBe(walkthrough.expected.score);
-      } finally {
-        await new Promise<void>((resolveClose) => server.close(() => resolveClose()));
+        lastBody = await res.json();
       }
-    },
-    60000
-  );
+
+      const state = lastBody.state ?? lastBody.gameState;
+      expect(state.victory).toBe(walkthrough.expected.victory);
+      expect(state.ended).toBe(walkthrough.expected.ended);
+      expect(state.turn.totalTurnsConsumed).toBe(walkthrough.expected.finalTurns);
+      expect(state.punteggio.totale).toBe(walkthrough.expected.score);
+    } finally {
+      await new Promise<void>((resolveClose) => server.close(() => resolveClose()));
+    }
+  }, 60000);
 });

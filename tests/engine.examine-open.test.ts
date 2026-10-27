@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { ensureVocabulary, parseCommand } from '../src/logic/parser.js';
-import { executeCommand, resetGameState, getGameStateSnapshot, initializeOriginalData } from '../src/logic/engine.js';
+import {
+  executeCommand,
+  resetGameState,
+  getGameStateSnapshot,
+  initializeOriginalData,
+} from '../src/logic/engine.js';
 import Introduzione from '../src/data-internal/Introduzione.json';
 import LessicoSoftware from '../src/data-internal/LessicoSoftware.json';
 import Lingue from '../src/data-internal/Lingue.json';

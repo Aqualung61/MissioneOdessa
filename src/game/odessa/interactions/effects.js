@@ -7,9 +7,10 @@ export const effectTypes = {
   VISIBILITA: (effetto, ctx, env) => {
     // Se l'effetto specifica un luogo, cerca solo lì. Altrimenti cerca nel luogo corrente
     const targetLuogo = effetto.luogo !== undefined ? effetto.luogo : env.luogoCorrente;
-    const oggetto = ctx.state.Oggetti.find(o =>
-      ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(effetto.target) &&
-      (targetLuogo === undefined || o.IDLuogo === targetLuogo)
+    const oggetto = ctx.state.Oggetti.find(
+      (o) =>
+        ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(effetto.target) &&
+        (targetLuogo === undefined || o.IDLuogo === targetLuogo)
     );
     if (oggetto) {
       oggetto.Attivo = effetto.valore;
@@ -17,8 +18,8 @@ export const effectTypes = {
   },
 
   SPOSTA_OGGETTO: (effetto, ctx) => {
-    const oggetto = ctx.state.Oggetti.find(o =>
-      ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(effetto.target)
+    const oggetto = ctx.state.Oggetti.find(
+      (o) => ctx.helpers.normalize(o.Oggetto) === ctx.helpers.normalize(effetto.target)
     );
     if (oggetto) {
       oggetto.IDLuogo = effetto.a_luogo;

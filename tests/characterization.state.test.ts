@@ -30,14 +30,24 @@ type Json = any;
 const root = resolve(__dirname, '..');
 const fixture: {
   initial: { it: Json; en: Json };
-  cases: Array<{ id: string; group: number; description: string; input: Json; state: Json; snapshot: Json }>;
-} = JSON.parse(readFileSync(resolve(root, 'tests', 'fixtures', 'state', 'state_load_lotto5.json'), 'utf8'));
+  cases: Array<{
+    id: string;
+    group: number;
+    description: string;
+    input: Json;
+    state: Json;
+    snapshot: Json;
+  }>;
+} = JSON.parse(
+  readFileSync(resolve(root, 'tests', 'fixtures', 'state', 'state_load_lotto5.json'), 'utf8')
+);
 
 // Serializzazione identica a quella del generatore: Set → array, chiavi nell'ordine d'inserimento.
 function ser(v: Json): Json {
   if (v === null || typeof v !== 'object') return v;
   if (v instanceof Set) return [...v].map(ser);
-  if (Array.isArray(v)) return v.map((x) => (typeof x === 'function' || x === undefined ? null : ser(x)));
+  if (Array.isArray(v))
+    return v.map((x) => (typeof x === 'function' || x === undefined ? null : ser(x)));
   const o: Record<string, Json> = {};
   for (const k of Object.keys(v)) {
     if (typeof v[k] === 'function' || v[k] === undefined) continue;
@@ -65,7 +75,12 @@ describe('Caratterizzazione del caricamento dello stato', () => {
     expect(new Set(fixture.cases.map((c) => c.group)).size).toBe(9);
     expect(fixture.cases.length).toBe(11);
     for (const c of fixture.cases) {
-      for (const k of ['interazioniEseguite', 'direzioniSbloccate', 'direzioniToggle', 'sequenze']) {
+      for (const k of [
+        'interazioniEseguite',
+        'direzioniSbloccate',
+        'direzioniToggle',
+        'sequenze',
+      ]) {
         expect(c.input[k], `${c.id}: ${k}`).toBeDefined();
         expect(c.input[k], `${c.id}: ${k}`).not.toBeNull();
       }
@@ -81,30 +96,33 @@ describe('Caratterizzazione del caricamento dello stato', () => {
     expect(b?.state.flags.bastoneLiberato).toBe(false);
   });
 
-  describe.each(fixture.cases.map((c) => [c.id, c.description, c] as const))('%s — %s', (_id, _desc, c) => {
-    it('lo stato caricato coincide con quello registrato (valori e ordine delle chiavi)', () => {
-      const engine = newEngine(1);
-      const input = clone(c.input);
-      engine.setGameState(input);
-      const state = ser(engine.getGameState());
-      expect(state).toEqual(c.state);
-      expect(JSON.stringify(state)).toBe(JSON.stringify(c.state));
-      // il salvataggio ricevuto non viene modificato
-      expect(input).toEqual(c.input);
-    });
+  describe.each(fixture.cases.map((c) => [c.id, c.description, c] as const))(
+    '%s — %s',
+    (_id, _desc, c) => {
+      it('lo stato caricato coincide con quello registrato (valori e ordine delle chiavi)', () => {
+        const engine = newEngine(1);
+        const input = clone(c.input);
+        engine.setGameState(input);
+        const state = ser(engine.getGameState());
+        expect(state).toEqual(c.state);
+        expect(JSON.stringify(state)).toBe(JSON.stringify(c.state));
+        // il salvataggio ricevuto non viene modificato
+        expect(input).toEqual(c.input);
+      });
 
-    it('lo snapshot coincide con quello registrato (senza timestamp/version)', () => {
-      const engine = newEngine(1);
-      engine.setGameState(clone(c.input));
-      const snapshot = engine.getGameStateSnapshot() as Json;
-      expect(typeof snapshot.timestamp).toBe('string');
-      delete snapshot.timestamp;
-      delete snapshot.version;
-      const s = ser(snapshot);
-      expect(s).toEqual(c.snapshot);
-      expect(JSON.stringify(s)).toBe(JSON.stringify(c.snapshot));
-    });
-  });
+      it('lo snapshot coincide con quello registrato (senza timestamp/version)', () => {
+        const engine = newEngine(1);
+        engine.setGameState(clone(c.input));
+        const snapshot = engine.getGameStateSnapshot() as Json;
+        expect(typeof snapshot.timestamp).toBe('string');
+        delete snapshot.timestamp;
+        delete snapshot.version;
+        const s = ser(snapshot);
+        expect(s).toEqual(c.snapshot);
+        expect(JSON.stringify(s)).toBe(JSON.stringify(c.snapshot));
+      });
+    }
+  );
 
   describe.each([
     ['IT', 1, 'it'],

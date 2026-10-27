@@ -219,21 +219,29 @@ describe('M0 contract: POST /api/engine/execute', () => {
     const snap = stateBody?.state;
     expect(snap).toBeDefined();
 
-    const loadRes = await fetchWithSession(`${baseUrl}/api/engine/load-client-state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gameState: { ...snap, awaitingRestart: true },
-        odessaData: { Luoghi: [] },
-      }),
-    }, session);
+    const loadRes = await fetchWithSession(
+      `${baseUrl}/api/engine/load-client-state`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameState: { ...snap, awaitingRestart: true },
+          odessaData: { Luoghi: [] },
+        }),
+      },
+      session
+    );
     expect(loadRes.status).toBe(200);
 
-    const res = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'SI' }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'SI' }),
+      },
+      session
+    );
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -268,22 +276,30 @@ describe('M0 contract: POST /api/engine/execute', () => {
 
     const session = createSessionState();
 
-    const res1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'FINE' }),
-    }, session);
+    const res1 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'FINE' }),
+      },
+      session
+    );
     expect(res1.status).toBe(200);
     const body1 = await res1.json();
     expect(body1.ok).toBe(true);
     expect(body1.engine?.resultType).toBe('CONFIRM_END');
     expect(body1.state?.awaitingEndConfirm).toBe(true);
 
-    const res2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'N' }),
-    }, session);
+    const res2 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'N' }),
+      },
+      session
+    );
     expect(res2.status).toBe(200);
     const body2 = await res2.json();
     expect(body2.ok).toBe(true);
@@ -307,21 +323,29 @@ describe('M0 contract: POST /api/engine/execute', () => {
 
     const session = createSessionState();
 
-    const r1 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'FINE' }),
-    }, session);
+    const r1 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'FINE' }),
+      },
+      session
+    );
     expect(r1.status).toBe(200);
     const b1 = await r1.json();
     expect(b1.ok).toBe(true);
     expect(b1.state?.awaitingEndConfirm).toBe(true);
 
-    const r2 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'SI' }),
-    }, session);
+    const r2 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'SI' }),
+      },
+      session
+    );
     expect(r2.status).toBe(200);
     const b2 = await r2.json();
     expect(b2.ok).toBe(true);
@@ -333,11 +357,15 @@ describe('M0 contract: POST /api/engine/execute', () => {
     expect(b2.state?.awaitingEndConfirm).toBe(false);
     expect(b2.state?.awaitingRestart).toBe(true);
 
-    const r3 = await fetchWithSession(`${baseUrl}/api/engine/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'SI' }),
-    }, session);
+    const r3 = await fetchWithSession(
+      `${baseUrl}/api/engine/execute`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: 'SI' }),
+      },
+      session
+    );
     expect(r3.status).toBe(200);
     const b3 = await r3.json();
     expect(b3.ok).toBe(true);
@@ -384,7 +412,9 @@ describe('M0 contract: POST /api/engine/execute', () => {
     if (!chosen) throw new Error('Nessuna direzione valida trovata a partire da luogo 1');
     const expectedNextId = luogo1[chosen];
     if (typeof expectedNextId !== 'number' || expectedNextId <= 0) {
-      throw new Error(`Direzione valida '${chosen}' ma nextId non valido: ${String(expectedNextId)}`);
+      throw new Error(
+        `Direzione valida '${chosen}' ma nextId non valido: ${String(expectedNextId)}`
+      );
     }
 
     const res = await fetch(`${baseUrl}/api/engine/execute`, {

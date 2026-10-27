@@ -10,7 +10,9 @@
 export const loadWeight = {
   id: 'odessa.action.loadWeight',
   types: ['ACTION'],
-  match: (cmd) => cmd.concept === 'CARICARE' && (cmd.noun === 'PESO' || cmd.noun === 'PESA' || cmd.noun === 'WEIGHT' || cmd.noun === 'SCALE'),
+  match: (cmd) =>
+    cmd.concept === 'CARICARE' &&
+    (cmd.noun === 'PESO' || cmd.noun === 'PESA' || cmd.noun === 'WEIGHT' || cmd.noun === 'SCALE'),
   run: (cmd, ctx) => {
     const gameState = ctx.state;
     if (gameState.currentLocationId === ctx.game.config.luoghi.pesa) {
@@ -24,11 +26,17 @@ export const loadWeight = {
         const risultatoCarica = ctx.helpers.cercaEseguiInterazione('METTERE', pesoLocalizzato);
         if (risultatoCarica) return risultatoCarica;
       }
-      const pesoInInventario = gameState.Oggetti.some((o) =>
-        ctx.helpers.normalize(o.Oggetto) === pesoLocalizzato && o.IDLuogo === 0 && o.Attivo >= 3
+      const pesoInInventario = gameState.Oggetti.some(
+        (o) =>
+          ctx.helpers.normalize(o.Oggetto) === pesoLocalizzato && o.IDLuogo === 0 && o.Attivo >= 3
       );
       if (!pesoInInventario) {
-        return { accepted: true, resultType: 'OK', message: ctx.msg('engine.load.scaleNeedsWeight'), effects: [] };
+        return {
+          accepted: true,
+          resultType: 'OK',
+          message: ctx.msg('engine.load.scaleNeedsWeight'),
+          effects: [],
+        };
       }
       const risultatoCarica = ctx.helpers.cercaEseguiInterazione('METTERE', pesoLocalizzato);
       if (risultatoCarica) return risultatoCarica;

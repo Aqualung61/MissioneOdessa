@@ -26,8 +26,33 @@ interface TermineLessico {
 }
 
 // Parole aggiuntive di §4.4, oltre alle voci del lessico esclusive di una lingua.
-const IT_EXTRA_WORDS = ['non', 'il', 'che', 'puoi', 'vedo', 'qui', 'cosa', 'vuoi', 'nulla', 'della', 'sono', 'questo', 'particolare'];
-const EN_EXTRA_WORDS = ['the', 'you', "don't", 'here', 'what', 'nothing', 'this', "can't", 'want', 'see'];
+const IT_EXTRA_WORDS = [
+  'non',
+  'il',
+  'che',
+  'puoi',
+  'vedo',
+  'qui',
+  'cosa',
+  'vuoi',
+  'nulla',
+  'della',
+  'sono',
+  'questo',
+  'particolare',
+];
+const EN_EXTRA_WORDS = [
+  'the',
+  'you',
+  "don't",
+  'here',
+  'what',
+  'nothing',
+  'this',
+  "can't",
+  'want',
+  'see',
+];
 const BROKEN_PLACEHOLDER_PATTERNS = ['[Missing', 'undefined', '{0}', 'NaN', '[object'];
 
 // Falsi positivi (§4.4), motivati: voci del lessico di una sola lettera che
@@ -81,7 +106,11 @@ function buildExclusiveWordSets(): { itOnly: string[]; enOnly: string[] } {
  */
 function buildConceptWordsWithoutEnglishVoce(): string[] {
   const termini = global.odessaData.TerminiLessico as TermineLessico[];
-  const enVoci = new Set((global.odessaData.VociLessico as VoceLessico[]).filter((v) => v.ID_Lingua === 2).map((v) => v.Voce.toLowerCase()));
+  const enVoci = new Set(
+    (global.odessaData.VociLessico as VoceLessico[])
+      .filter((v) => v.ID_Lingua === 2)
+      .map((v) => v.Voce.toLowerCase())
+  );
   return termini.map((t) => t.Concetto.toLowerCase()).filter((c) => !enVoci.has(c));
 }
 
@@ -91,44 +120,48 @@ describe('Controllo della lingua delle risposte (#109)', () => {
     await ensureVocabulary();
   });
 
-  it(
-    'nessuna risposta mescola le lingue o contiene segnaposto rotti',
-    async () => {
-      const entries = await generateResponses();
-      const { itOnly, enOnly } = buildExclusiveWordSets();
-      const conceptWords = buildConceptWordsWithoutEnglishVoce();
-      const itForbidden = [...itOnly, ...conceptWords, ...IT_EXTRA_WORDS].filter(
-        (w) => !IT_WORDS_FALSE_POSITIVE_IN_EN.has(w) && !IT_CONCEPTS_FALSE_POSITIVE_IN_EN.has(w)
-      );
-      const enForbidden = [...enOnly, ...EN_EXTRA_WORDS].filter((w) => !EN_WORDS_FALSE_POSITIVE_IN_IT.has(w));
+  // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
+  // reali (vedi generateResponses), più lento del
+  // default di Vitest sotto carico nella suite completa.
+  it('nessuna risposta mescola le lingue o contiene segnaposto rotti', async () => {
+    const entries = await generateResponses();
+    const { itOnly, enOnly } = buildExclusiveWordSets();
+    const conceptWords = buildConceptWordsWithoutEnglishVoce();
+    const itForbidden = [...itOnly, ...conceptWords, ...IT_EXTRA_WORDS].filter(
+      (w) => !IT_WORDS_FALSE_POSITIVE_IN_EN.has(w) && !IT_CONCEPTS_FALSE_POSITIVE_IN_EN.has(w)
+    );
+    const enForbidden = [...enOnly, ...EN_EXTRA_WORDS].filter(
+      (w) => !EN_WORDS_FALSE_POSITIVE_IN_IT.has(w)
+    );
 
-      const violations: string[] = [];
+    const violations: string[] = [];
 
-      for (const entry of entries) {
-        const broken = BROKEN_PLACEHOLDER_PATTERNS.find((p) => entry.message.includes(p));
-        if (broken) {
-          violations.push(`lang=${entry.lang} step=${entry.step} input="${entry.input}": segnaposto "${broken}" in "${entry.message}"`);
-          continue;
-        }
-
-        if (entry.lang === 2) {
-          const parola = itForbidden.find((w) => containsWord(entry.message, w));
-          if (parola) {
-            violations.push(`lang=2 step=${entry.step} input="${entry.input}": parola italiana "${parola}" in "${entry.message}"`);
-          }
-        } else if (entry.lang === 1) {
-          const parola = enForbidden.find((w) => containsWord(entry.message, w));
-          if (parola) {
-            violations.push(`lang=1 step=${entry.step} input="${entry.input}": parola inglese "${parola}" in "${entry.message}"`);
-          }
-        }
+    for (const entry of entries) {
+      const broken = BROKEN_PLACEHOLDER_PATTERNS.find((p) => entry.message.includes(p));
+      if (broken) {
+        violations.push(
+          `lang=${entry.lang} step=${entry.step} input="${entry.input}": segnaposto "${broken}" in "${entry.message}"`
+        );
+        continue;
       }
 
-      expect(violations.length, violations.slice(0, 50).join('\n')).toBe(0);
-    },
-    // Timeout esteso (#109): genera ~88.000 risposte con motore e parser
-    // reali (vedi generateResponses), più lento del
-    // default di Vitest sotto carico nella suite completa.
-    60000
-  );
+      if (entry.lang === 2) {
+        const parola = itForbidden.find((w) => containsWord(entry.message, w));
+        if (parola) {
+          violations.push(
+            `lang=2 step=${entry.step} input="${entry.input}": parola italiana "${parola}" in "${entry.message}"`
+          );
+        }
+      } else if (entry.lang === 1) {
+        const parola = enForbidden.find((w) => containsWord(entry.message, w));
+        if (parola) {
+          violations.push(
+            `lang=1 step=${entry.step} input="${entry.input}": parola inglese "${parola}" in "${entry.message}"`
+          );
+        }
+      }
+    }
+
+    expect(violations.length, violations.slice(0, 50).join('\n')).toBe(0);
+  }, 60000);
 });

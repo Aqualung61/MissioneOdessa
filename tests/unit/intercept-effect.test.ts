@@ -1,6 +1,6 @@
 /**
  * Test Unit per interceptEffect.js
- * 
+ *
  * Sistema intercettazione pattuglie sovietiche in danger zones.
  * Testa incremento/reset contatore turnsInDangerZone.
  */
@@ -27,7 +27,9 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
 
       expect(state.turn.openAreaTimer).toBe(1);
       expect(state.turn.current.openAreaExpired).toBeUndefined();
-      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
+      expect(result.message).toBe(
+        "Restare a lungo fermi in un posto all'aperto può essere pericoloso."
+      );
     });
 
     // Aggiornato per decisione R2 (#107)
@@ -41,7 +43,9 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
       interceptEffect(state, result, {});
 
       expect(state.turn.openAreaTimer).toBe(2);
-      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
+      expect(result.message).toBe(
+        "Restare a lungo fermi in un posto all'aperto può essere pericoloso."
+      );
     });
 
     // Aggiornato per decisione R2 (#107)
@@ -152,7 +156,9 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
 
       expect(state.turn.openAreaTimer).toBe(2);
       expect(state.turn.current.openAreaExpired).toBeUndefined();
-      expect(result.message).toBe("Restare a lungo fermi in un posto all'aperto può essere pericoloso.");
+      expect(result.message).toBe(
+        "Restare a lungo fermi in un posto all'aperto può essere pericoloso."
+      );
     });
 
     // Aggiornato per decisione R2 (#107)
@@ -202,7 +208,7 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
         consumesTurn: true,
         location: 51,
         hasLight: true,
-        inDangerZone: true
+        inDangerZone: true,
       };
       state.turn.movedThisTurn = false;
       state.turn.openAreaTimer = 2;
@@ -221,14 +227,14 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
         location: 51,
         hasLight: true,
         consumedTurn: true,
-        inDangerZone: true
+        inDangerZone: true,
       };
       state.turn.current = {
         parseResult: null,
         consumesTurn: true,
         location: 51,
         hasLight: true,
-        inDangerZone: false
+        inDangerZone: false,
       };
       state.turn.movedThisTurn = true;
       state.turn.openAreaTimer = 2;
@@ -239,4 +245,3 @@ describe('interceptEffect - Sprint 3.3.5.C', () => {
     });
   });
 });
-

@@ -16,17 +16,19 @@ router.get('/stats', notInProduction, async (req, res, next) => {
     const tipiLessico = getGameData().TipiLessico || [];
     const terminiLessico = getGameData().TerminiLessico || [];
     const vociLessico = getGameData().VociLessico || [];
-    
-    const byType = tipiLessico.map(t => {
-      const termini = terminiLessico.filter(tl => tl.ID_TipoLessico === t.ID_TipoLessico);
-      const voci = vociLessico.filter(vl => termini.some(tl => tl.ID_Termine === vl.ID_Termine));
+
+    const byType = tipiLessico.map((t) => {
+      const termini = terminiLessico.filter((tl) => tl.ID_TipoLessico === t.ID_TipoLessico);
+      const voci = vociLessico.filter((vl) =>
+        termini.some((tl) => tl.ID_Termine === vl.ID_Termine)
+      );
       return {
         Tipo: t.NomeTipo,
-        Termini: new Set(termini.map(tl => tl.ID_Termine)).size,
-        Voci: voci.length
+        Termini: new Set(termini.map((tl) => tl.ID_Termine)).size,
+        Voci: voci.length,
       };
     });
-    
+
     res.json({ byType });
   } catch (err) {
     return next(err);

@@ -100,9 +100,7 @@ function findAnyBlockedMove(): { fromId: number; key: DirectionKey } {
 
 function findAnyTerminalMove(): { fromId: number; key: DirectionKey; terminalId: number } {
   const luoghi = getLuoghiLingua1();
-  const terminalIds = new Set(
-    luoghi.filter((l) => l.Terminale === -1).map((l) => l.ID)
-  );
+  const terminalIds = new Set(luoghi.filter((l) => l.Terminale === -1).map((l) => l.ID));
   const keys: DirectionKey[] = ['Nord', 'Est', 'Sud', 'Ovest', 'Su', 'Giu'];
 
   for (const luogo of luoghi) {
@@ -129,9 +127,7 @@ function findAnyValidMoveAvoidingSpecials(): { fromId: number; key: DirectionKey
   const luoghi = getLuoghiLingua1();
   const keys: DirectionKey[] = ['Nord', 'Est', 'Sud', 'Ovest', 'Su', 'Giu'];
 
-  const terminalIds = new Set(
-    luoghi.filter((l) => l.Terminale === -1).map((l) => l.ID)
-  );
+  const terminalIds = new Set(luoghi.filter((l) => l.Terminale === -1).map((l) => l.ID));
 
   for (const luogo of luoghi) {
     const fromId = luogo.ID;

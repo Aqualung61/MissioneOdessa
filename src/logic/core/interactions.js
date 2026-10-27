@@ -32,7 +32,9 @@ export function verificaPrerequisiti(prerequisiti, ctx) {
   for (const req of prerequisiti) {
     // Solo voci proprie del registro: un tipo che coincide con una proprietà ereditata
     // (es. "toString") resta sconosciuto, come con il Set dello schema del codice originale.
-    const check = Object.hasOwn(ctx.game.prerequisiteTypes, req.tipo) ? ctx.game.prerequisiteTypes[req.tipo] : undefined;
+    const check = Object.hasOwn(ctx.game.prerequisiteTypes, req.tipo)
+      ? ctx.game.prerequisiteTypes[req.tipo]
+      : undefined;
     if (!check) {
       // Tipo sconosciuto: fail-closed (prerequisito non soddisfatto), segnalato una sola volta.
       warnUnknownTypeOnce('prerequisito', req.tipo);
@@ -56,7 +58,9 @@ export function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } =
   const extraMessages = [];
   for (const effetto of effetti) {
     // Solo voci proprie del registro (vedi verificaPrerequisiti)
-    const apply = Object.hasOwn(ctx.game.effectTypes, effetto.tipo) ? ctx.game.effectTypes[effetto.tipo] : undefined;
+    const apply = Object.hasOwn(ctx.game.effectTypes, effetto.tipo)
+      ? ctx.game.effectTypes[effetto.tipo]
+      : undefined;
     // `info`: valore restituito dall'effetto (solo `statoPreToggle`), variabile locale
     let info;
     if (apply) info = apply(effetto, ctx, { luogoCorrente, extraMessages });
@@ -80,7 +84,8 @@ export function applicaEffetti(effetti, luogoCorrente, { skipMisteri = false } =
  */
 export function assegnaPunteggioInterazione(interazione, ctx) {
   const punteggioSkip = interazione.punteggio === false;
-  const chiavePunteggio = typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
+  const chiavePunteggio =
+    typeof interazione.punteggio === 'string' ? interazione.punteggio : interazione.id;
   if (!punteggioSkip && !ctx.state.punteggio.interazioniPunteggio.has(chiavePunteggio)) {
     ctx.state.punteggio.totale += ctx.game.config.punteggio.interazione;
     ctx.state.punteggio.interazioniPunteggio.add(chiavePunteggio);
@@ -92,11 +97,11 @@ export function assegnaPunteggioInterazione(interazione, ctx) {
 // accepted, resultType, effects, poi ended, victory (se VITTORIA), poi message.
 function buildInteractionResult(interazione, risposta, ctx) {
   // Verifica se è VITTORIA per aggiungere flag ended nella risposta
-  const hasVittoriaEffect = interazione.effetti.some(e => e.tipo === 'VITTORIA');
+  const hasVittoriaEffect = interazione.effetti.some((e) => e.tipo === 'VITTORIA');
   const resultBase = {
     accepted: true,
     resultType: 'OK',
-    effects: interazione.effetti
+    effects: interazione.effetti,
   };
 
   // Se VITTORIA, aggiungi flag ended e victory alla risposta
@@ -106,10 +111,12 @@ function buildInteractionResult(interazione, risposta, ctx) {
   }
 
   // Se ci sono effetti VISIBILITA, aggiungi descrizione luogo e oggetti
-  const haVisibilitaEffects = interazione.effetti.some(e => e.tipo === 'VISIBILITA');
+  const haVisibilitaEffects = interazione.effetti.some((e) => e.tipo === 'VISIBILITA');
   if (haVisibilitaEffects) {
     // Usa funzione centralizzata per descrizione luogo e oggetti
-    const descrizioneCompleta = ctx.helpers.generaDescrizioneLuogoConOggetti(ctx.state.currentLocationId);
+    const descrizioneCompleta = ctx.helpers.generaDescrizioneLuogoConOggetti(
+      ctx.state.currentLocationId
+    );
     const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
 
     return { ...resultBase, message: messaggioCompleto };
@@ -138,7 +145,7 @@ export function eseguiSequenza(interazione, effettoSequenza, risposta, ctx) {
     ctx.state.sequenze[key] = {
       pattern: effettoSequenza.pattern,
       progressione: [],
-      completata: false
+      completata: false,
     };
   }
 
@@ -146,7 +153,12 @@ export function eseguiSequenza(interazione, effettoSequenza, risposta, ctx) {
 
   // Se già completata, non fare nulla
   if (seq.completata) {
-    return { accepted: true, resultType: 'OK', message: ctx.msg(ctx.game.rules.sequence.alreadyCompletedMessageKey), effects: [] };
+    return {
+      accepted: true,
+      resultType: 'OK',
+      message: ctx.msg(ctx.game.rules.sequence.alreadyCompletedMessageKey),
+      effects: [],
+    };
   }
 
   // Verifica se la direzione è corretta per il passo attuale
@@ -166,10 +178,17 @@ export function eseguiSequenza(interazione, effettoSequenza, risposta, ctx) {
       risposta = interazione.risposta_completa;
 
       // Usa funzione centralizzata per descrizione luogo e oggetti
-      const descrizioneCompleta = ctx.helpers.generaDescrizioneLuogoConOggetti(ctx.state.currentLocationId);
+      const descrizioneCompleta = ctx.helpers.generaDescrizioneLuogoConOggetti(
+        ctx.state.currentLocationId
+      );
       const messaggioCompleto = risposta + '\n\n' + descrizioneCompleta;
 
-      return { accepted: true, resultType: 'OK', message: messaggioCompleto, effects: interazione.effetti };
+      return {
+        accepted: true,
+        resultType: 'OK',
+        message: messaggioCompleto,
+        effects: interazione.effetti,
+      };
     } else {
       risposta = interazione.risposta_step;
       return { accepted: true, resultType: 'OK', message: risposta, effects: [] };
@@ -189,7 +208,7 @@ function eseguiInterazione(interazione, ctx) {
   let risposta = interazione.risposta;
   if (ctx.game.rules.toggleResponseVerbs.has(interazione.trigger.verbo)) {
     // Verifica stato toggle
-    const primoEffetto = interazione.effetti.find(e => e.tipo === 'TOGGLE_DIREZIONE');
+    const primoEffetto = interazione.effetti.find((e) => e.tipo === 'TOGGLE_DIREZIONE');
     if (primoEffetto) {
       const key = `${primoEffetto.luogo}_${primoEffetto.direzione}`;
       const statoCorrente = ctx.state.direzioniToggle[key] || false;
@@ -198,7 +217,7 @@ function eseguiInterazione(interazione, ctx) {
   }
 
   // Gestione speciale per effetto SEQUENZA
-  const effettoSequenza = interazione.effetti.find(e => e.tipo === 'SEQUENZA');
+  const effettoSequenza = interazione.effetti.find((e) => e.tipo === 'SEQUENZA');
   if (effettoSequenza) {
     return eseguiSequenza(interazione, effettoSequenza, risposta, ctx);
   }
@@ -211,7 +230,12 @@ function eseguiInterazione(interazione, ctx) {
   }
 
   // Applica effetti (passa il luogo corrente per risolvere ambiguità oggetti con stesso nome)
-  const extraMessages = applicaEffetti(interazione.effetti, interazione.condizioni.luogo, { skipMisteri: punteggioSkip }, ctx);
+  const extraMessages = applicaEffetti(
+    interazione.effetti,
+    interazione.condizioni.luogo,
+    { skipMisteri: punteggioSkip },
+    ctx
+  );
   if (extraMessages.length > 0) {
     risposta = risposta + '\n\n' + extraMessages.join('\n\n');
   }
@@ -228,22 +252,28 @@ function eseguiInterazione(interazione, ctx) {
  * @returns {Object|null} risultato dell'interazione, oppure `null` se nessuna si applica
  */
 export function cercaEseguiInterazione(verb, noun, ctx) {
-  const interazioni = (getGameData().Interazioni || [])
-    .filter(i => i.IDLingua === ctx.state.currentLingua);
+  const interazioni = (getGameData().Interazioni || []).filter(
+    (i) => i.IDLingua === ctx.state.currentLingua
+  );
 
   // Cerca un'interazione che corrisponda
   for (const interazione of interazioni) {
-    if (ctx.helpers.normalize(interazione.trigger.verbo) === ctx.helpers.normalize(verb) &&
-        ctx.helpers.normalize(interazione.trigger.oggetto) === ctx.helpers.normalize(noun)) {
-
+    if (
+      ctx.helpers.normalize(interazione.trigger.verbo) === ctx.helpers.normalize(verb) &&
+      ctx.helpers.normalize(interazione.trigger.oggetto) === ctx.helpers.normalize(noun)
+    ) {
       // Verifica luogo
-      if (interazione.condizioni.luogo && interazione.condizioni.luogo !== ctx.state.currentLocationId) {
+      if (
+        interazione.condizioni.luogo &&
+        interazione.condizioni.luogo !== ctx.state.currentLocationId
+      ) {
         continue;
       }
 
       // Verifica se già eseguita (se non ripetibile)
       if (!interazione.ripetibile && ctx.state.interazioniEseguite.includes(interazione.id)) {
-        const messaggio = interazione.risposta_gia_eseguita || ctx.msg('engine.interaction.alreadyDone');
+        const messaggio =
+          interazione.risposta_gia_eseguita || ctx.msg('engine.interaction.alreadyDone');
         return { accepted: true, resultType: 'OK', message: messaggio, effects: [] };
       }
 

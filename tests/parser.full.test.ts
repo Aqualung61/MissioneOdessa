@@ -82,65 +82,68 @@ describe('Istantanea completa del parser (#63)', () => {
     expect(baseline.nonString.length).toBe(10);
   });
 
-  it(
-    'parseCommand(null, input, { currentLingua }) riproduce esattamente il ParseResult registrato',
-    async () => {
-      const diffs: string[] = [];
+  it('parseCommand(null, input, { currentLingua }) riproduce esattamente il ParseResult registrato', async () => {
+    const diffs: string[] = [];
 
-      for (const { lang, input, result } of baseline.cases) {
-        if (diffs.length >= 20) break;
-        const actual = normalize(await parseCommand(null, input, { currentLingua: lang }), input);
-        const expected = normalize(result, input);
-        compareAndCollect(diffs, lang, input, expected, actual);
-      }
+    for (const { lang, input, result } of baseline.cases) {
+      if (diffs.length >= 20) break;
+      const actual = normalize(await parseCommand(null, input, { currentLingua: lang }), input);
+      const expected = normalize(result, input);
+      compareAndCollect(diffs, lang, input, expected, actual);
+    }
 
-      for (const { lang, input, result } of baseline.nonString) {
-        if (diffs.length >= 20) break;
-        const realInput = nonStringInputFor(input);
-        const actual = normalize(await parseCommand(null, realInput, { currentLingua: lang }), realInput);
-        const expected = normalize(result, realInput);
-        compareAndCollect(diffs, lang, input, expected, actual);
-      }
+    for (const { lang, input, result } of baseline.nonString) {
+      if (diffs.length >= 20) break;
+      const realInput = nonStringInputFor(input);
+      const actual = normalize(
+        await parseCommand(null, realInput, { currentLingua: lang }),
+        realInput
+      );
+      const expected = normalize(result, realInput);
+      compareAndCollect(diffs, lang, input, expected, actual);
+    }
 
-      expect(diffs.length, diffs.join('\n')).toBe(0);
-    },
-    60000
-  );
+    expect(diffs.length, diffs.join('\n')).toBe(0);
+  }, 60000);
 
-  it(
-    'parseInput(input, { currentLingua }) riproduce esattamente il ParseResult registrato',
-    async () => {
-      const diffs: string[] = [];
+  it('parseInput(input, { currentLingua }) riproduce esattamente il ParseResult registrato', async () => {
+    const diffs: string[] = [];
 
-      for (const { lang, input, result } of baseline.cases) {
-        if (diffs.length >= 20) break;
-        const actual = normalize(await parseInput(input, { currentLingua: lang }), input);
-        const expected = normalize(result, input);
-        compareAndCollect(diffs, lang, input, expected, actual);
-      }
+    for (const { lang, input, result } of baseline.cases) {
+      if (diffs.length >= 20) break;
+      const actual = normalize(await parseInput(input, { currentLingua: lang }), input);
+      const expected = normalize(result, input);
+      compareAndCollect(diffs, lang, input, expected, actual);
+    }
 
-      for (const { lang, input, result } of baseline.nonString) {
-        if (diffs.length >= 20) break;
-        const realInput = nonStringInputFor(input);
-        const actual = normalize(await parseInput(realInput, { currentLingua: lang }), realInput);
-        const expected = normalize(result, realInput);
-        compareAndCollect(diffs, lang, input, expected, actual);
-      }
+    for (const { lang, input, result } of baseline.nonString) {
+      if (diffs.length >= 20) break;
+      const realInput = nonStringInputFor(input);
+      const actual = normalize(await parseInput(realInput, { currentLingua: lang }), realInput);
+      const expected = normalize(result, realInput);
+      compareAndCollect(diffs, lang, input, expected, actual);
+    }
 
-      expect(diffs.length, diffs.join('\n')).toBe(0);
-    },
-    60000
-  );
+    expect(diffs.length, diffs.join('\n')).toBe(0);
+  }, 60000);
 });
 
-function compareAndCollect(diffs: string[], lang: number, input: string, expected: Json, actual: Json): void {
+function compareAndCollect(
+  diffs: string[],
+  lang: number,
+  input: string,
+  expected: Json,
+  actual: Json
+): void {
   const keys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
   for (const key of keys) {
     if (diffs.length >= 20) return;
     const before = JSON.stringify(expected[key]);
     const after = JSON.stringify(actual[key]);
     if (before !== after) {
-      diffs.push(`lang=${lang} input=${JSON.stringify(input)} campo=${key}: prima=${before} dopo=${after}`);
+      diffs.push(
+        `lang=${lang} input=${JSON.stringify(input)} campo=${key}: prima=${before} dopo=${after}`
+      );
     }
   }
 }

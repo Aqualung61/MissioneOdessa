@@ -27,10 +27,10 @@ export function registerApiConfigRoutes(app, { basePath = '', limiter } = {}) {
     const lingueRaw = getGameData()?.Lingue;
     const lingue = Array.isArray(lingueRaw)
       ? lingueRaw.map((row) => ({
-        ID: row?.ID,
-        IDLingua: row?.IDLingua,
-        Descrizione: row?.Descrizione,
-      }))
+          ID: row?.ID,
+          IDLingua: row?.IDLingua,
+          Descrizione: row?.Descrizione,
+        }))
       : [];
 
     res.json({ basePath: basePathNormalized, lingue });

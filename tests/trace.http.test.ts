@@ -45,53 +45,47 @@ describe('Traccia HTTP (#63)', () => {
     baseline = JSON.parse(readFileSync(fixturePath, 'utf8')) as Trace;
   });
 
-  it(
-    'riproduce lo stesso numero di scenari e richieste del fixture registrato',
-    () => {
-      expect(generated.scenarios.length).toBe(baseline.scenarios.length);
-      const genSteps = generated.scenarios.reduce((a, s) => a + s.steps.length, 0);
-      const baseSteps = baseline.scenarios.reduce((a, s) => a + s.steps.length, 0);
-      expect(genSteps).toBe(baseSteps);
-    },
-    60000
-  );
+  it('riproduce lo stesso numero di scenari e richieste del fixture registrato', () => {
+    expect(generated.scenarios.length).toBe(baseline.scenarios.length);
+    const genSteps = generated.scenarios.reduce((a, s) => a + s.steps.length, 0);
+    const baseSteps = baseline.scenarios.reduce((a, s) => a + s.steps.length, 0);
+    expect(genSteps).toBe(baseSteps);
+  }, 60000);
 
-  it(
-    'riproduce passo per passo lo stesso input, stato HTTP, corpo e sha del fixture registrato',
-    () => {
-      const diffs: string[] = [];
-      const byId = new Map(baseline.scenarios.map((s) => [s.id, s]));
+  it('riproduce passo per passo lo stesso input, stato HTTP, corpo e sha del fixture registrato', () => {
+    const diffs: string[] = [];
+    const byId = new Map(baseline.scenarios.map((s) => [s.id, s]));
 
-      for (const gs of generated.scenarios) {
-        const bs = byId.get(gs.id);
-        if (!bs) {
-          diffs.push(`scenario=${gs.id}: assente nel fixture`);
+    for (const gs of generated.scenarios) {
+      const bs = byId.get(gs.id);
+      if (!bs) {
+        diffs.push(`scenario=${gs.id}: assente nel fixture`);
+        continue;
+      }
+      const count = Math.max(gs.steps.length, bs.steps.length);
+      for (let i = 0; i < count && diffs.length < 20; i++) {
+        const g = gs.steps[i];
+        const b = bs.steps[i];
+        if (!g || !b) {
+          diffs.push(
+            `scenario=${gs.id} passo=${i}: presente solo in ${g ? 'generato' : 'fixture'}`
+          );
           continue;
         }
-        const count = Math.max(gs.steps.length, bs.steps.length);
-        for (let i = 0; i < count && diffs.length < 20; i++) {
-          const g = gs.steps[i];
-          const b = bs.steps[i];
-          if (!g || !b) {
-            diffs.push(`scenario=${gs.id} passo=${i}: presente solo in ${g ? 'generato' : 'fixture'}`);
-            continue;
-          }
-          const fields: Array<keyof Step> = ['req', 'input', 'status', 'body', 'sha'];
-          for (const field of fields) {
-            const gv = JSON.stringify(g[field]);
-            const bv = JSON.stringify(b[field]);
-            if (gv !== bv) {
-              diffs.push(
-                `scenario=${gs.id} passo=${g.i ?? i} input="${JSON.stringify(g.input ?? b.input)}" campo=${field}: prima="${bv}" dopo="${gv}"`
-              );
-              if (diffs.length >= 20) break;
-            }
+        const fields: Array<keyof Step> = ['req', 'input', 'status', 'body', 'sha'];
+        for (const field of fields) {
+          const gv = JSON.stringify(g[field]);
+          const bv = JSON.stringify(b[field]);
+          if (gv !== bv) {
+            diffs.push(
+              `scenario=${gs.id} passo=${g.i ?? i} input="${JSON.stringify(g.input ?? b.input)}" campo=${field}: prima="${bv}" dopo="${gv}"`
+            );
+            if (diffs.length >= 20) break;
           }
         }
       }
+    }
 
-      expect(diffs.length, diffs.join('\n')).toBe(0);
-    },
-    60000
-  );
+    expect(diffs.length, diffs.join('\n')).toBe(0);
+  }, 60000);
 });

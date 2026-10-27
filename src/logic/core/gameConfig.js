@@ -42,7 +42,9 @@ function validateNumber(value, path) {
   const isValid = isMinimoKey ? isInteger(value) && value >= 0 : isInteger(value) && value > 0;
   if (!isValid) {
     const requirement = isMinimoKey ? 'un intero non negativo' : 'un intero positivo';
-    throw new Error(`Configurazione non valida: "${path.join('.')}" deve essere ${requirement} (valore: ${JSON.stringify(value)})`);
+    throw new Error(
+      `Configurazione non valida: "${path.join('.')}" deve essere ${requirement} (valore: ${JSON.stringify(value)})`
+    );
   }
 }
 
@@ -87,7 +89,9 @@ function validateConfig(config, filePath, required) {
     throw new Error(`Configurazione non valida in ${filePath}: il contenuto non è un oggetto JSON`);
   }
   if (config.versione !== 1) {
-    throw new Error(`Configurazione non valida in ${filePath}: "versione" deve essere 1 (trovato: ${JSON.stringify(config.versione)})`);
+    throw new Error(
+      `Configurazione non valida in ${filePath}: "versione" deve essere 1 (trovato: ${JSON.stringify(config.versione)})`
+    );
   }
   for (const section of REQUIRED_TOP_LEVEL_SECTIONS) {
     if (!(section in config)) {

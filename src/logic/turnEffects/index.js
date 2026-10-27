@@ -40,14 +40,14 @@ import { victoryEffect } from './victoryEffect.js';
  * - victoryEffect controlla vittoria DOPO tutti i check game over
  */
 export const TURN_EFFECTS = [
-  matchEffect,       // Priorità 1: Timer del fiammifero acceso (R8)
-  torchEffect,       // Priorità 2: Sistema illuminazione torcia (aggiorna hasLight)
-  darknessEffect,    // Priorità 3: Timer del buio (R1)
-  interceptEffect,   // Priorità 4: Timer della zona aperta (R2)
-  dawnEffect,        // Priorità 5: Timer dell'alba (R3)
-  guardEffect,       // Priorità 6: Timer della guardia alla barriera (R4)
-  gameOverEffect,    // Priorità 7: Verifica condizioni di fine partita
-  victoryEffect,     // Priorità 8: Sequenza finale Ferenc + teleport (trigger vittoria)
+  matchEffect, // Priorità 1: Timer del fiammifero acceso (R8)
+  torchEffect, // Priorità 2: Sistema illuminazione torcia (aggiorna hasLight)
+  darknessEffect, // Priorità 3: Timer del buio (R1)
+  interceptEffect, // Priorità 4: Timer della zona aperta (R2)
+  dawnEffect, // Priorità 5: Timer dell'alba (R3)
+  guardEffect, // Priorità 6: Timer della guardia alla barriera (R4)
+  gameOverEffect, // Priorità 7: Verifica condizioni di fine partita
+  victoryEffect, // Priorità 8: Sequenza finale Ferenc + teleport (trigger vittoria)
 ];
 
 /**

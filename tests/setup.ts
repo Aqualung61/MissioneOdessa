@@ -10,7 +10,22 @@ const __dirname = path.dirname(__filename);
 
 // Lista delle tabelle (corrispondenti ai file JSON)
 // 'Azioni' non è più in tableNames (sistema sostituito da SBLOCCA_DIREZIONE)
-const tableNames = ['Introduzione', 'Storia', 'LessicoSoftware', 'Lingue', 'Luoghi', 'LuoghiLogici', 'MessaggiFrontend', 'MessaggiSistema', 'Oggetti', 'Piattaforme', 'Software', 'TerminiLessico', 'TipiLessico', 'VociLessico'];
+const tableNames = [
+  'Introduzione',
+  'Storia',
+  'LessicoSoftware',
+  'Lingue',
+  'Luoghi',
+  'LuoghiLogici',
+  'MessaggiFrontend',
+  'MessaggiSistema',
+  'Oggetti',
+  'Piattaforme',
+  'Software',
+  'TerminiLessico',
+  'TipiLessico',
+  'VociLessico',
+];
 
 const odessaData = {};
 

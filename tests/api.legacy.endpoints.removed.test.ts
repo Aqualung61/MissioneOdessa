@@ -59,11 +59,15 @@ describe('Endpoint legacy rimossi (#124)', () => {
 
   it('POST /api/engine/set-location -> 404 (endpoint rimosso)', async () => {
     const session = createSessionState();
-    const res = await fetchWithSession(`${baseUrl}/api/engine/set-location`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locationId: 2 }),
-    }, session);
+    const res = await fetchWithSession(
+      `${baseUrl}/api/engine/set-location`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId: 2 }),
+      },
+      session
+    );
     expect(res.status).toBe(404);
   });
 

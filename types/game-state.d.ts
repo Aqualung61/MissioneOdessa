@@ -1,6 +1,6 @@
 /**
  * Type definitions for Game State (Sprint 3.3.5)
- * 
+ *
  * Definizioni TypeScript per la struttura Turn System v3.0
  */
 
