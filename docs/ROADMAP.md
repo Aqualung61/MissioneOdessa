@@ -8,6 +8,7 @@ Sintesi breve. La **fonte di verità** (stato, discussione, assegnazioni) sono *
 
 ## Fatto
 
+- **v1.4.5 — CI, Node 24 e qualità:** CI su Node 22 e 24, produzione su Node 24, `aiuto` in italiano all'imperativo, suite di test e commenti ripuliti, Prettier con `format:check` in CI (#158, #160, #162, #164, #165, #168, #170, #172). [Note](release-notes/2026-10-27_v1.4.5.md)
 - **v1.4.4 — Parser: nomi composti:** riconoscimento dei nomi di oggetto di 3+ parole (#128). [Note](release-notes/2026-10-26_v1.4.4.md)
 - **v1.4.3 — Sicurezza e testi:** lock npm aggiornato, `help` EN con iniziale maiuscola, test del limitatore di frequenza (#137, #144, #147). [Note](release-notes/2026-10-24_v1.4.3.md)
 - **v1.4.2 — Refactor del motore:** motore, parser e configurazione riorganizzati a comportamento invariato, endpoint legacy rimossi, ESLint di complessità bloccante (#63, #123, #124, #125, #126). [Note](release-notes/2026-10-21_v1.4.2.md)

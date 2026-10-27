@@ -4,6 +4,23 @@
 
 ---
 
+## v1.4.5 (27 ottobre 2026)
+
+### Italiano e interfaccia di aiuto
+
+- `aiuto` in italiano: tutte le azioni sono all'imperativo (#165).
+
+### Infrastruttura, CI e qualità
+
+- CI su Node 22 e 24 (job `build-test (Node 22.x)` e `build-test (Node 24.x)`); produzione su Node 24, configurata dai file `.nvmrc` e `.node-version` (#158, #162, #164).
+- Suite di test rivista (#168); commenti e documentazione delle API ripuliti (#170).
+- Codice riformattato con Prettier; il controllo `format:check` fa ora parte della CI (#172).
+- Interno: i generatori delle baseline di test sono nel repository, in `scripts/baselines/` (#160).
+
+Dettagli: [docs/release-notes/2026-10-27_v1.4.5.md](docs/release-notes/2026-10-27_v1.4.5.md)
+
+---
+
 ## v1.4.4 (26 ottobre 2026)
 
 ### Parser
