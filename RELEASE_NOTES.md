@@ -1,6 +1,8 @@
 ## Unreleased
 
-- 
+### Infrastruttura
+
+- Rimossi `web.config` e `update-preprod.ps1`, residui di un vecchio deploy su IIS/Windows: la produzione è su Railway e non li usava (#176).
 
 ---
 

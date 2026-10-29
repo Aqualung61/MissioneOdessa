@@ -45,6 +45,9 @@ test-results/
 backup/
 db/.project
 
+# Cartella locale di migrazione (report, manifest, backup git)
+/MigrazioneOdessa/
+
 # Rapporto di copertura locale (#63, lotto 0 v1.4.2)
 coverage/
 
