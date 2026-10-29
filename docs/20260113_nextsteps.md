@@ -1073,7 +1073,7 @@ Per rendere il progetto pubblicabile servono controlli “pre-public”: segreti
 ### TD (Technical Design)
 - Documentazione:
   - Creare un documento dedicato (es. `docs/release_readiness_checklist.md`) con sezioni e checkbox.
-  - Referenziare file chiave: `.env.example`, `README.md`, `web.config`, note CSP/hardening già in docs.
+  - Referenziare file chiave: `.env.example`, `README.md`, `web.config` (rimosso in #176), note CSP/hardening già in docs.
 - Verifiche consigliate:
   - Ricerca segreti: `git grep` su pattern (token, key, secret) + controllo mirato sui file più a rischio.
   - Config: validare `npm install`, `npm test`, `npm run dev` e i prerequisiti dichiarati.

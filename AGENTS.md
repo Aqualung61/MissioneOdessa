@@ -145,7 +145,6 @@ Do not commit, push, open or update a pull request, merge, tag, release, migrate
 
 ## Protected and high-impact operations
 
-- Do not run `update-preprod.ps1` without an explicit Release Gate. It recursively clears the local `deploy/` directory before repopulating it and starts the application.
 - Do not modify production configuration, DNS, hosting, environment variables, or live data without an explicit target, rollback plan, and Release Gate.
 - Do not weaken tests or security controls merely to make checks pass.
 - Do not silently resolve conflicts between code, tests, approved specifications, and runtime evidence.

@@ -19,7 +19,7 @@ L'applicazione **Missione Odessa v1.3.0** presenta una **security posture adegua
 
 **Aggiornamento (11 gennaio 2026):** completato un ulteriore hardening “browser-facing”:
 - CSP Helmet in `src/server.js` resa più stretta lato script (`script-src 'self'`, `script-src-attr 'none'`, `base-uri 'self'`, `object-src 'none'`, `frame-ancestors 'none'`).
-- Security headers aggiunti anche lato IIS in `web.config` (es. `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`).
+- Security headers aggiunti anche lato IIS in `web.config` (file rimosso in #176: il deploy è su Railway; es. `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`).
 - Frontend: rimosso JS inline dalle pagine principali (solo script esterni) e aggiunti fallback `<noscript>`; aggiunti meta canonical/OG/Twitter per il deploy Railway.
 
 **Criticità identificate:** 7 aree (S1-S7)

@@ -221,7 +221,7 @@ Test: `tests/api.errorhandler.test.ts`.
 
 URL produzione: `https://www.missioneodessa.it`
 
-Nota deploy Railway (legacy / precedente root `https://missioneodessa.up.railway.app/`):
+Deploy su Railway: il merge su `main` attiva Railway, che attende la CI e quindi pubblica. Il vecchio URL `https://missioneodessa.up.railway.app/` è dismesso. Impostazioni:
 - lasciare `BASE_PATH` vuoto
 - consigliati: `NODE_ENV=production`, `TRUST_PROXY=1`, `API_AUTH_DISABLED=1`
 
